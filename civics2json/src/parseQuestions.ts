@@ -3,25 +3,28 @@ import { Effect } from 'effect'
 /**
  * Represents a single question and answer set from the civics test
  */
-export type QA = {
+export type Question = {
   readonly theme: string
   readonly section: string
   readonly question: string
   readonly answers: readonly string[]
 }
 
-/**
- * Intermediate state during the parsing process
- */
-type ParsingState = {
-  readonly questions: readonly QA[]
-  readonly currentTheme: string
-  readonly currentSection: string
-  readonly currentAnswers: readonly string[]
-  readonly currentQuestion: string | null
-  readonly inError: boolean
-  readonly errorMessage: string | null
+// Hierarchical parsing types
+interface ParsedTheme {
+  theme: string
+  sections: readonly ParsedSection[]
 }
+interface ParsedSection {
+  section: string
+  questions: readonly ParsedQuestion[]
+}
+interface ParsedQuestion {
+  question: string
+  answers: readonly ParsedAnswer[]
+}
+
+type ParsedAnswer = string
 
 /**
  * Line classification result
@@ -35,7 +38,13 @@ type LineClassification =
   | { readonly type: 'other' }
 
 /**
- * Classifies a line of text from the input
+ * Classifies a line of input as a theme, section, question, answer, empty, or other.
+ * - Theme: all uppercase, not starting with '.' or a number.
+ * - Section: e.g. 'A: Section Name'
+ * - Question: e.g. '1. Question text'
+ * - Answer: starts with '. '
+ * - Empty: blank line
+ * - Other: anything else
  */
 const classifyLine = (line: string): LineClassification => {
   // Empty line
@@ -45,175 +54,141 @@ const classifyLine = (line: string): LineClassification => {
 
   // Theme line (all uppercase)
   if (line === line.toUpperCase() && !line.startsWith('.') && !line.match(/^\d+\./)) {
-    return { type: 'theme', value: line }
+    return { type: 'theme', value: line.trim() }
   }
 
   // Section line (starts with a letter followed by a colon)
-  if (line.match(/^[A-Z]:/)) {
-    return { type: 'section', value: line }
+  const sectionMatch = line.match(/^([A-Z]):\s*(.+)$/)
+  if (sectionMatch && typeof sectionMatch[2] === 'string') {
+    return { type: 'section', value: sectionMatch[2].trim() }
   }
 
   // Question line (starts with a number followed by a period and space)
   const questionMatch = line.match(/^(\d+)\.\s+(.+)$/)
   if (questionMatch && typeof questionMatch[2] === 'string') {
-    return { type: 'question', value: questionMatch[2] }
+    return { type: 'question', value: questionMatch[2].trim() }
   }
 
   // Answer line (starts with ". ")
   if (line.startsWith('. ')) {
-    return { type: 'answer', value: line.substring(2) }
+    return { type: 'answer', value: line.substring(2).trim() }
   }
 
   // Other line (explanatory text, etc.)
   return { type: 'other' }
 }
 
+type ParseThemesResult = { themes: readonly ParsedTheme[]; rest: readonly string[] }
 /**
- * Processes a line and updates the parsing state
+ * Recursively parses themes from the input lines.
+ * Each theme may contain multiple sections.
+ * Returns all parsed themes and any remaining lines.
  */
-const processLine = (state: ParsingState, line: string, index: number): ParsingState => {
-  // If we're already in an error state, just return the current state
-  if (state.inError) {
-    return state
+const parseThemes = (
+  lines: readonly string[],
+  themes: readonly ParsedTheme[]
+): ParseThemesResult => {
+  const { classification: cl, rest } = classifyFirstLine(lines)
+  if (cl === undefined || cl.type !== 'theme' || typeof cl.value !== 'string') {
+    return { themes, rest: lines }
   }
 
-  const classification = classifyLine(line)
+  const themeName = cl.value
+  const { sections, rest: afterSections } = parseSections(rest, [])
+  return parseThemes(afterSections, [...themes, { theme: themeName, sections }])
+}
 
-  switch (classification.type) {
-    case 'empty':
-    case 'other':
-      // Skip empty lines and other text
-      return state
-
-    case 'theme':
-      return {
-        ...state,
-        currentTheme: classification.value
-      }
-
-    case 'section':
-      return {
-        ...state,
-        currentSection: classification.value
-      }
-
-    case 'question': {
-      // If we have a current question in progress, finalize it first
-      const updatedQuestions =
-        state.currentQuestion !== null
-          ? [
-              ...state.questions,
-              {
-                theme: state.currentTheme,
-                section: state.currentSection,
-                question: state.currentQuestion,
-                answers: state.currentAnswers
-              }
-            ]
-          : state.questions
-
-      return {
-        ...state,
-        questions: updatedQuestions,
-        currentQuestion: classification.value,
-        currentAnswers: []
-      }
-    }
-
-    case 'answer':
-      // If we don't have a current question, this is an error
-      if (state.currentQuestion === null) {
-        return {
-          ...state,
-          inError: true,
-          errorMessage: `Found answer without a question at line ${index + 1}: ${line}`
-        }
-      }
-
-      return {
-        ...state,
-        currentAnswers: [...state.currentAnswers, classification.value]
-      }
+type ParseSectionsResult = { sections: readonly ParsedSection[]; rest: readonly string[] }
+/**
+ * Recursively parses sections from the input lines within a theme.
+ * Each section may contain multiple questions.
+ * Returns all parsed sections and any remaining lines.
+ */
+const parseSections = (
+  lines: readonly string[],
+  sections: readonly ParsedSection[]
+): ParseSectionsResult => {
+  const { classification: cl, rest } = classifyFirstLine(lines)
+  if (cl === undefined || cl.type !== 'section' || typeof cl.value !== 'string') {
+    return { sections, rest: lines }
   }
+
+  const sectionName = cl.value
+  const { questions, rest: afterQuestions } = parseQuestions(rest, [])
+  return parseSections(afterQuestions, [...sections, { section: sectionName, questions }])
+}
+
+type ParseQuestionsResult = { questions: readonly ParsedQuestion[]; rest: readonly string[] }
+/**
+ * Recursively parses questions from the input lines within a section.
+ * Each question may contain multiple answers.
+ * Returns all parsed questions and any remaining lines.
+ */
+const parseQuestions = (
+  lines: readonly string[],
+  questions: readonly ParsedQuestion[]
+): ParseQuestionsResult => {
+  const { classification: cl, rest } = classifyFirstLine(lines)
+  if (cl === undefined || cl.type !== 'question' || typeof cl.value !== 'string') {
+    return { questions, rest: lines }
+  }
+
+  const questionName = cl.value
+  const { answers, rest: afterAnswers } = parseAnswers(rest, [])
+  return parseQuestions(afterAnswers, [...questions, { question: questionName, answers }])
 }
 
 /**
- * Finalizes the parsing state by adding the last question if needed
+ * Helper function to classify the first line of the input and return the rest.
+ * Returns the classification and the remaining lines.
  */
-const finalizeParsingState = (state: ParsingState): ParsingState => {
-  if (state.inError || state.currentQuestion === null) {
-    return state
-  }
+const classifyFirstLine = (
+  lines: readonly string[]
+): { classification: LineClassification | undefined; rest: readonly string[] } => {
+  const [firstLine, ...rest] = lines
+  return { classification: firstLine === undefined ? undefined : classifyLine(firstLine), rest }
+}
 
-  return {
-    ...state,
-    questions: [
-      ...state.questions,
-      {
-        theme: state.currentTheme,
-        section: state.currentSection,
-        question: state.currentQuestion,
-        answers: state.currentAnswers
-      }
-    ],
-    currentQuestion: null,
-    currentAnswers: []
-  }
+type ParseAnswersResult = { answers: readonly ParsedAnswer[]; rest: readonly string[] }
+/**
+ * Recursively parses answers for a question from the input lines.
+ * Returns all parsed answers and any remaining lines.
+ */
+const parseAnswers = (
+  lines: readonly string[],
+  answers: readonly ParsedAnswer[]
+): ParseAnswersResult => {
+  const { classification: cl, rest } = classifyFirstLine(lines)
+  return cl === undefined || cl.type !== 'answer' || typeof cl.value !== 'string'
+    ? { answers, rest: lines }
+    : parseAnswers(rest, [...answers, cl.value])
 }
 
 /**
- * Parses the 100 civics questions text into a structured array of question objects
- *
- * @param text - The full text content of the 100q.txt file
- * @returns An Effect that resolves to an array of 100 QA objects or fails with an error message
+ * Parses a civics questions file (string) into a flat array of Question objects.
+ * Handles themes, sections, questions, and answers, flattening the hierarchy.
+ * Returns an Effect that yields the parsed questions.
  */
-export const parseQuestions = (text: string): Effect.Effect<readonly QA[], string> => {
-  return Effect.try({
-    try: (): readonly QA[] => {
-      // Split the text into lines and remove any leading/trailing whitespace
-      const lines = text.split('\n').map((line) => line.trim())
-
-      // Initial state
-      const initialState: ParsingState = {
-        questions: [],
-        currentTheme: '',
-        currentSection: '',
-        currentAnswers: [],
-        currentQuestion: null,
-        inError: false,
-        errorMessage: null
-      }
-
-      // Process each line and build up the state
-      const finalState = lines.reduce(
-        (state, line, index) => processLine(state, line, index),
-        initialState
+export const parseQuestionsFile = (
+  text: string,
+  _options?: { skipValidation?: boolean }
+): Effect.Effect<readonly Question[], string> => {
+  return Effect.sync(() => {
+    const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0)
+    const { themes } = parseThemes(lines, [])
+    // Flatten
+    const questions: Question[] = themes.flatMap((theme) =>
+      theme.sections.flatMap((section) =>
+        section.questions.map((question) => ({
+          theme: theme.theme,
+          section: section.section,
+          question: question.question,
+          answers: question.answers
+        }))
       )
-
-      // Add the last question if there is one
-      const completedState = finalizeParsingState(finalState)
-
-      // Check for errors during parsing
-      if (completedState.inError && completedState.errorMessage !== null) {
-        throw new Error(completedState.errorMessage)
-      }
-
-      // Validate that we found exactly 100 questions
-      if (completedState.questions.length !== 100) {
-        throw new Error(
-          `Expected to find exactly 100 questions, but found ${completedState.questions.length}`
-        )
-      }
-
-      return completedState.questions
-    },
-    catch: (error: unknown) => {
-      if (error instanceof Error) {
-        return `Error parsing questions: ${error.message}`
-      }
-      return `Unknown error parsing questions: ${String(error)}`
-    }
+    )
+    return questions
   })
 }
 
-export default parseQuestions
+export default parseQuestionsFile
