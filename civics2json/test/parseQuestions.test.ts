@@ -1,6 +1,10 @@
 import { Effect, Console } from 'effect'
 import { parseQuestionsFile, Question } from '@src/parseQuestions'
 import { describe, it, expect } from '@jest/globals'
+import fs from 'fs'
+import path from 'path'
+
+const SAMPLE_QUESTIONS_FILE = path.join(__dirname, '../data/100q.txt')
 
 describe('parseQuestions', () => {
   it('should parse USCIS civics questions', async () => {
@@ -373,5 +377,48 @@ A: Colonial Period
       expect(questions[1]?.section).toBe('Colonial Period')
       return questions
     }).pipe(Effect.runPromise)
+  })
+
+  it('should ignore the intro text', async () => {
+    const text = `
+(rev. 01/19) 
+
+
+Civics (History and Government) Questions for the Naturalization Test 
+
+The 100 civics (history and government) questions and answers for the naturalization test are listed below. The civics test is an oral test and the USCIS Officer will ask the applicant up to 10 of the 100 civics questions. An applicant must answer 6 out of 10 questions correctly to pass the civics portion of the naturalization test. 
+
+On the naturalization test, some answers may change because of elections or appointments. As you study for the test, make sure that you know the most current answers to these questions. Answer these questions with the name of the official who is serving at the time of your eligibility interview with USCIS. The USCIS Officer will not accept an incorrect answer. 
+
+Although USCIS is aware that there may be additional correct answers to the 100 civics questions, applicants are encouraged to respond to the civics questions using the answers provided below. 
+
+* If you are 65 years old or older and have been a legal permanent resident of the United States for 20 or more years, you may study just the questions that have been marked with an asterisk. 
+
+
+
+AMERICAN GOVERNMENT 
+
+A: Principles of American Democracy 
+
+
+
+1. What is the supreme law of the land? 
+
+. the Constitution 
+`
+    const questions = await parseQuestionsFile(text).pipe(Effect.runPromise)
+    expect(questions).toHaveLength(1)
+    expect(questions[0]).toMatchObject({
+      theme: 'AMERICAN GOVERNMENT',
+      section: 'Principles of American Democracy',
+      question: 'What is the supreme law of the land?',
+      answers: ['the Constitution']
+    })
+  })
+
+  it('should return 100 questions from sample file', async () => {
+    const text = fs.readFileSync(SAMPLE_QUESTIONS_FILE, 'utf-8')
+    const questions = await parseQuestionsFile(text).pipe(Effect.runPromise)
+    expect(questions.length).toBe(100)
   })
 })

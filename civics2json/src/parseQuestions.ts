@@ -88,7 +88,7 @@ const parseThemes = (
   lines: readonly string[],
   themes: readonly ParsedTheme[]
 ): ParseThemesResult => {
-  const { classification: cl, rest } = classifyFirstLine(lines)
+  const { classification: cl, rest } = getNextClassification(lines)
   if (cl === undefined || cl.type !== 'theme' || typeof cl.value !== 'string') {
     return { themes, rest: lines }
   }
@@ -108,7 +108,7 @@ const parseSections = (
   lines: readonly string[],
   sections: readonly ParsedSection[]
 ): ParseSectionsResult => {
-  const { classification: cl, rest } = classifyFirstLine(lines)
+  const { classification: cl, rest } = getNextClassification(lines)
   if (cl === undefined || cl.type !== 'section' || typeof cl.value !== 'string') {
     return { sections, rest: lines }
   }
@@ -128,7 +128,7 @@ const parseQuestions = (
   lines: readonly string[],
   questions: readonly ParsedQuestion[]
 ): ParseQuestionsResult => {
-  const { classification: cl, rest } = classifyFirstLine(lines)
+  const { classification: cl, rest } = getNextClassification(lines)
   if (cl === undefined || cl.type !== 'question' || typeof cl.value !== 'string') {
     return { questions, rest: lines }
   }
@@ -142,11 +142,17 @@ const parseQuestions = (
  * Helper function to classify the first line of the input and return the rest.
  * Returns the classification and the remaining lines.
  */
-const classifyFirstLine = (
+const getNextClassification = (
   lines: readonly string[]
 ): { classification: LineClassification | undefined; rest: readonly string[] } => {
   const [firstLine, ...rest] = lines
-  return { classification: firstLine === undefined ? undefined : classifyLine(firstLine), rest }
+  const classification = firstLine === undefined ? undefined : classifyLine(firstLine)
+
+  if (classification?.type === 'empty' || classification?.type === 'other') {
+    return getNextClassification(rest)
+  }
+
+  return { classification, rest }
 }
 
 type ParseAnswersResult = { answers: readonly ParsedAnswer[]; rest: readonly string[] }
@@ -158,7 +164,7 @@ const parseAnswers = (
   lines: readonly string[],
   answers: readonly ParsedAnswer[]
 ): ParseAnswersResult => {
-  const { classification: cl, rest } = classifyFirstLine(lines)
+  const { classification: cl, rest } = getNextClassification(lines)
   return cl === undefined || cl.type !== 'answer' || typeof cl.value !== 'string'
     ? { answers, rest: lines }
     : parseAnswers(rest, [...answers, cl.value])
@@ -174,7 +180,11 @@ export const parseQuestionsFile = (
   _options?: { skipValidation?: boolean }
 ): Effect.Effect<readonly Question[], string> => {
   return Effect.sync(() => {
-    const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0)
+    const lines = text
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0)
+
     const { themes } = parseThemes(lines, [])
     // Flatten
     const questions: Question[] = themes.flatMap((theme) =>
