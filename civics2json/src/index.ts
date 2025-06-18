@@ -1,53 +1,50 @@
-import { Effect, Console } from 'effect'
-import { NodeContext } from '@effect/platform-node'
-import { fetchCivicsQuestions } from './fetchCivicsQuestions'
-import { parseQuestions } from './parseQuestions'
+import { Effect } from 'effect'
+import { NodeContext, NodeRuntime } from '@effect/platform-node'
+import { CivicsQuestionsClient } from './CivicsQuestions'
+import { Command } from '@effect/cli'
 import { FetchHttpClient } from '@effect/platform'
-import * as fs from 'fs'
-import * as path from 'path'
+import { QUESTIONS_JSON_FILE } from './config'
+import { FileSystem } from '@effect/platform'
 
-// Example program that fetches and parses civics questions
-const program = Effect.gen(function* (_) {
-  // Option 1: Fetch questions from the web
-  yield* Console.log('Fetching civics questions from USCIS website...')
-  const textFromWeb = yield* fetchCivicsQuestions
-  yield* Console.log(`Fetched ${textFromWeb.length} characters`)
+const fetchCommand = Command.make(
+  'fetch',
+  {},
+  Effect.fn(function* () {
+    yield* Effect.log('Fetching civics questions from USCIS website...')
+    const cq = yield* CivicsQuestionsClient
+    const text = yield* cq.fetch()
+    yield* Effect.log(`Fetched ${text.length} characters`)
+  })
+)
 
-  // Option 2: Read from local file if available
-  // This is more reliable for testing
-  let textToUse = textFromWeb
-  const localFilePath = path.join(process.cwd(), 'data', '100q.txt')
+const parseCommand = Command.make(
+  'parse',
+  {},
+  Effect.fn(function* () {
+    yield* Effect.log('Parsing civics questions...')
+    const cq = yield* CivicsQuestionsClient
+    const text = yield* cq.fetch()
+    const questions = yield* cq.parse(text)
+    const fs = yield* FileSystem.FileSystem
+    const questionsJsonFile = yield* QUESTIONS_JSON_FILE
+    yield* fs.writeFileString(questionsJsonFile, JSON.stringify(questions, null, 2))
+    yield* Effect.log(`Parsed ${questions.length} questions to ${questionsJsonFile}`)
+  })
+)
 
-  if (fs.existsSync(localFilePath)) {
-    yield* Console.log('Local file found, using it instead of web content')
-    textToUse = fs.readFileSync(localFilePath, 'utf-8')
-  } else {
-    // Save the fetched content to a local file for future use
-    yield* Console.log('Saving fetched content to local file')
-    fs.mkdirSync(path.join(process.cwd(), 'data'), { recursive: true })
-    fs.writeFileSync(localFilePath, textFromWeb, 'utf-8')
-  }
+const command = Command.make('civics-questions').pipe(
+  Command.withSubcommands([fetchCommand, parseCommand])
+)
 
-  // Parse the questions
-  yield* Console.log('Parsing questions...')
-  const questions = yield* parseQuestions(textToUse)
+const cli = Command.run(command, {
+  name: 'Civics Questions CLI',
+  version: 'v1.0.0'
+})
 
-  // Log some statistics
-  yield* Console.log(`Successfully parsed ${questions.length} questions`)
-
-  // Log the first 3 questions as a sample
-  yield* Console.log('\nSample questions:')
-  yield* Console.log(JSON.stringify(questions, null, 2))
-
-  // Save the parsed questions as JSON
-  const outputPath = path.join(process.cwd(), 'data', 'civics-questions.json')
-  yield* Console.log(`\nSaving parsed questions to ${outputPath}`)
-  fs.writeFileSync(outputPath, JSON.stringify(questions, null, 2), 'utf-8')
-
-  return questions
-}).pipe(Effect.provide(NodeContext.layer), Effect.provide(FetchHttpClient.layer))
-
-// Run the program
-Effect.runPromise(program)
-  .then(() => console.log('Program completed successfully'))
-  .catch((error) => console.error('Program failed:', error))
+cli(process.argv).pipe(
+  Effect.scoped,
+  Effect.provide(CivicsQuestionsClient.Default),
+  Effect.provide(FetchHttpClient.layer),
+  Effect.provide(NodeContext.layer),
+  NodeRuntime.runMain
+)
