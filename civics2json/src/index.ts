@@ -6,7 +6,7 @@ import { FetchHttpClient } from '@effect/platform'
 import { QUESTIONS_JSON_FILE } from './config'
 import { FileSystem } from '@effect/platform'
 
-const fetchCommand = Command.make(
+const questionsFetchCommand = Command.make(
   'fetch',
   {},
   Effect.fn(function* () {
@@ -17,7 +17,7 @@ const fetchCommand = Command.make(
   })
 )
 
-const parseCommand = Command.make(
+const questionsParseCommand = Command.make(
   'parse',
   {},
   Effect.fn(function* () {
@@ -32,13 +32,33 @@ const parseCommand = Command.make(
   })
 )
 
-const command = Command.make('civics-questions').pipe(
-  Command.withSubcommands([fetchCommand, parseCommand])
+const senatorsCommand = Command.make(
+  'senators',
+  {},
+  Effect.fn(function* () {
+    yield* Effect.log('Not implemented')
+  })
+)
+
+const representativesCommand = Command.make(
+  'representatives',
+  {},
+  Effect.fn(function* () {
+    yield* Effect.log('Not implemented')
+  })
+)
+
+const questionsCommand = Command.make('questions').pipe(
+  Command.withSubcommands([questionsFetchCommand, questionsParseCommand])
+)
+
+const command = Command.make('civics').pipe(
+  Command.withSubcommands([questionsCommand, senatorsCommand, representativesCommand])
 )
 
 const cli = Command.run(command, {
   name: 'Civics Questions CLI',
-  version: 'v1.0.0'
+  version: 'v0.1.0'
 })
 
 cli(process.argv).pipe(
