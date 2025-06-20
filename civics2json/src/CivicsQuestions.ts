@@ -1,7 +1,7 @@
 import { Effect } from 'effect'
 import { HttpClient, FileSystem } from '@effect/platform'
 import parseQuestionsFile from './parseQuestions'
-import { CIVICS_QUESTIONS_URL, QUESTIONS_TEXT_FILE } from './config'
+import config from './config'
 
 /**
  * Fetches the civics questions text from the USCIS website.
@@ -39,11 +39,10 @@ export class CivicsQuestionsClient extends Effect.Service<CivicsQuestionsClient>
     effect: Effect.gen(function* () {
       const httpClient = yield* HttpClient.HttpClient
       const fs = yield* FileSystem.FileSystem
-      const localFile = yield* QUESTIONS_TEXT_FILE
-      const url = yield* CIVICS_QUESTIONS_URL
+      const c = yield* config
 
       return {
-        fetch: fetchCivicsQuestions(httpClient, fs, url, localFile),
+        fetch: fetchCivicsQuestions(httpClient, fs, c.CIVICS_QUESTIONS_URL, c.QUESTIONS_TEXT_FILE),
         parse: parseQuestionsFile
       }
     })

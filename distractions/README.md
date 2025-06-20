@@ -9,4 +9,4 @@ A command-line tool for generating pools of possible distractors for civics ques
 - Utilities for file I/O, randomization, and string handling
 - CLI interface using Effect for robust functional programming
 
-See the plan in `../distractions-plan.md` for more details.
+See the plan in `./PLAN.md` for more details.

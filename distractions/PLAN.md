@@ -1,5 +1,31 @@
 # Distractions Project: High-Level Plan
 
+## Task List
+
+- [ ] Set up TypeScript project structure and configuration
+- [ ] Implement CLI entry point using Effect
+- [ ] Create data models/types for civics questions and distractors
+- [ ] Implement file I/O utilities (read/write JSON)
+- [ ] Populate static distractor pools
+  - [ ] U.S. States
+  - [ ] U.S. Territories
+  - [ ] U.S. Presidents
+  - [ ] U.S. Vice Presidents
+  - [ ] Cabinet-level Positions
+  - [ ] Constitutional Amendments
+  - [ ] Rights and Freedoms
+  - [ ] American Indian Tribes
+  - [ ] Major U.S. Wars (by century)
+  - [ ] National Holidays
+  - [ ] U.S. Rivers
+  - [ ] U.S. Oceans
+  - [ ] U.S. Capitals (state and national)
+  - [ ] U.S. Political Parties
+- [ ] Implement basic distractor generation logic for each question type
+- [ ] Integrate main pipeline to process input and output files
+- [ ] Add unit and integration tests
+- [ ] Write documentation and usage instructions
+
 ## 1. Project Purpose
 Enhance the civics questions dataset by adding plausible but incorrect answers (distractors) to each question, making it more useful for creating practice tests and quizzes.
 
