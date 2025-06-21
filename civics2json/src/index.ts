@@ -3,8 +3,9 @@ import { NodeContext, NodeRuntime } from '@effect/platform-node'
 import { CivicsQuestionsClient } from './CivicsQuestions'
 import { Command } from '@effect/cli'
 import { FetchHttpClient } from '@effect/platform'
-import { QUESTIONS_JSON_FILE } from './config'
 import { FileSystem } from '@effect/platform'
+import { SenatorsClient } from './Senators'
+import config from './config'
 
 const questionsFetchCommand = Command.make(
   'fetch',
@@ -26,17 +27,20 @@ const questionsParseCommand = Command.make(
     const text = yield* cq.fetch()
     const questions = yield* cq.parse(text)
     const fs = yield* FileSystem.FileSystem
-    const questionsJsonFile = yield* QUESTIONS_JSON_FILE
-    yield* fs.writeFileString(questionsJsonFile, JSON.stringify(questions, null, 2))
-    yield* Effect.log(`Parsed ${questions.length} questions to ${questionsJsonFile}`)
+    const c = yield* config
+    yield* fs.writeFileString(c.QUESTIONS_JSON_FILE, JSON.stringify(questions, null, 2))
+    yield* Effect.log(`Parsed ${questions.length} questions to ${c.QUESTIONS_JSON_FILE}`)
   })
 )
 
-const senatorsCommand = Command.make(
-  'senators',
+const senatorsFetchCommand = Command.make(
+  'fetch',
   {},
   Effect.fn(function* () {
-    yield* Effect.log('Not implemented')
+    yield* Effect.log('Fetching senators XML from Senate website...')
+    const senators = yield* SenatorsClient
+    const text = yield* senators.fetch()
+    yield* Effect.log(`Fetched ${text.length} characters`)
   })
 )
 
@@ -46,6 +50,10 @@ const representativesCommand = Command.make(
   Effect.fn(function* () {
     yield* Effect.log('Not implemented')
   })
+)
+
+const senatorsCommand = Command.make('senators').pipe(
+  Command.withSubcommands([senatorsFetchCommand])
 )
 
 const questionsCommand = Command.make('questions').pipe(
@@ -64,6 +72,7 @@ const cli = Command.run(command, {
 cli(process.argv).pipe(
   Effect.scoped,
   Effect.provide(CivicsQuestionsClient.Default),
+  Effect.provide(SenatorsClient.Default),
   Effect.provide(FetchHttpClient.layer),
   Effect.provide(NodeContext.layer),
   NodeRuntime.runMain
