@@ -1,13 +1,15 @@
-import { Effect } from 'effect'
+import { Effect, Schema } from 'effect'
 
 import { CivicsQuestionsClient } from './CivicsQuestions'
 import { SenatorsClient } from './Senators'
 import { PlatformError } from '@effect/platform/Error'
 import { HttpClientError } from '@effect/platform/HttpClientError'
-import { Question, Senator } from './types'
+import { Question, Representative, RepresentativeSchema, Senator } from './types'
 import { ParseError } from 'effect/ParseResult'
 import { UnknownException } from 'effect/Cause'
 import { RepresentativesClient } from './Representatives'
+import { FileSystem } from '@effect/platform'
+import config from './config'
 
 /**
  * The canonical question string used to identify the senator question in the civics questions set.
@@ -73,6 +75,48 @@ export const fetchAndParseSenators = (
     return parsed
   })
 
+export const fetchRepresentatives = (
+  fs: FileSystem.FileSystem,
+  representatives: RepresentativesClient,
+  htmlFile: string
+) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const exists = yield* fs.exists(htmlFile)
+    if (options?.forceFetch !== true && exists) {
+      yield* Effect.log(`Using local representatives file ${htmlFile}`)
+      return yield* fs.readFileString(htmlFile)
+    }
+    const text = yield* representatives.fetch()
+    yield* fs.writeFileString(htmlFile, text)
+    return text
+  })
+
+export const parseRepresentatives = (
+  fs: FileSystem.FileSystem,
+  rc: RepresentativesClient,
+  htmlFile: string,
+  jsonFile: string
+): ((options?: {
+  forceFetch?: boolean
+}) => Effect.Effect<
+  readonly Representative[],
+  ParseError | UnknownException | PlatformError | HttpClientError
+>) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const exists = yield* fs.exists(jsonFile)
+    if (options?.forceFetch !== true && exists) {
+      yield* Effect.log(`Using local representatives JSON file ${jsonFile}`)
+      const json = yield* Schema.decodeUnknown(Schema.parseJson())(
+        yield* fs.readFileString(jsonFile)
+      )
+      return yield* Schema.decodeUnknown(Schema.Array(RepresentativeSchema))(json)
+    }
+    const text = yield* fetchRepresentatives(fs, rc, htmlFile)(options)
+    const representatives = yield* rc.parse(text)
+    yield* fs.writeFileString(jsonFile, JSON.stringify(representatives, null, 2))
+    return representatives
+  })
+
 /**
  * Constructs the civics questions set, replacing the senator question's answers with the current list of senators.
  * Fetches and parses both the civics questions and senators, then updates the senator question.
@@ -118,18 +162,6 @@ export const constructQuestions = (cq: CivicsQuestionsClient, sc: SenatorsClient
     return questions
   })
 
-export const fetchRepresentatives = (representatives: RepresentativesClient) =>
-  Effect.fn(function* () {
-    yield* Effect.log('Fetching representatives...')
-    const text = yield* representatives.fetch()
-    return text
-  })
-
-export const parseRepresentatives = () =>
-  Effect.fn(function* () {
-    yield* Effect.log('Parsing representatives...')
-  })
-
 /**
  * The QuestionsManager class provides a service for managing civics questions.
  * It provides methods for fetching, parsing, and writing civics questions,
@@ -140,14 +172,21 @@ export class QuestionsManager extends Effect.Service<QuestionsManager>()('Questi
     const cq = yield* CivicsQuestionsClient
     const senators = yield* SenatorsClient
     const representatives = yield* RepresentativesClient
+    const fs = yield* FileSystem.FileSystem
+    const c = yield* config
 
     return {
       fetchCivicsQuestions: fetchCivicsQuestions(cq),
       parseCivicsQuestions: fetchAndParseCivicsQuestions(cq),
       fetchSenators: fetchSenators(senators),
       parseSenators: fetchAndParseSenators(senators),
-      fetchRepresentatives: fetchRepresentatives(representatives),
-      parseRepresentatives: parseRepresentatives(),
+      fetchRepresentatives: fetchRepresentatives(fs, representatives, c.REPRESENTATIVES_HTML_FILE),
+      parseRepresentatives: parseRepresentatives(
+        fs,
+        representatives,
+        c.REPRESENTATIVES_HTML_FILE,
+        c.REPRESENTATIVES_JSON_FILE
+      ),
       constructQuestions: constructQuestions(cq, senators)
     }
   }),

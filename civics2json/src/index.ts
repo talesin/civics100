@@ -1,7 +1,7 @@
 import { Effect } from 'effect'
 import { NodeContext, NodeRuntime } from '@effect/platform-node'
 import { CivicsQuestionsClient } from './CivicsQuestions'
-import { Command } from '@effect/cli'
+import { Command, Options } from '@effect/cli'
 import { FetchHttpClient } from '@effect/platform'
 import { SenatorsClient } from './Senators'
 import { QuestionsManager } from './QuestionsManager'
@@ -27,13 +27,19 @@ const senatorsParseCommand = Command.make('parse', {}, () =>
   QuestionsManager.pipe(Effect.flatMap((manager) => manager.parseSenators()))
 )
 
-const representativesFetchCommand = Command.make('fetch', {}, () =>
-  QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchRepresentatives()))
-)
+const representativesFetchCommand = Command.make(
+  'fetch',
+  { forceFetch: Options.boolean('force').pipe(Options.withDescription('Force fetch')) },
+  ({ forceFetch }) =>
+    QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchRepresentatives({ forceFetch })))
+).pipe(Command.withDescription('Fetch representatives'))
 
-const representativesParseCommand = Command.make('parse', {}, () =>
-  QuestionsManager.pipe(Effect.flatMap((manager) => manager.parseRepresentatives()))
-)
+const representativesParseCommand = Command.make(
+  'parse',
+  { forceFetch: Options.boolean('force').pipe(Options.withDescription('Force parse')) },
+  ({ forceFetch }) =>
+    QuestionsManager.pipe(Effect.flatMap((manager) => manager.parseRepresentatives({ forceFetch })))
+).pipe(Command.withDescription('Parse representatives'))
 
 const representativesCommand = Command.make('representatives').pipe(
   Command.withSubcommands([representativesFetchCommand, representativesParseCommand])

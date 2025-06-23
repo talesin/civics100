@@ -1,128 +1,110 @@
-import { Effect, Layer } from 'effect'
-import { FileSystem, HttpClient } from '@effect/platform'
-import { PlatformError } from '@effect/platform/Error'
-import { HttpClientError } from '@effect/platform/HttpClientError'
-import { Representative, StateName, StatesByName } from './types'
+import { Effect, Layer, Schema } from 'effect'
+import { HttpClient } from '@effect/platform'
+import {
+  Representative,
+  RepresentativeSchema,
+  StateAbbreviation,
+  StateName,
+  StatesByAbbreviation,
+  StatesByName
+} from './types'
 import config from './config'
 import { parseHTML } from 'linkedom'
 import { UnknownException } from 'effect/Cause'
+import { ParseError } from 'effect/ParseResult'
+import { HttpClientError } from '@effect/platform/HttpClientError'
 
 /**
  * Fetches the full US representatives HTML or data file from the House website.
  *
  * This effect:
- * - Checks for a local file
- * - If not present, fetches from the remote URL and saves locally
  * - Returns the text content
  *
  * @param httpClient Effect HttpClient
- * @param fs Effect FileSystem
  * @param url Source URL
- * @param localFile Local file path
  * @returns Effect that resolves to the text content
  */
-export const fetchRepresentatives = (
-  httpClient: HttpClient.HttpClient,
-  fs: FileSystem.FileSystem,
-  url: string,
-  localFile: string
-) =>
+export const fetchRepresentatives = (httpClient: HttpClient.HttpClient, url: string) =>
   Effect.fn(function* () {
-    const exists = yield* fs.exists(localFile)
-    if (exists) {
-      yield* Effect.log(`Using local file ${localFile}`)
-      return yield* fs.readFileString(localFile)
-    }
-    yield* Effect.log(`Fetching representatives data from ${url}`)
+    yield* Effect.log(`Fetching representatives HTML from ${url}`)
     const response = yield* httpClient.get(url)
     const text = yield* response.text
-    yield* Effect.log(`Saving fetched content to ${localFile}`)
-    yield* fs.writeFileString(localFile, text)
+    yield* Effect.log(`Fetched ${text.length} bytes for representatives HTML`)
     return text
   })
 
 /**
- * Stub: Parses the representatives data.
+ * Parses the representatives data.
  * @returns Effect that resolves to an array of Representative objects
  */
 export const parseRepresentatives = (
-  data: string
-): Effect.Effect<readonly Representative[], UnknownException> =>
-  Effect.try(() => {
-    const doc = parseHTML(data).document
-    const representatives: Representative[] = []
-    // Each state has a <table> with a <caption> (state name) and <tbody> of <tr> rows
-    const tables = doc.querySelectorAll('table.table')
-    for (const table of tables) {
-      const caption = table.querySelector('caption')
-      if (!caption) continue
-      // Caption id is like "state-california"; state name is innerText
-      const stateName = caption.textContent?.trim() ?? ''
-
-      if (StatesByName[stateName as StateName] === undefined) continue
-
-      // Try to map state name to abbreviation
-      // We'll use a lookup from the STATES constant in types.ts
-      // For now, fallback to stateName if not found
-      const stateAbbr = StatesByName[stateName as StateName].abbreviation
-      const rows = table.querySelectorAll('tbody > tr')
-      for (const row of rows) {
-        const tds = row.querySelectorAll('td')
-        if (tds.length < 4) continue
-        const district = tds[0]?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
-        // Name and website
-        const nameLink = tds[1]?.querySelector('a')
-        const name = nameLink?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
-        const website = nameLink?.getAttribute('href') ?? ''
-        const party = tds[2]?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
-        const officeRoom = tds[3]?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
-        // phone and committeeAssignment can be blank for now
-        const rep: Representative = {
-          name,
-          state: stateAbbr,
-          district,
-          party,
-          officeRoom,
-          phone: '',
-          committeeAssignment: '',
-          website
-        }
-        representatives.push(rep)
+  html: string
+): Effect.Effect<readonly Representative[], UnknownException | ParseError> => {
+  const getCellText = (td: HTMLTableCellElement | undefined) =>
+    td?.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+  const parseRow = (stateAbbr: StateAbbreviation) =>
+    Effect.fn(function* (row: Element) {
+      const tds = row.querySelectorAll('td')
+      const json = {
+        name: getCellText(tds[1]),
+        website: tds[1]?.querySelector('a')?.getAttribute('href') ?? '',
+        party: getCellText(tds[2]),
+        officeRoom: getCellText(tds[3]),
+        phone: getCellText(tds[4]),
+        committeeAssignment: getCellText(tds[5]),
+        district: getCellText(tds[0]),
+        state: stateAbbr
       }
+
+      return yield* Schema.decodeUnknown(RepresentativeSchema)(json)
+    })
+
+  const parseTable = Effect.fn(function* (table: Element) {
+    // Caption id is like "state-california"; state name is innerText
+    const stateName = table.querySelector('caption')?.textContent?.trim()
+    if (stateName === undefined) return []
+
+    const state =
+      stateName === 'Virgin Islands' // Representatives site states 'Virgin Islands' not 'U.S. Virgin Islands'
+        ? StatesByAbbreviation['VI']
+        : StatesByName[stateName as StateName]
+
+    if (state === undefined) {
+      yield* Effect.logWarning(`Ignoring table with invalid state name: ${stateName}`)
+      return []
     }
+
+    const effects = table
+      .querySelectorAll('tbody > tr')
+      .values()
+      .toArray()
+      .map(parseRow(state.abbreviation))
+    return yield* Effect.all(effects)
+  })
+
+  return Effect.gen(function* () {
+    yield* Effect.log(`Parsing representatives HTML`)
+    const doc = yield* Effect.try(() => parseHTML(html).document)
+    // Each state has a <table> with a <caption> (state name) and <tbody> of <tr> rows
+    const effects = doc.querySelectorAll('table.table').values().toArray().map(parseTable)
+    const representatives = yield* Effect.all(effects).pipe(Effect.map((xs) => xs.flat()))
+    yield* Effect.log(`Parsed ${representatives.length} representatives`)
     return representatives
-  })
+  }).pipe(Effect.tapError((e) => Effect.logError(e)))
+}
 
 /**
- * Stub: Writes the representatives data to a JSON file.
- * @returns Effect that resolves when writing is complete
- */
-export const writeRepresentativesJson = (fs: FileSystem.FileSystem, localFile: string) =>
-  Effect.fn(function* (representatives: readonly Representative[]) {
-    // TODO: Implement actual write logic
-    yield* Effect.log(`Writing representatives JSON to ${localFile}`)
-    yield* fs.writeFileString(localFile, JSON.stringify(representatives, null, 2))
-  })
-
-/**
- * Representatives service class, fetches, parses, and writes representatives.
+ * Represents a service for fetching, parsing, and writing representatives.
  */
 export class RepresentativesClient extends Effect.Service<RepresentativesClient>()(
   'RepresentativesClient',
   {
     effect: Effect.gen(function* () {
       const httpClient = yield* HttpClient.HttpClient
-      const fs = yield* FileSystem.FileSystem
       const c = yield* config
       return {
-        fetch: fetchRepresentatives(
-          httpClient,
-          fs,
-          c.REPRESENTATIVES_URL,
-          c.REPRESENTATIVES_HTML_FILE
-        ),
-        parse: parseRepresentatives,
-        write: writeRepresentativesJson(fs, c.REPRESENTATIVES_JSON_FILE)
+        fetch: fetchRepresentatives(httpClient, c.REPRESENTATIVES_URL),
+        parse: parseRepresentatives
       }
     })
   }
@@ -135,16 +117,14 @@ export class RepresentativesClient extends Effect.Service<RepresentativesClient>
  * @returns Test layer
  */
 export const TestRepresentativesClientLayer = (fn?: {
-  fetch?: () => Effect.Effect<string, PlatformError | HttpClientError>
-  parse?: () => Effect.Effect<readonly Representative[]>
-  write?: () => Effect.Effect<void, PlatformError>
+  fetch?: () => Effect.Effect<string, HttpClientError>
+  parse?: () => Effect.Effect<readonly Representative[], UnknownException | ParseError>
 }) =>
   Layer.succeed(
     RepresentativesClient,
     RepresentativesClient.of({
       _tag: 'RepresentativesClient',
       fetch: fn?.fetch ?? (() => Effect.succeed('')),
-      parse: fn?.parse ?? (() => Effect.succeed([])),
-      write: fn?.write ?? (() => Effect.succeed(undefined))
+      parse: fn?.parse ?? (() => Effect.succeed([]))
     })
   )

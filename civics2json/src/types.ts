@@ -3,10 +3,7 @@ import { DeepReadonly } from 'ts-essentials'
 
 /**
  * Union type of all U.S. states and territories.
- * Each state is represented as an object with an abbreviation and name.
- * Territories are also included with their respective abbreviations.
  */
-
 export type StateAbbreviation =
   | 'AL'
   | 'AK'
@@ -65,6 +62,9 @@ export type StateAbbreviation =
   | 'PR'
   | 'VI'
 
+/**
+ * Union type of all U.S. state and territory names.
+ */
 export type StateName =
   | 'Alabama'
   | 'Alaska'
@@ -125,6 +125,9 @@ export type StateName =
 
 export type State = { abbreviation: StateAbbreviation; name: StateName; capital: string }
 
+/**
+ * Record of all U.S. states and territories by their abbreviation.
+ */
 export const StatesByAbbreviation: Record<StateAbbreviation, State> = {
   AL: { abbreviation: 'AL', name: 'Alabama', capital: 'Montgomery' },
   AK: { abbreviation: 'AK', name: 'Alaska', capital: 'Juneau' },
@@ -188,6 +191,9 @@ export const StatesByAbbreviation: Record<StateAbbreviation, State> = {
   VI: { abbreviation: 'VI', name: 'U.S. Virgin Islands', capital: 'Charlotte Amalie' }
 }
 
+/**
+ * Record of all U.S. states and territories by their name.
+ */
 export const StatesByName = Object.fromEntries(
   Object.entries(StatesByAbbreviation).map(([, state]) => [state.name, state])
 ) as Record<StateName, State>
@@ -213,7 +219,11 @@ export const SenatorSchema = Schema.Struct({
   last_name: Schema.String,
   first_name: Schema.String,
   party: Schema.String,
-  state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)),
+  state: Schema.Literal(
+    ...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)
+  ).annotations({
+    name: 'State'
+  }),
   address: Schema.String,
   phone: Schema.String,
   email: Schema.String,
@@ -221,17 +231,25 @@ export const SenatorSchema = Schema.Struct({
   class: Schema.String,
   bioguide_id: Schema.String,
   member_full: Schema.String
+}).annotations({
+  name: 'Senator'
 })
 export type Senator = typeof SenatorSchema.Type
 
 export const RepresentativeSchema = Schema.Struct({
-  name: Schema.String,
-  state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)),
-  district: Schema.String,
-  party: Schema.String,
-  officeRoom: Schema.String,
-  phone: Schema.String,
+  name: Schema.NonEmptyString,
+  state: Schema.Literal(
+    ...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)
+  ).annotations({
+    name: 'State'
+  }),
+  district: Schema.NonEmptyString,
+  party: Schema.NonEmptyString,
+  officeRoom: Schema.NonEmptyString,
+  phone: Schema.NonEmptyString,
   committeeAssignment: Schema.String,
-  website: Schema.String
+  website: Schema.NonEmptyString
+}).annotations({
+  name: 'Representative'
 })
 export type Representative = typeof RepresentativeSchema.Type
