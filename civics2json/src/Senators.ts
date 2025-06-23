@@ -1,9 +1,12 @@
-import { Effect, Schema } from 'effect'
+import { Effect, Layer, Schema } from 'effect'
 import { HttpClient, FileSystem } from '@effect/platform'
 import config from './config'
 import { XMLParser } from 'fast-xml-parser'
 import { ParseError } from 'effect/ParseResult'
 import { UnknownException } from 'effect/Cause'
+import { Senator, SenatorSchema } from './types'
+import { PlatformError } from '@effect/platform/Error'
+import { HttpClientError } from '@effect/platform/HttpClientError'
 
 /**
  * Fetches the full US senators XML file from the Senate website.
@@ -37,21 +40,6 @@ export const fetchSenators = (
     return text
   })
 
-const SenatorSchema = Schema.Struct({
-  last_name: Schema.String,
-  first_name: Schema.String,
-  party: Schema.String,
-  state: Schema.String,
-  address: Schema.String,
-  phone: Schema.String,
-  email: Schema.String,
-  website: Schema.String,
-  class: Schema.String,
-  bioguide_id: Schema.String,
-  member_full: Schema.String
-})
-type Senator = typeof SenatorSchema.Type
-
 const ContactInformationSchema = Schema.Struct({
   contact_information: Schema.Struct({
     member: Schema.Union(Schema.Array(SenatorSchema), SenatorSchema)
@@ -66,10 +54,26 @@ export const parseSenators = (
   xml: string
 ): Effect.Effect<readonly Senator[], ParseError | UnknownException> =>
   Effect.gen(function* () {
+    yield* Effect.log(`Parsing senators XML`)
     const json = yield* Effect.try(() => new XMLParser().parse(xml) as unknown)
-    const senators = yield* Schema.decodeUnknown(ContactInformationSchema)(json)
+    const parsed = yield* Schema.decodeUnknown(ContactInformationSchema)(json)
     // if there is one xml element XMLParser will return an object instead of an array - we always return an array
-    return new Array(senators.contact_information.member).flat()
+    const senators = new Array(parsed.contact_information.member).flat()
+    yield* Effect.log(`Parsed ${senators.length} senators`)
+    return senators
+  })
+
+/**
+ * Writes the senators array to a JSON file.
+ *
+ * @param fs Effect FileSystem
+ * @param localFile Local file path
+ * @returns Effect that resolves when writing is complete
+ */
+export const writeSenatorsJson = (fs: FileSystem.FileSystem, localFile: string) =>
+  Effect.fn(function* (senators: readonly Senator[]) {
+    yield* Effect.log(`Writing senators JSON to ${localFile}`)
+    yield* fs.writeFileString(localFile, JSON.stringify(senators, null, 2))
   })
 
 /**
@@ -83,7 +87,23 @@ export class SenatorsClient extends Effect.Service<SenatorsClient>()('SenatorsCl
     const c = yield* config
     return {
       fetch: fetchSenators(httpClient, fs, c.SENATORS_URL, c.SENATORS_XML_FILE),
-      parse: parseSenators
+      parse: parseSenators,
+      write: writeSenatorsJson(fs, c.SENATORS_JSON_FILE)
     }
   })
 }) {}
+
+export const TestSenatorsClientLayer = (fn?: {
+  fetch?: () => Effect.Effect<string, PlatformError | HttpClientError>
+  parse?: () => Effect.Effect<readonly Senator[], ParseError | UnknownException>
+  write?: () => Effect.Effect<void, PlatformError>
+}) =>
+  Layer.succeed(
+    SenatorsClient,
+    SenatorsClient.of({
+      _tag: 'SenatorsClient',
+      fetch: fn?.fetch ?? (() => Effect.succeed('')),
+      parse: fn?.parse ?? (() => Effect.succeed([])),
+      write: fn?.write ?? (() => Effect.succeed(undefined))
+    })
+  )

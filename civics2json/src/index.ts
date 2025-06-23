@@ -3,61 +3,39 @@ import { NodeContext, NodeRuntime } from '@effect/platform-node'
 import { CivicsQuestionsClient } from './CivicsQuestions'
 import { Command } from '@effect/cli'
 import { FetchHttpClient } from '@effect/platform'
-import { FileSystem } from '@effect/platform'
 import { SenatorsClient } from './Senators'
-import config from './config'
+import { QuestionsManager } from './QuestionsManager'
 
-const questionsFetchCommand = Command.make(
-  'fetch',
-  {},
-  Effect.fn(function* () {
-    yield* Effect.log('Fetching civics questions from USCIS website...')
-    const cq = yield* CivicsQuestionsClient
-    const text = yield* cq.fetch()
-    yield* Effect.log(`Fetched ${text.length} characters`)
-  })
+const questionsFetchCommand = Command.make('fetch', {}, () =>
+  QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchCivicsQuestions()))
 )
 
-const questionsParseCommand = Command.make(
-  'parse',
-  {},
-  Effect.fn(function* () {
-    yield* Effect.log('Parsing civics questions...')
-    const cq = yield* CivicsQuestionsClient
-    const text = yield* cq.fetch()
-    const questions = yield* cq.parse(text)
-    const fs = yield* FileSystem.FileSystem
-    const c = yield* config
-    yield* fs.writeFileString(c.QUESTIONS_JSON_FILE, JSON.stringify(questions, null, 2))
-    yield* Effect.log(`Parsed ${questions.length} questions to ${c.QUESTIONS_JSON_FILE}`)
-  })
+const questionsParseCommand = Command.make('parse', {}, () =>
+  QuestionsManager.pipe(Effect.flatMap((manager) => manager.parseCivicsQuestions()))
 )
 
-const senatorsFetchCommand = Command.make(
-  'fetch',
-  {},
-  Effect.fn(function* () {
-    yield* Effect.log('Fetching senators XML from Senate website...')
-    const senators = yield* SenatorsClient
-    const text = yield* senators.fetch()
-    yield* Effect.log(`Fetched ${text.length} characters`)
-  })
+const questionsConstructCommand = Command.make('construct', {}, () =>
+  QuestionsManager.pipe(Effect.flatMap((manager) => manager.constructQuestions()))
 )
 
-const representativesCommand = Command.make(
-  'representatives',
-  {},
-  Effect.fn(function* () {
-    yield* Effect.log('Not implemented')
-  })
+const senatorsFetchCommand = Command.make('fetch', {}, () =>
+  QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchSenators()))
+)
+
+const senatorsParseCommand = Command.make('parse', {}, () =>
+  QuestionsManager.pipe(Effect.flatMap((manager) => manager.parseSenators()))
+)
+
+const representativesCommand = Command.make('representatives', {}, () =>
+  QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchRepresentatives()))
 )
 
 const senatorsCommand = Command.make('senators').pipe(
-  Command.withSubcommands([senatorsFetchCommand])
+  Command.withSubcommands([senatorsFetchCommand, senatorsParseCommand])
 )
 
 const questionsCommand = Command.make('questions').pipe(
-  Command.withSubcommands([questionsFetchCommand, questionsParseCommand])
+  Command.withSubcommands([questionsFetchCommand, questionsParseCommand, questionsConstructCommand])
 )
 
 const command = Command.make('civics').pipe(
@@ -73,6 +51,7 @@ cli(process.argv).pipe(
   Effect.scoped,
   Effect.provide(CivicsQuestionsClient.Default),
   Effect.provide(SenatorsClient.Default),
+  Effect.provide(QuestionsManager.Default),
   Effect.provide(FetchHttpClient.layer),
   Effect.provide(NodeContext.layer),
   NodeRuntime.runMain
