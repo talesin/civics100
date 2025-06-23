@@ -42,6 +42,14 @@ export const writeQuestionsJson = (fs: FileSystem.FileSystem, localFile: string)
     yield* fs.writeFileString(localFile, JSON.stringify(questions, null, 2))
   })
 
+/**
+ * CivicsQuestionsClient service class, fetches, parses, and writes civics questions.
+ * @example
+ * const cq = yield* CivicsQuestionsClient
+ * const questions = yield* cq.fetch()
+ * const parsed = yield* cq.parse(questions)
+ * yield* cq.write(parsed)
+ */
 export class CivicsQuestionsClient extends Effect.Service<CivicsQuestionsClient>()(
   'CivicsQuestionsClient',
   {
@@ -59,6 +67,12 @@ export class CivicsQuestionsClient extends Effect.Service<CivicsQuestionsClient>
   }
 ) {}
 
+/**
+ * Test CivicsQuestionsClient layer.
+ *
+ * @param fn Optional functions to override default behavior
+ * @returns Test layer
+ */
 export const TestCivicsQuestionsClientLayer = (fn?: {
   fetch?: () => Effect.Effect<string, PlatformError | HttpClientError>
   parse?: () => Effect.Effect<readonly Question[]>

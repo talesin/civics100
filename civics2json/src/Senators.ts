@@ -77,8 +77,11 @@ export const writeSenatorsJson = (fs: FileSystem.FileSystem, localFile: string) 
   })
 
 /**
- * Senators service class, similar to CivicsQuestionsClient.
- * Usage: yield* SenatorsClient.fetch()
+ * Senators service class, fetches, parses, and writes senators.
+ * @example
+ * const senators = yield* SenatorsClient.fetch()
+ * const parsed = yield* SenatorsClient.parse(senators)
+ * yield* SenatorsClient.write(parsed)
  */
 export class SenatorsClient extends Effect.Service<SenatorsClient>()('SenatorsClient', {
   effect: Effect.gen(function* () {
@@ -93,6 +96,12 @@ export class SenatorsClient extends Effect.Service<SenatorsClient>()('SenatorsCl
   })
 }) {}
 
+/**
+ * Test SenatorsClient layer.
+ *
+ * @param fn Optional functions to override default behavior
+ * @returns Test layer
+ */
 export const TestSenatorsClientLayer = (fn?: {
   fetch?: () => Effect.Effect<string, PlatformError | HttpClientError>
   parse?: () => Effect.Effect<readonly Senator[], ParseError | UnknownException>
