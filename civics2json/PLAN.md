@@ -9,7 +9,7 @@
 - [x] Write tests for fetch and parse logic
 - [x] Document usage and commands in README
 - [ ] Handle variable/location-dependent questions
-  - [ ] Generate US senators by state: https://www.senate.gov/general/contact_information/senators_cfm.xml
+  - [x] Generate US senators by state: https://www.senate.gov/general/contact_information/senators_cfm.xml
   - [ ] Generate US representatives by state: https://www.house.gov/representatives
   - [ ] Retrieve and parse answers for the from questions on this page: https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates
 
@@ -22,6 +22,9 @@ Retrieve and parse the official USCIS civics questions from the USCIS website, a
 ### A. Data Retrieval
 
 - Fetch the official civics questions from the USCIS website using a CLI command.
+- Fetch US senators by state: https://www.senate.gov/general/contact_information/senators_cfm.xml
+- Fetch US representatives by state: https://www.house.gov/representatives
+- Fetch answers for the from questions on this page: https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates
 
 ### B. Data Parsing
 
