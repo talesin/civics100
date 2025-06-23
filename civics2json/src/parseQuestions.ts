@@ -1,14 +1,5 @@
 import { Effect } from 'effect'
-
-/**
- * Represents a single question and answer set from the civics test
- */
-export type Question = {
-  readonly theme: string
-  readonly section: string
-  readonly question: string
-  readonly answers: readonly string[]
-}
+import { Question } from './types'
 
 // Hierarchical parsing types
 interface ParsedTheme {
@@ -178,7 +169,7 @@ const parseAnswers = (
 export const parseQuestionsFile = (
   text: string,
   _options?: { skipValidation?: boolean }
-): Effect.Effect<readonly Question[], string> => {
+): Effect.Effect<readonly Question[]> => {
   return Effect.sync(() => {
     const lines = text
       .split(/\r?\n/)
@@ -193,7 +184,7 @@ export const parseQuestionsFile = (
           theme: theme.theme,
           section: section.section,
           question: question.question,
-          answers: question.answers
+          answers: { _type: 'text', choices: question.answers }
         }))
       )
     )

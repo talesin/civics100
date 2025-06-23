@@ -1,7 +1,10 @@
-import { Effect } from 'effect'
+import { Effect, Layer } from 'effect'
 import { HttpClient, FileSystem } from '@effect/platform'
 import parseQuestionsFile from './parseQuestions'
 import config from './config'
+import { Question } from './types'
+import { PlatformError } from '@effect/platform/Error'
+import { HttpClientError } from '@effect/platform/HttpClientError'
 
 /**
  * Fetches the civics questions text from the USCIS website.
@@ -33,6 +36,20 @@ export const fetchCivicsQuestions = (
     return text
   })
 
+export const writeQuestionsJson = (fs: FileSystem.FileSystem, localFile: string) =>
+  Effect.fn(function* (questions: readonly Question[]) {
+    yield* Effect.log(`Writing ${questions.length} questions JSON to ${localFile}`)
+    yield* fs.writeFileString(localFile, JSON.stringify(questions, null, 2))
+  })
+
+/**
+ * CivicsQuestionsClient service class, fetches, parses, and writes civics questions.
+ * @example
+ * const cq = yield* CivicsQuestionsClient
+ * const questions = yield* cq.fetch()
+ * const parsed = yield* cq.parse(questions)
+ * yield* cq.write(parsed)
+ */
 export class CivicsQuestionsClient extends Effect.Service<CivicsQuestionsClient>()(
   'CivicsQuestionsClient',
   {
@@ -43,8 +60,30 @@ export class CivicsQuestionsClient extends Effect.Service<CivicsQuestionsClient>
 
       return {
         fetch: fetchCivicsQuestions(httpClient, fs, c.CIVICS_QUESTIONS_URL, c.QUESTIONS_TEXT_FILE),
-        parse: parseQuestionsFile
+        parse: parseQuestionsFile,
+        write: writeQuestionsJson(fs, c.QUESTIONS_JSON_FILE)
       }
     })
   }
 ) {}
+
+/**
+ * Test CivicsQuestionsClient layer.
+ *
+ * @param fn Optional functions to override default behavior
+ * @returns Test layer
+ */
+export const TestCivicsQuestionsClientLayer = (fn?: {
+  fetch?: () => Effect.Effect<string, PlatformError | HttpClientError>
+  parse?: () => Effect.Effect<readonly Question[]>
+  write?: () => Effect.Effect<void, PlatformError>
+}) =>
+  Layer.succeed(
+    CivicsQuestionsClient,
+    CivicsQuestionsClient.of({
+      _tag: 'CivicsQuestionsClient',
+      fetch: fn?.fetch ?? (() => Effect.succeed('')),
+      parse: fn?.parse ?? (() => Effect.succeed([])),
+      write: fn?.write ?? (() => Effect.succeed(undefined))
+    })
+  )

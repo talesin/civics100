@@ -15,6 +15,7 @@
     "@effect/platform": "^0.84.3",
     "@effect/platform-node": "^0.83.3",
     "effect": "^3.14.14",
+    "fast-xml-parser": "^5.2.5",
     "ts-essentials": "^10.0.4"
   },
   "devDependencies": {
