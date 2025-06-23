@@ -7,6 +7,7 @@ import { HttpClientError } from '@effect/platform/HttpClientError'
 import { Question, Senator } from './types'
 import { ParseError } from 'effect/ParseResult'
 import { UnknownException } from 'effect/Cause'
+import { RepresentativesClient } from './Representatives'
 
 /**
  * The canonical question string used to identify the senator question in the civics questions set.
@@ -117,9 +118,11 @@ export const constructQuestions = (cq: CivicsQuestionsClient, sc: SenatorsClient
     return questions
   })
 
-export const fetchRepresentatives = () =>
+export const fetchRepresentatives = (representatives: RepresentativesClient) =>
   Effect.fn(function* () {
     yield* Effect.log('Fetching representatives...')
+    const text = yield* representatives.fetch()
+    return text
   })
 
 export const parseRepresentatives = () =>
@@ -136,13 +139,14 @@ export class QuestionsManager extends Effect.Service<QuestionsManager>()('Questi
   effect: Effect.gen(function* () {
     const cq = yield* CivicsQuestionsClient
     const senators = yield* SenatorsClient
+    const representatives = yield* RepresentativesClient
 
     return {
       fetchCivicsQuestions: fetchCivicsQuestions(cq),
       parseCivicsQuestions: fetchAndParseCivicsQuestions(cq),
       fetchSenators: fetchSenators(senators),
       parseSenators: fetchAndParseSenators(senators),
-      fetchRepresentatives: fetchRepresentatives(),
+      fetchRepresentatives: fetchRepresentatives(representatives),
       parseRepresentatives: parseRepresentatives(),
       constructQuestions: constructQuestions(cq, senators)
     }

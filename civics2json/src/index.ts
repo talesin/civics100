@@ -5,6 +5,7 @@ import { Command } from '@effect/cli'
 import { FetchHttpClient } from '@effect/platform'
 import { SenatorsClient } from './Senators'
 import { QuestionsManager } from './QuestionsManager'
+import { RepresentativesClient } from './Representatives'
 
 const questionsFetchCommand = Command.make('fetch', {}, () =>
   QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchCivicsQuestions()))
@@ -26,8 +27,16 @@ const senatorsParseCommand = Command.make('parse', {}, () =>
   QuestionsManager.pipe(Effect.flatMap((manager) => manager.parseSenators()))
 )
 
-const representativesCommand = Command.make('representatives', {}, () =>
+const representativesFetchCommand = Command.make('fetch', {}, () =>
   QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchRepresentatives()))
+)
+
+const representativesParseCommand = Command.make('parse', {}, () =>
+  QuestionsManager.pipe(Effect.flatMap((manager) => manager.parseRepresentatives()))
+)
+
+const representativesCommand = Command.make('representatives').pipe(
+  Command.withSubcommands([representativesFetchCommand, representativesParseCommand])
 )
 
 const senatorsCommand = Command.make('senators').pipe(
@@ -52,6 +61,7 @@ cli(process.argv).pipe(
   Effect.provide(CivicsQuestionsClient.Default),
   Effect.provide(SenatorsClient.Default),
   Effect.provide(QuestionsManager.Default),
+  Effect.provide(RepresentativesClient.Default),
   Effect.provide(FetchHttpClient.layer),
   Effect.provide(NodeContext.layer),
   NodeRuntime.runMain

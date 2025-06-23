@@ -65,9 +65,67 @@ export type StateAbbreviation =
   | 'PR'
   | 'VI'
 
-export type State = { abbreviation: StateAbbreviation; name: string; capital: string }
+export type StateName =
+  | 'Alabama'
+  | 'Alaska'
+  | 'Arizona'
+  | 'Arkansas'
+  | 'California'
+  | 'Colorado'
+  | 'Connecticut'
+  | 'Delaware'
+  | 'Florida'
+  | 'Georgia'
+  | 'Hawaii'
+  | 'Idaho'
+  | 'Illinois'
+  | 'Indiana'
+  | 'Iowa'
+  | 'Kansas'
+  | 'Kentucky'
+  | 'Louisiana'
+  | 'Maine'
+  | 'Maryland'
+  | 'Massachusetts'
+  | 'Michigan'
+  | 'Minnesota'
+  | 'Mississippi'
+  | 'Missouri'
+  | 'Montana'
+  | 'Nebraska'
+  | 'Nevada'
+  | 'New Hampshire'
+  | 'New Jersey'
+  | 'New Mexico'
+  | 'New York'
+  | 'North Carolina'
+  | 'North Dakota'
+  | 'Ohio'
+  | 'Oklahoma'
+  | 'Oregon'
+  | 'Pennsylvania'
+  | 'Rhode Island'
+  | 'South Carolina'
+  | 'South Dakota'
+  | 'Tennessee'
+  | 'Texas'
+  | 'Utah'
+  | 'Vermont'
+  | 'Virginia'
+  | 'Washington'
+  | 'West Virginia'
+  | 'Wisconsin'
+  | 'Wyoming'
+  | 'District of Columbia'
+  | 'American Samoa'
+  | 'Guam'
+  | 'Northern Mariana Islands'
+  | 'Puerto Rico'
+  | 'U.S. Virgin Islands'
 
-export const STATES: Record<StateAbbreviation, State> = {
+export type State = { abbreviation: StateAbbreviation; name: StateName; capital: string }
+
+export const StatesByAbbreviation: Record<StateAbbreviation, State> = {
   AL: { abbreviation: 'AL', name: 'Alabama', capital: 'Montgomery' },
   AK: { abbreviation: 'AK', name: 'Alaska', capital: 'Juneau' },
   AZ: { abbreviation: 'AZ', name: 'Arizona', capital: 'Phoenix' },
@@ -130,6 +188,10 @@ export const STATES: Record<StateAbbreviation, State> = {
   VI: { abbreviation: 'VI', name: 'U.S. Virgin Islands', capital: 'Charlotte Amalie' }
 }
 
+export const StatesByName = Object.fromEntries(
+  Object.entries(StatesByAbbreviation).map(([, state]) => [state.name, state])
+) as Record<StateName, State>
+
 /**
  * A question from the civics questions file.
  *
@@ -151,7 +213,7 @@ export const SenatorSchema = Schema.Struct({
   last_name: Schema.String,
   first_name: Schema.String,
   party: Schema.String,
-  state: Schema.Literal(...Object.values(STATES).map((s) => s.abbreviation)),
+  state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)),
   address: Schema.String,
   phone: Schema.String,
   email: Schema.String,
@@ -161,3 +223,15 @@ export const SenatorSchema = Schema.Struct({
   member_full: Schema.String
 })
 export type Senator = typeof SenatorSchema.Type
+
+export const RepresentativeSchema = Schema.Struct({
+  name: Schema.String,
+  state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)),
+  district: Schema.String,
+  party: Schema.String,
+  officeRoom: Schema.String,
+  phone: Schema.String,
+  committeeAssignment: Schema.String,
+  website: Schema.String
+})
+export type Representative = typeof RepresentativeSchema.Type
