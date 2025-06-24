@@ -1,10 +1,11 @@
 import { Effect } from 'effect'
 import { NodeContext, NodeRuntime } from '@effect/platform-node'
 import { CivicsQuestionsClient } from './CivicsQuestions'
-import { Command } from '@effect/cli'
+import { Command, Options } from '@effect/cli'
 import { FetchHttpClient } from '@effect/platform'
 import { SenatorsClient } from './Senators'
 import { QuestionsManager } from './QuestionsManager'
+import { RepresentativesClient } from './Representatives'
 
 const questionsFetchCommand = Command.make('fetch', {}, () =>
   QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchCivicsQuestions()))
@@ -26,8 +27,22 @@ const senatorsParseCommand = Command.make('parse', {}, () =>
   QuestionsManager.pipe(Effect.flatMap((manager) => manager.parseSenators()))
 )
 
-const representativesCommand = Command.make('representatives', {}, () =>
-  QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchRepresentatives()))
+const representativesFetchCommand = Command.make(
+  'fetch',
+  { forceFetch: Options.boolean('force').pipe(Options.withDescription('Force fetch')) },
+  ({ forceFetch }) =>
+    QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchRepresentatives({ forceFetch })))
+).pipe(Command.withDescription('Fetch representatives'))
+
+const representativesParseCommand = Command.make(
+  'parse',
+  { forceFetch: Options.boolean('force').pipe(Options.withDescription('Force parse')) },
+  ({ forceFetch }) =>
+    QuestionsManager.pipe(Effect.flatMap((manager) => manager.parseRepresentatives({ forceFetch })))
+).pipe(Command.withDescription('Parse representatives'))
+
+const representativesCommand = Command.make('representatives').pipe(
+  Command.withSubcommands([representativesFetchCommand, representativesParseCommand])
 )
 
 const senatorsCommand = Command.make('senators').pipe(
@@ -51,6 +66,7 @@ cli(process.argv).pipe(
   Effect.scoped,
   Effect.provide(CivicsQuestionsClient.Default),
   Effect.provide(SenatorsClient.Default),
+  Effect.provide(RepresentativesClient.Default),
   Effect.provide(QuestionsManager.Default),
   Effect.provide(FetchHttpClient.layer),
   Effect.provide(NodeContext.layer),

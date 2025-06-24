@@ -16,6 +16,7 @@
     "@effect/platform-node": "^0.83.3",
     "effect": "^3.14.14",
     "fast-xml-parser": "^5.2.5",
+    "linkedom": "^0.18.11",
     "ts-essentials": "^10.0.4"
   },
   "devDependencies": {

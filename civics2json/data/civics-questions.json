@@ -668,9 +668,1772 @@
     "section": "System of Government",
     "question": "Name your U.S. Representative.",
     "answers": {
-      "_type": "text",
+      "_type": "representative",
       "choices": [
-        "Answers will vary. [Residents of territories with nonvoting Delegates or Resident Commissioners may provide the name of that Delegate or Commissioner. Also acceptable is any statement that the territory has no (voting) Representatives in Congress.]"
+        {
+          "representative": "Moore, Barry (AL-R)",
+          "state": "AL"
+        },
+        {
+          "representative": "Figures, Shomari (AL-D)",
+          "state": "AL"
+        },
+        {
+          "representative": "Rogers, Mike (AL-R)",
+          "state": "AL"
+        },
+        {
+          "representative": "Aderholt, Robert (AL-R)",
+          "state": "AL"
+        },
+        {
+          "representative": "Strong, Dale (AL-R)",
+          "state": "AL"
+        },
+        {
+          "representative": "Palmer, Gary (AL-R)",
+          "state": "AL"
+        },
+        {
+          "representative": "Sewell, Terri (AL-D)",
+          "state": "AL"
+        },
+        {
+          "representative": "Begich, Nicholas (AK-R)",
+          "state": "AK"
+        },
+        {
+          "representative": "Radewagen, Aumua Amata (AS-R)",
+          "state": "AS"
+        },
+        {
+          "representative": "Schweikert, David (AZ-R)",
+          "state": "AZ"
+        },
+        {
+          "representative": "Crane, Elijah (AZ-R)",
+          "state": "AZ"
+        },
+        {
+          "representative": "Ansari, Yassamin (AZ-D)",
+          "state": "AZ"
+        },
+        {
+          "representative": "Stanton, Greg (AZ-D)",
+          "state": "AZ"
+        },
+        {
+          "representative": "Biggs, Andy (AZ-R)",
+          "state": "AZ"
+        },
+        {
+          "representative": "Ciscomani, Juan (AZ-R)",
+          "state": "AZ"
+        },
+        {
+          "representative": "Grijalva, Raúl M.- Vacancy (AZ-D)",
+          "state": "AZ"
+        },
+        {
+          "representative": "Hamadeh, Abraham (AZ-R)",
+          "state": "AZ"
+        },
+        {
+          "representative": "Gosar, Paul (AZ-R)",
+          "state": "AZ"
+        },
+        {
+          "representative": "Crawford, Eric (AR-R)",
+          "state": "AR"
+        },
+        {
+          "representative": "Hill, J. (AR-R)",
+          "state": "AR"
+        },
+        {
+          "representative": "Womack, Steve (AR-R)",
+          "state": "AR"
+        },
+        {
+          "representative": "Westerman, Bruce (AR-R)",
+          "state": "AR"
+        },
+        {
+          "representative": "LaMalfa, Doug (CA-R)",
+          "state": "CA"
+        },
+        {
+          "representative": "Huffman, Jared (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Kiley, Kevin (CA-R)",
+          "state": "CA"
+        },
+        {
+          "representative": "Thompson, Mike (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "McClintock, Tom (CA-R)",
+          "state": "CA"
+        },
+        {
+          "representative": "Bera, Ami (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Matsui, Doris (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Garamendi, John (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Harder, Josh (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "DeSaulnier, Mark (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Pelosi, Nancy (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Simon, Lateefah (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Gray, Adam (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Swalwell, Eric (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Mullin, Kevin (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Liccardo, Sam (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Khanna, Ro (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Lofgren, Zoe (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Panetta, Jimmy (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Fong, Vince (CA-R)",
+          "state": "CA"
+        },
+        {
+          "representative": "Costa, Jim (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Valadao, David (CA-R)",
+          "state": "CA"
+        },
+        {
+          "representative": "Obernolte, Jay (CA-R)",
+          "state": "CA"
+        },
+        {
+          "representative": "Carbajal, Salud (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Ruiz, Raul (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Brownley, Julia (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Whitesides, George (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Chu, Judy (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Rivas, Luz (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Friedman, Laura (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Cisneros, Gilbert (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Sherman, Brad (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Aguilar, Pete (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Gomez, Jimmy (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Torres, Norma (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Lieu, Ted (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Kamlager-Dove, Sydney (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Sanchez, Linda (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Takano, Mark (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Kim, Young (CA-R)",
+          "state": "CA"
+        },
+        {
+          "representative": "Calvert, Ken (CA-R)",
+          "state": "CA"
+        },
+        {
+          "representative": "Garcia, Robert (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Waters, Maxine (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Barragan, Nanette (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Tran, Derek (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Correa, J. (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Min, Dave (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Issa, Darrell (CA-R)",
+          "state": "CA"
+        },
+        {
+          "representative": "Levin, Mike (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Peters, Scott (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Jacobs, Sara (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "Vargas, Juan (CA-D)",
+          "state": "CA"
+        },
+        {
+          "representative": "DeGette, Diana (CO-D)",
+          "state": "CO"
+        },
+        {
+          "representative": "Neguse, Joe (CO-D)",
+          "state": "CO"
+        },
+        {
+          "representative": "Hurd, Jeff (CO-R)",
+          "state": "CO"
+        },
+        {
+          "representative": "Boebert, Lauren (CO-R)",
+          "state": "CO"
+        },
+        {
+          "representative": "Crank, Jeff (CO-R)",
+          "state": "CO"
+        },
+        {
+          "representative": "Crow, Jason (CO-D)",
+          "state": "CO"
+        },
+        {
+          "representative": "Pettersen, Brittany (CO-D)",
+          "state": "CO"
+        },
+        {
+          "representative": "Evans, Gabe (CO-R)",
+          "state": "CO"
+        },
+        {
+          "representative": "Larson, John (CT-D)",
+          "state": "CT"
+        },
+        {
+          "representative": "Courtney, Joe (CT-D)",
+          "state": "CT"
+        },
+        {
+          "representative": "DeLauro, Rosa (CT-D)",
+          "state": "CT"
+        },
+        {
+          "representative": "Himes, James (CT-D)",
+          "state": "CT"
+        },
+        {
+          "representative": "Hayes, Jahana (CT-D)",
+          "state": "CT"
+        },
+        {
+          "representative": "McBride, Sarah (DE-D)",
+          "state": "DE"
+        },
+        {
+          "representative": "Norton, Eleanor (DC-D)",
+          "state": "DC"
+        },
+        {
+          "representative": "Patronis, Jimmy (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Dunn, Neal (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Cammack, Kat (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Bean, Aaron (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Rutherford, John (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Fine, Randy (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Mills, Cory (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Haridopolos, Mike (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Soto, Darren (FL-D)",
+          "state": "FL"
+        },
+        {
+          "representative": "Frost, Maxwell (FL-D)",
+          "state": "FL"
+        },
+        {
+          "representative": "Webster, Daniel (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Bilirakis, Gus (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Luna, Anna Paulina (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Castor, Kathy (FL-D)",
+          "state": "FL"
+        },
+        {
+          "representative": "Lee, Laurel (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Buchanan, Vern (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Steube, W. (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Franklin, Scott (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Donalds, Byron (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Cherfilus-McCormick, Sheila (FL-D)",
+          "state": "FL"
+        },
+        {
+          "representative": "Mast, Brian (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Frankel, Lois (FL-D)",
+          "state": "FL"
+        },
+        {
+          "representative": "Moskowitz, Jared (FL-D)",
+          "state": "FL"
+        },
+        {
+          "representative": "Wilson, Frederica (FL-D)",
+          "state": "FL"
+        },
+        {
+          "representative": "Wasserman Schultz, Debbie (FL-D)",
+          "state": "FL"
+        },
+        {
+          "representative": "Diaz-Balart, Mario (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Salazar, Maria (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Gimenez, Carlos (FL-R)",
+          "state": "FL"
+        },
+        {
+          "representative": "Carter, Earl (GA-R)",
+          "state": "GA"
+        },
+        {
+          "representative": "Bishop, Sanford (GA-D)",
+          "state": "GA"
+        },
+        {
+          "representative": "Jack, Brian (GA-R)",
+          "state": "GA"
+        },
+        {
+          "representative": "Johnson, Henry (GA-D)",
+          "state": "GA"
+        },
+        {
+          "representative": "Williams, Nikema (GA-D)",
+          "state": "GA"
+        },
+        {
+          "representative": "McBath, Lucy (GA-D)",
+          "state": "GA"
+        },
+        {
+          "representative": "McCormick, Richard (GA-R)",
+          "state": "GA"
+        },
+        {
+          "representative": "Scott, Austin (GA-R)",
+          "state": "GA"
+        },
+        {
+          "representative": "Clyde, Andrew (GA-R)",
+          "state": "GA"
+        },
+        {
+          "representative": "Collins, Mike (GA-R)",
+          "state": "GA"
+        },
+        {
+          "representative": "Loudermilk, Barry (GA-R)",
+          "state": "GA"
+        },
+        {
+          "representative": "Allen, Rick (GA-R)",
+          "state": "GA"
+        },
+        {
+          "representative": "Scott, David (GA-D)",
+          "state": "GA"
+        },
+        {
+          "representative": "Greene, Marjorie (GA-R)",
+          "state": "GA"
+        },
+        {
+          "representative": "Moylan, James (GU-R)",
+          "state": "GU"
+        },
+        {
+          "representative": "Case, Ed (HI-D)",
+          "state": "HI"
+        },
+        {
+          "representative": "Tokuda, Jill (HI-D)",
+          "state": "HI"
+        },
+        {
+          "representative": "Fulcher, Russ (ID-R)",
+          "state": "ID"
+        },
+        {
+          "representative": "Simpson, Michael (ID-R)",
+          "state": "ID"
+        },
+        {
+          "representative": "Jackson, Jonathan (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Kelly, Robin (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Ramirez, Delia (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Garcia, Jesus (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Quigley, Mike (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Casten, Sean (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Davis, Danny (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Krishnamoorthi, Raja (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Schakowsky, Janice (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Schneider, Bradley (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Foster, Bill (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Bost, Mike (IL-R)",
+          "state": "IL"
+        },
+        {
+          "representative": "Budzinski, Nikki (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Underwood, Lauren (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Miller, Mary (IL-R)",
+          "state": "IL"
+        },
+        {
+          "representative": "LaHood, Darin (IL-R)",
+          "state": "IL"
+        },
+        {
+          "representative": "Sorensen, Eric (IL-D)",
+          "state": "IL"
+        },
+        {
+          "representative": "Mrvan, Frank (IN-D)",
+          "state": "IN"
+        },
+        {
+          "representative": "Yakym, Rudy (IN-R)",
+          "state": "IN"
+        },
+        {
+          "representative": "Stutzman, Marlin (IN-R)",
+          "state": "IN"
+        },
+        {
+          "representative": "Baird, James (IN-R)",
+          "state": "IN"
+        },
+        {
+          "representative": "Spartz, Victoria (IN-R)",
+          "state": "IN"
+        },
+        {
+          "representative": "Shreve, Jefferson (IN-R)",
+          "state": "IN"
+        },
+        {
+          "representative": "Carson, Andre (IN-D)",
+          "state": "IN"
+        },
+        {
+          "representative": "Messmer, Mark (IN-R)",
+          "state": "IN"
+        },
+        {
+          "representative": "Houchin, Erin (IN-R)",
+          "state": "IN"
+        },
+        {
+          "representative": "Miller-Meeks, Mariannette (IA-R)",
+          "state": "IA"
+        },
+        {
+          "representative": "Hinson, Ashley (IA-R)",
+          "state": "IA"
+        },
+        {
+          "representative": "Nunn, Zachary (IA-R)",
+          "state": "IA"
+        },
+        {
+          "representative": "Feenstra, Randy (IA-R)",
+          "state": "IA"
+        },
+        {
+          "representative": "Mann, Tracey (KS-R)",
+          "state": "KS"
+        },
+        {
+          "representative": "Schmidt, Derek (KS-R)",
+          "state": "KS"
+        },
+        {
+          "representative": "Davids, Sharice (KS-D)",
+          "state": "KS"
+        },
+        {
+          "representative": "Estes, Ron (KS-R)",
+          "state": "KS"
+        },
+        {
+          "representative": "Comer, James (KY-R)",
+          "state": "KY"
+        },
+        {
+          "representative": "Guthrie, Brett (KY-R)",
+          "state": "KY"
+        },
+        {
+          "representative": "McGarvey, Morgan (KY-D)",
+          "state": "KY"
+        },
+        {
+          "representative": "Massie, Thomas (KY-R)",
+          "state": "KY"
+        },
+        {
+          "representative": "Rogers, Harold (KY-R)",
+          "state": "KY"
+        },
+        {
+          "representative": "Barr, Andy (KY-R)",
+          "state": "KY"
+        },
+        {
+          "representative": "Scalise, Steve (LA-R)",
+          "state": "LA"
+        },
+        {
+          "representative": "Carter, Troy (LA-D)",
+          "state": "LA"
+        },
+        {
+          "representative": "Higgins, Clay (LA-R)",
+          "state": "LA"
+        },
+        {
+          "representative": "Johnson, Mike (LA-R)",
+          "state": "LA"
+        },
+        {
+          "representative": "Letlow, Julia (LA-R)",
+          "state": "LA"
+        },
+        {
+          "representative": "Fields, Cleo (LA-D)",
+          "state": "LA"
+        },
+        {
+          "representative": "Pingree, Chellie (ME-D)",
+          "state": "ME"
+        },
+        {
+          "representative": "Golden, Jared (ME-D)",
+          "state": "ME"
+        },
+        {
+          "representative": "Harris, Andy (MD-R)",
+          "state": "MD"
+        },
+        {
+          "representative": "Olszewski, Johnny (MD-D)",
+          "state": "MD"
+        },
+        {
+          "representative": "Elfreth, Sarah (MD-D)",
+          "state": "MD"
+        },
+        {
+          "representative": "Ivey, Glenn (MD-D)",
+          "state": "MD"
+        },
+        {
+          "representative": "Hoyer, Steny (MD-D)",
+          "state": "MD"
+        },
+        {
+          "representative": "McClain Delaney, April (MD-D)",
+          "state": "MD"
+        },
+        {
+          "representative": "Mfume, Kweisi (MD-D)",
+          "state": "MD"
+        },
+        {
+          "representative": "Raskin, Jamie (MD-D)",
+          "state": "MD"
+        },
+        {
+          "representative": "Neal, Richard (MA-D)",
+          "state": "MA"
+        },
+        {
+          "representative": "McGovern, James (MA-D)",
+          "state": "MA"
+        },
+        {
+          "representative": "Trahan, Lori (MA-D)",
+          "state": "MA"
+        },
+        {
+          "representative": "Auchincloss, Jake (MA-D)",
+          "state": "MA"
+        },
+        {
+          "representative": "Clark, Katherine (MA-D)",
+          "state": "MA"
+        },
+        {
+          "representative": "Moulton, Seth (MA-D)",
+          "state": "MA"
+        },
+        {
+          "representative": "Pressley, Ayanna (MA-D)",
+          "state": "MA"
+        },
+        {
+          "representative": "Lynch, Stephen (MA-D)",
+          "state": "MA"
+        },
+        {
+          "representative": "Keating, William (MA-D)",
+          "state": "MA"
+        },
+        {
+          "representative": "Bergman, Jack (MI-R)",
+          "state": "MI"
+        },
+        {
+          "representative": "Moolenaar, John (MI-R)",
+          "state": "MI"
+        },
+        {
+          "representative": "Scholten, Hillary (MI-D)",
+          "state": "MI"
+        },
+        {
+          "representative": "Huizenga, Bill (MI-R)",
+          "state": "MI"
+        },
+        {
+          "representative": "Walberg, Tim (MI-R)",
+          "state": "MI"
+        },
+        {
+          "representative": "Dingell, Debbie (MI-D)",
+          "state": "MI"
+        },
+        {
+          "representative": "Barrett, Tom (MI-R)",
+          "state": "MI"
+        },
+        {
+          "representative": "McDonald Rivet, Kristen (MI-D)",
+          "state": "MI"
+        },
+        {
+          "representative": "McClain, Lisa (MI-R)",
+          "state": "MI"
+        },
+        {
+          "representative": "James, John (MI-R)",
+          "state": "MI"
+        },
+        {
+          "representative": "Stevens, Haley (MI-D)",
+          "state": "MI"
+        },
+        {
+          "representative": "Tlaib, Rashida (MI-D)",
+          "state": "MI"
+        },
+        {
+          "representative": "Thanedar, Shri (MI-D)",
+          "state": "MI"
+        },
+        {
+          "representative": "Finstad, Brad (MN-R)",
+          "state": "MN"
+        },
+        {
+          "representative": "Craig, Angie (MN-D)",
+          "state": "MN"
+        },
+        {
+          "representative": "Morrison, Kelly (MN-D)",
+          "state": "MN"
+        },
+        {
+          "representative": "McCollum, Betty (MN-D)",
+          "state": "MN"
+        },
+        {
+          "representative": "Omar, Ilhan (MN-D)",
+          "state": "MN"
+        },
+        {
+          "representative": "Emmer, Tom (MN-R)",
+          "state": "MN"
+        },
+        {
+          "representative": "Fischbach, Michelle (MN-R)",
+          "state": "MN"
+        },
+        {
+          "representative": "Stauber, Pete (MN-R)",
+          "state": "MN"
+        },
+        {
+          "representative": "Kelly, Trent (MS-R)",
+          "state": "MS"
+        },
+        {
+          "representative": "Thompson, Bennie (MS-D)",
+          "state": "MS"
+        },
+        {
+          "representative": "Guest, Michael (MS-R)",
+          "state": "MS"
+        },
+        {
+          "representative": "Ezell, Mike (MS-R)",
+          "state": "MS"
+        },
+        {
+          "representative": "Bell, Wesley (MO-D)",
+          "state": "MO"
+        },
+        {
+          "representative": "Wagner, Ann (MO-R)",
+          "state": "MO"
+        },
+        {
+          "representative": "Onder, Robert (MO-R)",
+          "state": "MO"
+        },
+        {
+          "representative": "Alford, Mark (MO-R)",
+          "state": "MO"
+        },
+        {
+          "representative": "Cleaver, Emanuel (MO-D)",
+          "state": "MO"
+        },
+        {
+          "representative": "Graves, Sam (MO-R)",
+          "state": "MO"
+        },
+        {
+          "representative": "Burlison, Eric (MO-R)",
+          "state": "MO"
+        },
+        {
+          "representative": "Smith, Jason (MO-R)",
+          "state": "MO"
+        },
+        {
+          "representative": "Zinke, Ryan (MT-R)",
+          "state": "MT"
+        },
+        {
+          "representative": "Downing, Troy (MT-R)",
+          "state": "MT"
+        },
+        {
+          "representative": "Flood, Mike (NE-R)",
+          "state": "NE"
+        },
+        {
+          "representative": "Bacon, Don (NE-R)",
+          "state": "NE"
+        },
+        {
+          "representative": "Smith, Adrian (NE-R)",
+          "state": "NE"
+        },
+        {
+          "representative": "Titus, Dina (NV-D)",
+          "state": "NV"
+        },
+        {
+          "representative": "Amodei, Mark (NV-R)",
+          "state": "NV"
+        },
+        {
+          "representative": "Lee, Susie (NV-D)",
+          "state": "NV"
+        },
+        {
+          "representative": "Horsford, Steven (NV-D)",
+          "state": "NV"
+        },
+        {
+          "representative": "Pappas, Chris (NH-D)",
+          "state": "NH"
+        },
+        {
+          "representative": "Goodlander, Maggie (NH-D)",
+          "state": "NH"
+        },
+        {
+          "representative": "Norcross, Donald (NJ-D)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Van Drew, Jefferson (NJ-R)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Conaway, Herbert (NJ-D)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Smith, Christopher (NJ-R)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Gottheimer, Josh (NJ-D)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Pallone, Frank (NJ-D)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Kean, Thomas (NJ-R)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Menendez, Robert (NJ-D)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Pou, Nellie (NJ-D)",
+          "state": "NJ"
+        },
+        {
+          "representative": "McIver, LaMonica (NJ-D)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Sherrill, Mikie (NJ-D)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Watson Coleman, Bonnie (NJ-D)",
+          "state": "NJ"
+        },
+        {
+          "representative": "Stansbury, Melanie (NM-D)",
+          "state": "NM"
+        },
+        {
+          "representative": "Vasquez, Gabe (NM-D)",
+          "state": "NM"
+        },
+        {
+          "representative": "Leger Fernandez, Teresa (NM-D)",
+          "state": "NM"
+        },
+        {
+          "representative": "LaLota, Nick (NY-R)",
+          "state": "NY"
+        },
+        {
+          "representative": "Garbarino, Andrew (NY-R)",
+          "state": "NY"
+        },
+        {
+          "representative": "Suozzi, Thomas R. (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Gillen, Laura (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Meeks, Gregory (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Meng, Grace (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Velazquez, Nydia (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Jeffries, Hakeem (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Clarke, Yvette (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Goldman, Daniel (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Malliotakis, Nicole (NY-R)",
+          "state": "NY"
+        },
+        {
+          "representative": "Nadler, Jerrold (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Espaillat, Adriano (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Ocasio-Cortez, Alexandria (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Torres, Ritchie (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Latimer, George (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Lawler, Michael (NY-R)",
+          "state": "NY"
+        },
+        {
+          "representative": "Ryan, Patrick (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Riley, Josh (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Tonko, Paul (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Stefanik, Elise (NY-R)",
+          "state": "NY"
+        },
+        {
+          "representative": "Mannion, John (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Langworthy, Nicholas (NY-R)",
+          "state": "NY"
+        },
+        {
+          "representative": "Tenney, Claudia (NY-R)",
+          "state": "NY"
+        },
+        {
+          "representative": "Morelle, Joseph (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Kennedy, Timothy (NY-D)",
+          "state": "NY"
+        },
+        {
+          "representative": "Davis, Donald (NC-D)",
+          "state": "NC"
+        },
+        {
+          "representative": "Ross, Deborah (NC-D)",
+          "state": "NC"
+        },
+        {
+          "representative": "Murphy, Gregory (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "Foushee, Valerie (NC-D)",
+          "state": "NC"
+        },
+        {
+          "representative": "Foxx, Virginia (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "McDowell, Addison (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "Rouzer, David (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "Harris, Mark (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "Hudson, Richard (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "Harrigan, Pat (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "Edwards, Chuck (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "Adams, Alma (NC-D)",
+          "state": "NC"
+        },
+        {
+          "representative": "Knott, Brad (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "Moore, Tim (NC-R)",
+          "state": "NC"
+        },
+        {
+          "representative": "Fedorchak, Julie (ND-R)",
+          "state": "ND"
+        },
+        {
+          "representative": "King-Hinds, Kimberlyn (MP-R)",
+          "state": "MP"
+        },
+        {
+          "representative": "Landsman, Greg (OH-D)",
+          "state": "OH"
+        },
+        {
+          "representative": "Taylor, David (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Beatty, Joyce (OH-D)",
+          "state": "OH"
+        },
+        {
+          "representative": "Jordan, Jim (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Latta, Robert (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Rulli, Michael A. (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Miller, Max (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Davidson, Warren (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Kaptur, Marcy (OH-D)",
+          "state": "OH"
+        },
+        {
+          "representative": "Turner, Michael (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Brown, Shontel (OH-D)",
+          "state": "OH"
+        },
+        {
+          "representative": "Balderson, Troy (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Sykes, Emilia (OH-D)",
+          "state": "OH"
+        },
+        {
+          "representative": "Joyce, David (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Carey, Mike (OH-R)",
+          "state": "OH"
+        },
+        {
+          "representative": "Hern, Kevin (OK-R)",
+          "state": "OK"
+        },
+        {
+          "representative": "Brecheen, Josh (OK-R)",
+          "state": "OK"
+        },
+        {
+          "representative": "Lucas, Frank (OK-R)",
+          "state": "OK"
+        },
+        {
+          "representative": "Cole, Tom (OK-R)",
+          "state": "OK"
+        },
+        {
+          "representative": "Bice, Stephanie (OK-R)",
+          "state": "OK"
+        },
+        {
+          "representative": "Bonamici, Suzanne (OR-D)",
+          "state": "OR"
+        },
+        {
+          "representative": "Bentz, Cliff (OR-R)",
+          "state": "OR"
+        },
+        {
+          "representative": "Dexter, Maxine (OR-D)",
+          "state": "OR"
+        },
+        {
+          "representative": "Hoyle, Val (OR-D)",
+          "state": "OR"
+        },
+        {
+          "representative": "Bynum, Janelle (OR-D)",
+          "state": "OR"
+        },
+        {
+          "representative": "Salinas, Andrea (OR-D)",
+          "state": "OR"
+        },
+        {
+          "representative": "Fitzpatrick, Brian (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Boyle, Brendan (PA-D)",
+          "state": "PA"
+        },
+        {
+          "representative": "Evans, Dwight (PA-D)",
+          "state": "PA"
+        },
+        {
+          "representative": "Dean, Madeleine (PA-D)",
+          "state": "PA"
+        },
+        {
+          "representative": "Scanlon, Mary Gay (PA-D)",
+          "state": "PA"
+        },
+        {
+          "representative": "Houlahan, Chrissy (PA-D)",
+          "state": "PA"
+        },
+        {
+          "representative": "Mackenzie, Ryan (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Bresnahan, Robert (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Meuser, Daniel (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Perry, Scott (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Smucker, Lloyd (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Lee, Summer (PA-D)",
+          "state": "PA"
+        },
+        {
+          "representative": "Joyce, John (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Reschenthaler, Guy (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Thompson, Glenn (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Kelly, Mike (PA-R)",
+          "state": "PA"
+        },
+        {
+          "representative": "Deluzio, Christopher (PA-D)",
+          "state": "PA"
+        },
+        {
+          "representative": "Hernandez, Pablo (PR-D)",
+          "state": "PR"
+        },
+        {
+          "representative": "Amo, Gabe (RI-D)",
+          "state": "RI"
+        },
+        {
+          "representative": "Magaziner, Seth (RI-D)",
+          "state": "RI"
+        },
+        {
+          "representative": "Mace, Nancy (SC-R)",
+          "state": "SC"
+        },
+        {
+          "representative": "Wilson, Joe (SC-R)",
+          "state": "SC"
+        },
+        {
+          "representative": "Biggs, Sheri (SC-R)",
+          "state": "SC"
+        },
+        {
+          "representative": "Timmons, William (SC-R)",
+          "state": "SC"
+        },
+        {
+          "representative": "Norman, Ralph (SC-R)",
+          "state": "SC"
+        },
+        {
+          "representative": "Clyburn, James (SC-D)",
+          "state": "SC"
+        },
+        {
+          "representative": "Fry, Russell (SC-R)",
+          "state": "SC"
+        },
+        {
+          "representative": "Johnson, Dusty (SD-R)",
+          "state": "SD"
+        },
+        {
+          "representative": "Harshbarger, Diana (TN-R)",
+          "state": "TN"
+        },
+        {
+          "representative": "Burchett, Tim (TN-R)",
+          "state": "TN"
+        },
+        {
+          "representative": "Fleischmann, Charles (TN-R)",
+          "state": "TN"
+        },
+        {
+          "representative": "DesJarlais, Scott (TN-R)",
+          "state": "TN"
+        },
+        {
+          "representative": "Ogles, Andrew (TN-R)",
+          "state": "TN"
+        },
+        {
+          "representative": "Rose, John (TN-R)",
+          "state": "TN"
+        },
+        {
+          "representative": "Green, Mark (TN-R)",
+          "state": "TN"
+        },
+        {
+          "representative": "Kustoff, David (TN-R)",
+          "state": "TN"
+        },
+        {
+          "representative": "Cohen, Steve (TN-D)",
+          "state": "TN"
+        },
+        {
+          "representative": "Moran, Nathaniel (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Crenshaw, Dan (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Self, Keith (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Fallon, Pat (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Gooden, Lance (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Ellzey, Jake (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Fletcher, Lizzie (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Luttrell, Morgan (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Green, Al (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "McCaul, Michael (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Pfluger, August (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Goldman, Craig (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Jackson, Ronny (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Weber, Randy (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "De La Cruz, Monica (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Escobar, Veronica (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Sessions, Pete (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Turner, Sylvester- Vacancy (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Arrington, Jodey (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Castro, Joaquin (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Roy, Chip (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Nehls, Troy (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Gonzales, Tony (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Van Duyne, Beth (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Williams, Roger (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Gill, Brandon (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Cloud, Michael (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Cuellar, Henry (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Garcia, Sylvia (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Crockett, Jasmine (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Carter, John (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Johnson, Julie (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Veasey, Marc (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Gonzalez, Vicente (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Casar, Greg (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Babin, Brian (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Doggett, Lloyd (TX-D)",
+          "state": "TX"
+        },
+        {
+          "representative": "Hunt, Wesley (TX-R)",
+          "state": "TX"
+        },
+        {
+          "representative": "Moore, Blake (UT-R)",
+          "state": "UT"
+        },
+        {
+          "representative": "Maloy, Celeste (UT-R)",
+          "state": "UT"
+        },
+        {
+          "representative": "Kennedy, Mike (UT-R)",
+          "state": "UT"
+        },
+        {
+          "representative": "Owens, Burgess (UT-R)",
+          "state": "UT"
+        },
+        {
+          "representative": "Balint, Becca (VT-D)",
+          "state": "VT"
+        },
+        {
+          "representative": "Wittman, Robert (VA-R)",
+          "state": "VA"
+        },
+        {
+          "representative": "Kiggans, Jennifer (VA-R)",
+          "state": "VA"
+        },
+        {
+          "representative": "Scott, Robert (VA-D)",
+          "state": "VA"
+        },
+        {
+          "representative": "McClellan, Jennifer (VA-D)",
+          "state": "VA"
+        },
+        {
+          "representative": "McGuire, John (VA-R)",
+          "state": "VA"
+        },
+        {
+          "representative": "Cline, Ben (VA-R)",
+          "state": "VA"
+        },
+        {
+          "representative": "Vindman, Eugene (VA-D)",
+          "state": "VA"
+        },
+        {
+          "representative": "Beyer, Donald (VA-D)",
+          "state": "VA"
+        },
+        {
+          "representative": "Griffith, H. (VA-R)",
+          "state": "VA"
+        },
+        {
+          "representative": "Subramanyam, Suhas (VA-D)",
+          "state": "VA"
+        },
+        {
+          "representative": "Connolly, Gerald E.- Vacancy (VA-D)",
+          "state": "VA"
+        },
+        {
+          "representative": "Plaskett, Stacey (VI-D)",
+          "state": "VI"
+        },
+        {
+          "representative": "DelBene, Suzan (WA-D)",
+          "state": "WA"
+        },
+        {
+          "representative": "Larsen, Rick (WA-D)",
+          "state": "WA"
+        },
+        {
+          "representative": "Perez, Marie (WA-D)",
+          "state": "WA"
+        },
+        {
+          "representative": "Newhouse, Dan (WA-R)",
+          "state": "WA"
+        },
+        {
+          "representative": "Baumgartner, Michael (WA-R)",
+          "state": "WA"
+        },
+        {
+          "representative": "Randall, Emily (WA-D)",
+          "state": "WA"
+        },
+        {
+          "representative": "Jayapal, Pramila (WA-D)",
+          "state": "WA"
+        },
+        {
+          "representative": "Schrier, Kim (WA-D)",
+          "state": "WA"
+        },
+        {
+          "representative": "Smith, Adam (WA-D)",
+          "state": "WA"
+        },
+        {
+          "representative": "Strickland, Marilyn (WA-D)",
+          "state": "WA"
+        },
+        {
+          "representative": "Miller, Carol (WV-R)",
+          "state": "WV"
+        },
+        {
+          "representative": "Moore, Riley (WV-R)",
+          "state": "WV"
+        },
+        {
+          "representative": "Steil, Bryan (WI-R)",
+          "state": "WI"
+        },
+        {
+          "representative": "Pocan, Mark (WI-D)",
+          "state": "WI"
+        },
+        {
+          "representative": "Van Orden, Derrick (WI-R)",
+          "state": "WI"
+        },
+        {
+          "representative": "Moore, Gwen (WI-D)",
+          "state": "WI"
+        },
+        {
+          "representative": "Fitzgerald, Scott (WI-R)",
+          "state": "WI"
+        },
+        {
+          "representative": "Grothman, Glenn (WI-R)",
+          "state": "WI"
+        },
+        {
+          "representative": "Tiffany, Thomas (WI-R)",
+          "state": "WI"
+        },
+        {
+          "representative": "Wied, Tony (WI-R)",
+          "state": "WI"
+        },
+        {
+          "representative": "Hageman, Harriet (WY-R)",
+          "state": "WY"
+        }
       ]
     }
   },

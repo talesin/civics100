@@ -3,10 +3,7 @@ import { DeepReadonly } from 'ts-essentials'
 
 /**
  * Union type of all U.S. states and territories.
- * Each state is represented as an object with an abbreviation and name.
- * Territories are also included with their respective abbreviations.
  */
-
 export type StateAbbreviation =
   | 'AL'
   | 'AK'
@@ -65,9 +62,73 @@ export type StateAbbreviation =
   | 'PR'
   | 'VI'
 
-export type State = { abbreviation: StateAbbreviation; name: string; capital: string }
+/**
+ * Union type of all U.S. state and territory names.
+ */
+export type StateName =
+  | 'Alabama'
+  | 'Alaska'
+  | 'Arizona'
+  | 'Arkansas'
+  | 'California'
+  | 'Colorado'
+  | 'Connecticut'
+  | 'Delaware'
+  | 'Florida'
+  | 'Georgia'
+  | 'Hawaii'
+  | 'Idaho'
+  | 'Illinois'
+  | 'Indiana'
+  | 'Iowa'
+  | 'Kansas'
+  | 'Kentucky'
+  | 'Louisiana'
+  | 'Maine'
+  | 'Maryland'
+  | 'Massachusetts'
+  | 'Michigan'
+  | 'Minnesota'
+  | 'Mississippi'
+  | 'Missouri'
+  | 'Montana'
+  | 'Nebraska'
+  | 'Nevada'
+  | 'New Hampshire'
+  | 'New Jersey'
+  | 'New Mexico'
+  | 'New York'
+  | 'North Carolina'
+  | 'North Dakota'
+  | 'Ohio'
+  | 'Oklahoma'
+  | 'Oregon'
+  | 'Pennsylvania'
+  | 'Rhode Island'
+  | 'South Carolina'
+  | 'South Dakota'
+  | 'Tennessee'
+  | 'Texas'
+  | 'Utah'
+  | 'Vermont'
+  | 'Virginia'
+  | 'Washington'
+  | 'West Virginia'
+  | 'Wisconsin'
+  | 'Wyoming'
+  | 'District of Columbia'
+  | 'American Samoa'
+  | 'Guam'
+  | 'Northern Mariana Islands'
+  | 'Puerto Rico'
+  | 'U.S. Virgin Islands'
 
-export const STATES: Record<StateAbbreviation, State> = {
+export type State = { abbreviation: StateAbbreviation; name: StateName; capital: string }
+
+/**
+ * Record of all U.S. states and territories by their abbreviation.
+ */
+export const StatesByAbbreviation: Record<StateAbbreviation, State> = {
   AL: { abbreviation: 'AL', name: 'Alabama', capital: 'Montgomery' },
   AK: { abbreviation: 'AK', name: 'Alaska', capital: 'Juneau' },
   AZ: { abbreviation: 'AZ', name: 'Arizona', capital: 'Phoenix' },
@@ -131,6 +192,13 @@ export const STATES: Record<StateAbbreviation, State> = {
 }
 
 /**
+ * Record of all U.S. states and territories by their name.
+ */
+export const StatesByName = Object.fromEntries(
+  Object.entries(StatesByAbbreviation).map(([, state]) => [state.name, state])
+) as Record<StateName, State>
+
+/**
  * A question from the civics questions file.
  *
  * @property theme - The theme of the question (e.g. "The United States Constitution")
@@ -145,13 +213,18 @@ export type Question = DeepReadonly<{
   answers:
     | { _type: 'text'; choices: string[] }
     | { _type: 'senator'; choices: { senator: string; state: StateAbbreviation }[] }
+    | { _type: 'representative'; choices: { representative: string; state: StateAbbreviation }[] }
 }>
 
 export const SenatorSchema = Schema.Struct({
   last_name: Schema.String,
   first_name: Schema.String,
   party: Schema.String,
-  state: Schema.Literal(...Object.values(STATES).map((s) => s.abbreviation)),
+  state: Schema.Literal(
+    ...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)
+  ).annotations({
+    name: 'State'
+  }),
   address: Schema.String,
   phone: Schema.String,
   email: Schema.String,
@@ -159,5 +232,25 @@ export const SenatorSchema = Schema.Struct({
   class: Schema.String,
   bioguide_id: Schema.String,
   member_full: Schema.String
+}).annotations({
+  name: 'Senator'
 })
 export type Senator = typeof SenatorSchema.Type
+
+export const RepresentativeSchema = Schema.Struct({
+  name: Schema.NonEmptyString,
+  state: Schema.Literal(
+    ...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)
+  ).annotations({
+    name: 'State'
+  }),
+  district: Schema.NonEmptyString,
+  party: Schema.NonEmptyString,
+  officeRoom: Schema.NonEmptyString,
+  phone: Schema.NonEmptyString,
+  committeeAssignment: Schema.String,
+  website: Schema.NonEmptyString
+}).annotations({
+  name: 'Representative'
+})
+export type Representative = typeof RepresentativeSchema.Type
