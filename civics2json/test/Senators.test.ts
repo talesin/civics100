@@ -2,14 +2,15 @@ import { describe, it, expect } from '@jest/globals'
 import { parseSenators } from '@src/Senators'
 import { Effect } from 'effect'
 
-const minimalXml = `<?xml version="1.0" encoding="UTF-8"?>
+describe('parseSenators', () => {
+  const minimalXml = `<?xml version="1.0" encoding="UTF-8"?>
 <contact_information>
   <member>
     <member_full>Doe (I-XX)</member_full>
     <last_name>Doe</last_name>
     <first_name>Jane</first_name>
     <party>I</party>
-    <state>XX</state>
+    <state>CA</state>
     <address>1 Main St</address>
     <phone>(555) 555-5555</phone>
     <email>jane.doe@example.com</email>
@@ -19,14 +20,14 @@ const minimalXml = `<?xml version="1.0" encoding="UTF-8"?>
   </member>
 </contact_information>`
 
-const multiXml = `<?xml version="1.0" encoding="UTF-8"?>
+  const multiXml = `<?xml version="1.0" encoding="UTF-8"?>
 <contact_information>
   <member>
     <member_full>Doe (I-XX)</member_full>
     <last_name>Doe</last_name>
     <first_name>Jane</first_name>
     <party>I</party>
-    <state>XX</state>
+    <state>CA</state>
     <address>1 Main St</address>
     <phone>(555) 555-5555</phone>
     <email>jane.doe@example.com</email>
@@ -39,7 +40,7 @@ const multiXml = `<?xml version="1.0" encoding="UTF-8"?>
     <last_name>Smith</last_name>
     <first_name>John</first_name>
     <party>D</party>
-    <state>YY</state>
+    <state>WA</state>
     <address>2 Main St</address>
     <phone>(555) 555-0000</phone>
     <email>john.smith@example.com</email>
@@ -49,7 +50,6 @@ const multiXml = `<?xml version="1.0" encoding="UTF-8"?>
   </member>
 </contact_information>`
 
-describe('parseSenators', () => {
   it('parses a single senator', async () => {
     const result = await Effect.runPromise(parseSenators(minimalXml))
     expect(result).toEqual([
@@ -57,7 +57,7 @@ describe('parseSenators', () => {
         last_name: 'Doe',
         first_name: 'Jane',
         party: 'I',
-        state: 'XX',
+        state: 'CA',
         address: '1 Main St',
         phone: '(555) 555-5555',
         email: 'jane.doe@example.com',

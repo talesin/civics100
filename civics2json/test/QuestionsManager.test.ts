@@ -1,9 +1,16 @@
 import { describe, it, expect } from '@jest/globals'
-import { constructQuestions } from '../src/QuestionsManager'
+import {
+  constructQuestions,
+  STATE_SENATORS_QUESTION,
+  STATE_REPRESENTATIVES_QUESTION
+} from '../src/QuestionsManager'
 import { Effect } from 'effect'
+import { FileSystem } from '@effect/platform'
 import { CivicsQuestionsClient, TestCivicsQuestionsClientLayer } from '@src/CivicsQuestions'
 import { SenatorsClient, TestSenatorsClientLayer } from '@src/Senators'
-import { Question, Senator } from '@src/types'
+import { Question, Representative, Senator } from '@src/types'
+import { CivicsConfig } from '@src/config'
+import { RepresentativesClient, TestRepresentativesClientLayer } from '@src/Representatives'
 
 describe('constructQuestions', () => {
   const SENATORS: Senator[] = [
@@ -44,35 +51,81 @@ describe('constructQuestions', () => {
     {
       theme: 'AMERICAN GOVERNMENT',
       section: 'System of Government',
-      question: "Who is one of your state's U.S. Senators now?*",
+      question: STATE_SENATORS_QUESTION,
       answers: {
         _type: 'text',
         choices: ['Not set']
       }
+    },
+    {
+      theme: 'AMERICAN GOVERNMENT',
+      section: 'System of Government',
+      question: STATE_REPRESENTATIVES_QUESTION,
+      answers: {
+        _type: 'text',
+        choices: [
+          'Answers will vary. [Residents of territories with nonvoting Delegates or Resident Commissioners may provide the name of that Delegate or Commissioner. Also acceptable is any statement that the territory has no (voting) Representatives in Congress.]'
+        ]
+      }
     }
   ]
 
-  it('should include senators question with senators choices', async () => {
-    const civicsQuestionsClientLayer = TestCivicsQuestionsClientLayer({
-      parse: () => Effect.succeed(QUESTIONS)
-    })
-    const senatorsClientLayer = TestSenatorsClientLayer({
-      parse: () => Effect.succeed(SENATORS)
-    })
+  const REPRESENTATIVES: Representative[] = [
+    {
+      name: 'John Doe',
+      party: 'D',
+      state: 'AL',
+      phone: '123-456-7890',
+      website: 'https://john.doe.com',
+      district: '1',
+      officeRoom: '1',
+      committeeAssignment: '1'
+    },
+    {
+      name: 'Jane Smith',
+      party: 'R',
+      state: 'TX',
+      phone: '098-765-4321',
+      website: 'https://jane.smith.com',
+      district: '2',
+      officeRoom: '2',
+      committeeAssignment: '2'
+    }
+  ]
 
+  const defaultCivicsQuestionsClientLayer = TestCivicsQuestionsClientLayer({
+    parse: () => Effect.succeed(QUESTIONS)
+  })
+  const defaultSenatorsClientLayer = TestSenatorsClientLayer({
+    parse: () => Effect.succeed(SENATORS)
+  })
+  const defaultRepresentativesClientLayer = TestRepresentativesClientLayer({
+    parse: () => Effect.succeed(REPRESENTATIVES)
+  })
+  const defaultFileSystemLayer = FileSystem.layerNoop({
+    writeFileString: () => Effect.void,
+    readFileString: () => Effect.succeed(''),
+    exists: () => Effect.succeed(false)
+  })
+
+  it('should include senators question with senators choices', async () => {
     await Effect.gen(function* () {
       const cq = yield* CivicsQuestionsClient
       const sc = yield* SenatorsClient
-      const questions = yield* constructQuestions(cq, sc)()
-      expect(questions).toHaveLength(1)
+      const rc = yield* RepresentativesClient
+      const fs = yield* FileSystem.FileSystem
+      const config = yield* CivicsConfig
+      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
       expect(questions?.[0]?.question).toBe("Who is one of your state's U.S. Senators now?*")
       expect(questions?.[0]?.answers).toEqual({
         _type: 'senator',
         choices: SENATORS_CHOICES
       })
     }).pipe(
-      Effect.provide(civicsQuestionsClientLayer),
-      Effect.provide(senatorsClientLayer),
+      Effect.provide(defaultCivicsQuestionsClientLayer),
+      Effect.provide(defaultSenatorsClientLayer),
+      Effect.provide(defaultRepresentativesClientLayer),
+      Effect.provide(defaultFileSystemLayer),
       Effect.runPromise
     )
   })
@@ -89,38 +142,42 @@ describe('constructQuestions', () => {
           }
         ])
     })
-    const senatorsClientLayer = TestSenatorsClientLayer({
-      parse: () => Effect.succeed(SENATORS)
-    })
 
     await expect(
       Effect.gen(function* () {
         const cq = yield* CivicsQuestionsClient
         const sc = yield* SenatorsClient
-        return yield* constructQuestions(cq, sc)()
+        const rc = yield* RepresentativesClient
+        const fs = yield* FileSystem.FileSystem
+        const config = yield* CivicsConfig
+        return yield* constructQuestions(fs, cq, sc, rc, config)()
       }).pipe(
         Effect.provide(civicsQuestionsClientLayer),
-        Effect.provide(senatorsClientLayer),
+        Effect.provide(defaultSenatorsClientLayer),
+        Effect.provide(defaultRepresentativesClientLayer),
+        Effect.provide(defaultFileSystemLayer),
         Effect.runPromise
       )
     ).rejects.toThrow()
   })
 
   it('should handle empty senators list', async () => {
-    const civicsQuestionsClientLayer = TestCivicsQuestionsClientLayer({
-      parse: () => Effect.succeed(QUESTIONS)
-    })
     const senatorsClientLayer = TestSenatorsClientLayer({
       parse: () => Effect.succeed([])
     })
     await Effect.gen(function* () {
       const cq = yield* CivicsQuestionsClient
       const sc = yield* SenatorsClient
-      const questions = yield* constructQuestions(cq, sc)()
+      const rc = yield* RepresentativesClient
+      const fs = yield* FileSystem.FileSystem
+      const config = yield* CivicsConfig
+      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
       expect(questions?.[0]?.answers).toEqual({ _type: 'senator', choices: [] })
     }).pipe(
-      Effect.provide(civicsQuestionsClientLayer),
       Effect.provide(senatorsClientLayer),
+      Effect.provide(defaultCivicsQuestionsClientLayer),
+      Effect.provide(defaultRepresentativesClientLayer),
+      Effect.provide(defaultFileSystemLayer),
       Effect.runPromise
     )
   })
@@ -129,17 +186,20 @@ describe('constructQuestions', () => {
     const civicsQuestionsClientLayer = TestCivicsQuestionsClientLayer({
       parse: () => Effect.succeed([])
     })
-    const senatorsClientLayer = TestSenatorsClientLayer({
-      parse: () => Effect.succeed(SENATORS)
-    })
+
     await expect(
       Effect.gen(function* () {
         const cq = yield* CivicsQuestionsClient
         const sc = yield* SenatorsClient
-        return yield* constructQuestions(cq, sc)()
+        const rc = yield* RepresentativesClient
+        const fs = yield* FileSystem.FileSystem
+        const config = yield* CivicsConfig
+        return yield* constructQuestions(fs, cq, sc, rc, config)()
       }).pipe(
         Effect.provide(civicsQuestionsClientLayer),
-        Effect.provide(senatorsClientLayer),
+        Effect.provide(defaultSenatorsClientLayer),
+        Effect.provide(defaultRepresentativesClientLayer),
+        Effect.provide(defaultFileSystemLayer),
         Effect.runPromise
       )
     ).rejects.toThrow()
@@ -158,39 +218,47 @@ describe('constructQuestions', () => {
           }
         ])
     })
-    const senatorsClientLayer = TestSenatorsClientLayer({
-      parse: () => Effect.succeed(SENATORS)
-    })
+
     await Effect.gen(function* () {
       const cq = yield* CivicsQuestionsClient
       const sc = yield* SenatorsClient
-      const questions = yield* constructQuestions(cq, sc)()
-      expect(questions).toHaveLength(2)
-      expect(questions?.[1]?.question).toBe('Who was the first President?')
-      expect(questions?.[1]?.answers).toEqual({ _type: 'text', choices: ['George Washington'] })
+      const rc = yield* RepresentativesClient
+      const fs = yield* FileSystem.FileSystem
+      const config = yield* CivicsConfig
+      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
+      expect(questions).toHaveLength(QUESTIONS.length + 1)
+      expect(questions?.[QUESTIONS.length]?.question).toBe('Who was the first President?')
+      expect(questions?.[QUESTIONS.length]?.answers).toEqual({
+        _type: 'text',
+        choices: ['George Washington']
+      })
     }).pipe(
       Effect.provide(civicsQuestionsClientLayer),
-      Effect.provide(senatorsClientLayer),
+      Effect.provide(defaultSenatorsClientLayer),
+      Effect.provide(defaultRepresentativesClientLayer),
+      Effect.provide(defaultFileSystemLayer),
       Effect.runPromise
     )
   })
 
   it('should handle senators with missing fields gracefully', async () => {
-    const civicsQuestionsClientLayer = TestCivicsQuestionsClientLayer({
-      parse: () => Effect.succeed(QUESTIONS)
-    })
     const senatorsClientLayer = TestSenatorsClientLayer({
       parse: () => Effect.succeed([{ member_full: 'Incomplete Senator' } as Senator])
     })
     await Effect.gen(function* () {
       const cq = yield* CivicsQuestionsClient
       const sc = yield* SenatorsClient
-      const questions = yield* constructQuestions(cq, sc)()
+      const rc = yield* RepresentativesClient
+      const fs = yield* FileSystem.FileSystem
+      const config = yield* CivicsConfig
+      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
       expect(questions?.[0]?.answers._type).toBe('senator')
       expect(Array.isArray(questions?.[0]?.answers.choices)).toBe(true)
     }).pipe(
-      Effect.provide(civicsQuestionsClientLayer),
       Effect.provide(senatorsClientLayer),
+      Effect.provide(defaultCivicsQuestionsClientLayer),
+      Effect.provide(defaultRepresentativesClientLayer),
+      Effect.provide(defaultFileSystemLayer),
       Effect.runPromise
     )
   })
@@ -208,13 +276,14 @@ describe('constructQuestions', () => {
           }
         ])
     })
-    const senatorsClientLayer = TestSenatorsClientLayer({
-      parse: () => Effect.succeed(SENATORS)
-    })
+
     await Effect.gen(function* () {
       const cq = yield* CivicsQuestionsClient
       const sc = yield* SenatorsClient
-      const questions = yield* constructQuestions(cq, sc)()
+      const rc = yield* RepresentativesClient
+      const fs = yield* FileSystem.FileSystem
+      const config = yield* CivicsConfig
+      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
       expect(
         questions?.find((q) => q.question === 'Who was the first President?')?.answers
       ).toEqual({ _type: 'text', choices: ['George Washington'] })
@@ -223,7 +292,9 @@ describe('constructQuestions', () => {
       )
     }).pipe(
       Effect.provide(civicsQuestionsClientLayer),
-      Effect.provide(senatorsClientLayer),
+      Effect.provide(defaultSenatorsClientLayer),
+      Effect.provide(defaultRepresentativesClientLayer),
+      Effect.provide(defaultFileSystemLayer),
       Effect.runPromise
     )
   })

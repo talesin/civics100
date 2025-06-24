@@ -8,7 +8,7 @@ import {
   StatesByAbbreviation,
   StatesByName
 } from './types'
-import config from './config'
+import { CivicsConfig } from './config'
 import { parseHTML } from 'linkedom'
 import { UnknownException } from 'effect/Cause'
 import { ParseError } from 'effect/ParseResult'
@@ -21,13 +21,13 @@ import { HttpClientError } from '@effect/platform/HttpClientError'
  * - Returns the text content
  *
  * @param httpClient Effect HttpClient
- * @param url Source URL
+ * @param config CivicsConfig
  * @returns Effect that resolves to the text content
  */
-export const fetchRepresentatives = (httpClient: HttpClient.HttpClient, url: string) =>
+export const fetchRepresentatives = (httpClient: HttpClient.HttpClient, config: CivicsConfig) =>
   Effect.fn(function* () {
-    yield* Effect.log(`Fetching representatives HTML from ${url}`)
-    const response = yield* httpClient.get(url)
+    yield* Effect.log(`Fetching representatives HTML from ${config.REPRESENTATIVES_URL}`)
+    const response = yield* httpClient.get(config.REPRESENTATIVES_URL)
     const text = yield* response.text
     yield* Effect.log(`Fetched ${text.length} bytes for representatives HTML`)
     return text
@@ -101,9 +101,9 @@ export class RepresentativesClient extends Effect.Service<RepresentativesClient>
   {
     effect: Effect.gen(function* () {
       const httpClient = yield* HttpClient.HttpClient
-      const c = yield* config
+      const config = yield* CivicsConfig
       return {
-        fetch: fetchRepresentatives(httpClient, c.REPRESENTATIVES_URL),
+        fetch: fetchRepresentatives(httpClient, config),
         parse: parseRepresentatives
       }
     })
