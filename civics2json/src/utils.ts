@@ -25,7 +25,9 @@ export const getConfig = <const T extends ReadonlyArray<string>>(
             Config.orElse(() =>
               altValue?.value !== undefined
                 ? Config.succeed(altValue.value)
-                : Config.fail(`Config for '${name}' does not exist`)
+                : altValue?.config !== undefined
+                  ? altValue.config
+                  : Config.fail(`Config for '${name}' does not exist`)
             )
           )
         }

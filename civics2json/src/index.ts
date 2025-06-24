@@ -66,8 +66,8 @@ cli(process.argv).pipe(
   Effect.scoped,
   Effect.provide(CivicsQuestionsClient.Default),
   Effect.provide(SenatorsClient.Default),
-  Effect.provide(QuestionsManager.Default),
   Effect.provide(RepresentativesClient.Default),
+  Effect.provide(QuestionsManager.Default),
   Effect.provide(FetchHttpClient.layer),
   Effect.provide(NodeContext.layer),
   NodeRuntime.runMain

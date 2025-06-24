@@ -257,5 +257,9 @@ export class QuestionsManager extends Effect.Service<QuestionsManager>()('Questi
       constructQuestions: constructQuestions(fs, cq, senatorsClient, representativesClient, config)
     }
   }),
-  dependencies: [CivicsQuestionsClient.Default, SenatorsClient.Default]
+  dependencies: [
+    CivicsQuestionsClient.Default,
+    SenatorsClient.Default,
+    RepresentativesClient.Default
+  ]
 }) {}

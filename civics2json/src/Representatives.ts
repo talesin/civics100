@@ -74,11 +74,7 @@ export const parseRepresentatives = (
       return []
     }
 
-    const effects = table
-      .querySelectorAll('tbody > tr')
-      .values()
-      .toArray()
-      .map(parseRow(state.abbreviation))
+    const effects = [...table.querySelectorAll('tbody > tr')].map(parseRow(state.abbreviation))
     return yield* Effect.all(effects)
   })
 
@@ -86,7 +82,7 @@ export const parseRepresentatives = (
     yield* Effect.log(`Parsing representatives HTML`)
     const doc = yield* Effect.try(() => parseHTML(html).document)
     // Each state has a <table> with a <caption> (state name) and <tbody> of <tr> rows
-    const effects = doc.querySelectorAll('table.table').values().toArray().map(parseTable)
+    const effects = [...doc.querySelectorAll('table.table')].map(parseTable)
     const representatives = yield* Effect.all(effects).pipe(Effect.map((xs) => xs.flat()))
     yield* Effect.log(`Parsed ${representatives.length} representatives`)
     return representatives
