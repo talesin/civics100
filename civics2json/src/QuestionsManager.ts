@@ -105,6 +105,7 @@ export const fetchAndParseSenators = (
   ParseError | UnknownException | HttpClientError | PlatformError
 >) =>
   Effect.fn(function* () {
+    // TODO check if senators JSON file exists for early return
     const xml = yield* fetchSenators(fs, sc, c)()
     const senators = yield* sc.parse(xml)
     yield* Effect.log(`Writing senators JSON to ${c.SENATORS_JSON_FILE}`)
@@ -251,18 +252,20 @@ export const fetchGovernments = (fs: FileSystem.FileSystem, gc: GovernorsClient,
   Effect.fn(function* (options?: { forceFetch?: boolean }) {
     const links = yield* parseStateLinks(fs, gc, c)(options)
 
-    const allPagesExist = yield* Effect.all(
-      links
-        .map((link) => link.file)
-        .filter((file) => file !== undefined)
-        .map((file) => fs.exists(file).pipe(Effect.map((exists) => ({ file, exists }))))
-    )
-
-    if (allPagesExist.every((p) => p.exists)) {
-      yield* Effect.log(
-        `Using ${links.length} local governments pages in ${c.STATE_GOVERNMENTS_DATA_DIR}`
+    if (options?.forceFetch !== true) {
+      const allPagesExist = yield* Effect.all(
+        links
+          .map((link) => link.file)
+          .filter((file) => file !== undefined)
+          .map((file) => fs.exists(file).pipe(Effect.map((exists) => ({ file, exists }))))
       )
-      return links
+
+      if (allPagesExist.every((p) => p.exists)) {
+        yield* Effect.log(
+          `Using ${links.length} local governments pages in ${c.STATE_GOVERNMENTS_DATA_DIR}`
+        )
+        return links
+      }
     }
 
     yield* Effect.log(`Fetching ${links.length} government pages`)
@@ -294,7 +297,7 @@ export const fetchGovernments = (fs: FileSystem.FileSystem, gc: GovernorsClient,
 
     yield* fs.writeFileString(c.STATE_GOVERNMENTS_JSON_FILE, JSON.stringify(writtenFiles, null, 2))
     yield* Effect.log(
-      `Wrote ${writtenFiles.length} state government pages to ${c.STATE_GOVERNMENTS_JSON_FILE}`
+      `Wrote index of ${writtenFiles.length} state government pages to ${c.STATE_GOVERNMENTS_JSON_FILE}`
     )
     return writtenFiles
   })

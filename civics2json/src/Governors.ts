@@ -7,7 +7,8 @@ import {
   isStateAbbreviation,
   StateAbbreviation,
   StateGovernmentLink,
-  StateGovernmentLinks
+  StateGovernmentLinks,
+  StateGovernmentPage
 } from './types'
 import { UnknownException } from 'effect/Cause'
 
@@ -46,22 +47,28 @@ export const parseStateLinks = (
 /**
  * Fetches the state government page for a given state.
  */
-export const fetchGovernmentPage = (httpClient: HttpClient.HttpClient, config: CivicsConfig) =>
-  Effect.fn(function* (path: string, state: string) {
+export const fetchGovernmentPage = (
+  httpClient: HttpClient.HttpClient,
+  config: CivicsConfig
+): ((
+  path: string,
+  state: StateAbbreviation
+) => Effect.Effect<StateGovernmentPage, HttpClientError | UnknownException>) =>
+  Effect.fn(function* (path: string, state: StateAbbreviation) {
     const url = yield* Effect.try(() => new URL(path, config.STATE_GOVERNMENTS_URL).toString())
     yield* Effect.log(`Fetching government page for ${state} from ${url}`)
     const response = yield* httpClient.get(url)
     const html = yield* response.text
-    return html
+    return { state, url, html }
   })
 
 export const fetchAllGovernmentPages =
-  (httpClient: HttpClient.HttpClient, config: CivicsConfig) => (stateLinks: StateGovernmentLinks) =>
+  (httpClient: HttpClient.HttpClient, config: CivicsConfig) =>
+  (
+    stateLinks: StateGovernmentLinks
+  ): Stream.Stream<StateGovernmentPage, HttpClientError | UnknownException> =>
     Stream.mapEffect(Stream.fromIterable(stateLinks), (link) =>
-      Effect.gen(function* () {
-        const html = yield* fetchGovernmentPage(httpClient, config)(link.url, link.state)
-        return { state: link.state, url: link.url, html }
-      })
+      fetchGovernmentPage(httpClient, config)(link.url, link.state)
     )
 
 /**
@@ -107,7 +114,7 @@ export class GovernorsClient extends Effect.Service<GovernorsClient>()('Governor
     const config = yield* CivicsConfig
     return {
       fetchGovernmentsIndex: () => fetchGovernmentsIndex(httpClient, config),
-      fetchGovernmentPage: (url: string, state: string) =>
+      fetchGovernmentPage: (url: string, state: StateAbbreviation) =>
         fetchGovernmentPage(httpClient, config)(url, state),
       fetchAllGovernmentPages: fetchAllGovernmentPages(httpClient, config),
       parseStateLinks: (html: string) => parseStateLinks(html)
@@ -122,7 +129,10 @@ export class GovernorsClient extends Effect.Service<GovernorsClient>()('Governor
  */
 export const TestGovernorsClientLayer = (fn?: {
   fetchGovernmentsIndex?: () => Effect.Effect<string, HttpClientError>
-  fetchGovernmentPage?: (url: string, state: string) => Effect.Effect<string, HttpClientError>
+  fetchGovernmentPage?: (
+    url: string,
+    state: StateAbbreviation
+  ) => Effect.Effect<StateGovernmentPage, HttpClientError>
   fetchAllGovernmentPages?: (
     stateLinks: ReadonlyArray<StateGovernmentLink>
   ) => Stream.Stream<
@@ -139,7 +149,8 @@ export const TestGovernorsClientLayer = (fn?: {
       _tag: 'GovernorsClient',
       fetchGovernmentsIndex: fn?.fetchGovernmentsIndex ?? (() => Effect.succeed('<html></html>')),
       fetchGovernmentPage:
-        fn?.fetchGovernmentPage ?? ((_url, _state) => Effect.succeed('<html></html>')),
+        fn?.fetchGovernmentPage ??
+        ((_url, _state) => Effect.succeed({ state: _state, url: _url, html: '<html></html>' })),
       fetchAllGovernmentPages:
         fn?.fetchAllGovernmentPages ??
         ((_stateLinks) =>

@@ -291,3 +291,5 @@ export const StateGovernmentLinkSchema = Schema.Struct({
 })
 export type StateGovernmentLink = typeof StateGovernmentLinkSchema.Type
 export type StateGovernmentLinks = ReadonlyArray<StateGovernmentLink>
+
+export type StateGovernmentPage = Readonly<{ state: StateAbbreviation; url: string; html: string }>
