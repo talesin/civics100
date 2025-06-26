@@ -1,11 +1,15 @@
+---
+trigger: always_on
+---
+
+<general>
 Refer to TASKS.md for developer tasks.
 Refer to README.md for the app description.
-Use Effect schemas for all JSON validation.
-Prefer pure functions and immutability in TypeScript.
-Avoid returning null; prefer undefined and, where possible, use tagged union types.
-Wrap all external or unsafe code in Effect.try or Effect.tryPromise.
-Avoid external state libraries (e.g., no Redux or Zustand).
-Rust commands must not expose unsafe code.
+Refer to PLAN.md for the app plan.
+Never overwrite my .envrc file.
+</general>
+
+<coding_general>
 Use descriptive file names—no abbreviations.
 Use descriptive variable names—no abbreviations.
 Use descriptive function names—no abbreviations.
@@ -15,13 +19,24 @@ Do not drastically change existing patterns; iterate on them first.
 Always prefer simple solutions.
 Avoid code duplication where possible—check for existing implementations before writing new code.
 Keep the codebase simple and easy to understand.
-Never overwrite my .envrc file.
 Focus only on areas of the code relevant to the task at hand.
 Do not modify unrelated code.
 Write thorough tests for all code.
+</coding_general>
+
+<typescript>
+Use Effect schemas for all JSON validation.
+Prefer pure functions and immutability in TypeScript.
+Avoid returning null; prefer undefined and, where possible, use tagged union types.
+Wrap all external or unsafe code in Effect.try or Effect.tryPromise.
+Avoid external state libraries (e.g., no Redux or Zustand).
 When using Effect, refer to local source code in: /Users/jeremy/Documents/Code/\_sources/effect-ts/effect/packages/effect/src
 When using Effect, refer to example usage in: /Users/jeremy/Documents/Code/\_sources/effect-ts/website/content/src/content/docs/docs
-Place all new Effect schemas in src/schemas.
 Use ?? instead of || when checking for null or undefined.
 Do not use implicit boolean expressions.
 Do not fix linting errors; let me address them first.
+</typescript>
+
+<rust>
+Rust commands must not expose unsafe code.
+</rust>

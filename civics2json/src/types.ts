@@ -199,6 +199,24 @@ export const StatesByName = Object.fromEntries(
 ) as Record<StateName, State>
 
 /**
+ * Checks if a string is a valid state abbreviation.
+ */
+export const isStateAbbreviation = (value: string): value is StateAbbreviation =>
+  StatesByAbbreviation[value as StateAbbreviation] !== undefined
+
+/**
+ * Checks if a string is a valid state name.
+ */
+export const isStateName = (value: string): value is StateName =>
+  StatesByName[value as StateName] !== undefined
+
+/**
+ * Checks if a string is a valid state abbreviation or name.
+ */
+export const isState = (value: string): value is StateAbbreviation | StateName =>
+  isStateAbbreviation(value) || isStateName(value)
+
+/**
  * A question from the civics questions file.
  *
  * @property theme - The theme of the question (e.g. "The United States Constitution")
@@ -254,3 +272,22 @@ export const RepresentativeSchema = Schema.Struct({
   name: 'Representative'
 })
 export type Representative = typeof RepresentativeSchema.Type
+
+export const GovernorSchema = Schema.Struct({
+  state: Schema.String,
+  name: Schema.String,
+  url: Schema.String
+})
+export type Governor = typeof GovernorSchema.Type
+
+export const StateGovernmentLinkSchema = Schema.Struct({
+  state: Schema.Literal(
+    ...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)
+  ).annotations({
+    name: 'State'
+  }),
+  url: Schema.String,
+  file: Schema.optional(Schema.String)
+})
+export type StateGovernmentLink = typeof StateGovernmentLinkSchema.Type
+export type StateGovernmentLinks = ReadonlyArray<StateGovernmentLink>

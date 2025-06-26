@@ -1,0 +1,282 @@
+[
+  {
+    "state": "AK",
+    "url": "/states/alaska",
+    "file": "data/state-governments/AK.html"
+  },
+  {
+    "state": "AL",
+    "url": "/states/alabama",
+    "file": "data/state-governments/AL.html"
+  },
+  {
+    "state": "AR",
+    "url": "/states/arkansas",
+    "file": "data/state-governments/AR.html"
+  },
+  {
+    "state": "AS",
+    "url": "/states/american-samoa",
+    "file": "data/state-governments/AS.html"
+  },
+  {
+    "state": "AZ",
+    "url": "/states/arizona",
+    "file": "data/state-governments/AZ.html"
+  },
+  {
+    "state": "CA",
+    "url": "/states/california",
+    "file": "data/state-governments/CA.html"
+  },
+  {
+    "state": "CO",
+    "url": "/states/colorado",
+    "file": "data/state-governments/CO.html"
+  },
+  {
+    "state": "CT",
+    "url": "/states/connecticut",
+    "file": "data/state-governments/CT.html"
+  },
+  {
+    "state": "DC",
+    "url": "/states/district-of-columbia",
+    "file": "data/state-governments/DC.html"
+  },
+  {
+    "state": "DE",
+    "url": "/states/delaware",
+    "file": "data/state-governments/DE.html"
+  },
+  {
+    "state": "FL",
+    "url": "/states/florida",
+    "file": "data/state-governments/FL.html"
+  },
+  {
+    "state": "GA",
+    "url": "/states/georgia",
+    "file": "data/state-governments/GA.html"
+  },
+  {
+    "state": "GU",
+    "url": "/states/guam",
+    "file": "data/state-governments/GU.html"
+  },
+  {
+    "state": "HI",
+    "url": "/states/hawaii",
+    "file": "data/state-governments/HI.html"
+  },
+  {
+    "state": "IA",
+    "url": "/states/iowa",
+    "file": "data/state-governments/IA.html"
+  },
+  {
+    "state": "ID",
+    "url": "/states/idaho",
+    "file": "data/state-governments/ID.html"
+  },
+  {
+    "state": "IL",
+    "url": "/states/illinois",
+    "file": "data/state-governments/IL.html"
+  },
+  {
+    "state": "IN",
+    "url": "/states/indiana",
+    "file": "data/state-governments/IN.html"
+  },
+  {
+    "state": "KS",
+    "url": "/states/kansas",
+    "file": "data/state-governments/KS.html"
+  },
+  {
+    "state": "KY",
+    "url": "/states/kentucky",
+    "file": "data/state-governments/KY.html"
+  },
+  {
+    "state": "LA",
+    "url": "/states/louisiana",
+    "file": "data/state-governments/LA.html"
+  },
+  {
+    "state": "MA",
+    "url": "/states/massachusetts",
+    "file": "data/state-governments/MA.html"
+  },
+  {
+    "state": "MD",
+    "url": "/states/maryland",
+    "file": "data/state-governments/MD.html"
+  },
+  {
+    "state": "ME",
+    "url": "/states/maine",
+    "file": "data/state-governments/ME.html"
+  },
+  {
+    "state": "MI",
+    "url": "/states/michigan",
+    "file": "data/state-governments/MI.html"
+  },
+  {
+    "state": "MN",
+    "url": "/states/minnesota",
+    "file": "data/state-governments/MN.html"
+  },
+  {
+    "state": "MO",
+    "url": "/states/missouri",
+    "file": "data/state-governments/MO.html"
+  },
+  {
+    "state": "MP",
+    "url": "/states/northern-mariana-islands",
+    "file": "data/state-governments/MP.html"
+  },
+  {
+    "state": "MS",
+    "url": "/states/mississippi",
+    "file": "data/state-governments/MS.html"
+  },
+  {
+    "state": "MT",
+    "url": "/states/montana",
+    "file": "data/state-governments/MT.html"
+  },
+  {
+    "state": "NC",
+    "url": "/states/north-carolina",
+    "file": "data/state-governments/NC.html"
+  },
+  {
+    "state": "ND",
+    "url": "/states/north-dakota",
+    "file": "data/state-governments/ND.html"
+  },
+  {
+    "state": "NE",
+    "url": "/states/nebraska",
+    "file": "data/state-governments/NE.html"
+  },
+  {
+    "state": "NH",
+    "url": "/states/new-hampshire",
+    "file": "data/state-governments/NH.html"
+  },
+  {
+    "state": "NJ",
+    "url": "/states/new-jersey",
+    "file": "data/state-governments/NJ.html"
+  },
+  {
+    "state": "NM",
+    "url": "/states/new-mexico",
+    "file": "data/state-governments/NM.html"
+  },
+  {
+    "state": "NV",
+    "url": "/states/nevada",
+    "file": "data/state-governments/NV.html"
+  },
+  {
+    "state": "NY",
+    "url": "/states/new-york",
+    "file": "data/state-governments/NY.html"
+  },
+  {
+    "state": "OH",
+    "url": "/states/ohio",
+    "file": "data/state-governments/OH.html"
+  },
+  {
+    "state": "OK",
+    "url": "/states/oklahoma",
+    "file": "data/state-governments/OK.html"
+  },
+  {
+    "state": "OR",
+    "url": "/states/oregon",
+    "file": "data/state-governments/OR.html"
+  },
+  {
+    "state": "PA",
+    "url": "/states/pennsylvania",
+    "file": "data/state-governments/PA.html"
+  },
+  {
+    "state": "PR",
+    "url": "/states/puerto-rico",
+    "file": "data/state-governments/PR.html"
+  },
+  {
+    "state": "RI",
+    "url": "/states/rhode-island",
+    "file": "data/state-governments/RI.html"
+  },
+  {
+    "state": "SC",
+    "url": "/states/south-carolina",
+    "file": "data/state-governments/SC.html"
+  },
+  {
+    "state": "SD",
+    "url": "/states/south-dakota",
+    "file": "data/state-governments/SD.html"
+  },
+  {
+    "state": "TN",
+    "url": "/states/tennessee",
+    "file": "data/state-governments/TN.html"
+  },
+  {
+    "state": "TX",
+    "url": "/states/texas",
+    "file": "data/state-governments/TX.html"
+  },
+  {
+    "state": "UT",
+    "url": "/states/utah",
+    "file": "data/state-governments/UT.html"
+  },
+  {
+    "state": "VA",
+    "url": "/states/virginia",
+    "file": "data/state-governments/VA.html"
+  },
+  {
+    "state": "VI",
+    "url": "/states/u-s-virgin-islands",
+    "file": "data/state-governments/VI.html"
+  },
+  {
+    "state": "VT",
+    "url": "/states/vermont",
+    "file": "data/state-governments/VT.html"
+  },
+  {
+    "state": "WA",
+    "url": "/states/washington",
+    "file": "data/state-governments/WA.html"
+  },
+  {
+    "state": "WI",
+    "url": "/states/wisconsin",
+    "file": "data/state-governments/WI.html"
+  },
+  {
+    "state": "WV",
+    "url": "/states/west-virginia",
+    "file": "data/state-governments/WV.html"
+  },
+  {
+    "state": "WY",
+    "url": "/states/wyoming",
+    "file": "data/state-governments/WY.html"
+  }
+]

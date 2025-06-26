@@ -1,4 +1,4 @@
-import { getConfig, SuccessType } from './utils'
+import { getConfig, EffectSuccessType } from './utils'
 
 export const CivicsConfig = getConfig(
   [
@@ -11,6 +11,10 @@ export const CivicsConfig = getConfig(
     'REPRESENTATIVES_URL',
     'REPRESENTATIVES_HTML_FILE',
     'REPRESENTATIVES_JSON_FILE',
+    'STATE_GOVERNMENTS_URL',
+    'STATE_GOVERNMENTS_HTML_FILE',
+    'STATE_GOVERNMENTS_JSON_FILE',
+    'STATE_GOVERNMENTS_DATA_DIR',
     'UPDATES_URL',
     'UPDATES_JSON_FILE',
     'UPDATES_HTML_FILE'
@@ -27,6 +31,10 @@ export const CivicsConfig = getConfig(
     REPRESENTATIVES_URL: { value: 'https://www.house.gov/representatives' },
     REPRESENTATIVES_HTML_FILE: { value: 'data/representatives.html' },
     REPRESENTATIVES_JSON_FILE: { value: 'data/representatives.json' },
+    STATE_GOVERNMENTS_URL: { value: 'https://www.usa.gov/state-governments' },
+    STATE_GOVERNMENTS_HTML_FILE: { value: 'data/state-governments.html' },
+    STATE_GOVERNMENTS_JSON_FILE: { value: 'data/state-governments.json' },
+    STATE_GOVERNMENTS_DATA_DIR: { value: 'data/state-governments' },
     UPDATES_URL: {
       value:
         'https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates'
@@ -36,4 +44,4 @@ export const CivicsConfig = getConfig(
   }
 )
 
-export type CivicsConfig = SuccessType<typeof CivicsConfig>
+export type CivicsConfig = EffectSuccessType<typeof CivicsConfig>

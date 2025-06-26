@@ -49,4 +49,4 @@ export const getConfig = <const T extends ReadonlyArray<string>>(
  * @template T - The Effect type to extract from.
  * @returns The success type of the Effect.
  */
-export type SuccessType<T> = T extends Effect.Effect<infer A, infer _, infer _> ? A : never
+export type EffectSuccessType<T> = T extends Effect.Effect<infer A, infer _, infer _> ? A : never
