@@ -12,7 +12,7 @@ interface ParsedSection {
 }
 interface ParsedQuestion {
   question: string
-  number: number
+  questionNumber: number
   answers: readonly ParsedAnswer[]
 }
 
@@ -24,7 +24,7 @@ type ParsedAnswer = string
 type LineClassification =
   | { readonly type: 'theme'; readonly value: string }
   | { readonly type: 'section'; readonly value: string }
-  | { readonly type: 'question'; readonly value: string; readonly number: number }
+  | { readonly type: 'question'; readonly value: string; readonly questionNumber: number }
   | { readonly type: 'answer'; readonly value: string }
   | { readonly type: 'empty' }
   | { readonly type: 'other' }
@@ -65,7 +65,7 @@ const classifyLine = (line: string): LineClassification => {
     return {
       type: 'question',
       value: questionMatch[2].trim(),
-      number: parseInt(questionMatch[1], 10)
+      questionNumber: parseInt(questionMatch[1], 10)
     }
   }
 
@@ -133,17 +133,17 @@ const parseQuestions = (
     cl === undefined ||
     cl.type !== 'question' ||
     typeof cl.value !== 'string' ||
-    typeof cl.number !== 'number'
+    typeof cl.questionNumber !== 'number'
   ) {
     return { questions, rest: lines }
   }
 
   const questionName = cl.value
-  const questionNumber = cl.number
+  const questionNumber = cl.questionNumber
   const { answers, rest: afterAnswers } = parseAnswers(rest, [])
   return parseQuestions(afterAnswers, [
     ...questions,
-    { question: questionName, number: questionNumber, answers }
+    { question: questionName, questionNumber, answers }
   ])
 }
 
@@ -202,7 +202,7 @@ export const parseQuestionsFile = (
           theme: theme.theme,
           section: section.section,
           question: question.question,
-          questionNumber: question.number,
+          questionNumber: question.questionNumber,
           answers: { _type: 'text', choices: question.answers }
         }))
       )
