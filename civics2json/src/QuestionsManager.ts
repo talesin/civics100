@@ -21,14 +21,19 @@ import { CivicsConfig } from './config'
 import { GovernorsClient } from './Governors'
 
 /**
- * The canonical question string used to identify the senator question in the civics questions set.
+ * The question string used to identify the senator question in the civics questions set.
  */
 export const STATE_SENATORS_QUESTION = "Who is one of your state's U.S. Senators now?*"
 
 /**
- * The canonical question string used to identify the representative question in the civics questions set.
+ * The question string used to identify the representative question in the civics questions set.
  */
 export const STATE_REPRESENTATIVES_QUESTION = 'Name your U.S. Representative.'
+
+/**
+ * The question string used to identify the governor question in the civics questions set.
+ */
+export const STATE_GOVERNORS_QUESTION = 'Who is the Governor of your state now?'
 
 /**
  * Fetches the civics questions text using the CivicsQuestionsClient.
@@ -322,11 +327,35 @@ export const fetchAndParseGovenors = (
             .readFileString(page.file)
             .pipe(Effect.flatMap((html) => gc.parseGovernorInfo(html, page.state)))
         )
-    )
+    ).pipe(Effect.map((governors) => governors.sort((a, b) => a.state.localeCompare(b.state))))
+
     yield* Effect.log(`Parsed ${governors.length} governors from ${pages.length} pages`)
     yield* fs.writeFileString(c.GOVERNORS_JSON_FILE, JSON.stringify(governors, null, 2))
     yield* Effect.log(`Wrote ${governors.length} governors to ${c.GOVERNORS_JSON_FILE}`)
     return governors
+  })
+
+export const getGovernorsQuestions = (
+  fs: FileSystem.FileSystem,
+  gc: GovernorsClient,
+  c: CivicsConfig
+) =>
+  Effect.fn(function* (questionMap: Record<string, Question>) {
+    // fail if we cannot find the governors question
+    if (questionMap[STATE_GOVERNORS_QUESTION] === undefined) {
+      return yield* Effect.fail(new Error('State governors question not found'))
+    }
+    const governors = (yield* fetchAndParseGovenors(fs, gc, c)()).map((g) => ({
+      governor: g.name,
+      state: g.state
+    }))
+
+    // update the governors question
+    const governorsQuestion: Question = {
+      ...questionMap[STATE_GOVERNORS_QUESTION],
+      answers: { _type: 'governor', choices: governors }
+    }
+    return governorsQuestion
   })
 
 /**
@@ -343,6 +372,7 @@ export const constructQuestions = (
   cq: CivicsQuestionsClient,
   sc: SenatorsClient,
   rc: RepresentativesClient,
+  gc: GovernorsClient,
   c: CivicsConfig
 ) =>
   Effect.fn(function* () {
@@ -359,11 +389,15 @@ export const constructQuestions = (
     // get updated representatives question
     const representativesQuestion = yield* getRepresentativesQuestions(fs, rc, c)(questionMap)
 
+    // get updated governors question
+    const governorsQuestion = yield* getGovernorsQuestions(fs, gc, c)(questionMap)
+
     // update the senators question in the map
     const questions = Object.values({
       ...questionMap,
       [STATE_SENATORS_QUESTION]: senatorsQuestion,
-      [STATE_REPRESENTATIVES_QUESTION]: representativesQuestion
+      [STATE_REPRESENTATIVES_QUESTION]: representativesQuestion,
+      [STATE_GOVERNORS_QUESTION]: governorsQuestion
     })
 
     yield* Effect.log(`Writing updated questions to file`)
@@ -393,7 +427,14 @@ export class QuestionsManager extends Effect.Service<QuestionsManager>()('Questi
       parseSenators: fetchAndParseSenators(fs, senatorsClient, config),
       fetchRepresentatives: fetchRepresentatives(fs, representativesClient, config),
       parseRepresentatives: fetchAndParseRepresentatives(fs, representativesClient, config),
-      constructQuestions: constructQuestions(fs, cq, senatorsClient, representativesClient, config),
+      constructQuestions: constructQuestions(
+        fs,
+        cq,
+        senatorsClient,
+        representativesClient,
+        governorsClient,
+        config
+      ),
       fetchGovernmentsIndex: fetchGovernmentsIndex(fs, governorsClient, config),
       parseStateLinks: parseStateLinks(fs, governorsClient, config),
       fetchAndParseGovenors: fetchAndParseGovenors(fs, governorsClient, config)

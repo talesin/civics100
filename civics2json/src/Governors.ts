@@ -92,7 +92,7 @@ export const parseGovernorInfo = (
 
     // Governor name and URL
     const govAnchor = table?.querySelector('span.field--name-field-governor a')
-    const name = govAnchor?.textContent?.replace(/^Governor\s+/, '').trim()
+    const name = govAnchor?.textContent?.replace(/\s*(Contact|Governor|Mayor)\s*/g, '').trim()
     const governorUrl = govAnchor?.getAttribute('href')?.trim()
 
     // Contact URL
@@ -112,7 +112,10 @@ export const parseGovernorInfo = (
 
     const json = {
       state,
-      name,
+      name:
+        name !== undefined && state === 'DC'
+          ? `D.C. does not have a Governor, but the Mayor is ${name}`
+          : name,
       governorUrl,
       contactUrl,
       phone,

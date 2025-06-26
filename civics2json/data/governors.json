@@ -113,7 +113,7 @@
   },
   {
     "state": "DC",
-    "name": "Mayor Muriel Bowser",
+    "name": "D.C. does not have a Governor, but the mayor is Muriel Bowser",
     "governorUrl": "https://mayor.dc.gov/",
     "contactUrl": "https://dcforms.dc.gov/webform/executive-office-mayor-ask-mayor",
     "phone": "1-202-727-2643",
@@ -168,7 +168,7 @@
   },
   {
     "state": "GU",
-    "name": "Contact Governor Lourdes Aflague Leon Guerrero",
+    "name": "Lourdes Aflague Leon Guerrero",
     "governorUrl": "https://governor.guam.gov/contact-us/",
     "phone": "1-671-472-8931",
     "address": {
@@ -598,7 +598,7 @@
   },
   {
     "state": "RI",
-    "name": "Contact Governor Dan McKee",
+    "name": "Dan McKee",
     "governorUrl": "https://governor.ri.gov/",
     "contactUrl": "https://governor.ri.gov/contact",
     "phone": "1-401-222-2080",
