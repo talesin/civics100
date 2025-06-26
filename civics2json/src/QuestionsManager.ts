@@ -309,7 +309,7 @@ export const fetchGovernmentsPages = (
     return writtenFiles
   })
 
-export const fetchAndParseGovenors = (
+export const fetchAndParseGovernors = (
   fs: FileSystem.FileSystem,
   gc: GovernorsClient,
   c: CivicsConfig
@@ -344,7 +344,7 @@ export const getGovernorsQuestions = (
     if (governorsQuestion === undefined) {
       return yield* Effect.fail(new Error('State governors question not found'))
     }
-    const governors = (yield* fetchAndParseGovenors(fs, gc, c)()).map((g) => ({
+    const governors = (yield* fetchAndParseGovernors(fs, gc, c)()).map((g) => ({
       governor: g.name,
       state: g.state
     }))
@@ -452,7 +452,7 @@ export class QuestionsManager extends Effect.Service<QuestionsManager>()('Questi
       ),
       fetchGovernmentsIndex: fetchGovernmentsIndex(fs, governorsClient, config),
       parseStateLinks: parseStateLinks(fs, governorsClient, config),
-      fetchAndParseGovenors: fetchAndParseGovenors(fs, governorsClient, config)
+      fetchAndParseGovernors: fetchAndParseGovernors(fs, governorsClient, config)
     }
   }),
   dependencies: [
