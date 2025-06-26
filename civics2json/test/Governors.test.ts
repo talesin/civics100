@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
-import { parseStateLinks } from './Governors'
+import { parseStateLinks } from '@src/Governors'
 import { Effect } from 'effect'
 
 describe('parseStateLinks', () => {

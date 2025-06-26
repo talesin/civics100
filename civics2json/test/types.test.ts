@@ -7,7 +7,7 @@ import {
   StatesByName,
   StateAbbreviation,
   StateName
-} from './types'
+} from '@src/types'
 
 describe('isStateAbbreviation', () => {
   it('returns true for valid state abbreviations', () => {

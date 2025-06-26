@@ -15,6 +15,7 @@ export const CivicsConfig = getConfig(
     'STATE_GOVERNMENTS_HTML_FILE',
     'STATE_GOVERNMENTS_JSON_FILE',
     'STATE_GOVERNMENTS_DATA_DIR',
+    'GOVERNORS_JSON_FILE',
     'UPDATES_URL',
     'UPDATES_JSON_FILE',
     'UPDATES_HTML_FILE'
@@ -35,6 +36,7 @@ export const CivicsConfig = getConfig(
     STATE_GOVERNMENTS_HTML_FILE: { value: 'data/state-governments.html' },
     STATE_GOVERNMENTS_JSON_FILE: { value: 'data/state-governments.json' },
     STATE_GOVERNMENTS_DATA_DIR: { value: 'data/state-governments' },
+    GOVERNORS_JSON_FILE: { value: 'data/governors.json' },
     UPDATES_URL: {
       value:
         'https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates'

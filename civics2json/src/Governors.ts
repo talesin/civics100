@@ -1,9 +1,11 @@
-import { Effect, Layer, Stream } from 'effect'
+import { Effect, Layer, Stream, Schema } from 'effect'
 import { HttpClient } from '@effect/platform'
 import { CivicsConfig } from './config'
 import { HttpClientError } from '@effect/platform/HttpClientError'
 import { parseHTML } from 'linkedom'
 import {
+  Governor,
+  GovernorSchema,
   isStateAbbreviation,
   StateAbbreviation,
   StateGovernmentLink,
@@ -11,6 +13,7 @@ import {
   StateGovernmentPage
 } from './types'
 import { UnknownException } from 'effect/Cause'
+import { ParseError } from 'effect/ParseResult'
 
 /**
  * Fetches the state governments index HTML from usa.gov
@@ -72,38 +75,54 @@ export const fetchAllGovernmentPages =
     )
 
 /**
- * Attempts to extract the governor's name from a state's page HTML.
- * This is a best-effort and may need to be customized per state.
+ * Parses the #State-Directory-Table for governor info: name, URLs, phone, address, and website.
+ * Returns a Governor object or undefined if not found/invalid.
  */
-export const parseGovernorName = (html: string): string | undefined => {
-  const { document } = parseHTML(html)
-  // Try some common selectors/heuristics
-  const selectors = [
-    'h1:contains("Governor")',
-    'h2:contains("Governor")',
-    'a[title*="Governor"]',
-    'p:contains("Governor")',
-    'title',
-    'meta[name="description"]'
-  ]
-  // Try to find the governor's name in the page content
-  for (const sel of selectors) {
-    const el = document.querySelector(sel)
-    if (el != null && el.textContent != null) {
-      // Try to extract a name from the text
-      const match = el.textContent.match(/Governor\s+([A-Z][a-zA-Z\-'. ]+)/)
-      if (match != null && match[1] != null) {
-        return match[1].trim()
-      }
+export const parseGovernorInfo = (
+  html: string,
+  state: StateAbbreviation
+): Effect.Effect<Governor, ParseError | UnknownException> =>
+  Effect.gen(function* () {
+    const document = yield* Effect.try(() => parseHTML(html).document)
+    const table = document.querySelector('#State-Directory-Table')
+
+    // State government website
+    const websiteAnchor = table?.querySelector('span.field--name-field-website a')
+    const stateGovernmentWebsite = websiteAnchor?.getAttribute('href')?.trim()
+
+    // Governor name and URL
+    const govAnchor = table?.querySelector('span.field--name-field-governor a')
+    const name = govAnchor?.textContent?.replace(/^Governor\s+/, '').trim()
+    const governorUrl = govAnchor?.getAttribute('href')?.trim()
+
+    // Contact URL
+    const contactAnchor = table?.querySelector('span.field--name-field-governor-contact a')
+    const contactUrl = contactAnchor?.getAttribute('href')?.trim()
+
+    // Phone
+    const phoneElem = table?.querySelector('p.phoneNumberField')
+    const phone = phoneElem?.textContent?.trim()
+
+    // Address
+    const street = table?.querySelector('span.field--name-field-street-1')?.textContent?.trim()
+    const city = table?.querySelector('span.field--name-field-city')?.textContent?.trim()
+    const stateAbbr = table?.querySelector('span.field--name-field-state-abbr')?.textContent?.trim()
+    const zip = table?.querySelector('span.field--name-field-zip')?.textContent?.trim()
+    const address = { street, city, state: stateAbbr, zip }
+
+    const json = {
+      state,
+      name,
+      governorUrl,
+      contactUrl,
+      phone,
+      address,
+      stateGovernmentWebsite
     }
-  }
-  // Fallback: look for the first occurrence of 'Governor <Name>'
-  const match = html.match(/Governor\s+([A-Z][a-zA-Z\-'. ]+)/)
-  if (match != null && match[1] != null) {
-    return match[1].trim()
-  }
-  return undefined
-}
+
+    const governor: Governor = yield* Schema.decodeUnknown(GovernorSchema)(json)
+    return governor
+  })
 
 /**
  * GovernorsClient service for dependency injection.
@@ -117,7 +136,8 @@ export class GovernorsClient extends Effect.Service<GovernorsClient>()('Governor
       fetchGovernmentPage: (url: string, state: StateAbbreviation) =>
         fetchGovernmentPage(httpClient, config)(url, state),
       fetchAllGovernmentPages: fetchAllGovernmentPages(httpClient, config),
-      parseStateLinks: (html: string) => parseStateLinks(html)
+      parseStateLinks: (html: string) => parseStateLinks(html),
+      parseGovernorInfo: parseGovernorInfo
     }
   })
 }) {}
@@ -142,6 +162,10 @@ export const TestGovernorsClientLayer = (fn?: {
   parseStateLinks?: (
     html: string
   ) => Effect.Effect<ReadonlyArray<StateGovernmentLink>, UnknownException>
+  parseGovernorInfo?: (
+    html: string,
+    state: StateAbbreviation
+  ) => Effect.Effect<Governor, ParseError | UnknownException>
 }) =>
   Layer.succeed(
     GovernorsClient,
@@ -155,6 +179,8 @@ export const TestGovernorsClientLayer = (fn?: {
         fn?.fetchAllGovernmentPages ??
         ((_stateLinks) =>
           Stream.fromIterable<{ state: StateAbbreviation; url: string; html: string }>([])),
-      parseStateLinks: fn?.parseStateLinks ?? ((_html) => Effect.succeed([]))
+      parseStateLinks: fn?.parseStateLinks ?? ((_html) => Effect.succeed([])),
+      parseGovernorInfo:
+        fn?.parseGovernorInfo ?? ((_html, _state) => Effect.succeed({} as Governor))
     })
   )

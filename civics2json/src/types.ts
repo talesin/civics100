@@ -274,9 +274,22 @@ export const RepresentativeSchema = Schema.Struct({
 export type Representative = typeof RepresentativeSchema.Type
 
 export const GovernorSchema = Schema.Struct({
-  state: Schema.String,
-  name: Schema.String,
-  url: Schema.String
+  state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)),
+  name: Schema.NonEmptyString,
+  governorUrl: Schema.NonEmptyString,
+  contactUrl: Schema.optional(Schema.NonEmptyString),
+  phone: Schema.optional(Schema.NonEmptyString),
+  address: Schema.Struct({
+    street: Schema.NonEmptyString,
+    city: Schema.NonEmptyString,
+    state: Schema.NonEmptyString,
+    zip: Schema.NonEmptyString
+  }).annotations({
+    name: 'Address'
+  }),
+  stateGovernmentWebsite: Schema.NonEmptyString
+}).annotations({
+  name: 'Governor'
 })
 export type Governor = typeof GovernorSchema.Type
 

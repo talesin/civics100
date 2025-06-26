@@ -10,6 +10,7 @@ import {
   Senator,
   StateGovernmentLinks,
   StateGovernmentLinkSchema,
+  StateGovernmentPage,
   StatesByAbbreviation
 } from './types'
 import { ParseError } from 'effect/ParseResult'
@@ -248,7 +249,11 @@ export const parseStateLinks = (fs: FileSystem.FileSystem, gc: GovernorsClient, 
     return links
   })
 
-export const fetchGovernments = (fs: FileSystem.FileSystem, gc: GovernorsClient, c: CivicsConfig) =>
+export const fetchGovernmentsPages = (
+  fs: FileSystem.FileSystem,
+  gc: GovernorsClient,
+  c: CivicsConfig
+) =>
   Effect.fn(function* (options?: { forceFetch?: boolean }) {
     const links = yield* parseStateLinks(fs, gc, c)(options)
 
@@ -308,7 +313,20 @@ export const fetchAndParseGovenors = (
   c: CivicsConfig
 ) =>
   Effect.fn(function* (options?: { forceFetch?: boolean }) {
-    yield* fetchGovernments(fs, gc, c)(options)
+    const pages = yield* fetchGovernmentsPages(fs, gc, c)(options)
+    const governors = yield* Effect.all(
+      pages
+        .filter((page): page is StateGovernmentPage & { file: string } => page.file !== undefined)
+        .map((page) =>
+          fs
+            .readFileString(page.file)
+            .pipe(Effect.flatMap((html) => gc.parseGovernorInfo(html, page.state)))
+        )
+    )
+    yield* Effect.log(`Parsed ${governors.length} governors from ${pages.length} pages`)
+    yield* fs.writeFileString(c.GOVERNORS_JSON_FILE, JSON.stringify(governors, null, 2))
+    yield* Effect.log(`Wrote ${governors.length} governors to ${c.GOVERNORS_JSON_FILE}`)
+    return governors
   })
 
 /**
