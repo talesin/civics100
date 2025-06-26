@@ -2713,7 +2713,7 @@
           "state": "CT"
         },
         {
-          "governor": "D.C. does not have a Governor, but the mayor is Muriel Bowser",
+          "governor": "D.C. does not have a Governor, but the Mayor is Muriel Bowser",
           "state": "DC"
         },
         {
@@ -2912,9 +2912,232 @@
     "section": "System of Government",
     "question": "What is the capital of your state?*",
     "answers": {
-      "_type": "text",
+      "_type": "capital",
       "choices": [
-        "Answers will vary. [District of Columbia residents should answer that D.C. is not a state and does not have a capital. Residents of U.S. territories should name the capital of the territory.]"
+        {
+          "capital": "Montgomery",
+          "state": "AL"
+        },
+        {
+          "capital": "Juneau",
+          "state": "AK"
+        },
+        {
+          "capital": "Phoenix",
+          "state": "AZ"
+        },
+        {
+          "capital": "Little Rock",
+          "state": "AR"
+        },
+        {
+          "capital": "Sacramento",
+          "state": "CA"
+        },
+        {
+          "capital": "Denver",
+          "state": "CO"
+        },
+        {
+          "capital": "Hartford",
+          "state": "CT"
+        },
+        {
+          "capital": "Dover",
+          "state": "DE"
+        },
+        {
+          "capital": "Tallahassee",
+          "state": "FL"
+        },
+        {
+          "capital": "Atlanta",
+          "state": "GA"
+        },
+        {
+          "capital": "Honolulu",
+          "state": "HI"
+        },
+        {
+          "capital": "Boise",
+          "state": "ID"
+        },
+        {
+          "capital": "Springfield",
+          "state": "IL"
+        },
+        {
+          "capital": "Indianapolis",
+          "state": "IN"
+        },
+        {
+          "capital": "Des Moines",
+          "state": "IA"
+        },
+        {
+          "capital": "Topeka",
+          "state": "KS"
+        },
+        {
+          "capital": "Frankfort",
+          "state": "KY"
+        },
+        {
+          "capital": "Baton Rouge",
+          "state": "LA"
+        },
+        {
+          "capital": "Augusta",
+          "state": "ME"
+        },
+        {
+          "capital": "Annapolis",
+          "state": "MD"
+        },
+        {
+          "capital": "Boston",
+          "state": "MA"
+        },
+        {
+          "capital": "Lansing",
+          "state": "MI"
+        },
+        {
+          "capital": "Saint Paul",
+          "state": "MN"
+        },
+        {
+          "capital": "Jackson",
+          "state": "MS"
+        },
+        {
+          "capital": "Jefferson City",
+          "state": "MO"
+        },
+        {
+          "capital": "Helena",
+          "state": "MT"
+        },
+        {
+          "capital": "Lincoln",
+          "state": "NE"
+        },
+        {
+          "capital": "Carson City",
+          "state": "NV"
+        },
+        {
+          "capital": "Concord",
+          "state": "NH"
+        },
+        {
+          "capital": "Trenton",
+          "state": "NJ"
+        },
+        {
+          "capital": "Santa Fe",
+          "state": "NM"
+        },
+        {
+          "capital": "Albany",
+          "state": "NY"
+        },
+        {
+          "capital": "Raleigh",
+          "state": "NC"
+        },
+        {
+          "capital": "Bismarck",
+          "state": "ND"
+        },
+        {
+          "capital": "Columbus",
+          "state": "OH"
+        },
+        {
+          "capital": "Oklahoma City",
+          "state": "OK"
+        },
+        {
+          "capital": "Salem",
+          "state": "OR"
+        },
+        {
+          "capital": "Harrisburg",
+          "state": "PA"
+        },
+        {
+          "capital": "Providence",
+          "state": "RI"
+        },
+        {
+          "capital": "Columbia",
+          "state": "SC"
+        },
+        {
+          "capital": "Pierre",
+          "state": "SD"
+        },
+        {
+          "capital": "Nashville",
+          "state": "TN"
+        },
+        {
+          "capital": "Austin",
+          "state": "TX"
+        },
+        {
+          "capital": "Salt Lake City",
+          "state": "UT"
+        },
+        {
+          "capital": "Montpelier",
+          "state": "VT"
+        },
+        {
+          "capital": "Richmond",
+          "state": "VA"
+        },
+        {
+          "capital": "Olympia",
+          "state": "WA"
+        },
+        {
+          "capital": "Charleston",
+          "state": "WV"
+        },
+        {
+          "capital": "Madison",
+          "state": "WI"
+        },
+        {
+          "capital": "Cheyenne",
+          "state": "WY"
+        },
+        {
+          "capital": "D.C. is not a state and does not have a capital",
+          "state": "DC"
+        },
+        {
+          "capital": "Pago Pago",
+          "state": "AS"
+        },
+        {
+          "capital": "Hagatna",
+          "state": "GU"
+        },
+        {
+          "capital": "Saipan",
+          "state": "MP"
+        },
+        {
+          "capital": "San Juan",
+          "state": "PR"
+        },
+        {
+          "capital": "Charlotte Amalie",
+          "state": "VI"
+        }
       ]
     }
   },

@@ -21,19 +21,14 @@ import { CivicsConfig } from './config'
 import { GovernorsClient } from './Governors'
 
 /**
- * The question string used to identify the senator question in the civics questions set.
+ * The variable questions that are used to identify the senator, representative, and governor questions in the civics questions set.
  */
-export const STATE_SENATORS_QUESTION = "Who is one of your state's U.S. Senators now?*"
-
-/**
- * The question string used to identify the representative question in the civics questions set.
- */
-export const STATE_REPRESENTATIVES_QUESTION = 'Name your U.S. Representative.'
-
-/**
- * The question string used to identify the governor question in the civics questions set.
- */
-export const STATE_GOVERNORS_QUESTION = 'Who is the Governor of your state now?'
+export const VARIABLE_QUESTIONS = {
+  STATE_SENATORS: "Who is one of your state's U.S. Senators now?*",
+  STATE_REPRESENTATIVES: 'Name your U.S. Representative.',
+  STATE_GOVERNORS: 'Who is the Governor of your state now?',
+  STATE_CAPITALS: 'What is the capital of your state?*'
+} as const
 
 /**
  * Fetches the civics questions text using the CivicsQuestionsClient.
@@ -164,10 +159,12 @@ export const getSenatorsQuestion = (
   fs: FileSystem.FileSystem,
   sc: SenatorsClient,
   c: CivicsConfig
-) =>
+): ((questionMap: Record<string, Question>) => Effect.Effect<Question, Error>) =>
   Effect.fn(function* (questionMap: Record<string, Question>) {
+    const senatorsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_SENATORS]
+
     // fail if we cannot find the senators question
-    if (questionMap[STATE_SENATORS_QUESTION] === undefined) {
+    if (senatorsQuestion === undefined) {
       return yield* Effect.fail(new Error('State senators question not found'))
     }
     const senators = (yield* fetchAndParseSenators(fs, sc, c)()).map((s) => ({
@@ -176,21 +173,22 @@ export const getSenatorsQuestion = (
     }))
 
     // update the senators question
-    const senatorsQuestion: Question = {
-      ...questionMap[STATE_SENATORS_QUESTION],
+    return {
+      ...senatorsQuestion,
       answers: { _type: 'senator', choices: senators }
     }
-    return senatorsQuestion
   })
 
 export const getRepresentativesQuestions = (
   fs: FileSystem.FileSystem,
   rc: RepresentativesClient,
   c: CivicsConfig
-) =>
+): ((questionMap: Record<string, Question>) => Effect.Effect<Question, Error>) =>
   Effect.fn(function* (questionMap: Record<string, Question>) {
+    const representativesQuestion = questionMap[VARIABLE_QUESTIONS.STATE_REPRESENTATIVES]
+
     // fail if we cannot find the representatives question
-    if (questionMap[STATE_REPRESENTATIVES_QUESTION] === undefined) {
+    if (representativesQuestion === undefined) {
       return yield* Effect.fail(new Error('State representatives question not found'))
     }
     const representatives = (yield* fetchAndParseRepresentatives(fs, rc, c)()).map((r) => ({
@@ -199,11 +197,10 @@ export const getRepresentativesQuestions = (
     }))
 
     // update the representatives question
-    const representativesQuestion: Question = {
-      ...questionMap[STATE_REPRESENTATIVES_QUESTION],
+    return {
+      ...representativesQuestion,
       answers: { _type: 'representative', choices: representatives }
     }
-    return representativesQuestion
   })
 
 /**
@@ -339,10 +336,12 @@ export const getGovernorsQuestions = (
   fs: FileSystem.FileSystem,
   gc: GovernorsClient,
   c: CivicsConfig
-) =>
+): ((questionMap: Record<string, Question>) => Effect.Effect<Question, Error>) =>
   Effect.fn(function* (questionMap: Record<string, Question>) {
+    const governorsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_GOVERNORS]
+
     // fail if we cannot find the governors question
-    if (questionMap[STATE_GOVERNORS_QUESTION] === undefined) {
+    if (governorsQuestion === undefined) {
       return yield* Effect.fail(new Error('State governors question not found'))
     }
     const governors = (yield* fetchAndParseGovenors(fs, gc, c)()).map((g) => ({
@@ -351,12 +350,32 @@ export const getGovernorsQuestions = (
     }))
 
     // update the governors question
-    const governorsQuestion: Question = {
-      ...questionMap[STATE_GOVERNORS_QUESTION],
+    return {
+      ...governorsQuestion,
       answers: { _type: 'governor', choices: governors }
     }
-    return governorsQuestion
   })
+
+export const getStateCapitalsQuestions: (
+  questionMap: Record<string, Question>
+) => Effect.Effect<Question, Error> = Effect.fn(function* (questionMap: Record<string, Question>) {
+  const capitalsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_CAPITALS]
+
+  // fail if we cannot find the governors question
+  if (capitalsQuestion === undefined) {
+    return yield* Effect.fail(new Error('State capitals question not found'))
+  }
+  const capitals = Object.values(StatesByAbbreviation).map((state) => ({
+    capital: state.capital,
+    state: state.abbreviation
+  }))
+
+  // update the governors question
+  return {
+    ...capitalsQuestion,
+    answers: { _type: 'capital', choices: capitals }
+  }
+})
 
 /**
  * Constructs the civics questions set, replacing the senator question's answers with the current list of senators.
@@ -383,21 +402,17 @@ export const constructQuestions = (
       (yield* fetchAndParseCivicsQuestions(fs, cq, c)()).map((q) => [q.question, q])
     )
 
-    // get updated senators question
-    const senatorsQuestion = yield* getSenatorsQuestion(fs, sc, c)(questionMap)
-
-    // get updated representatives question
-    const representativesQuestion = yield* getRepresentativesQuestions(fs, rc, c)(questionMap)
-
-    // get updated governors question
-    const governorsQuestion = yield* getGovernorsQuestions(fs, gc, c)(questionMap)
-
     // update the senators question in the map
     const questions = Object.values({
       ...questionMap,
-      [STATE_SENATORS_QUESTION]: senatorsQuestion,
-      [STATE_REPRESENTATIVES_QUESTION]: representativesQuestion,
-      [STATE_GOVERNORS_QUESTION]: governorsQuestion
+      [VARIABLE_QUESTIONS.STATE_SENATORS]: yield* getSenatorsQuestion(fs, sc, c)(questionMap),
+      [VARIABLE_QUESTIONS.STATE_REPRESENTATIVES]: yield* getRepresentativesQuestions(
+        fs,
+        rc,
+        c
+      )(questionMap),
+      [VARIABLE_QUESTIONS.STATE_GOVERNORS]: yield* getGovernorsQuestions(fs, gc, c)(questionMap),
+      [VARIABLE_QUESTIONS.STATE_CAPITALS]: yield* getStateCapitalsQuestions(questionMap)
     })
 
     yield* Effect.log(`Writing updated questions to file`)
