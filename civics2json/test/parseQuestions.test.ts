@@ -1,4 +1,4 @@
-import { Effect, Console } from 'effect'
+import { Effect } from 'effect'
 import { parseQuestionsFile } from '@src/parseQuestions'
 import { Question } from '@src/types'
 import { describe, it, expect } from '@jest/globals'
@@ -32,27 +32,29 @@ A: Principles of American Democracy
 `
     await Effect.gen(function* () {
       const questions = yield* parseQuestionsFile(mockWebText, { skipValidation: true })
-      expect(questions).toBeInstanceOf(Array)
-      expect(questions.length).toBeGreaterThan(0)
-
-      // Check structure of the first question as a sample
-      if (questions.length > 0) {
-        const firstQuestion = questions[0]
-        if (firstQuestion !== undefined) {
-          expect(firstQuestion).toHaveProperty('theme')
-          expect(firstQuestion).toHaveProperty('section')
-          expect(firstQuestion).toHaveProperty('question')
-          expect(firstQuestion).toHaveProperty('answers')
-          expect(firstQuestion.answers).toHaveProperty('_type')
-          expect(firstQuestion.answers).toHaveProperty('choices')
-        } else {
-          // This branch should ideally not be hit if questions.length > 0
-          // but it satisfies the type checker and makes the test fail explicitly if it is.
-          expect(firstQuestion).toBeDefined()
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is the supreme law of the land?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: ['the Constitution'] }
+        },
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What does the Constitution do?',
+          questionNumber: 2,
+          answers: {
+            _type: 'text',
+            choices: [
+              'sets up the government',
+              'defines the government',
+              'protects basic rights of Americans'
+            ]
+          }
         }
-      }
-      yield* Console.log(`Successfully parsed ${questions.length} questions from local file`)
-      return questions
+      ])
     }).pipe(Effect.runPromise)
   })
 
@@ -80,32 +82,50 @@ A: Principles of American Democracy
 `
     await Effect.gen(function* () {
       const questions = yield* parseQuestionsFile(mockWebText, { skipValidation: true })
-      expect(questions).toBeInstanceOf(Array)
-      expect(questions.length).toBe(2) // Based on mockWebText
-      const q0_web = questions[0]
-      const q1_web = questions[1]
-      if (q0_web !== undefined && q1_web !== undefined) {
-        expect(q0_web.question).toBe('What is the supreme law of the land?')
-        expect(q1_web.answers).toHaveProperty('_type', 'text')
-        expect(q1_web.answers).toHaveProperty('choices')
-      } else {
-        expect(q0_web).toBeDefined()
-        expect(q1_web).toBeDefined()
-      }
-      yield* Console.log(`Successfully parsed ${questions.length} questions from mocked web fetch`)
-      return questions
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is the supreme law of the land?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: ['the Constitution'] }
+        },
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What does the Constitution do?',
+          questionNumber: 2,
+          answers: {
+            _type: 'text',
+            choices: [
+              'sets up the government',
+              'defines the government',
+              'protects basic rights of Americans'
+            ]
+          }
+        }
+      ])
+    }).pipe(Effect.runPromise)
+  })
+
+  it('should skip questions when no leading number', async () => {
+    const mockText = `
+AMERICAN GOVERNMENT
+A: Principles of American Democracy
+
+What is the supreme law of the land?
+. the Constitution
+`
+    await Effect.gen(function* () {
+      const questions = yield* parseQuestionsFile(mockText, { skipValidation: true })
+      expect(questions).toStrictEqual([])
     }).pipe(Effect.runPromise)
   })
 
   it('should return an empty array or handle error for empty input string', async () => {
     await Effect.gen(function* () {
       const questions = yield* parseQuestionsFile('')
-      expect(questions).toBeInstanceOf(Array)
-      // Depending on implementation, it might be empty or throw an error handled by catchTag/catchAll
-      // For this example, let's assume it returns an empty array for empty non-null input
-      expect(questions.length).toBe(0)
-      yield* Console.log('Parsed empty string, result count: ' + questions.length)
-      return questions
+      expect(questions).toStrictEqual([])
     }).pipe(
       Effect.catchAll((_error) => {
         // parseQuestions fails with a string error, e.g., for empty/invalid input.
@@ -139,22 +159,18 @@ A: Principles of American Democracy
 `
     await Effect.gen(function* (_) {
       const questions = yield* parseQuestionsFile(text, { skipValidation: true })
-      expect(questions.length).toBe(1)
-      const q0_multi_ans = questions[0]
-      if (q0_multi_ans !== undefined) {
-        expect(q0_multi_ans.answers).toHaveProperty('_type', 'text')
-        expect(q0_multi_ans.answers).toHaveProperty('choices')
-        expect(q0_multi_ans.answers.choices).toEqual([
-          'speech',
-          'religion',
-          'assembly',
-          'press',
-          'petition the government'
-        ])
-      } else {
-        expect(q0_multi_ans).toBeDefined()
-      }
-      return questions
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is one right or freedom from the First Amendment?*',
+          questionNumber: 6,
+          answers: {
+            _type: 'text',
+            choices: ['speech', 'religion', 'assembly', 'press', 'petition the government']
+          }
+        }
+      ])
     }).pipe(Effect.runPromise)
   })
 
@@ -192,20 +208,25 @@ B: System of Government
 `
     await Effect.gen(function* (_) {
       const questions = yield* parseQuestionsFile(text, { skipValidation: true })
-      yield* Console.log(JSON.stringify(questions, null, 2))
-      expect(questions.length).toBe(2)
-      const q0_theme = questions[0]
-      const q1_theme = questions[1]
-      if (q0_theme !== undefined && q1_theme !== undefined) {
-        expect(q0_theme.theme).toBe('AMERICAN GOVERNMENT')
-        expect(q0_theme.section).toBe('Principles of American Democracy')
-        expect(q1_theme.theme).toBe('AMERICAN GOVERNMENT') // Theme persists
-        expect(q1_theme.section).toBe('System of Government')
-      } else {
-        expect(q0_theme).toBeDefined()
-        expect(q1_theme).toBeDefined()
-      }
-      return questions
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is the supreme law of the land?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: ['the Constitution'] }
+        },
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'System of Government',
+          question: 'Name one branch or part of the government.*',
+          questionNumber: 13,
+          answers: {
+            _type: 'text',
+            choices: ['Congress', 'legislative', 'President', 'executive', 'the courts', 'judicial']
+          }
+        }
+      ])
     }).pipe(Effect.runPromise)
   })
 
@@ -230,31 +251,43 @@ A: Colonial Period and Independence
 `
     await Effect.gen(function* (_) {
       const questions = yield* parseQuestionsFile(text, { skipValidation: true })
-      expect(questions.length).toBe(4)
-      expect(questions[0]).toMatchObject({
-        theme: 'AMERICAN GOVERNMENT',
-        section: 'Principles of American Democracy',
-        question: 'What is the supreme law of the land?',
-        answers: { _type: 'text', choices: ['the Constitution'] }
-      })
-      expect(questions[1]).toMatchObject({
-        answers: {
-          _type: 'text',
-          choices: [
-            'sets up the government',
-            'defines the government',
-            'protects basic rights of Americans'
-          ]
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is the supreme law of the land?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: ['the Constitution'] }
+        },
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What does the Constitution do?',
+          questionNumber: 2,
+          answers: {
+            _type: 'text',
+            choices: [
+              'sets up the government',
+              'defines the government',
+              'protects basic rights of Americans'
+            ]
+          }
+        },
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'System of Government',
+          question: 'Who is in charge of the executive branch?',
+          questionNumber: 3,
+          answers: { _type: 'text', choices: ['the President'] }
+        },
+        {
+          theme: 'AMERICAN HISTORY',
+          section: 'Colonial Period and Independence',
+          question: 'Who lived in America before the Europeans arrived?',
+          questionNumber: 4,
+          answers: { _type: 'text', choices: ['Native Americans'] }
         }
-      })
-      expect(questions[2]).toMatchObject({
-        section: 'System of Government'
-      })
-      expect(questions[3]).toMatchObject({
-        theme: 'AMERICAN HISTORY',
-        answers: { _type: 'text', choices: ['Native Americans'] }
-      })
-      return questions
+      ])
     }).pipe(Effect.runPromise)
   })
 
@@ -266,11 +299,15 @@ A: Principles of American Democracy
 `
     await Effect.gen(function* (_) {
       const questions = yield* parseQuestionsFile(text, { skipValidation: true })
-      expect(questions.length).toBe(1)
-      expect(questions[0]?.answers).toHaveProperty('_type', 'text')
-      expect(questions[0]?.answers).toHaveProperty('choices')
-      expect(questions[0]?.answers.choices).toEqual([])
-      return questions
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is the supreme law of the land?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: [] }
+        }
+      ])
     }).pipe(Effect.runPromise)
   })
 
@@ -289,12 +326,25 @@ A: Principles of American Democracy
 `
     await Effect.gen(function* (_) {
       const questions = yield* parseQuestionsFile(text, { skipValidation: true })
-      expect(questions[0]?.question).toBe('What is the supreme law of the land?')
-      expect(questions[0]?.answers).toMatchObject({ _type: 'text', choices: ['the Constitution'] })
-      expect(questions[1]?.answers).toMatchObject({
-        _type: 'text',
-        choices: ['sets up the government', 'defines the government']
-      })
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is the supreme law of the land?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: ['the Constitution'] }
+        },
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What does the Constitution do?',
+          questionNumber: 2,
+          answers: {
+            _type: 'text',
+            choices: ['sets up the government', 'defines the government']
+          }
+        }
+      ])
       return questions
     }).pipe(Effect.runPromise)
   })
@@ -314,9 +364,25 @@ A: Principles of American Democracy
 `
     await Effect.gen(function* (_) {
       const questions = yield* parseQuestionsFile(text, { skipValidation: true })
-      expect(questions.length).toBe(2)
-      expect(questions[0]?.theme).toBe('AMERICAN GOVERNMENT')
-      expect(questions[1]?.section).toBe('Principles of American Democracy')
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is the supreme law of the land?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: ['the Constitution'] }
+        },
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What does the Constitution do?',
+          questionNumber: 2,
+          answers: {
+            _type: 'text',
+            choices: ['sets up the government']
+          }
+        }
+      ])
       return questions
     }).pipe(Effect.runPromise)
   })
@@ -331,8 +397,15 @@ B: System of Government
 `
     await Effect.gen(function* (_) {
       const questions = yield* parseQuestionsFile(text, { skipValidation: true })
-      expect(questions.length).toBe(1)
-      expect(questions[0]?.section).toBe('System of Government')
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'System of Government',
+          question: 'Who is in charge of the executive branch?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: ['the President'] }
+        }
+      ])
       return questions
     }).pipe(Effect.runPromise)
   })
@@ -346,7 +419,15 @@ A: Principles of American Democracy
 `
     await Effect.gen(function* (_) {
       const questions = yield* parseQuestionsFile(text, { skipValidation: true })
-      expect(questions[0]?.answers).toMatchObject({ _type: 'text', choices: ['the Constitution'] })
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is the supreme law of the land?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: ['the Constitution'] }
+        }
+      ])
       return questions
     }).pipe(Effect.runPromise)
   })
@@ -382,9 +463,22 @@ A: Colonial Period
 `
     await Effect.gen(function* (_) {
       const questions = yield* parseQuestionsFile(text, { skipValidation: true })
-      expect(questions[0]?.theme).toBe('AMERICAN GOVERNMENT')
-      expect(questions[1]?.theme).toBe('AMERICAN HISTORY')
-      expect(questions[1]?.section).toBe('Colonial Period')
+      expect(questions).toStrictEqual([
+        {
+          theme: 'AMERICAN GOVERNMENT',
+          section: 'Principles of American Democracy',
+          question: 'What is the supreme law of the land?',
+          questionNumber: 1,
+          answers: { _type: 'text', choices: ['the Constitution'] }
+        },
+        {
+          theme: 'AMERICAN HISTORY',
+          section: 'Colonial Period',
+          question: 'Who lived in America before the Europeans arrived?',
+          questionNumber: 2,
+          answers: { _type: 'text', choices: ['Native Americans'] }
+        }
+      ])
       return questions
     }).pipe(Effect.runPromise)
   })
@@ -417,13 +511,15 @@ A: Principles of American Democracy
 . the Constitution 
 `
     const questions = await parseQuestionsFile(text).pipe(Effect.runPromise)
-    expect(questions).toHaveLength(1)
-    expect(questions[0]).toMatchObject({
-      theme: 'AMERICAN GOVERNMENT',
-      section: 'Principles of American Democracy',
-      question: 'What is the supreme law of the land?',
-      answers: { _type: 'text', choices: ['the Constitution'] }
-    })
+    expect(questions).toStrictEqual([
+      {
+        theme: 'AMERICAN GOVERNMENT',
+        section: 'Principles of American Democracy',
+        question: 'What is the supreme law of the land?',
+        questionNumber: 1,
+        answers: { _type: 'text', choices: ['the Constitution'] }
+      }
+    ])
   })
 
   it('should return 100 questions from sample file', async () => {

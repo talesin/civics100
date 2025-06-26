@@ -228,6 +228,7 @@ export type Question = DeepReadonly<{
   theme: string
   section: string
   question: string
+  questionNumber: number
   answers:
     | { _type: 'text'; choices: string[] }
     | { _type: 'senator'; choices: { senator: string; state: StateAbbreviation }[] }
