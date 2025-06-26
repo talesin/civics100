@@ -12,6 +12,7 @@ interface ParsedSection {
 }
 interface ParsedQuestion {
   question: string
+  number: number
   answers: readonly ParsedAnswer[]
 }
 
@@ -23,7 +24,7 @@ type ParsedAnswer = string
 type LineClassification =
   | { readonly type: 'theme'; readonly value: string }
   | { readonly type: 'section'; readonly value: string }
-  | { readonly type: 'question'; readonly value: string }
+  | { readonly type: 'question'; readonly value: string; readonly number: number }
   | { readonly type: 'answer'; readonly value: string }
   | { readonly type: 'empty' }
   | { readonly type: 'other' }
@@ -56,8 +57,16 @@ const classifyLine = (line: string): LineClassification => {
 
   // Question line (starts with a number followed by a period and space)
   const questionMatch = line.match(/^(\d+)\.\s+(.+)$/)
-  if (questionMatch && typeof questionMatch[2] === 'string') {
-    return { type: 'question', value: questionMatch[2].trim() }
+  if (
+    questionMatch !== null &&
+    typeof questionMatch[1] === 'string' &&
+    typeof questionMatch[2] === 'string'
+  ) {
+    return {
+      type: 'question',
+      value: questionMatch[2].trim(),
+      number: parseInt(questionMatch[1], 10)
+    }
   }
 
   // Answer line (starts with ". ")
@@ -120,13 +129,22 @@ const parseQuestions = (
   questions: readonly ParsedQuestion[]
 ): ParseQuestionsResult => {
   const { classification: cl, rest } = getNextClassification(lines)
-  if (cl === undefined || cl.type !== 'question' || typeof cl.value !== 'string') {
+  if (
+    cl === undefined ||
+    cl.type !== 'question' ||
+    typeof cl.value !== 'string' ||
+    typeof cl.number !== 'number'
+  ) {
     return { questions, rest: lines }
   }
 
   const questionName = cl.value
+  const questionNumber = cl.number
   const { answers, rest: afterAnswers } = parseAnswers(rest, [])
-  return parseQuestions(afterAnswers, [...questions, { question: questionName, answers }])
+  return parseQuestions(afterAnswers, [
+    ...questions,
+    { question: questionName, number: questionNumber, answers }
+  ])
 }
 
 /**
@@ -184,6 +202,7 @@ export const parseQuestionsFile = (
           theme: theme.theme,
           section: section.section,
           question: question.question,
+          questionNumber: question.number,
           answers: { _type: 'text', choices: question.answers }
         }))
       )
