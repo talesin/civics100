@@ -2678,9 +2678,232 @@
     "section": "System of Government",
     "question": "Who is the Governor of your state now?",
     "answers": {
-      "_type": "text",
+      "_type": "governor",
       "choices": [
-        "Answers will vary. [District of Columbia residents should answer that D.C. does not have a Governor.]"
+        {
+          "governor": "Mike Dunleavy",
+          "state": "AK"
+        },
+        {
+          "governor": "Kay Ivey",
+          "state": "AL"
+        },
+        {
+          "governor": "Sarah Huckabee Sanders",
+          "state": "AR"
+        },
+        {
+          "governor": "Pula’ali’i Nikolao Pula",
+          "state": "AS"
+        },
+        {
+          "governor": "Katie Hobbs",
+          "state": "AZ"
+        },
+        {
+          "governor": "Gavin Newsom",
+          "state": "CA"
+        },
+        {
+          "governor": "Jared Polis",
+          "state": "CO"
+        },
+        {
+          "governor": "Ned Lamont",
+          "state": "CT"
+        },
+        {
+          "governor": "D.C. does not have a Governor, but the Mayor is Muriel Bowser",
+          "state": "DC"
+        },
+        {
+          "governor": "Matt Meyer",
+          "state": "DE"
+        },
+        {
+          "governor": "Ron DeSantis",
+          "state": "FL"
+        },
+        {
+          "governor": "Brian P. Kemp",
+          "state": "GA"
+        },
+        {
+          "governor": "Lourdes Aflague Leon Guerrero",
+          "state": "GU"
+        },
+        {
+          "governor": "Josh Green",
+          "state": "HI"
+        },
+        {
+          "governor": "Kim Reynolds",
+          "state": "IA"
+        },
+        {
+          "governor": "Brad Little",
+          "state": "ID"
+        },
+        {
+          "governor": "JB Pritzker",
+          "state": "IL"
+        },
+        {
+          "governor": "Mike Braun",
+          "state": "IN"
+        },
+        {
+          "governor": "Laura Kelly",
+          "state": "KS"
+        },
+        {
+          "governor": "Andy Beshear",
+          "state": "KY"
+        },
+        {
+          "governor": "Jeff Landry",
+          "state": "LA"
+        },
+        {
+          "governor": "Maura Healey",
+          "state": "MA"
+        },
+        {
+          "governor": "Wes Moore",
+          "state": "MD"
+        },
+        {
+          "governor": "Janet T. Mills",
+          "state": "ME"
+        },
+        {
+          "governor": "Gretchen Whitmer",
+          "state": "MI"
+        },
+        {
+          "governor": "Tim Walz",
+          "state": "MN"
+        },
+        {
+          "governor": "Mike Kehoe",
+          "state": "MO"
+        },
+        {
+          "governor": "Arnold Palacios",
+          "state": "MP"
+        },
+        {
+          "governor": "Tate Reeves",
+          "state": "MS"
+        },
+        {
+          "governor": "Greg Gianforte",
+          "state": "MT"
+        },
+        {
+          "governor": "Josh Stein",
+          "state": "NC"
+        },
+        {
+          "governor": "Kelly Armstrong",
+          "state": "ND"
+        },
+        {
+          "governor": "Jim Pillen",
+          "state": "NE"
+        },
+        {
+          "governor": "Kelly Ayotte",
+          "state": "NH"
+        },
+        {
+          "governor": "Phil Murphy",
+          "state": "NJ"
+        },
+        {
+          "governor": "Michelle Lujan Grisham",
+          "state": "NM"
+        },
+        {
+          "governor": "Joe Lombardo",
+          "state": "NV"
+        },
+        {
+          "governor": "Kathy Hochul",
+          "state": "NY"
+        },
+        {
+          "governor": "Mike DeWine",
+          "state": "OH"
+        },
+        {
+          "governor": "J. Kevin Stitt",
+          "state": "OK"
+        },
+        {
+          "governor": "Tina Kotek",
+          "state": "OR"
+        },
+        {
+          "governor": "Josh Shapiro",
+          "state": "PA"
+        },
+        {
+          "governor": "Jenniffer González-Colón",
+          "state": "PR"
+        },
+        {
+          "governor": "Dan McKee",
+          "state": "RI"
+        },
+        {
+          "governor": "Henry McMaster",
+          "state": "SC"
+        },
+        {
+          "governor": "Larry Rhoden",
+          "state": "SD"
+        },
+        {
+          "governor": "Bill Lee",
+          "state": "TN"
+        },
+        {
+          "governor": "Greg Abbott",
+          "state": "TX"
+        },
+        {
+          "governor": "Spencer J. Cox",
+          "state": "UT"
+        },
+        {
+          "governor": "Glenn Youngkin",
+          "state": "VA"
+        },
+        {
+          "governor": "Albert Bryan Jr.",
+          "state": "VI"
+        },
+        {
+          "governor": "Phil Scott",
+          "state": "VT"
+        },
+        {
+          "governor": "Bob Ferguson",
+          "state": "WA"
+        },
+        {
+          "governor": "Tony Evers",
+          "state": "WI"
+        },
+        {
+          "governor": "Patrick Morrisey",
+          "state": "WV"
+        },
+        {
+          "governor": "Mark Gordon",
+          "state": "WY"
+        }
       ]
     }
   },
@@ -2689,9 +2912,232 @@
     "section": "System of Government",
     "question": "What is the capital of your state?*",
     "answers": {
-      "_type": "text",
+      "_type": "capital",
       "choices": [
-        "Answers will vary. [District of Columbia residents should answer that D.C. is not a state and does not have a capital. Residents of U.S. territories should name the capital of the territory.]"
+        {
+          "capital": "Montgomery",
+          "state": "AL"
+        },
+        {
+          "capital": "Juneau",
+          "state": "AK"
+        },
+        {
+          "capital": "Phoenix",
+          "state": "AZ"
+        },
+        {
+          "capital": "Little Rock",
+          "state": "AR"
+        },
+        {
+          "capital": "Sacramento",
+          "state": "CA"
+        },
+        {
+          "capital": "Denver",
+          "state": "CO"
+        },
+        {
+          "capital": "Hartford",
+          "state": "CT"
+        },
+        {
+          "capital": "Dover",
+          "state": "DE"
+        },
+        {
+          "capital": "Tallahassee",
+          "state": "FL"
+        },
+        {
+          "capital": "Atlanta",
+          "state": "GA"
+        },
+        {
+          "capital": "Honolulu",
+          "state": "HI"
+        },
+        {
+          "capital": "Boise",
+          "state": "ID"
+        },
+        {
+          "capital": "Springfield",
+          "state": "IL"
+        },
+        {
+          "capital": "Indianapolis",
+          "state": "IN"
+        },
+        {
+          "capital": "Des Moines",
+          "state": "IA"
+        },
+        {
+          "capital": "Topeka",
+          "state": "KS"
+        },
+        {
+          "capital": "Frankfort",
+          "state": "KY"
+        },
+        {
+          "capital": "Baton Rouge",
+          "state": "LA"
+        },
+        {
+          "capital": "Augusta",
+          "state": "ME"
+        },
+        {
+          "capital": "Annapolis",
+          "state": "MD"
+        },
+        {
+          "capital": "Boston",
+          "state": "MA"
+        },
+        {
+          "capital": "Lansing",
+          "state": "MI"
+        },
+        {
+          "capital": "Saint Paul",
+          "state": "MN"
+        },
+        {
+          "capital": "Jackson",
+          "state": "MS"
+        },
+        {
+          "capital": "Jefferson City",
+          "state": "MO"
+        },
+        {
+          "capital": "Helena",
+          "state": "MT"
+        },
+        {
+          "capital": "Lincoln",
+          "state": "NE"
+        },
+        {
+          "capital": "Carson City",
+          "state": "NV"
+        },
+        {
+          "capital": "Concord",
+          "state": "NH"
+        },
+        {
+          "capital": "Trenton",
+          "state": "NJ"
+        },
+        {
+          "capital": "Santa Fe",
+          "state": "NM"
+        },
+        {
+          "capital": "Albany",
+          "state": "NY"
+        },
+        {
+          "capital": "Raleigh",
+          "state": "NC"
+        },
+        {
+          "capital": "Bismarck",
+          "state": "ND"
+        },
+        {
+          "capital": "Columbus",
+          "state": "OH"
+        },
+        {
+          "capital": "Oklahoma City",
+          "state": "OK"
+        },
+        {
+          "capital": "Salem",
+          "state": "OR"
+        },
+        {
+          "capital": "Harrisburg",
+          "state": "PA"
+        },
+        {
+          "capital": "Providence",
+          "state": "RI"
+        },
+        {
+          "capital": "Columbia",
+          "state": "SC"
+        },
+        {
+          "capital": "Pierre",
+          "state": "SD"
+        },
+        {
+          "capital": "Nashville",
+          "state": "TN"
+        },
+        {
+          "capital": "Austin",
+          "state": "TX"
+        },
+        {
+          "capital": "Salt Lake City",
+          "state": "UT"
+        },
+        {
+          "capital": "Montpelier",
+          "state": "VT"
+        },
+        {
+          "capital": "Richmond",
+          "state": "VA"
+        },
+        {
+          "capital": "Olympia",
+          "state": "WA"
+        },
+        {
+          "capital": "Charleston",
+          "state": "WV"
+        },
+        {
+          "capital": "Madison",
+          "state": "WI"
+        },
+        {
+          "capital": "Cheyenne",
+          "state": "WY"
+        },
+        {
+          "capital": "D.C. is not a state and does not have a capital",
+          "state": "DC"
+        },
+        {
+          "capital": "Pago Pago",
+          "state": "AS"
+        },
+        {
+          "capital": "Hagatna",
+          "state": "GU"
+        },
+        {
+          "capital": "Saipan",
+          "state": "MP"
+        },
+        {
+          "capital": "San Juan",
+          "state": "PR"
+        },
+        {
+          "capital": "Charlotte Amalie",
+          "state": "VI"
+        }
       ]
     }
   },

@@ -199,6 +199,24 @@ export const StatesByName = Object.fromEntries(
 ) as Record<StateName, State>
 
 /**
+ * Checks if a string is a valid state abbreviation.
+ */
+export const isStateAbbreviation = (value: string): value is StateAbbreviation =>
+  StatesByAbbreviation[value as StateAbbreviation] !== undefined
+
+/**
+ * Checks if a string is a valid state name.
+ */
+export const isStateName = (value: string): value is StateName =>
+  StatesByName[value as StateName] !== undefined
+
+/**
+ * Checks if a string is a valid state abbreviation or name.
+ */
+export const isState = (value: string): value is StateAbbreviation | StateName =>
+  isStateAbbreviation(value) || isStateName(value)
+
+/**
  * A question from the civics questions file.
  *
  * @property theme - The theme of the question (e.g. "The United States Constitution")
@@ -214,6 +232,8 @@ export type Question = DeepReadonly<{
     | { _type: 'text'; choices: string[] }
     | { _type: 'senator'; choices: { senator: string; state: StateAbbreviation }[] }
     | { _type: 'representative'; choices: { representative: string; state: StateAbbreviation }[] }
+    | { _type: 'governor'; choices: { governor: string; state: StateAbbreviation }[] }
+    | { _type: 'capital'; choices: { capital: string; state: StateAbbreviation }[] }
 }>
 
 export const SenatorSchema = Schema.Struct({
@@ -254,3 +274,37 @@ export const RepresentativeSchema = Schema.Struct({
   name: 'Representative'
 })
 export type Representative = typeof RepresentativeSchema.Type
+
+export const GovernorSchema = Schema.Struct({
+  state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)),
+  name: Schema.NonEmptyString,
+  governorUrl: Schema.NonEmptyString,
+  contactUrl: Schema.optional(Schema.NonEmptyString),
+  phone: Schema.optional(Schema.NonEmptyString),
+  address: Schema.Struct({
+    street: Schema.NonEmptyString,
+    city: Schema.NonEmptyString,
+    state: Schema.NonEmptyString,
+    zip: Schema.NonEmptyString
+  }).annotations({
+    name: 'Address'
+  }),
+  stateGovernmentWebsite: Schema.NonEmptyString
+}).annotations({
+  name: 'Governor'
+})
+export type Governor = typeof GovernorSchema.Type
+
+export const StateGovernmentLinkSchema = Schema.Struct({
+  state: Schema.Literal(
+    ...Object.values(StatesByAbbreviation).map((s) => s.abbreviation)
+  ).annotations({
+    name: 'State'
+  }),
+  url: Schema.String,
+  file: Schema.optional(Schema.String)
+})
+export type StateGovernmentLink = typeof StateGovernmentLinkSchema.Type
+export type StateGovernmentLinks = ReadonlyArray<StateGovernmentLink>
+
+export type StateGovernmentPage = Readonly<{ state: StateAbbreviation; url: string; html: string }>

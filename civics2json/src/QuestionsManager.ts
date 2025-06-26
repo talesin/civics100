@@ -1,25 +1,34 @@
-import { Effect, Schema } from 'effect'
-
+import { Chunk, Effect, Schema, Stream } from 'effect'
 import { CivicsQuestionsClient } from './CivicsQuestions'
 import { SenatorsClient } from './Senators'
 import { PlatformError } from '@effect/platform/Error'
 import { HttpClientError } from '@effect/platform/HttpClientError'
-import { Question, Representative, RepresentativeSchema, Senator } from './types'
+import {
+  Question,
+  Representative,
+  RepresentativeSchema,
+  Senator,
+  StateGovernmentLinks,
+  StateGovernmentLinkSchema,
+  StateGovernmentPage,
+  StatesByAbbreviation
+} from './types'
 import { ParseError } from 'effect/ParseResult'
 import { UnknownException } from 'effect/Cause'
 import { RepresentativesClient } from './Representatives'
 import { FileSystem } from '@effect/platform'
 import { CivicsConfig } from './config'
+import { GovernorsClient } from './Governors'
 
 /**
- * The canonical question string used to identify the senator question in the civics questions set.
+ * The variable questions that are used to identify the senator, representative, and governor questions in the civics questions set.
  */
-export const STATE_SENATORS_QUESTION = "Who is one of your state's U.S. Senators now?*"
-
-/**
- * The canonical question string used to identify the representative question in the civics questions set.
- */
-export const STATE_REPRESENTATIVES_QUESTION = 'Name your U.S. Representative.'
+export const VARIABLE_QUESTIONS = {
+  STATE_SENATORS: "Who is one of your state's U.S. Senators now?*",
+  STATE_REPRESENTATIVES: 'Name your U.S. Representative.',
+  STATE_GOVERNORS: 'Who is the Governor of your state now?',
+  STATE_CAPITALS: 'What is the capital of your state?*'
+} as const
 
 /**
  * Fetches the civics questions text using the CivicsQuestionsClient.
@@ -97,6 +106,7 @@ export const fetchAndParseSenators = (
   ParseError | UnknownException | HttpClientError | PlatformError
 >) =>
   Effect.fn(function* () {
+    // TODO check if senators JSON file exists for early return
     const xml = yield* fetchSenators(fs, sc, c)()
     const senators = yield* sc.parse(xml)
     yield* Effect.log(`Writing senators JSON to ${c.SENATORS_JSON_FILE}`)
@@ -149,10 +159,12 @@ export const getSenatorsQuestion = (
   fs: FileSystem.FileSystem,
   sc: SenatorsClient,
   c: CivicsConfig
-) =>
+): ((questionMap: Record<string, Question>) => Effect.Effect<Question, Error>) =>
   Effect.fn(function* (questionMap: Record<string, Question>) {
+    const senatorsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_SENATORS]
+
     // fail if we cannot find the senators question
-    if (questionMap[STATE_SENATORS_QUESTION] === undefined) {
+    if (senatorsQuestion === undefined) {
       return yield* Effect.fail(new Error('State senators question not found'))
     }
     const senators = (yield* fetchAndParseSenators(fs, sc, c)()).map((s) => ({
@@ -161,21 +173,22 @@ export const getSenatorsQuestion = (
     }))
 
     // update the senators question
-    const senatorsQuestion: Question = {
-      ...questionMap[STATE_SENATORS_QUESTION],
+    return {
+      ...senatorsQuestion,
       answers: { _type: 'senator', choices: senators }
     }
-    return senatorsQuestion
   })
 
 export const getRepresentativesQuestions = (
   fs: FileSystem.FileSystem,
   rc: RepresentativesClient,
   c: CivicsConfig
-) =>
+): ((questionMap: Record<string, Question>) => Effect.Effect<Question, Error>) =>
   Effect.fn(function* (questionMap: Record<string, Question>) {
+    const representativesQuestion = questionMap[VARIABLE_QUESTIONS.STATE_REPRESENTATIVES]
+
     // fail if we cannot find the representatives question
-    if (questionMap[STATE_REPRESENTATIVES_QUESTION] === undefined) {
+    if (representativesQuestion === undefined) {
       return yield* Effect.fail(new Error('State representatives question not found'))
     }
     const representatives = (yield* fetchAndParseRepresentatives(fs, rc, c)()).map((r) => ({
@@ -184,12 +197,185 @@ export const getRepresentativesQuestions = (
     }))
 
     // update the representatives question
-    const representativesQuestion: Question = {
-      ...questionMap[STATE_REPRESENTATIVES_QUESTION],
+    return {
+      ...representativesQuestion,
       answers: { _type: 'representative', choices: representatives }
     }
-    return representativesQuestion
   })
+
+/**
+ * Fetches the state governments index HTML using the GovernorsClient.
+ * Checks for a local file and uses it unless force is specified.
+ * @param fs FileSystem
+ * @param gc GovernorsClient
+ * @param c CivicsConfig
+ * @returns Effect that resolves to the HTML string
+ */
+export const fetchGovernmentsIndex = (
+  fs: FileSystem.FileSystem,
+  gc: GovernorsClient,
+  c: CivicsConfig
+) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const exists = yield* fs.exists(c.STATE_GOVERNMENTS_HTML_FILE)
+    if (options?.forceFetch !== true && exists) {
+      yield* Effect.log(`Using local governments file ${c.STATE_GOVERNMENTS_HTML_FILE}`)
+      return yield* fs.readFileString(c.STATE_GOVERNMENTS_HTML_FILE)
+    }
+    const html = yield* gc.fetchGovernmentsIndex()
+    yield* Effect.log(`Saving fetched content to ${c.STATE_GOVERNMENTS_HTML_FILE}`)
+    yield* fs.writeFileString(c.STATE_GOVERNMENTS_HTML_FILE, html)
+    return html
+  })
+
+/**
+ * Parses the state governments index HTML to extract state links.
+ * Returns an array of { state, url }.
+ */
+export const parseStateLinks = (fs: FileSystem.FileSystem, gc: GovernorsClient, c: CivicsConfig) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const exists = yield* fs.exists(c.STATE_GOVERNMENTS_JSON_FILE)
+    if (options?.forceFetch !== true && exists) {
+      yield* Effect.log(`Using local governments JSON file ${c.STATE_GOVERNMENTS_JSON_FILE}`)
+      const data = yield* fs.readFileString(c.STATE_GOVERNMENTS_JSON_FILE)
+      const json = yield* Schema.decodeUnknown(Schema.parseJson())(data)
+      const links: StateGovernmentLinks = yield* Schema.decodeUnknown(
+        Schema.Array(StateGovernmentLinkSchema)
+      )(json)
+      return links
+    }
+    const html = yield* fetchGovernmentsIndex(fs, gc, c)(options)
+    const links: StateGovernmentLinks = yield* gc.parseStateLinks(html)
+    yield* fs.writeFileString(c.STATE_GOVERNMENTS_JSON_FILE, JSON.stringify(links, null, 2))
+    yield* Effect.log(`Wrote ${links.length} state links to ${c.STATE_GOVERNMENTS_JSON_FILE}`)
+    return links
+  })
+
+export const fetchGovernmentsPages = (
+  fs: FileSystem.FileSystem,
+  gc: GovernorsClient,
+  c: CivicsConfig
+) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const links = yield* parseStateLinks(fs, gc, c)(options)
+
+    if (options?.forceFetch !== true) {
+      const allPagesExist = yield* Effect.all(
+        links
+          .map((link) => link.file)
+          .filter((file) => file !== undefined)
+          .map((file) => fs.exists(file).pipe(Effect.map((exists) => ({ file, exists }))))
+      )
+
+      if (allPagesExist.every((p) => p.exists)) {
+        yield* Effect.log(
+          `Using ${links.length} local governments pages in ${c.STATE_GOVERNMENTS_DATA_DIR}`
+        )
+        return links
+      }
+    }
+
+    yield* Effect.log(`Fetching ${links.length} government pages`)
+    const pages = gc.fetchAllGovernmentPages(links)
+
+    const dataDirExists = yield* fs.exists(c.STATE_GOVERNMENTS_DATA_DIR)
+    if (!dataDirExists) {
+      yield* fs.makeDirectory(c.STATE_GOVERNMENTS_DATA_DIR)
+    }
+
+    const writtenFiles: StateGovernmentLinks = yield* pages.pipe(
+      Stream.mapEffect((page) =>
+        Effect.gen(function* () {
+          const file = `${c.STATE_GOVERNMENTS_DATA_DIR}/${page.state}.html`
+          yield* Effect.log(
+            `Writing ${StatesByAbbreviation[page.state].name} government page to '${file}'`
+          )
+          yield* fs.writeFileString(file, page.html)
+          return { state: page.state, url: page.url, file }
+        })
+      ),
+      Stream.runCollect,
+      Effect.map(Chunk.toReadonlyArray)
+    )
+
+    yield* Effect.log(
+      `Wrote ${links.length} state government pages to ${c.STATE_GOVERNMENTS_DATA_DIR}`
+    )
+
+    yield* fs.writeFileString(c.STATE_GOVERNMENTS_JSON_FILE, JSON.stringify(writtenFiles, null, 2))
+    yield* Effect.log(
+      `Wrote index of ${writtenFiles.length} state government pages to ${c.STATE_GOVERNMENTS_JSON_FILE}`
+    )
+    return writtenFiles
+  })
+
+export const fetchAndParseGovernors = (
+  fs: FileSystem.FileSystem,
+  gc: GovernorsClient,
+  c: CivicsConfig
+) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const pages = yield* fetchGovernmentsPages(fs, gc, c)(options)
+    const governors = yield* Effect.all(
+      pages
+        .filter((page): page is StateGovernmentPage & { file: string } => page.file !== undefined)
+        .map((page) =>
+          fs
+            .readFileString(page.file)
+            .pipe(Effect.flatMap((html) => gc.parseGovernorInfo(html, page.state)))
+        )
+    ).pipe(Effect.map((governors) => governors.sort((a, b) => a.state.localeCompare(b.state))))
+
+    yield* Effect.log(`Parsed ${governors.length} governors from ${pages.length} pages`)
+    yield* fs.writeFileString(c.GOVERNORS_JSON_FILE, JSON.stringify(governors, null, 2))
+    yield* Effect.log(`Wrote ${governors.length} governors to ${c.GOVERNORS_JSON_FILE}`)
+    return governors
+  })
+
+export const getGovernorsQuestions = (
+  fs: FileSystem.FileSystem,
+  gc: GovernorsClient,
+  c: CivicsConfig
+): ((questionMap: Record<string, Question>) => Effect.Effect<Question, Error>) =>
+  Effect.fn(function* (questionMap: Record<string, Question>) {
+    const governorsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_GOVERNORS]
+
+    // fail if we cannot find the governors question
+    if (governorsQuestion === undefined) {
+      return yield* Effect.fail(new Error('State governors question not found'))
+    }
+    const governors = (yield* fetchAndParseGovernors(fs, gc, c)()).map((g) => ({
+      governor: g.name,
+      state: g.state
+    }))
+
+    // update the governors question
+    return {
+      ...governorsQuestion,
+      answers: { _type: 'governor', choices: governors }
+    }
+  })
+
+export const getStateCapitalsQuestions: (
+  questionMap: Record<string, Question>
+) => Effect.Effect<Question, Error> = Effect.fn(function* (questionMap: Record<string, Question>) {
+  const capitalsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_CAPITALS]
+
+  // fail if we cannot find the governors question
+  if (capitalsQuestion === undefined) {
+    return yield* Effect.fail(new Error('State capitals question not found'))
+  }
+  const capitals = Object.values(StatesByAbbreviation).map((state) => ({
+    capital: state.capital,
+    state: state.abbreviation
+  }))
+
+  // update the governors question
+  return {
+    ...capitalsQuestion,
+    answers: { _type: 'capital', choices: capitals }
+  }
+})
 
 /**
  * Constructs the civics questions set, replacing the senator question's answers with the current list of senators.
@@ -205,6 +391,7 @@ export const constructQuestions = (
   cq: CivicsQuestionsClient,
   sc: SenatorsClient,
   rc: RepresentativesClient,
+  gc: GovernorsClient,
   c: CivicsConfig
 ) =>
   Effect.fn(function* () {
@@ -215,17 +402,17 @@ export const constructQuestions = (
       (yield* fetchAndParseCivicsQuestions(fs, cq, c)()).map((q) => [q.question, q])
     )
 
-    // get updated senators question
-    const senatorsQuestion = yield* getSenatorsQuestion(fs, sc, c)(questionMap)
-
-    // get updated representatives question
-    const representativesQuestion = yield* getRepresentativesQuestions(fs, rc, c)(questionMap)
-
     // update the senators question in the map
     const questions = Object.values({
       ...questionMap,
-      [STATE_SENATORS_QUESTION]: senatorsQuestion,
-      [STATE_REPRESENTATIVES_QUESTION]: representativesQuestion
+      [VARIABLE_QUESTIONS.STATE_SENATORS]: yield* getSenatorsQuestion(fs, sc, c)(questionMap),
+      [VARIABLE_QUESTIONS.STATE_REPRESENTATIVES]: yield* getRepresentativesQuestions(
+        fs,
+        rc,
+        c
+      )(questionMap),
+      [VARIABLE_QUESTIONS.STATE_GOVERNORS]: yield* getGovernorsQuestions(fs, gc, c)(questionMap),
+      [VARIABLE_QUESTIONS.STATE_CAPITALS]: yield* getStateCapitalsQuestions(questionMap)
     })
 
     yield* Effect.log(`Writing updated questions to file`)
@@ -246,6 +433,7 @@ export class QuestionsManager extends Effect.Service<QuestionsManager>()('Questi
     const representativesClient = yield* RepresentativesClient
     const fs = yield* FileSystem.FileSystem
     const config = yield* CivicsConfig
+    const governorsClient = yield* GovernorsClient
 
     return {
       fetchCivicsQuestions: fetchCivicsQuestions(fs, cq, config),
@@ -254,12 +442,23 @@ export class QuestionsManager extends Effect.Service<QuestionsManager>()('Questi
       parseSenators: fetchAndParseSenators(fs, senatorsClient, config),
       fetchRepresentatives: fetchRepresentatives(fs, representativesClient, config),
       parseRepresentatives: fetchAndParseRepresentatives(fs, representativesClient, config),
-      constructQuestions: constructQuestions(fs, cq, senatorsClient, representativesClient, config)
+      constructQuestions: constructQuestions(
+        fs,
+        cq,
+        senatorsClient,
+        representativesClient,
+        governorsClient,
+        config
+      ),
+      fetchGovernmentsIndex: fetchGovernmentsIndex(fs, governorsClient, config),
+      parseStateLinks: parseStateLinks(fs, governorsClient, config),
+      fetchAndParseGovernors: fetchAndParseGovernors(fs, governorsClient, config)
     }
   }),
   dependencies: [
     CivicsQuestionsClient.Default,
     SenatorsClient.Default,
-    RepresentativesClient.Default
+    RepresentativesClient.Default,
+    GovernorsClient.Default
   ]
 }) {}
