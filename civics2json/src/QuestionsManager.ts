@@ -1,4 +1,4 @@
-import { Chunk, Effect, Schema, Stream } from 'effect'
+import { Chunk, Data, Effect, Schema, Stream } from 'effect'
 import { CivicsQuestionsClient } from './CivicsQuestions'
 import { SenatorsClient } from './Senators'
 import { PlatformError } from '@effect/platform/Error'
@@ -18,7 +18,9 @@ import { UnknownException } from 'effect/Cause'
 import { RepresentativesClient } from './Representatives'
 import { FileSystem } from '@effect/platform'
 import { CivicsConfig } from './config'
+import { Updates } from './Updates'
 import { GovernorsClient } from './Governors'
+import { ParseHTMLError } from './utils'
 
 /**
  * The variable questions that are used to identify the senator, representative, and governor questions in the civics questions set.
@@ -377,6 +379,85 @@ export const getStateCapitalsQuestions: (
   }
 })
 
+// Fetch updates HTML, using local file unless forceFetch is true
+export const fetchUpdates = (
+  fs: FileSystem.FileSystem,
+  config: CivicsConfig,
+  updatesClient: Updates
+) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const exists = yield* fs.exists(config.UPDATES_HTML_FILE)
+    if (options?.forceFetch !== true && exists) {
+      yield* Effect.log(`Using local updates HTML file ${config.UPDATES_HTML_FILE}`)
+      return yield* fs.readFileString(config.UPDATES_HTML_FILE)
+    }
+    const html = yield* updatesClient.fetchUpdates()
+    yield* Effect.log(`Saving fetched updates HTML to ${config.UPDATES_HTML_FILE}`)
+    yield* fs.writeFileString(config.UPDATES_HTML_FILE, html)
+    return html
+  })
+
+// Parse updates HTML and write parsed questions to JSON file
+export const fetchAndParseUpdates = (
+  fs: FileSystem.FileSystem,
+  config: CivicsConfig,
+  updatesClient: Updates
+) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const html = yield* fetchUpdates(fs, config, updatesClient)(options)
+    const updates = yield* updatesClient.parseUpdates(html)
+
+    yield* Effect.log(
+      `Writing ${updates.length} updated questions JSON to ${config.UPDATES_JSON_FILE}`
+    )
+    yield* fs.writeFileString(config.UPDATES_JSON_FILE, JSON.stringify(updates, null, 2))
+
+    return updates
+  })
+
+export class UpdatedQuestionNotFoundError extends Data.TaggedError('UpdatedQuestionNotFoundError')<{
+  readonly question: string
+}> {}
+
+export const getUpdatedQuestions = (
+  fs: FileSystem.FileSystem,
+  config: CivicsConfig,
+  updatesClient: Updates
+): ((
+  questionMap: Record<string, Question>
+) => Effect.Effect<
+  Question[],
+  UpdatedQuestionNotFoundError | PlatformError | HttpClientError | ParseHTMLError
+>) =>
+  Effect.fn(function* (questionMap: Record<string, Question>) {
+    const updatedQuestionPartials = yield* fetchAndParseUpdates(fs, config, updatesClient)()
+
+    return yield* Effect.forEach(updatedQuestionPartials, (partial) => {
+      if (partial.question === undefined || partial.question.length === 0) {
+        // This should not be reachable if parseUpdates is correct
+        return Effect.die(new Error('Partial question missing question text'))
+      }
+      const originalQuestion = questionMap[partial.question]
+
+      if (originalQuestion === undefined) {
+        return Effect.fail(new UpdatedQuestionNotFoundError({ question: partial.question }))
+      }
+
+      if (partial.answers === undefined) {
+        return Effect.die(new Error(`Partial question missing answers for: ${partial.question}`))
+      }
+
+      // The partial from parseUpdates has `question`, `questionNumber`, and `answers`.
+      // The `Question` type has `theme`, `section`, `question`, `questionNumber`, `answers`.
+      // We need to merge them.
+      const updatedQuestion: Question = {
+        ...originalQuestion,
+        answers: partial.answers
+      }
+      return Effect.succeed(updatedQuestion)
+    })
+  })
+
 /**
  * Constructs the civics questions set, replacing the senator question's answers with the current list of senators.
  * Fetches and parses both the civics questions and senators, then updates the senator question.
@@ -388,37 +469,51 @@ export const getStateCapitalsQuestions: (
  */
 export const constructQuestions = (
   fs: FileSystem.FileSystem,
-  cq: CivicsQuestionsClient,
+  cqc: CivicsQuestionsClient,
   sc: SenatorsClient,
   rc: RepresentativesClient,
   gc: GovernorsClient,
+  uc: Updates,
   c: CivicsConfig
 ) =>
   Effect.fn(function* () {
-    yield* Effect.log('Constructing questions...')
-
-    // map of questions by question text
-    const questionMap = Object.fromEntries(
-      (yield* fetchAndParseCivicsQuestions(fs, cq, c)()).map((q) => [q.question, q])
+    // 1. get all questions
+    const questions = yield* fetchAndParseCivicsQuestions(fs, cqc, c)()
+    const questionMap = questions.reduce(
+      (acc, q) => ({ ...acc, [q.question]: q }),
+      {} as Record<string, Question>
     )
 
-    // update the senators question in the map
-    const questions = Object.values({
-      ...questionMap,
-      [VARIABLE_QUESTIONS.STATE_SENATORS]: yield* getSenatorsQuestion(fs, sc, c)(questionMap),
-      [VARIABLE_QUESTIONS.STATE_REPRESENTATIVES]: yield* getRepresentativesQuestions(
-        fs,
-        rc,
-        c
-      )(questionMap),
-      [VARIABLE_QUESTIONS.STATE_GOVERNORS]: yield* getGovernorsQuestions(fs, gc, c)(questionMap),
-      [VARIABLE_QUESTIONS.STATE_CAPITALS]: yield* getStateCapitalsQuestions(questionMap)
-    })
+    // 2. get variable questions
+    const updatedSenatorsQuestion = yield* getSenatorsQuestion(fs, sc, c)(questionMap)
+    const updatedRepresentativesQuestion = yield* getRepresentativesQuestions(
+      fs,
+      rc,
+      c
+    )(questionMap)
+    const updatedGovernorsQuestion = yield* getGovernorsQuestions(fs, gc, c)(questionMap)
+    const updatedCapitalsQuestion = yield* getStateCapitalsQuestions(questionMap)
+    const updatedCivicsQuestions = yield* getUpdatedQuestions(fs, c, uc)(questionMap)
 
+    // 3. update question map
+    const updatedQuestionMap = {
+      ...questionMap,
+      [updatedSenatorsQuestion.question]: updatedSenatorsQuestion,
+      [updatedRepresentativesQuestion.question]: updatedRepresentativesQuestion,
+      [updatedGovernorsQuestion.question]: updatedGovernorsQuestion,
+      [updatedCapitalsQuestion.question]: updatedCapitalsQuestion,
+      ...updatedCivicsQuestions.reduce(
+        (acc, q) => ({ ...acc, [q.question]: q }),
+        {} as Record<string, Question>
+      )
+    }
+
+    // 4. write to file
+    const updatedQuestions = Object.values(updatedQuestionMap)
     yield* Effect.log(`Writing updated questions to file`)
-    yield* fs.writeFileString(c.QUESTIONS_JSON_FILE, JSON.stringify(questions, null, 2))
+    yield* fs.writeFileString(c.QUESTIONS_JSON_FILE, JSON.stringify(updatedQuestions, null, 2))
     yield* Effect.log(`Completed constructing questions`)
-    return questions
+    return updatedQuestions
   })
 
 /**
@@ -428,37 +523,42 @@ export const constructQuestions = (
  */
 export class QuestionsManager extends Effect.Service<QuestionsManager>()('QuestionsManager', {
   effect: Effect.gen(function* () {
-    const cq = yield* CivicsQuestionsClient
-    const senatorsClient = yield* SenatorsClient
-    const representativesClient = yield* RepresentativesClient
     const fs = yield* FileSystem.FileSystem
     const config = yield* CivicsConfig
+    const civicQuestionsClient = yield* CivicsQuestionsClient
+    const senatorsClient = yield* SenatorsClient
+    const representativesClient = yield* RepresentativesClient
     const governorsClient = yield* GovernorsClient
+    const updatesClient = yield* Updates
 
     return {
-      fetchCivicsQuestions: fetchCivicsQuestions(fs, cq, config),
-      parseCivicsQuestions: fetchAndParseCivicsQuestions(fs, cq, config),
+      fetchCivicsQuestions: fetchCivicsQuestions(fs, civicQuestionsClient, config),
+      parseCivicsQuestions: fetchAndParseCivicsQuestions(fs, civicQuestionsClient, config),
       fetchSenators: fetchSenators(fs, senatorsClient, config),
       parseSenators: fetchAndParseSenators(fs, senatorsClient, config),
       fetchRepresentatives: fetchRepresentatives(fs, representativesClient, config),
       parseRepresentatives: fetchAndParseRepresentatives(fs, representativesClient, config),
       constructQuestions: constructQuestions(
         fs,
-        cq,
+        civicQuestionsClient,
         senatorsClient,
         representativesClient,
         governorsClient,
+        updatesClient,
         config
       ),
       fetchGovernmentsIndex: fetchGovernmentsIndex(fs, governorsClient, config),
       parseStateLinks: parseStateLinks(fs, governorsClient, config),
-      fetchAndParseGovernors: fetchAndParseGovernors(fs, governorsClient, config)
+      fetchAndParseGovernors: fetchAndParseGovernors(fs, governorsClient, config),
+      fetchUpdates: fetchUpdates(fs, config, updatesClient),
+      fetchAndParseUpdates: fetchAndParseUpdates(fs, config, updatesClient)
     }
   }),
   dependencies: [
     CivicsQuestionsClient.Default,
     SenatorsClient.Default,
     RepresentativesClient.Default,
-    GovernorsClient.Default
+    GovernorsClient.Default,
+    Updates.Default
   ]
 }) {}

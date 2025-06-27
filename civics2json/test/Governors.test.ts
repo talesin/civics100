@@ -18,8 +18,8 @@ describe('parseStateLinks', () => {
   it('parses all valid state links and normalizes URLs', async () => {
     const result = await Effect.runPromise(parseStateLinks(sampleHtml))
     expect(result).toEqual([
-      { state: 'AL', url: '/states/alabama' },
       { state: 'AK', url: '/states/alaska' },
+      { state: 'AL', url: '/states/alabama' },
       { state: 'CA', url: '/states/california' },
       { state: 'DC', url: '/states/district-of-columbia' }
     ])

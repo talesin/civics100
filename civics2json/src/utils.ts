@@ -1,4 +1,5 @@
-import { Config, Effect } from 'effect'
+import { Config, Data, Effect } from 'effect'
+import { parseHTML as _parseHTML } from 'linkedom'
 
 /** Alternative config values type */
 export type AltValue =
@@ -50,3 +51,35 @@ export const getConfig = <const T extends ReadonlyArray<string>>(
  * @returns The success type of the Effect.
  */
 export type EffectSuccessType<T> = T extends Effect.Effect<infer A, infer _, infer _> ? A : never
+
+/**
+ * Generator that returns sibling elements of the given element.
+ * @param element The element to get siblings for.
+ * @returns Generator of sibling elements.
+ */
+export function* getElementSiblings(element: Element | null): Generator<Element> {
+  if (!element) return
+  while (element.nextElementSibling) {
+    yield element.nextElementSibling
+    element = element.nextElementSibling
+  }
+}
+
+export class ParseHTMLError extends Data.TaggedError('ParseHTMLError')<{
+  message: string
+  html: string
+  cause: unknown
+}> {}
+export const parseHTML = (html: string) =>
+  Effect.try({
+    try: () => _parseHTML(html),
+    catch: (cause) => new ParseHTMLError({ message: 'Failed to parse HTML', html, cause })
+  })
+
+/**
+ * Parses the HTML and returns the DOM document.
+ * @param html The HTML to parse.
+ * @returns The DOM document.
+ */
+export const getDOMDocument = (html: string) =>
+  parseHTML(html).pipe(Effect.map((doc) => doc.document))

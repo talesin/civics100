@@ -13,7 +13,17 @@
   - [x] Generate US representatives by state: https://www.house.gov/representatives
   - [x] Generate US governors by state: https://www.usa.gov/state-governments
   - [x] Generate state capitals by state: https://www.usa.gov/state-governments
-  - [ ] Retrieve and parse answers for the from questions on this page: https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates
+  - [ ] Retrieve and parse answers for the variable questions on this page: https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates
+    - [x] 20. Who is one of your state's U.S. Senators now?
+    - [x] 23. Name your U.S. Representative.
+    - [ ] 28. What is the name of the President of the United States now?
+    - [ ] 29. What is the name of the Vice President of the United States now?
+    - [ ] 39. How many justices are on the Supreme Court?
+    - [ ] 40. Who is the Chief Justice of the United States now?
+    - [x] 43. Who is the Governor of your state now?
+    - [ ] 46. What is the political party of the President now?
+    - [ ] 47. What is the name of the Speaker of the House of Representatives now?
+    - [ ] 100. Name two national U.S. holidays.
 
 ## Purpose
 
