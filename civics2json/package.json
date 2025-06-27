@@ -3,11 +3,19 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/data/civics-questions.json",
+    "dist/src/types.d.ts",
+    "dist/src/Questions.ts"
+  ],
   "scripts": {
-    "clean": "rm -rf dist/ node_modules/ build/ coverage/ package-lock.json",
+    "clean": "rm -rf dist/ node_modules/ build/ coverage/ package-lock.json data/*",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "build": "tsc",
+    "build": "tsup src/types.ts src/Questions.ts --dts --format esm --out-dir dist",
+    "package": "npm run clean && npm install && npm run lint && npx tsx src/index.ts questions construct && npm run build",
     "test": "jest"
   },
   "dependencies": {
@@ -29,6 +37,7 @@
     "prettier": "^3.5.3",
     "ts-jest": "^29.3.4",
     "ts-node": "^10.9.2",
+    "tsup": "^8.5.0",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.31.1"
   }

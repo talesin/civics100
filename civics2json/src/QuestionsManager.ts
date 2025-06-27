@@ -3,16 +3,15 @@ import { CivicsQuestionsClient } from './CivicsQuestions'
 import { SenatorsClient } from './Senators'
 import { PlatformError } from '@effect/platform/Error'
 import { HttpClientError } from '@effect/platform/HttpClientError'
+import { Question, StatesByAbbreviation } from './types'
 import {
-  Question,
   Representative,
   RepresentativeSchema,
   Senator,
   StateGovernmentLinks,
   StateGovernmentLinkSchema,
-  StateGovernmentPage,
-  StatesByAbbreviation
-} from './types'
+  StateGovernmentPage
+} from './schema'
 import { ParseError } from 'effect/ParseResult'
 import { UnknownException } from 'effect/Cause'
 import { RepresentativesClient } from './Representatives'

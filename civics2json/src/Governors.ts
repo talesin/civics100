@@ -3,15 +3,14 @@ import { HttpClient } from '@effect/platform'
 import { CivicsConfig } from './config'
 import { HttpClientError } from '@effect/platform/HttpClientError'
 import { parseHTML } from 'linkedom'
+import { isStateAbbreviation, StateAbbreviation } from './types'
 import {
   Governor,
   GovernorSchema,
-  isStateAbbreviation,
-  StateAbbreviation,
   StateGovernmentLink,
   StateGovernmentLinks,
   StateGovernmentPage
-} from './types'
+} from './schema'
 import { UnknownException } from 'effect/Cause'
 import { ParseError } from 'effect/ParseResult'
 

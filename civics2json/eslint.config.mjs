@@ -17,22 +17,20 @@ const compat = new FlatCompat({
 })
 
 /** @type {import('eslint').Linter.Config[]} */
-export default [
-  pluginJs.configs.recommended,
-  ...tseslint.configs.recommended,
-  { files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'] },
-  { files: ['**/*.js'], languageOptions: { sourceType: 'commonjs' } },
-  {
-    ignores: [
+export default tseslint.config({
+  ignores: [
       '**/node_modules',
       '**/package.lock.json',
       '**/dist',
       '**/build',
       'eslint.config.mjs',
       'jest.config.ts',
-      '**/coverage'
+      '**/coverage',
+      '**/*.js'
     ]
   },
+  { files: ['**/*.ts'] },
+
   ...compat.extends(
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
@@ -66,4 +64,4 @@ export default [
       '@typescript-eslint/strict-boolean-expressions': 'error'
     }
   }
-]
+)

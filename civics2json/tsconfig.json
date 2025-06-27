@@ -2,13 +2,14 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ES2020", "ESNext", "DOM", "DOM.Iterable"],
-    "noEmit": true,
+    "noEmit": false,
     "inlineSourceMap": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
 
     "module": "ESNext",
     "moduleResolution": "bundler",
     "useDefineForClassFields": true,
-    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
@@ -42,8 +43,11 @@
     "baseUrl": ".",
     "paths": {
       "@src/*": ["./src/*"],
-      "@test/*": ["./test/*"]
-    }
+      "@test/*": ["./test/*"],
+      "@data/*": ["./data/*"]
+    },
+
+    "outDir": "dist",
   },
-  "include": ["src", "test", "jest.config.ts"]
+  "include": ["src", "test", "jest.config.ts", "data/civics-questions.json"]
 }

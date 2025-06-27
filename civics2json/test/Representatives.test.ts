@@ -3,7 +3,8 @@ import { parseRepresentatives } from '../src/Representatives'
 import { Effect, Schema } from 'effect'
 import { FileSystem, Path } from '@effect/platform'
 import { NodeContext } from '@effect/platform-node'
-import { RepresentativeSchema, StatesByAbbreviation } from '@src/types'
+import { RepresentativeSchema } from '@src/schema'
+import { StatesByAbbreviation } from '@src/types'
 
 describe('parseRepresentatives', () => {
   const minimalHTML = `
