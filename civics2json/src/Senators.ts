@@ -4,7 +4,7 @@ import { CivicsConfig } from './config'
 import { XMLParser } from 'fast-xml-parser'
 import { ParseError } from 'effect/ParseResult'
 import { UnknownException } from 'effect/Cause'
-import { Senator, SenatorSchema } from './types'
+import { Senator, SenatorSchema } from './schema'
 import { HttpClientError } from '@effect/platform/HttpClientError'
 
 /**

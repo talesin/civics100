@@ -1,13 +1,7 @@
 import { Effect, Layer, Schema } from 'effect'
 import { HttpClient } from '@effect/platform'
-import {
-  Representative,
-  RepresentativeSchema,
-  StateAbbreviation,
-  StateName,
-  StatesByAbbreviation,
-  StatesByName
-} from './types'
+import { StateAbbreviation, StateName, StatesByAbbreviation, StatesByName } from './types'
+import { Representative, RepresentativeSchema } from './schema'
 import { CivicsConfig } from './config'
 import { parseHTML } from 'linkedom'
 import { UnknownException } from 'effect/Cause'
