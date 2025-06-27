@@ -57,11 +57,13 @@ export const parseUpdates: (html: string) => Effect.Effect<Partial<Question>[], 
         // extract question number and question text from <p> element
         question: splitQuestion(p.textContent),
         // extract answers from <ul> elements that are siblings of <p> element
-        answers: getElementSiblings(p, (node) => node.nodeName === 'UL')
-          .map((node) =>
-            Array.from(node.querySelectorAll('li')).map((li) => cleanse(li.textContent))
-          )
-          .flat()
+        answers: Array.from(
+          getElementSiblings(p)
+            .find((node) => node.nodeName === 'UL')
+            ?.querySelectorAll('li') ?? []
+        )
+          .map((li) => cleanse(li.textContent))
+          .filter((li): li is string => li !== null)
       }))
       // filter out any questions that don't have a question number or question text
       .filter(

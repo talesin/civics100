@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
-import { getConfig } from '../src/utils'
+import { getConfig, getDOMDocument, getElementSiblings } from '../src/utils'
 import { Effect, Config, ConfigProvider } from 'effect'
 
 describe('getConfig', () => {
@@ -74,5 +74,62 @@ describe('getConfig', () => {
         Effect.runPromise
       )
     ).rejects.toThrow(/Config for 'Z' does not exist|not found/)
+  })
+})
+
+describe('getElementSiblings', () => {
+  const setup = async (html: string) => {
+    const doc = await Effect.runPromise(getDOMDocument(html))
+    return (selector: string) => doc.querySelector(selector)
+  }
+
+  it('should return an empty array for an element with no siblings', async () => {
+    const query = await setup('<div><p id="start"></p></div>')
+    const startNode = query('#start')
+    const siblings = Array.from(getElementSiblings(startNode))
+    expect(siblings).toHaveLength(0)
+  })
+
+  it('should return all subsequent siblings', async () => {
+    const query = await setup('<div><p id="start"></p><span></span><a></a></div>')
+    const startNode = query('#start')
+    const siblings = Array.from(getElementSiblings(startNode))
+    expect(siblings).toHaveLength(2)
+    expect(siblings[0]?.tagName).toBe('SPAN')
+    expect(siblings[1]?.tagName).toBe('A')
+  })
+
+  it('should return only siblings that match the filter', async () => {
+    const query = await setup(
+      '<div><p id="start"></p><span class="match"></span><a></a><i class="match"></i></div>'
+    )
+    const startNode = query('#start')
+    const siblings = Array.from(
+      getElementSiblings(startNode).filter((el) => el.classList.contains('match'))
+    )
+    expect(siblings).toHaveLength(2)
+    expect(siblings[0]?.tagName).toBe('SPAN')
+    expect(siblings[1]?.tagName).toBe('I')
+  })
+
+  it('should return an empty array if no siblings match the filter', async () => {
+    const query = await setup('<div><p id="start"></p><span></span><a></a></div>')
+    const startNode = query('#start')
+    const siblings = Array.from(getElementSiblings(startNode).filter((el) => el.tagName === 'I'))
+    expect(siblings).toHaveLength(0)
+  })
+
+  it('should return an empty array for a null element', () => {
+    const siblings = Array.from(getElementSiblings(null))
+    expect(siblings).toHaveLength(0)
+  })
+
+  it('should not include the starting element itself', async () => {
+    const query = await setup('<div><p id="start"></p><span></span></div>')
+    const startNode = query('#start')
+    const siblings = Array.from(getElementSiblings(startNode))
+    siblings.forEach((sibling) => {
+      expect(sibling.id).not.toBe('start')
+    })
   })
 })

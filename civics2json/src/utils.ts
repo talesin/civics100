@@ -53,23 +53,16 @@ export const getConfig = <const T extends ReadonlyArray<string>>(
 export type EffectSuccessType<T> = T extends Effect.Effect<infer A, infer _, infer _> ? A : never
 
 /**
- * Returns an array of sibling elements of the given element.
+ * Generator that returns sibling elements of the given element.
  * @param element The element to get siblings for.
- * @param filter Optional function to filter siblings.
- * @returns An array of sibling elements.
+ * @returns Generator of sibling elements.
  */
-export const getElementSiblings = (
-  element: Element | null,
-  filter?: (node: Element) => boolean
-) => {
-  if (!element) return []
-  return [element].reduce(
-    (acc, node) =>
-      node.nextElementSibling !== null && (filter === undefined || filter(node.nextElementSibling))
-        ? acc.concat(node.nextElementSibling)
-        : acc,
-    [] as Element[]
-  )
+export function* getElementSiblings(element: Element | null): Generator<Element> {
+  if (!element) return
+  while (element.nextElementSibling) {
+    yield element.nextElementSibling
+    element = element.nextElementSibling
+  }
 }
 
 export class ParseHTMLError extends Data.TaggedError('ParseHTMLError')<{
