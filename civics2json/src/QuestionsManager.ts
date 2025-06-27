@@ -18,6 +18,7 @@ import { UnknownException } from 'effect/Cause'
 import { RepresentativesClient } from './Representatives'
 import { FileSystem } from '@effect/platform'
 import { CivicsConfig } from './config'
+import { Updates } from './Updates'
 import { GovernorsClient } from './Governors'
 
 /**
@@ -377,6 +378,42 @@ export const getStateCapitalsQuestions: (
   }
 })
 
+// Fetch updates HTML, using local file unless forceFetch is true
+export const fetchUpdates = (
+  fs: FileSystem.FileSystem,
+  config: CivicsConfig,
+  updatesClient: Updates
+) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const exists = yield* fs.exists(config.UPDATES_HTML_FILE)
+    if (options?.forceFetch !== true && exists) {
+      yield* Effect.log(`Using local updates HTML file ${config.UPDATES_HTML_FILE}`)
+      return yield* fs.readFileString(config.UPDATES_HTML_FILE)
+    }
+    const html = yield* updatesClient.fetchUpdates()
+    yield* Effect.log(`Saving fetched updates HTML to ${config.UPDATES_HTML_FILE}`)
+    yield* fs.writeFileString(config.UPDATES_HTML_FILE, html)
+    return html
+  })
+
+// Parse updates HTML and write parsed questions to JSON file
+export const fetchAndParseUpdates = (
+  fs: FileSystem.FileSystem,
+  config: CivicsConfig,
+  updatesClient: Updates
+) =>
+  Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    const html = yield* fetchUpdates(fs, config, updatesClient)(options)
+    const updates = yield* updatesClient.parseUpdates(html)
+
+    yield* Effect.log(
+      `Writing ${updates.length} updated questions JSON to ${config.UPDATES_JSON_FILE}`
+    )
+    yield* fs.writeFileString(config.UPDATES_JSON_FILE, JSON.stringify(updates, null, 2))
+
+    return updates
+  })
+
 /**
  * Constructs the civics questions set, replacing the senator question's answers with the current list of senators.
  * Fetches and parses both the civics questions and senators, then updates the senator question.
@@ -392,6 +429,7 @@ export const constructQuestions = (
   sc: SenatorsClient,
   rc: RepresentativesClient,
   gc: GovernorsClient,
+  uc: Updates,
   c: CivicsConfig
 ) =>
   Effect.fn(function* () {
@@ -428,37 +466,42 @@ export const constructQuestions = (
  */
 export class QuestionsManager extends Effect.Service<QuestionsManager>()('QuestionsManager', {
   effect: Effect.gen(function* () {
-    const cq = yield* CivicsQuestionsClient
-    const senatorsClient = yield* SenatorsClient
-    const representativesClient = yield* RepresentativesClient
     const fs = yield* FileSystem.FileSystem
     const config = yield* CivicsConfig
+    const civicQuestionsClient = yield* CivicsQuestionsClient
+    const senatorsClient = yield* SenatorsClient
+    const representativesClient = yield* RepresentativesClient
     const governorsClient = yield* GovernorsClient
+    const updatesClient = yield* Updates
 
     return {
-      fetchCivicsQuestions: fetchCivicsQuestions(fs, cq, config),
-      parseCivicsQuestions: fetchAndParseCivicsQuestions(fs, cq, config),
+      fetchCivicsQuestions: fetchCivicsQuestions(fs, civicQuestionsClient, config),
+      parseCivicsQuestions: fetchAndParseCivicsQuestions(fs, civicQuestionsClient, config),
       fetchSenators: fetchSenators(fs, senatorsClient, config),
       parseSenators: fetchAndParseSenators(fs, senatorsClient, config),
       fetchRepresentatives: fetchRepresentatives(fs, representativesClient, config),
       parseRepresentatives: fetchAndParseRepresentatives(fs, representativesClient, config),
       constructQuestions: constructQuestions(
         fs,
-        cq,
+        civicQuestionsClient,
         senatorsClient,
         representativesClient,
         governorsClient,
+        updatesClient,
         config
       ),
       fetchGovernmentsIndex: fetchGovernmentsIndex(fs, governorsClient, config),
       parseStateLinks: parseStateLinks(fs, governorsClient, config),
-      fetchAndParseGovernors: fetchAndParseGovernors(fs, governorsClient, config)
+      fetchAndParseGovernors: fetchAndParseGovernors(fs, governorsClient, config),
+      fetchUpdates: fetchUpdates(fs, config, updatesClient),
+      fetchAndParseUpdates: fetchAndParseUpdates(fs, config, updatesClient)
     }
   }),
   dependencies: [
     CivicsQuestionsClient.Default,
     SenatorsClient.Default,
     RepresentativesClient.Default,
-    GovernorsClient.Default
+    GovernorsClient.Default,
+    Updates.Default
   ]
 }) {}

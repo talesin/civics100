@@ -7,6 +7,7 @@ import { SenatorsClient } from './Senators'
 import { QuestionsManager } from './QuestionsManager'
 import { RepresentativesClient } from './Representatives'
 import { GovernorsClient } from './Governors'
+import { Updates } from './Updates'
 
 const questionsFetchCommand = Command.make('fetch', {}, () =>
   QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchCivicsQuestions()))
@@ -59,7 +60,7 @@ const governorsFetchCommand = Command.make(
   { forceFetch: Options.boolean('force').pipe(Options.withDescription('Force fetch')) },
   ({ forceFetch }) =>
     QuestionsManager.pipe(
-      Effect.flatMap((manager) => manager.fetchAndParseGovenors({ forceFetch }))
+      Effect.flatMap((manager) => manager.fetchAndParseGovernors({ forceFetch }))
     )
 ).pipe(Command.withDescription('Fetch governors'))
 
@@ -67,12 +68,31 @@ const governorsCommand = Command.make('governors').pipe(
   Command.withSubcommands([governorsFetchCommand])
 )
 
+const updatesFetchCommand = Command.make(
+  'fetch',
+  { forceFetch: Options.boolean('force').pipe(Options.withDescription('Force fetch')) },
+  ({ forceFetch }) =>
+    QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchUpdates({ forceFetch })))
+).pipe(Command.withDescription('Fetch updates'))
+
+const updatesParseCommand = Command.make(
+  'parse',
+  { forceFetch: Options.boolean('force').pipe(Options.withDescription('Force parse')) },
+  ({ forceFetch }) =>
+    QuestionsManager.pipe(Effect.flatMap((manager) => manager.fetchAndParseUpdates({ forceFetch })))
+).pipe(Command.withDescription('Parse updates'))
+
+const updatesCommand = Command.make('updates').pipe(
+  Command.withSubcommands([updatesFetchCommand, updatesParseCommand])
+)
+
 const command = Command.make('civics').pipe(
   Command.withSubcommands([
     questionsCommand,
     senatorsCommand,
     representativesCommand,
-    governorsCommand
+    governorsCommand,
+    updatesCommand
   ])
 )
 
@@ -87,6 +107,7 @@ cli(process.argv).pipe(
   Effect.provide(SenatorsClient.Default),
   Effect.provide(RepresentativesClient.Default),
   Effect.provide(GovernorsClient.Default),
+  Effect.provide(Updates.Default),
   Effect.provide(QuestionsManager.Default),
   Effect.provide(FetchHttpClient.layer),
   Effect.provide(NodeContext.layer),
