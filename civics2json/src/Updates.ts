@@ -1,5 +1,5 @@
-import { Effect } from 'effect'
-import { HttpClient } from '@effect/platform'
+import { Effect, Layer } from 'effect'
+import { HttpClient, HttpClientError } from '@effect/platform'
 import { CivicsConfig } from './config'
 import { Question } from './types'
 import { getDOMDocument, getElementSiblings, ParseHTMLError } from './utils'
@@ -95,3 +95,22 @@ export class Updates extends Effect.Service<Updates>()('Updates', {
     }
   })
 }) {}
+
+/**
+ * Test Updates layer.
+ *
+ * @param fn Optional functions to override default behavior
+ * @returns Test layer
+ */
+export const TestUpdatesClientLayer = (fn?: {
+  fetchUpdates?: () => Effect.Effect<string, HttpClientError.HttpClientError>
+  parseUpdates?: (html: string) => Effect.Effect<Partial<Question>[], ParseHTMLError>
+}) =>
+  Layer.succeed(
+    Updates,
+    Updates.of({
+      _tag: 'Updates',
+      fetchUpdates: fn?.fetchUpdates ?? (() => Effect.succeed('')),
+      parseUpdates: fn?.parseUpdates ?? ((_html: string) => Effect.succeed([]))
+    })
+  )

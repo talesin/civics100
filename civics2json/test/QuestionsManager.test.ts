@@ -1,9 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
-import {
-  constructQuestions,
-  STATE_SENATORS_QUESTION,
-  STATE_REPRESENTATIVES_QUESTION
-} from '../src/QuestionsManager'
+import { constructQuestions, VARIABLE_QUESTIONS } from '../src/QuestionsManager'
 import { Effect } from 'effect'
 import { FileSystem } from '@effect/platform'
 import { CivicsQuestionsClient, TestCivicsQuestionsClientLayer } from '@src/CivicsQuestions'
@@ -11,6 +7,8 @@ import { SenatorsClient, TestSenatorsClientLayer } from '@src/Senators'
 import { Question, Representative, Senator } from '@src/types'
 import { CivicsConfig } from '@src/config'
 import { RepresentativesClient, TestRepresentativesClientLayer } from '@src/Representatives'
+import { TestUpdatesClientLayer, Updates } from '@src/Updates'
+import { GovernorsClient, TestGovernorsClientLayer } from '@src/Governors'
 
 describe('constructQuestions', () => {
   const SENATORS: Senator[] = [
@@ -51,7 +49,8 @@ describe('constructQuestions', () => {
     {
       theme: 'AMERICAN GOVERNMENT',
       section: 'System of Government',
-      question: STATE_SENATORS_QUESTION,
+      question: VARIABLE_QUESTIONS.STATE_SENATORS,
+      questionNumber: 1,
       answers: {
         _type: 'text',
         choices: ['Not set']
@@ -60,12 +59,33 @@ describe('constructQuestions', () => {
     {
       theme: 'AMERICAN GOVERNMENT',
       section: 'System of Government',
-      question: STATE_REPRESENTATIVES_QUESTION,
+      question: VARIABLE_QUESTIONS.STATE_REPRESENTATIVES,
+      questionNumber: 2,
       answers: {
         _type: 'text',
         choices: [
           'Answers will vary. [Residents of territories with nonvoting Delegates or Resident Commissioners may provide the name of that Delegate or Commissioner. Also acceptable is any statement that the territory has no (voting) Representatives in Congress.]'
         ]
+      }
+    },
+    {
+      theme: 'AMERICAN GOVERNMENT',
+      section: 'System of Government',
+      question: VARIABLE_QUESTIONS.STATE_GOVERNORS,
+      questionNumber: 3,
+      answers: {
+        _type: 'text',
+        choices: ['Not set']
+      }
+    },
+    {
+      theme: 'AMERICAN GOVERNMENT',
+      section: 'System of Government',
+      question: VARIABLE_QUESTIONS.STATE_CAPITALS,
+      questionNumber: 4,
+      answers: {
+        _type: 'text',
+        choices: ['Not set']
       }
     }
   ]
@@ -107,15 +127,24 @@ describe('constructQuestions', () => {
     readFileString: () => Effect.succeed(''),
     exists: () => Effect.succeed(false)
   })
+  const defaultGovernorsClientLayer = TestGovernorsClientLayer({
+    fetchGovernmentsIndex: () => Effect.succeed('')
+  })
+  const defaultUpdatesLayer = TestUpdatesClientLayer({
+    fetchUpdates: () => Effect.succeed(''),
+    parseUpdates: () => Effect.succeed([])
+  })
 
   it('should include senators question with senators choices', async () => {
     await Effect.gen(function* () {
-      const cq = yield* CivicsQuestionsClient
+      const fs = yield* FileSystem.FileSystem
+      const c = yield* CivicsConfig
+      const cqc = yield* CivicsQuestionsClient
       const sc = yield* SenatorsClient
       const rc = yield* RepresentativesClient
-      const fs = yield* FileSystem.FileSystem
-      const config = yield* CivicsConfig
-      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
+      const gc = yield* GovernorsClient
+      const uc = yield* Updates
+      const questions = yield* constructQuestions(fs, cqc, sc, rc, gc, uc, c)()
       expect(questions?.[0]?.question).toBe("Who is one of your state's U.S. Senators now?*")
       expect(questions?.[0]?.answers).toEqual({
         _type: 'senator',
@@ -126,6 +155,8 @@ describe('constructQuestions', () => {
       Effect.provide(defaultSenatorsClientLayer),
       Effect.provide(defaultRepresentativesClientLayer),
       Effect.provide(defaultFileSystemLayer),
+      Effect.provide(defaultGovernorsClientLayer),
+      Effect.provide(defaultUpdatesLayer),
       Effect.runPromise
     )
   })
@@ -138,6 +169,7 @@ describe('constructQuestions', () => {
             theme: 'AMERICAN GOVERNMENT',
             section: 'System of Government',
             question: 'Some other question',
+            questionNumber: 1,
             answers: { _type: 'text', choices: ['foo'] }
           }
         ])
@@ -145,17 +177,21 @@ describe('constructQuestions', () => {
 
     await expect(
       Effect.gen(function* () {
-        const cq = yield* CivicsQuestionsClient
+        const fs = yield* FileSystem.FileSystem
+        const c = yield* CivicsConfig
+        const cqc = yield* CivicsQuestionsClient
         const sc = yield* SenatorsClient
         const rc = yield* RepresentativesClient
-        const fs = yield* FileSystem.FileSystem
-        const config = yield* CivicsConfig
-        return yield* constructQuestions(fs, cq, sc, rc, config)()
+        const gc = yield* GovernorsClient
+        const uc = yield* Updates
+        return yield* constructQuestions(fs, cqc, sc, rc, gc, uc, c)()
       }).pipe(
         Effect.provide(civicsQuestionsClientLayer),
         Effect.provide(defaultSenatorsClientLayer),
         Effect.provide(defaultRepresentativesClientLayer),
         Effect.provide(defaultFileSystemLayer),
+        Effect.provide(defaultGovernorsClientLayer),
+        Effect.provide(defaultUpdatesLayer),
         Effect.runPromise
       )
     ).rejects.toThrow()
@@ -166,18 +202,22 @@ describe('constructQuestions', () => {
       parse: () => Effect.succeed([])
     })
     await Effect.gen(function* () {
-      const cq = yield* CivicsQuestionsClient
+      const fs = yield* FileSystem.FileSystem
+      const c = yield* CivicsConfig
+      const cqc = yield* CivicsQuestionsClient
       const sc = yield* SenatorsClient
       const rc = yield* RepresentativesClient
-      const fs = yield* FileSystem.FileSystem
-      const config = yield* CivicsConfig
-      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
+      const gc = yield* GovernorsClient
+      const uc = yield* Updates
+      const questions = yield* constructQuestions(fs, cqc, sc, rc, gc, uc, c)()
       expect(questions?.[0]?.answers).toEqual({ _type: 'senator', choices: [] })
     }).pipe(
       Effect.provide(senatorsClientLayer),
       Effect.provide(defaultCivicsQuestionsClientLayer),
       Effect.provide(defaultRepresentativesClientLayer),
       Effect.provide(defaultFileSystemLayer),
+      Effect.provide(defaultGovernorsClientLayer),
+      Effect.provide(defaultUpdatesLayer),
       Effect.runPromise
     )
   })
@@ -194,12 +234,16 @@ describe('constructQuestions', () => {
         const rc = yield* RepresentativesClient
         const fs = yield* FileSystem.FileSystem
         const config = yield* CivicsConfig
-        return yield* constructQuestions(fs, cq, sc, rc, config)()
+        const gc = yield* GovernorsClient
+        const uc = yield* Updates
+        return yield* constructQuestions(fs, cq, sc, rc, gc, uc, config)()
       }).pipe(
         Effect.provide(civicsQuestionsClientLayer),
         Effect.provide(defaultSenatorsClientLayer),
         Effect.provide(defaultRepresentativesClientLayer),
         Effect.provide(defaultFileSystemLayer),
+        Effect.provide(defaultGovernorsClientLayer),
+        Effect.provide(defaultUpdatesLayer),
         Effect.runPromise
       )
     ).rejects.toThrow()
@@ -214,6 +258,7 @@ describe('constructQuestions', () => {
             theme: 'AMERICAN HISTORY',
             section: 'Colonial Period',
             question: 'Who was the first President?',
+            questionNumber: 1,
             answers: { _type: 'text', choices: ['George Washington'] }
           }
         ])
@@ -225,7 +270,9 @@ describe('constructQuestions', () => {
       const rc = yield* RepresentativesClient
       const fs = yield* FileSystem.FileSystem
       const config = yield* CivicsConfig
-      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
+      const gc = yield* GovernorsClient
+      const uc = yield* Updates
+      const questions = yield* constructQuestions(fs, cq, sc, rc, gc, uc, config)()
       expect(questions).toHaveLength(QUESTIONS.length + 1)
       expect(questions?.[QUESTIONS.length]?.question).toBe('Who was the first President?')
       expect(questions?.[QUESTIONS.length]?.answers).toEqual({
@@ -237,6 +284,8 @@ describe('constructQuestions', () => {
       Effect.provide(defaultSenatorsClientLayer),
       Effect.provide(defaultRepresentativesClientLayer),
       Effect.provide(defaultFileSystemLayer),
+      Effect.provide(defaultGovernorsClientLayer),
+      Effect.provide(defaultUpdatesLayer),
       Effect.runPromise
     )
   })
@@ -251,7 +300,9 @@ describe('constructQuestions', () => {
       const rc = yield* RepresentativesClient
       const fs = yield* FileSystem.FileSystem
       const config = yield* CivicsConfig
-      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
+      const gc = yield* GovernorsClient
+      const uc = yield* Updates
+      const questions = yield* constructQuestions(fs, cq, sc, rc, gc, uc, config)()
       expect(questions?.[0]?.answers._type).toBe('senator')
       expect(Array.isArray(questions?.[0]?.answers.choices)).toBe(true)
     }).pipe(
@@ -259,6 +310,8 @@ describe('constructQuestions', () => {
       Effect.provide(defaultCivicsQuestionsClientLayer),
       Effect.provide(defaultRepresentativesClientLayer),
       Effect.provide(defaultFileSystemLayer),
+      Effect.provide(defaultGovernorsClientLayer),
+      Effect.provide(defaultUpdatesLayer),
       Effect.runPromise
     )
   })
@@ -272,6 +325,7 @@ describe('constructQuestions', () => {
             theme: 'AMERICAN HISTORY',
             section: 'Colonial Period',
             question: 'Who was the first President?',
+            questionNumber: 70,
             answers: { _type: 'text', choices: ['George Washington'] }
           }
         ])
@@ -283,7 +337,9 @@ describe('constructQuestions', () => {
       const rc = yield* RepresentativesClient
       const fs = yield* FileSystem.FileSystem
       const config = yield* CivicsConfig
-      const questions = yield* constructQuestions(fs, cq, sc, rc, config)()
+      const gc = yield* GovernorsClient
+      const uc = yield* Updates
+      const questions = yield* constructQuestions(fs, cq, sc, rc, gc, uc, config)()
       expect(
         questions?.find((q) => q.question === 'Who was the first President?')?.answers
       ).toEqual({ _type: 'text', choices: ['George Washington'] })
@@ -295,6 +351,8 @@ describe('constructQuestions', () => {
       Effect.provide(defaultSenatorsClientLayer),
       Effect.provide(defaultRepresentativesClientLayer),
       Effect.provide(defaultFileSystemLayer),
+      Effect.provide(defaultGovernorsClientLayer),
+      Effect.provide(defaultUpdatesLayer),
       Effect.runPromise
     )
   })

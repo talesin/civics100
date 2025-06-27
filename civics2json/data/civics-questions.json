@@ -2518,7 +2518,9 @@
     "answers": {
       "_type": "text",
       "choices": [
-        "Visit uscis.gov/citizenship/testupdates for the name of the President of the United States."
+        "Donald J. Trump",
+        "Donald Trump",
+        "Trump"
       ]
     }
   },
@@ -2530,7 +2532,8 @@
     "answers": {
       "_type": "text",
       "choices": [
-        "Visit uscis.gov/citizenship/testupdates for the name of the Vice President of the United States."
+        "JD Vance",
+        "Vance"
       ]
     }
   },
@@ -2668,7 +2671,7 @@
     "answers": {
       "_type": "text",
       "choices": [
-        "Visit uscis.gov/citizenship/testupdates for the number of justices on the Supreme Court."
+        "nine (9)"
       ]
     }
   },
@@ -2680,7 +2683,8 @@
     "answers": {
       "_type": "text",
       "choices": [
-        "Visit uscis.gov/citizenship/testupdates for the name of the Chief Justice of the United States."
+        "John Roberts",
+        "John G. Roberts, Jr."
       ]
     }
   },
@@ -3205,7 +3209,7 @@
     "answers": {
       "_type": "text",
       "choices": [
-        "Visit uscis.gov/citizenship/testupdates for the political party of the President."
+        "Republican (Party)"
       ]
     }
   },
@@ -3217,7 +3221,9 @@
     "answers": {
       "_type": "text",
       "choices": [
-        "Visit uscis.gov/citizenship/testupdates for the name of the Speaker of the House of Representatives."
+        "Mike Johnson",
+        "Johnson",
+        "James Michael Johnson (birth name)"
       ]
     }
   },
@@ -3971,10 +3977,11 @@
     "answers": {
       "_type": "text",
       "choices": [
-        "New Year's Day",
+        "New Year’s Day",
         "Martin Luther King, Jr. Day",
-        "Presidents' Day",
+        "Presidents’ Day",
         "Memorial Day",
+        "Juneteenth",
         "Independence Day",
         "Labor Day",
         "Columbus Day",
