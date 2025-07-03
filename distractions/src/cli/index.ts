@@ -5,6 +5,9 @@ import { StaticGenerator } from '../generators/StaticGenerator'
 import { SimilarityService } from '../services/SimilarityService'
 import { QuestionsDataService } from '../data/QuestionsDataService'
 import { DistractorManager } from '../services/DistractorManager'
+import { QuestionClassifierService } from '../services/QuestionClassifierService'
+import { PoolMappingService } from '../services/PoolMappingService'
+import { DistractorQualityService } from '../services/DistractorQualityService'
 
 const cli = Command.make('distractors', {}, () =>
   Effect.gen(function* () {
@@ -19,10 +22,13 @@ const runnable = Command.run(cli, {
 })
 
 runnable(process.argv).pipe(
-  Effect.provide(DistractorManager.Default),
-  Effect.provide(StaticGenerator.Default),
   Effect.provide(SimilarityService.Default),
+  Effect.provide(DistractorQualityService.Default),
+  Effect.provide(QuestionClassifierService.Default),
+  Effect.provide(PoolMappingService.Default),
+  Effect.provide(StaticGenerator.Default),
   Effect.provide(QuestionsDataService.Default),
+  Effect.provide(DistractorManager.Default),
   Effect.provide(NodeContext.layer),
   NodeRuntime.runMain
 )

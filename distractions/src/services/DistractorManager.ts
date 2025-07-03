@@ -23,5 +23,6 @@ export class DistractorManager extends Effect.Service<DistractorManager>()('Dist
     return {
       generateAndWrite
     }
-  })
+  }),
+  dependencies: [StaticGenerator.Default]
 }) {}
