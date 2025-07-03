@@ -1,9 +1,7 @@
 import { Data, Effect } from 'effect'
 import type { Question } from 'civics2json'
 import { QuestionsDataService } from '../data/QuestionsDataService'
-import { QuestionClassifierService } from '../services/QuestionClassifierService'
-import { PoolMappingService } from '../services/PoolMappingService'
-import { DistractorQualityService } from '../services/DistractorQualityService'
+import { CuratedDistractorService } from '../services/CuratedDistractorService'
 
 export type QuestionWithDistractors = Question & {
   readonly _tag: 'QuestionWithDistractors'
@@ -33,60 +31,7 @@ const getAnswerText = (choice: Question['answers']['choices'][number]): string =
 export class StaticGenerator extends Effect.Service<StaticGenerator>()('StaticGenerator', {
   effect: Effect.gen(function* () {
     const questionsDataService = yield* QuestionsDataService
-    const questionClassifierService = yield* QuestionClassifierService
-    const poolMappingService = yield* PoolMappingService
-    const distractorQualityService = yield* DistractorQualityService
-
-    const generateFromPools = (question: Question) =>
-      Effect.gen(function* () {
-        const correctAnswers = question.answers.choices.map(getAnswerText)
-        const questionType = questionClassifierService.classifyQuestion(question)
-
-        yield* Effect.log(`Question ${question.questionNumber}: "${question.question}"`)
-        yield* Effect.log(`Classified as: ${questionType}`)
-
-        // Get appropriate pools for this question type
-        const poolMapping = poolMappingService.getPoolsForQuestionType(questionType)
-        yield* Effect.log(`Pool mapping: ${JSON.stringify(poolMapping)}`)
-
-        // Get distractor candidates from static pools
-        const poolDistractors = poolMappingService.getDistractorsFromPools(
-          poolMapping,
-          correctAnswers
-        )
-        yield* Effect.log(`Pool distractors count: ${poolDistractors.length}`)
-
-        // Apply enhanced quality filtering
-        const qualityDistractors = yield* distractorQualityService.applyEnhancedQualityFilters(
-          poolDistractors,
-          correctAnswers,
-          questionType
-        )
-        yield* Effect.log(`Quality distractors count: ${qualityDistractors.length}`)
-
-        return qualityDistractors
-      })
-
-    const generateFromSection = (question: Question, allQuestions: readonly Question[]) =>
-      Effect.gen(function* () {
-        const correctAnswers = question.answers.choices.map(getAnswerText)
-
-        // Fallback to section-based approach (improved version)
-        const potentialDistractorPool = allQuestions
-          .filter(
-            (q) => q.section === question.section && q.questionNumber !== question.questionNumber
-          )
-          .flatMap((q) => q.answers.choices.map(getAnswerText))
-
-        // Apply enhanced quality filtering to section-based distractors
-        const qualityDistractors = yield* distractorQualityService.applyEnhancedQualityFilters(
-          potentialDistractorPool,
-          correctAnswers,
-          'abstract'
-        )
-
-        return qualityDistractors
-      })
+    const curatedDistractorService = yield* CuratedDistractorService
 
     const generate = () =>
       Effect.gen(function* () {
@@ -95,32 +40,34 @@ export class StaticGenerator extends Effect.Service<StaticGenerator>()('StaticGe
         return yield* Effect.all(
           allQuestions.map((question) =>
             Effect.gen(function* () {
-              // Try pool-based generation first
-              const poolDistractors = yield* generateFromPools(question)
-
               let finalDistractors: readonly string[]
 
-              // Use fallback if pool-based doesn't generate enough distractors
-              if (poolDistractors.length < 3) {
+              // Try to get curated distractors first
+              const curatedDistractors =
+                curatedDistractorService.getDistractorsForQuestion(question)
+
+              if (curatedDistractors.length > 0) {
+                finalDistractors = curatedDistractors
                 yield* Effect.log(
-                  `Using fallback for question ${question.questionNumber} (only ${poolDistractors.length} pool distractors)`
+                  `Using curated distractors for question ${question.questionNumber}`
                 )
-                const sectionDistractors = yield* generateFromSection(question, allQuestions)
-
-                // Combine pool and section distractors, removing duplicates
-                const combined = [...poolDistractors, ...sectionDistractors]
-                const uniqueCombined = combined.filter(
-                  (distractor, index) =>
-                    combined.findIndex(
-                      (d) => d.toLowerCase().trim() === distractor.toLowerCase().trim()
-                    ) === index
-                )
-
-                finalDistractors = uniqueCombined
-                yield* Effect.log(`Final distractors count: ${finalDistractors.length}`)
               } else {
-                yield* Effect.log(`Using pool distractors for question ${question.questionNumber}`)
-                finalDistractors = poolDistractors
+                // Fallback to section-based approach
+                const correctAnswers = question.answers.choices.map(getAnswerText)
+                const potentialDistractorPool = allQuestions
+                  .filter(
+                    (q) =>
+                      q.section === question.section && q.questionNumber !== question.questionNumber
+                  )
+                  .flatMap((q) => q.answers.choices.map(getAnswerText))
+                  .filter((answer) => !correctAnswers.includes(answer))
+
+                // Take first 4 unique distractors
+                const uniqueDistractors = [...new Set(potentialDistractorPool)].slice(0, 4)
+                finalDistractors = uniqueDistractors
+                yield* Effect.log(
+                  `Using section-based fallback for question ${question.questionNumber}`
+                )
               }
 
               return QuestionWithDistractors({
@@ -136,10 +83,5 @@ export class StaticGenerator extends Effect.Service<StaticGenerator>()('StaticGe
       generate
     }
   }),
-  dependencies: [
-    QuestionsDataService.Default,
-    QuestionClassifierService.Default,
-    PoolMappingService.Default,
-    DistractorQualityService.Default
-  ]
+  dependencies: [QuestionsDataService.Default, CuratedDistractorService.Default]
 }) {}

@@ -147,3 +147,8 @@ npx tsx src/index.ts updates parse [--force]          # Parse updates
 - Variable questions (senators, representatives, governors, capitals) are dynamically populated
 - The tool is designed to handle both static civics questions and dynamic political data
 - All data sources are fetched from official government websites
+
+## Claude Specific
+
+- All temporary working scripts or files should start with 'temp\_'
+- Record plans to 'plans/' in markdown

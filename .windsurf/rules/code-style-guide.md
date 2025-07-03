@@ -145,6 +145,8 @@ const func = Effect.fn(
 
 The dependency injection pattern is used to provide dependencies to services. This allows for testing and dependency injection. This is using a currying pattern to provide the dependencies to the service. The first function should contain the dependencies arguments and return an Effect.fn that contains the arguments for the actual function.
 
+Keep the service class minimal with just the code to define and configure it. All exported or supporting functions should be declared out side the class.
+
 ```typescript
 export const executeSomething = (dependency1: Dependency1) =>
   Effect.fn(function* (arg1: string) {
