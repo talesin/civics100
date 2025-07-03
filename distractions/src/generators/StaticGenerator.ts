@@ -1,6 +1,6 @@
 import { Data, Effect } from 'effect'
 import type { Question } from 'civics2json'
-import { QuestionsDataService } from '../data/questions-data-service'
+import { QuestionsDataService } from '../data/QuestionsDataService'
 import { SimilarityService } from '../services/SimilarityService'
 
 export type QuestionWithDistractors = Question & {
@@ -36,13 +36,24 @@ export class StaticGenerator extends Effect.Service<StaticGenerator>()('StaticGe
     const generate = () =>
       Effect.gen(function* () {
         const allQuestions = yield* questionsDataService.getAllQuestions()
-        const allAnswers = allQuestions.flatMap((q) => q.answers.choices.map(getAnswerText))
 
         return yield* Effect.all(
           allQuestions.map((question) =>
             Effect.gen(function* () {
               const correctAnswers = question.answers.choices.map(getAnswerText)
-              const potentialDistractors = allAnswers.filter((ans) => !correctAnswers.includes(ans))
+
+              // Filter questions to only include those from the same section, excluding the current question.
+              const potentialDistractorPool = allQuestions
+                .filter(
+                  (q) =>
+                    q.section === question.section && q.questionNumber !== question.questionNumber
+                )
+                .flatMap((q) => q.answers.choices.map(getAnswerText))
+
+              // Remove any answers that are also correct for the current question.
+              const potentialDistractors = potentialDistractorPool.filter(
+                (ans) => !correctAnswers.includes(ans)
+              )
 
               const distractors = yield* Effect.filter(potentialDistractors, (distractor) =>
                 Effect.gen(function* () {

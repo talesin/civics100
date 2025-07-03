@@ -1,61 +1,27 @@
-import { FileSystem } from '@effect/platform'
-import { Effect, Layer } from 'effect'
-import type { Question } from 'civics2json'
-import { generateStaticDistractors } from '../generators/static-generator'
-
-type QuestionWithDistractors = Question & { distractors?: string[] }
-
-const generateDistractors = (question: Question) =>
-  Effect.succeed(generateStaticDistractors(question))
-
-export const processFiles = (fs: FileSystem.FileSystem) =>
-  Effect.fn(({ inputFile, outputFile }: { inputFile: string; outputFile: string }) =>
-    Effect.gen(function* () {
-      yield* Effect.log(`Reading questions from ${inputFile}`)
-      const content = yield* fs.readFileString(inputFile, 'utf-8')
-      const questions = yield* Effect.try({
-        try: () => JSON.parse(content) as Question[],
-        catch: (error) => new Error(`Failed to parse input file: ${String(error)}`)
-      })
-
-      yield* Effect.log(`Generating distractors for ${questions.length} questions...`)
-      const updatedQuestions = yield* Effect.all(
-        questions.map((question) =>
-          generateDistractors(question).pipe(
-            Effect.map(
-              (distractors): QuestionWithDistractors => ({
-                ...question,
-                distractors
-              })
-            )
-          )
-        )
-      )
-
-      const outputString = JSON.stringify(updatedQuestions, null, 2)
-      yield* Effect.log(`Writing updated questions to ${outputFile}`)
-      yield* fs.writeFileString(outputFile, outputString)
-
-      yield* Effect.log('Done.')
-    })
-  )
+import { Console, Effect } from 'effect'
+import { FileSystem, Path } from '@effect/platform'
+import { StaticGenerator } from '../generators/StaticGenerator'
 
 export class DistractorManager extends Effect.Service<DistractorManager>()('DistractorManager', {
   effect: Effect.gen(function* () {
+    const generator = yield* StaticGenerator
     const fs = yield* FileSystem.FileSystem
+    const path = yield* Path.Path
+
+    const generateAndWrite = () =>
+      Effect.gen(function* () {
+        const questionsWithDistractors = yield* generator.generate()
+
+        const json = JSON.stringify(questionsWithDistractors, null, 2)
+        const outputPath = path.join('data', 'distractors-output.json')
+
+        yield* Console.log(`Writing to ${outputPath}`)
+        yield* fs.writeFile(outputPath, new TextEncoder().encode(json))
+        yield* Console.log('Done')
+      })
+
     return {
-      processFiles: processFiles(fs)
+      generateAndWrite
     }
   })
 }) {}
-
-export const TestDistractorManagerLayer = (fn?: {
-  processFiles?: (args: { inputFile: string; outputFile: string }) => Effect.Effect<void>
-}) =>
-  Layer.succeed(
-    DistractorManager,
-    DistractorManager.of({
-      _tag: 'DistractorManager',
-      processFiles: fn?.processFiles ?? (() => Effect.void)
-    })
-  )

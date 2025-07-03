@@ -7,7 +7,7 @@ export class QuestionsDataService extends Effect.Service<QuestionsDataService>()
   'QuestionsDataService',
   {
     effect: Effect.succeed({
-      getAllQuestions: () => Effect.succeed(Questions as readonly Question[]),
-    }),
+      getAllQuestions: () => Effect.succeed(Questions as readonly Question[])
+    })
   }
 ) {}
