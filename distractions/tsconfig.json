@@ -2,13 +2,14 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ES2020", "ESNext", "DOM", "DOM.Iterable"],
-    "noEmit": true,
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "dist",
     "inlineSourceMap": true,
 
     "module": "ESNext",
     "moduleResolution": "bundler",
     "useDefineForClassFields": true,
-    "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "esModuleInterop": true,
@@ -42,8 +43,9 @@
     "baseUrl": ".",
     "paths": {
       "@src/*": ["./src/*"],
-      "@test/*": ["./test/*"]
+      "@test/*": ["./test/*"],
+      "@data/*": ["./data/*"]
     }
   },
-  "include": ["src", "test", "jest.config.ts"]
+  "include": ["src", "test", "data/questions-with-distractors.json"]
 }

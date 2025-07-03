@@ -3,13 +3,19 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/data/civics-questions.json",
-    "dist/src/types.d.ts",
-    "dist/src/Questions.ts"
-  ],
+  "main": "dist/types.js",
+  "types": "dist/types.d.ts",
+  "files": ["dist"],
+  "exports": {
+    ".": {
+      "import": "./dist/types.js",
+      "types": "./dist/types.d.ts"
+    },
+    "./Questions": {
+      "import": "./dist/Questions.js",
+      "types": "./dist/Questions.d.ts"
+    }
+  },
   "scripts": {
     "clean": "rm -rf dist/ node_modules/ build/ coverage/ package-lock.json data/*",
     "lint": "npx eslint .",

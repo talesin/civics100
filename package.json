@@ -2,7 +2,8 @@
   "name": "civics100",
   "private": true,
   "workspaces": [
-    "civics2json"
+    "civics2json",
+    "distractions"
   ],
   "scripts": {
     "test": "npm run test --workspaces"
