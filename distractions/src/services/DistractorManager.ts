@@ -7,13 +7,13 @@ export class DistractorManager extends Effect.Service<DistractorManager>()('Dist
     const generator = yield* StaticGenerator
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
+    const outputPath = path.join('data', 'questions-with-distractors.json')
 
     const generateAndWrite = () =>
       Effect.gen(function* () {
         const questionsWithDistractors = yield* generator.generate()
 
         const json = JSON.stringify(questionsWithDistractors, null, 2)
-        const outputPath = path.join('data', 'distractors-output.json')
 
         yield* Console.log(`Writing to ${outputPath}`)
         yield* fs.writeFile(outputPath, new TextEncoder().encode(json))
