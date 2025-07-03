@@ -3,18 +3,24 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "clean": "rm -rf dist/ node_modules/ build/ coverage/ package-lock.json",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
     "build": "tsc",
-    "test": "jest"
+    "test": "jest",
+    "start": "tsx src/cli/index.ts"
   },
   "dependencies": {
     "@effect/cli": "^0.63.4",
     "@effect/platform": "^0.84.3",
     "@effect/platform-node": "^0.83.3",
+    "civics2json": "*",
     "effect": "^3.14.14",
+    "sentence-similarity": "^3.0.0",
+    "similarity-score": "^1.0.0",
     "ts-essentials": "^10.0.4"
   },
   "devDependencies": {

@@ -1,156 +1,232 @@
 # Distractions Project: High-Level Plan
 
-## Task List
-
-- [ ] Set up TypeScript project structure and configuration
-- [ ] Implement CLI entry point using Effect
-- [ ] Create data models/types for civics questions and distractors
-- [ ] Implement file I/O utilities (read/write JSON)
-- [ ] Populate static distractor pools
-  - [ ] U.S. States
-  - [ ] U.S. Territories
-  - [ ] U.S. Presidents
-  - [ ] U.S. Vice Presidents
-  - [ ] Cabinet-level Positions
-  - [ ] Constitutional Amendments
-  - [ ] Rights and Freedoms
-  - [ ] American Indian Tribes
-  - [ ] Major U.S. Wars (by century)
-  - [ ] National Holidays
-  - [ ] U.S. Rivers
-  - [ ] U.S. Oceans
-  - [ ] U.S. Capitals (state and national)
-  - [ ] U.S. Political Parties
-- [ ] Implement basic distractor generation logic for each question type
-- [ ] Integrate main pipeline to process input and output files
-- [ ] Add unit and integration tests
-- [ ] Write documentation and usage instructions
-
 ## 1. Project Purpose
-Enhance the civics questions dataset by adding plausible but incorrect answers (distractors) to each question, making it more useful for creating practice tests and quizzes.
+
+The primary goal of this project is to enhance the civics questions dataset by programmatically generating and adding a pool of plausible but incorrect answers (distractors) to each question. Rather than randomizing distractors at generation time, we aim to create a comprehensive set of distractors for each question that can be stored alongside the questions. This will allow downstream applications to randomly select from this pool as needed when creating practice tests, quizzes, and other learning materials. The distractors will be tailored to each question, ensuring they are relevant and effectively "distract" from the correct answer.
 
 ## 2. Core Components
 
-### A. Command Line Application
-- The project will be a command line app, implemented in TypeScript using the Effect library, following a similar architecture and approach as `civics2json`.
-- The CLI will support commands to process the civics questions data and output a new file with generated distractors.
+### A. Distractor Generation Engine
 
-### B. Data Processing Pipeline
-1. **Input**: Read `civics-questions.json`
-2. **Processing**: For each question, generate a set of plausible but incorrect answers (**possible distractors**)
-   - The output for each question will include a pool of possible distractors. These are not the final quiz options, but rather a set from which another application can randomly select distractors to combine with correct answers (up to five total, for example).
-   - The number of possible distractors per question will vary depending on the nature of the question and answer:
-     - Some questions may have only a few plausible distractors (e.g., open-ended or personal questions).
-     - Others, such as those about U.S. states, presidents, or original colonies, may have a much larger pool (e.g., 50 states, but only 13 original colonies).
-   - Distractor quality will be based on:
-     - **Semantic Similarity**: Related but incorrect answers
-     - **Common Misconceptions**: Frequently mistaken answers
-     - **Plausible Variations**: Slightly modified versions of correct answers
-     - **Thematic Distractors**: Answers that fit the theme but are factually wrong
-3. **Output**: Save to a new file (e.g., `civics-questions-with-distractors.json`)
+This is the heart of the project, responsible for creating distractors. It will use a hybrid approach, combining static data pools with AI-powered generation.
 
-## 3. Technical Approach
+#### i. Static Distractor Pools
 
-### A. Project Setup
-- Create new `distractions` directory in the project
-- Set up TypeScript with similar config to main project
-- Use the Effect library for functional programming, error handling, and CLI structure
-- Reuse existing dependencies where possible
+For questions where distractors can be drawn from a known, finite set of data. These pools will be stored as simple data structures (e.g., arrays or JSON files).
 
-### B. Implementation Phases
-1. **Phase 1: Basic Structure**
-   - Create the file and directory structure as outlined below to support modular distractor generation and CLI usage.
-   - Create data models for questions with distractors
-   - Implement basic file I/O
-   - Add simple hardcoded distractors for testing
-   - Set up CLI command structure with Effect
+- **Static Pools Created:**
+  - `branches-of-government.ts`: Legislative, Executive, Judicial branches, etc.
+  - `geography.ts`: U.S. states, territories, major rivers, and bordering oceans.
+  - `government.ts`: Cabinet-level positions.
+  - `history.ts`: U.S. Presidents, Vice Presidents, and major wars.
+  - `representatives.ts`: U.S. Representatives.
+  - `rights-freedoms.ts`: Key rights from the Bill of Rights.
+  - `senators.ts`: U.S. Senators.
+  - `state-capitals.ts`: U.S. state capitals.
 
-2. **Phase 2: Smart Generation**
-   - Implement distractor generation strategies tailored to question types
-   - Add validation to ensure distractors don't match correct answers
-   - Add tests for distractor quality
+#### ii. AI-Powered Distractor Generation
 
-3. **Phase 3: Enhancement**
-   - Add configuration options
-   - Include validation and error handling
-   - Document the API and CLI usage
+For questions requiring more nuanced or creative distractors that cannot be sourced from static lists. This will involve using a Large Language Model (LLM) to generate contextually relevant incorrect answers.
 
----
+- **AI Generation Categories:**
+  - **Famous People:** Well-known politicians, historical figures, or other public figures.
+  - **Important Documents:** Plausible-sounding but incorrect documents (e.g., Magna Carta, Treaty of Versailles).
+  - **Key Dates & Numbers:** Incorrect but plausible dates or numerical answers.
+  - **Conceptual Distractors:** Abstract but related concepts (e.g., for "What is the rule of law?", a distractor could be "The majority always rules").
+  - **Non-national Holidays:** Holidays that are not federal US holidays.
 
-## 4. Proposed File Hierarchy
+### B. Command-Line Application (CLI)
+
+A CLI built with `@effect/cli` will serve as the entry point for running the distractor generation process. It will handle file I/O and configuration.
+
+When can run it locally by: `npx tsx src/cli/index.ts`
+
+### C. Data Processing Pipeline
+
+1.  **Input**: Read the `civics-questions.json` file from the `civics2json` package.
+2.  **Processing**: For each question, determine the appropriate distractor strategy (static, AI, or both).
+3.  **Generation**: Generate a comprehensive pool of distractors for each question, ensuring they do not overlap with the correct answer(s). The goal is to provide enough plausible distractors that downstream applications can randomly select from this pool.
+4.  **Output**: Write the enhanced question data (including the distractor pools) to a new JSON file.
+
+## 3. Proposed File Hierarchy
 
 ```
 distractions/
 ├── src/
 │   ├── cli/
-│   │   └── index.ts            # CLI entry point: parses args, runs commands
+│   │   └── index.ts            # CLI entry point and command definitions
 │   ├── data/
 │   │   └── pools/
-│   │       ├── states.ts       # List of all U.S. states
-│   │       ├── presidents.ts   # List of all presidents
-│   │       ├── amendments.ts   # List of all amendments
-│   │       └── ...             # Other static distractor pools
+│   │       ├── branches-of-government.ts
+│   │       ├── geography.ts
+│   │       ├── government.ts
+│   │       ├── history.ts
+│   │       ├── representatives.ts
+│   │       ├── rights-freedoms.ts
+│   │       ├── senators.ts
+│   │       └── state-capitals.ts
 │   ├── generators/
-│   │   ├── index.ts            # Main generator interface, routes by question type
-│   │   ├── government.ts       # Logic for government-related distractors
-│   │   ├── history.ts          # Logic for history-related distractors
-│   │   ├── people.ts           # Logic for people/roles distractors
-│   │   └── general.ts          # General-purpose distractor logic
+│   │   ├── index.ts            # Main generator, routes by question type
+│   │   ├── static-generator.ts # Logic for generating from static pools
+│   │   └── ai-generator.ts     # Logic for generating using an LLM
+│   ├── services/
+│   │   └── ai.ts               # Wrapper for the AI/LLM service client
 │   ├── types/
-│   │   └── index.ts            # TypeScript types/interfaces for questions & distractors
-│   ├── utils/
-│   │   ├── file.ts             # File I/O utilities (read/write JSON, etc.)
-│   │   ├── random.ts           # Random selection helpers
-│   │   └── string.ts           # String helpers (normalization, comparison)
-│   └── main.ts                 # Main pipeline: loads data, generates distractors, writes output
+│   │   └── index.ts            # TypeScript types for questions & distractors
+│   └── main.ts                 # Main pipeline orchestrator
 ├── test/
 │   ├── generators/
-│   │   └── government.test.ts  # Unit tests for government distractors
-│   ├── integration/
-│   │   └── pipeline.test.ts    # End-to-end tests for the full pipeline
-│   └── ...                     # Other test files
+│   │   └── static-generator.test.ts
+│   └── main.test.ts
 ├── package.json
 ├── tsconfig.json
-└── README.md
+└── PLAN.md
 ```
 
-### File/Folder Descriptions
+## 4. Task List & Implementation Phases
 
-- **src/cli/index.ts**: CLI entry point. Handles argument parsing, help output, and dispatches to main logic.
-- **src/data/pools/**: Static lists of possible distractors for various question types (e.g., all states, presidents, amendments). Imported by generators as needed.
-- **src/generators/**: Contains logic for generating distractors for each type of question (government, history, people, etc.).
-  - `index.ts`: Central export and routing by question type.
-  - Specialized files (e.g., `government.ts`) encapsulate logic for specific question domains.
-- **src/types/index.ts**: TypeScript types/interfaces for questions, answers, and distractors.
-- **src/utils/**: Utility modules for file operations, randomization, and string handling.
-- **src/main.ts**: Main pipeline. Reads input JSON, generates distractors, and writes output file.
-- **test/**: Unit and integration tests for each generator and the overall pipeline.
+### Phase 1: Setup and Static Distractors
 
-## 4. Example Transformation
+- [x] Set up TypeScript project structure and configuration.
+- [x] Add `civics2json` as a local dependency.
+- [x] Implement the CLI entry point using Effect.
+- [x] Define data types/schemas for questions and distractors in `src/types/index.ts`.
+- [x] Populate static distractor pools in `src/data/pools/`.
+- [x] Create the initial `static-generator.ts` file.
+- [ ] Implement the `static-generator.ts` logic to create distractors from the pools based on question type.
+- [ ] Implement the main processing pipeline in `main.ts` to read, process (with static generator), and write files.
+- [ ] Add unit tests for the static generator.
 
-**Input:**
-```json
-{
-  "question": "What is the supreme law of the land?",
-  "answers": ["the Constitution"]
+### Phase 2: AI-Powered Distractor Generation
+
+- [ ] Set up a service wrapper for the AI/LLM API in `src/services/ai.ts`.
+- [ ] Implement `ai-generator.ts` to generate distractors for relevant questions.
+- [ ] Integrate the AI generator into the main pipeline in `main.ts`, with logic to decide when to use it.
+- [ ] Securely manage API keys (e.g., using environment variables).
+- [ ] Add tests for the AI generator (may require mocking the API).
+
+### Phase 3: Refinement and Documentation
+
+- [ ] Refine the logic for selecting the number of distractors.
+- [ ] Improve error handling and logging throughout the pipeline.
+- [ ] Add comprehensive integration tests.
+- [ ] Write `README.md` with clear documentation on how to install, configure, and run the project.
+
+## 5. Types
+
+### Question
+
+The `Question` type will be imported from the `civics2json` package. We will extend it or use a new type for the output.
+
+```typescript
+import { Question as BaseQuestion } from 'civics2json/types'
+
+type QuestionWithDistractors = BaseQuestion & {
+  distractors: string[]
 }
 ```
 
-**Output:**
-```json
-{
-  "question": "What is the supreme law of the land?",
-  "answers": ["the Constitution"],
-  "distractors": [
-    "the Declaration of Independence",
-    "the Bill of Rights",
-    "federal law"
-  ]
-}
+Original Question type:
+
+```typescript
+type Question = DeepReadonly<{
+  theme: string
+  section: string
+  question: string
+  questionNumber: number
+  answers:
+    | { _type: 'text'; choices: string[] }
+    | { _type: 'senator'; choices: { senator: string; state: StateAbbreviation }[] }
+    | { _type: 'representative'; choices: { representative: string; state: StateAbbreviation }[] }
+    | { _type: 'governor'; choices: { governor: string; state: StateAbbreviation }[] }
+    | { _type: 'capital'; choices: { capital: string; state: StateAbbreviation }[] }
+}>
 ```
 
-## 5. Next Steps
-1. Review this high-level plan
-2. Identify any missing components or concerns
-3. Decide on implementation priorities
-4. Begin with Phase 1 implementation
+# Implmentation Style Guidelines
+
+## Effect Services
+
+Entry into the various functions should be via an Effect.Service class. This will allow for dependency injection and testing.
+
+```typescript
+export class ExampleService extends Effect.Service<ExampleService>()('ExampleService', {
+  effect: Effect.gen(function* () {
+    const dependency1 = yield* Dependency1
+    const dependency2 = yield* Dependency2
+    return {
+      executeSomething: executeSomething(dependency1),
+      executeAnother: executeAnother(dependency2)
+    }
+  })
+}) {}
+
+export const TestExampleServiceLayer = (fn?: {
+  executeSomething?: () => Effect.Effect<string, ExampleError>
+  executeAnother?: () => Effect.Effect<readonly Representative[], AnotherError>
+}) =>
+  Layer.succeed(
+    ExampleService,
+    ExampleService.of({
+      _tag: 'ExampleService',
+      executeSomething: fn?.executeSomething ?? (() => Effect.succeed('')),
+      executeAnother: fn?.executeAnother ?? (() => Effect.succeed([]))
+    })
+  )
+```
+
+## Effect CLI
+
+The CLI should be built using the `@effect/cli` library. It should be a subcommand of the main CLI application. There should be limited logic in the CLI entry point, and most of the logic should be in the Effect.Service classes.
+
+```typescript
+const exampleSubCommand = Command.make(
+  'example',
+  { option: Options.boolean('option').pipe(Options.withDescription('Option')) },
+  ({ option }) => ExampleService.pipe(Effect.flatMap((service) => service.executeSomething(option)))
+).pipe(Command.withDescription('Example command'))
+
+const anotherExampleSubCommand = Command.make(
+  'another-example',
+  { option: Options.boolean('option').pipe(Options.withDescription('Option')) },
+  ({ option }) => ExampleService.pipe(Effect.flatMap((service) => service.executeAnother(option)))
+).pipe(Command.withDescription('Another example command'))
+
+const exampleCommand = Command.make('example').pipe(
+  Command.withSubcommands([exampleSubCommand, anotherExampleSubCommand])
+)
+
+const command = Command.make('example-cli').pipe(Command.withSubcommands([exampleCommand]))
+
+export const cli = Command.run(command, {
+  name: 'Example CLI',
+  version: '0.1.0'
+})
+
+// Run the CLI
+Effect.runPromise(Effect.provide(cli(process.argv), NodeContext.layer))
+```
+
+## Dependency Injection
+
+The dependency injection pattern is used to provide dependencies to services. This allows for testing and dependency injection. This is using a currying pattern to provide the dependencies to the service. The first function should contain the dependencies arguments and return an Effect.fn that contains the arguments for the actual function.
+
+```typescript
+export const executeSomething = (dependency1: Dependency1) =>
+  Effect.fn(function* (arg1: string) {
+    const dependency2 = yield* Dependency2
+    const result = yield* dependency1.executeSomething(arg1)
+    return result
+  })
+
+export class ExampleService extends Effect.Service<ExampleService>()('ExampleService', {
+  effect: Effect.gen(function* () {
+    const dependency1 = yield* Dependency1
+    const dependency2 = yield* Dependency2
+    return {
+      executeSomething: executeSomething(dependency1),
+      executeAnother: executeAnother(dependency2)
+    }
+  })
+}) {}
+```
