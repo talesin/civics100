@@ -1,4 +1,4 @@
-import { Effect } from 'effect'
+import { Effect, Layer } from 'effect'
 import type { QuestionType } from './QuestionClassifierService'
 
 // Import all static pools
@@ -62,107 +62,146 @@ export type PoolMapping = {
   readonly secondary?: readonly (keyof StaticPoolData)[]
 }
 
+export const getPoolsForQuestionType = (questionType: QuestionType): PoolMapping => {
+  switch (questionType) {
+    case 'president':
+      return {
+        primary: ['presidents'],
+        secondary: ['vicePresidents']
+      }
+
+    case 'war':
+      return {
+        primary: ['wars'],
+        secondary: ['presidents'] // Presidents who led during wars
+      }
+
+    case 'government_branch':
+      return {
+        primary: ['branches'],
+        secondary: ['cabinet']
+      }
+
+    case 'document':
+      return {
+        primary: ['documents'],
+        secondary: ['rights'] // Related rights and freedoms
+      }
+
+    case 'state':
+      return {
+        primary: ['states'],
+        secondary: ['territories', 'capitals', 'oceans', 'rivers']
+      }
+
+    case 'capital':
+      return {
+        primary: ['capitals'],
+        secondary: ['states']
+      }
+
+    case 'rights':
+      return {
+        primary: ['rights'],
+        secondary: ['documents']
+      }
+
+    case 'senator':
+      return {
+        primary: ['senators'],
+        secondary: ['states']
+      }
+
+    case 'representative':
+      return {
+        primary: ['representatives'],
+        secondary: ['states']
+      }
+
+    case 'governor':
+      return {
+        primary: ['states'],
+        secondary: ['capitals']
+      }
+
+    case 'number':
+      return {
+        primary: ['states', 'territories'], // For counting questions
+        secondary: ['wars', 'presidents']
+      }
+
+    case 'abstract':
+      return {
+        primary: ['branches', 'documents'],
+        secondary: ['rights', 'presidents']
+      }
+
+    default:
+      return {
+        primary: ['documents', 'branches'],
+        secondary: ['rights']
+      }
+  }
+}
+
+export const getStaticPoolData = (): StaticPoolData => staticPoolData
+
+export const getDistractorsFromPools = (
+  mapping: PoolMapping,
+  excludeAnswers: readonly string[] = []
+): readonly string[] => {
+  const primaryDistractors = mapping.primary.flatMap((poolName) => staticPoolData[poolName])
+  const secondaryDistractors =
+    mapping.secondary?.flatMap((poolName) => staticPoolData[poolName]) ?? []
+
+  const allDistractors = [...primaryDistractors, ...secondaryDistractors]
+
+  // Filter out exact matches with correct answers
+  return allDistractors.filter(
+    (distractor) =>
+      !excludeAnswers.some((answer) => answer.toLowerCase() === distractor.toLowerCase())
+  )
+}
+
 export class PoolMappingService extends Effect.Service<PoolMappingService>()('PoolMappingService', {
   effect: Effect.succeed({
-    getPoolsForQuestionType: (questionType: QuestionType): PoolMapping => {
-      switch (questionType) {
-        case 'president':
-          return {
-            primary: ['presidents'],
-            secondary: ['vicePresidents']
-          }
-
-        case 'war':
-          return {
-            primary: ['wars'],
-            secondary: ['presidents'] // Presidents who led during wars
-          }
-
-        case 'government_branch':
-          return {
-            primary: ['branches'],
-            secondary: ['cabinet']
-          }
-
-        case 'document':
-          return {
-            primary: ['documents'],
-            secondary: ['rights'] // Related rights and freedoms
-          }
-
-        case 'state':
-          return {
-            primary: ['states'],
-            secondary: ['territories', 'capitals', 'oceans', 'rivers']
-          }
-
-        case 'capital':
-          return {
-            primary: ['capitals'],
-            secondary: ['states']
-          }
-
-        case 'rights':
-          return {
-            primary: ['rights'],
-            secondary: ['documents']
-          }
-
-        case 'senator':
-          return {
-            primary: ['senators'],
-            secondary: ['states']
-          }
-
-        case 'representative':
-          return {
-            primary: ['representatives'],
-            secondary: ['states']
-          }
-
-        case 'governor':
-          return {
-            primary: ['states'],
-            secondary: ['capitals']
-          }
-
-        case 'number':
-          return {
-            primary: ['states', 'territories'], // For counting questions
-            secondary: ['wars', 'presidents']
-          }
-
-        case 'abstract':
-          return {
-            primary: ['branches', 'documents'],
-            secondary: ['rights', 'presidents']
-          }
-
-        default:
-          return {
-            primary: ['documents', 'branches'],
-            secondary: ['rights']
-          }
-      }
-    },
-
-    getStaticPoolData: (): StaticPoolData => staticPoolData,
-
-    getDistractorsFromPools: (
-      mapping: PoolMapping,
-      excludeAnswers: readonly string[] = []
-    ): readonly string[] => {
-      const primaryDistractors = mapping.primary.flatMap((poolName) => staticPoolData[poolName])
-      const secondaryDistractors =
-        mapping.secondary?.flatMap((poolName) => staticPoolData[poolName]) ?? []
-
-      const allDistractors = [...primaryDistractors, ...secondaryDistractors]
-
-      // Filter out exact matches with correct answers
-      return allDistractors.filter(
-        (distractor) =>
-          !excludeAnswers.some((answer) => answer.toLowerCase() === distractor.toLowerCase())
-      )
-    }
+    getPoolsForQuestionType,
+    getStaticPoolData,
+    getDistractorsFromPools
   })
 }) {}
+
+export const TestPoolMappingServiceLayer = (fn?: {
+  getPoolsForQuestionType?: (questionType: QuestionType) => PoolMapping
+  getStaticPoolData?: () => StaticPoolData
+  getDistractorsFromPools?: (
+    mapping: PoolMapping,
+    excludeAnswers?: readonly string[]
+  ) => readonly string[]
+}) =>
+  Layer.succeed(
+    PoolMappingService,
+    PoolMappingService.of({
+      _tag: 'PoolMappingService',
+      getPoolsForQuestionType: fn?.getPoolsForQuestionType ?? (() => ({ primary: [] })),
+      getStaticPoolData:
+        fn?.getStaticPoolData ??
+        (() => ({
+          presidents: [],
+          vicePresidents: [],
+          wars: [],
+          branches: [],
+          cabinet: [],
+          states: [],
+          territories: [],
+          capitals: [],
+          oceans: [],
+          rivers: [],
+          representatives: [],
+          senators: [],
+          rights: [],
+          documents: []
+        })),
+      getDistractorsFromPools: fn?.getDistractorsFromPools ?? (() => [])
+    })
+  )

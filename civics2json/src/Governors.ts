@@ -18,7 +18,7 @@ import { ParseError } from 'effect/ParseResult'
  * Fetches the state governments index HTML from usa.gov
  */
 export const fetchGovernmentsIndex = (httpClient: HttpClient.HttpClient, config: CivicsConfig) =>
-  Effect.gen(function* () {
+  Effect.fn(function* () {
     yield* Effect.log(`Fetching state governments index from ${config.STATE_GOVERNMENTS_URL}`)
     const response = yield* httpClient.get(config.STATE_GOVERNMENTS_URL)
     const html = yield* response.text
@@ -134,11 +134,10 @@ export class GovernorsClient extends Effect.Service<GovernorsClient>()('Governor
     const httpClient = yield* HttpClient.HttpClient
     const config = yield* CivicsConfig
     return {
-      fetchGovernmentsIndex: () => fetchGovernmentsIndex(httpClient, config),
-      fetchGovernmentPage: (url: string, state: StateAbbreviation) =>
-        fetchGovernmentPage(httpClient, config)(url, state),
+      fetchGovernmentsIndex: fetchGovernmentsIndex(httpClient, config),
+      fetchGovernmentPage: fetchGovernmentPage(httpClient, config),
       fetchAllGovernmentPages: fetchAllGovernmentPages(httpClient, config),
-      parseStateLinks: (html: string) => parseStateLinks(html),
+      parseStateLinks: parseStateLinks,
       parseGovernorInfo: parseGovernorInfo
     }
   })

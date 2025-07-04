@@ -108,13 +108,13 @@ export class RepresentativesClient extends Effect.Service<RepresentativesClient>
  */
 export const TestRepresentativesClientLayer = (fn?: {
   fetch?: () => Effect.Effect<string, HttpClientError>
-  parse?: () => Effect.Effect<readonly Representative[], UnknownException | ParseError>
+  parse?: (html: string) => Effect.Effect<readonly Representative[], UnknownException | ParseError>
 }) =>
   Layer.succeed(
     RepresentativesClient,
     RepresentativesClient.of({
       _tag: 'RepresentativesClient',
       fetch: fn?.fetch ?? (() => Effect.succeed('')),
-      parse: fn?.parse ?? (() => Effect.succeed([]))
+      parse: fn?.parse ?? ((_html: string) => Effect.succeed([]))
     })
   )
