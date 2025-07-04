@@ -2,13 +2,26 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  extensionsToTreatAsEsm: ['.ts'],
   moduleNameMapper: {
+    '^civics2json/Questions$': '<rootDir>/../civics2json/src/Questions.ts',
+    '^civics2json$': '<rootDir>/../civics2json/src/types.ts',
+    '^@data/civics-questions\.json$': '<rootDir>/../civics2json/data/civics-questions.json',
     '^@src/(.*)$': '<rootDir>/src/$1',
-    '^@test/(.*)$': '<rootDir>/test/$1'
+    '^@test/(.*)$': '<rootDir>/test/$1',
+    '^@data/(.*)$': '<rootDir>/data/$1'
   },
   transform: {
-    // '^.+\.tsx?$': 'ts-jest', // default for ts-jest preset
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        useESM: true,
+        tsconfig: {
+          moduleResolution: 'node'
+        }
+      }
+    ]
   },
   // Automatically clear mock calls, instances, contexts and results before every test
-  clearMocks: true,
-};
+  clearMocks: true
+}

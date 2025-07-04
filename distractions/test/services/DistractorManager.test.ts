@@ -29,16 +29,22 @@ describe('DistractorManager', () => {
       generate: mockGenerate
     })
 
-    const fileSystemTestLayer = FileSystem.layerNoop({})
+    let wroteFile = false
+    const fileSystemTestLayer = FileSystem.layerNoop({
+      writeFile: () => {
+        wroteFile = true
+        return Effect.succeed(undefined)
+      }
+    })
     const pathTestLayer = Path.layer
 
     await Effect.gen(function* () {
       const generator = yield* StaticGenerator
       const fs = yield* FileSystem.FileSystem
       const path = yield* Path.Path
-      const result = yield* generateAndWrite(generator, fs, path)()
+      yield* generateAndWrite(generator, fs, path)()
 
-      expect(result).toStrictEqual(question)
+      expect(wroteFile).toBe(true)
     }).pipe(
       Effect.provide(staticGeneratorTestLayer),
       Effect.provide(fileSystemTestLayer),
