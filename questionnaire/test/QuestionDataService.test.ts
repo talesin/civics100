@@ -1,33 +1,10 @@
 import { Effect, Option } from 'effect'
-import type { Question as CivicsQuestion } from 'civics2json'
 import type { QuestionWithDistractors } from 'distractions'
+import type { StateAbbreviation } from 'civics2json'
 import { QuestionDataService, type QuestionDataSource } from '@src/QuestionDataService'
 import { QuestionNumber } from '@src/types'
 
 describe('QuestionDataService', () => {
-  const mockCivicsQuestions: CivicsQuestion[] = [
-    {
-      questionNumber: 1,
-      theme: 'AMERICAN GOVERNMENT',
-      section: 'Principles of American Democracy',
-      question: 'What is the supreme law of the land?',
-      answers: {
-        _type: 'text',
-        choices: ['the Constitution']
-      }
-    },
-    {
-      questionNumber: 2,
-      theme: 'AMERICAN GOVERNMENT',
-      section: 'Principles of American Democracy',
-      question: 'What does the Constitution do?',
-      answers: {
-        _type: 'text',
-        choices: ['sets up the government', 'defines the government']
-      }
-    }
-  ]
-
   const mockQuestionsWithDistractors: QuestionWithDistractors[] = [
     {
       questionNumber: 1,
@@ -44,12 +21,49 @@ describe('QuestionDataService', () => {
         'the Articles of Confederation'
       ],
       _tag: 'QuestionWithDistractors'
+    },
+    {
+      questionNumber: 2,
+      theme: 'AMERICAN GOVERNMENT',
+      section: 'Principles of American Democracy',
+      question: 'What does the Constitution do?',
+      answers: {
+        _type: 'text',
+        choices: ['sets up the government', 'defines the government']
+      },
+      distractors: [
+        'creates the judiciary',
+        'establishes the military',
+        'defines voting rights'
+      ],
+      _tag: 'QuestionWithDistractors'
+    },
+    {
+      questionNumber: 20,
+      theme: 'AMERICAN GOVERNMENT', 
+      section: 'System of Government',
+      question: 'Who is one of your state\'s U.S. Senators now?',
+      answers: {
+        _type: 'senator',
+        choices: [
+          { senator: 'Dianne Feinstein', state: 'CA' as StateAbbreviation },
+          { senator: 'Alex Padilla', state: 'CA' as StateAbbreviation },
+          { senator: 'Chuck Schumer', state: 'NY' as StateAbbreviation },
+          { senator: 'Kirsten Gillibrand', state: 'NY' as StateAbbreviation }
+        ]
+      },
+      distractors: [
+        'Joe Biden',
+        'Nancy Pelosi', 
+        'Kevin McCarthy'
+      ],
+      _tag: 'QuestionWithDistractors'
     }
   ]
 
   const dataSource: QuestionDataSource = {
-    civicsQuestions: mockCivicsQuestions,
-    questionsWithDistractors: mockQuestionsWithDistractors
+    questions: mockQuestionsWithDistractors,
+    userState: 'CA' as StateAbbreviation
   }
 
   describe('loadQuestions', () => {
@@ -58,20 +72,42 @@ describe('QuestionDataService', () => {
         const questionDataService = yield* QuestionDataService
         const questions = yield* questionDataService.loadQuestions(dataSource)
 
-        expect(questions).toHaveLength(1)
+        expect(questions).toHaveLength(3)
         expect(questions[0]?.questionNumber).toBe('1')
         expect(questions[0]?.question).toBe('What is the supreme law of the land?')
         expect(questions[0]?.answers).toHaveLength(4) // 1 correct + 3 distractors
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 
-    it('should exclude questions without distractors', async () => {
+    it('should load all questions with distractors', async () => {
       await Effect.gen(function* () {
         const questionDataService = yield* QuestionDataService
         const questions = yield* questionDataService.loadQuestions(dataSource)
 
         const question2 = questions.find((q) => q.questionNumber === '2')
-        expect(question2).toBeUndefined()
+        expect(question2).toBeDefined()
+        expect(question2?.question).toBe('What does the Constitution do?')
+      }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
+    })
+
+    it('should filter state-dependent questions by user state', async () => {
+      await Effect.gen(function* () {
+        const questionDataService = yield* QuestionDataService
+        const questions = yield* questionDataService.loadQuestions(dataSource)
+
+        const senatorQuestion = questions.find((q) => q.questionNumber === '20')
+        expect(senatorQuestion).toBeDefined()
+        expect(senatorQuestion?.question).toBe('Who is one of your state\'s U.S. Senators now?')
+        
+        // Should include CA senators and distractors, but not NY senators
+        expect(senatorQuestion?.answers).toEqual(
+          expect.arrayContaining(['Dianne Feinstein'])
+        )
+        expect(senatorQuestion?.answers).not.toEqual(
+          expect.arrayContaining(['Chuck Schumer', 'Kirsten Gillibrand'])
+        )
+        // Should have correct + distractors
+        expect(senatorQuestion?.answers).toHaveLength(4) // 2 CA senators + 3 distractors shuffled to 4
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 
@@ -79,8 +115,8 @@ describe('QuestionDataService', () => {
       await Effect.gen(function* () {
         const questionDataService = yield* QuestionDataService
         const emptyDataSource: QuestionDataSource = {
-          civicsQuestions: [],
-          questionsWithDistractors: []
+          questions: [],
+          userState: 'CA' as StateAbbreviation
         }
 
         const questions = yield* questionDataService.loadQuestions(emptyDataSource)
@@ -96,7 +132,7 @@ describe('QuestionDataService', () => {
         const questions = yield* questionDataService.loadQuestions(dataSource)
         const questionNumbers = questionDataService.getAvailableQuestionNumbers(questions)
 
-        expect(questionNumbers).toEqual(['1'])
+        expect(questionNumbers).toEqual(['1', '2', '20'])
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 
@@ -143,41 +179,7 @@ describe('QuestionDataService', () => {
         const questions = yield* questionDataService.loadQuestions(dataSource)
         const count = questionDataService.getQuestionCount(questions)
 
-        expect(count).toBe(1)
-      }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
-    })
-  })
-
-  describe('getQuestionsWithMissingDistractors', () => {
-    it('should identify questions without distractors', async () => {
-      await Effect.gen(function* () {
-        const questionDataService = yield* QuestionDataService
-        const missing = questionDataService.getQuestionsWithMissingDistractors(
-          mockCivicsQuestions,
-          mockQuestionsWithDistractors
-        )
-
-        expect(missing).toEqual(['2'])
-      }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
-    })
-
-    it('should return empty array when all questions have distractors', async () => {
-      await Effect.gen(function* () {
-        const questionDataService = yield* QuestionDataService
-        const allCovered = mockQuestionsWithDistractors.map((q) => ({
-          questionNumber: q.questionNumber,
-          theme: q.theme,
-          section: q.section,
-          question: q.question,
-          answers: q.answers
-        }))
-
-        const missing = questionDataService.getQuestionsWithMissingDistractors(
-          allCovered,
-          mockQuestionsWithDistractors
-        )
-
-        expect(missing).toEqual([])
+        expect(count).toBe(3)
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
   })

@@ -90,16 +90,14 @@ const getQuestionStats = (questionNumber: QuestionNumber, answers: Answers) => {
  * Handles weighted question selection based on answer history
  */
 export class QuestionSelector extends Effect.Service<QuestionSelector>()('QuestionSelector', {
-  effect: Effect.gen(function* () {
-    return {
-      selectQuestion: (
-        availableQuestions: ReadonlyArray<QuestionNumber>,
-        answers: Answers,
-        weights?: SelectionWeights
-      ) => selectQuestion(availableQuestions, answers, weights),
-      getQuestionStats: (questionNumber: QuestionNumber, answers: Answers) =>
-        getQuestionStats(questionNumber, answers)
-    }
+  effect: Effect.succeed({
+    selectQuestion: (
+      availableQuestions: ReadonlyArray<QuestionNumber>,
+      answers: Answers,
+      weights?: SelectionWeights
+    ) => selectQuestion(availableQuestions, answers, weights),
+    getQuestionStats: (questionNumber: QuestionNumber, answers: Answers) =>
+      getQuestionStats(questionNumber, answers)
   })
 }) {}
 

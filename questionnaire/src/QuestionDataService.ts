@@ -1,15 +1,11 @@
 import { Effect, Array as EffectArray, Option, Layer, Random } from 'effect'
-import type { Question as CivicsQuestion } from 'civics2json'
 import type { QuestionWithDistractors } from 'distractions'
-import { QuestionNumber, type Question } from './types.js'
+import type { StateAbbreviation } from 'civics2json'
+import { QuestionNumber, type Question } from './types'
 
 export type QuestionDataSource = {
-  civicsQuestions: ReadonlyArray<CivicsQuestion>
-  questionsWithDistractors: ReadonlyArray<QuestionWithDistractors>
-}
-
-const parseQuestionNumber = (questionNumber: number): QuestionNumber => {
-  return QuestionNumber(questionNumber.toString())
+  questions: ReadonlyArray<QuestionWithDistractors>
+  userState: StateAbbreviation
 }
 
 /**
@@ -67,55 +63,51 @@ const createQuestion = (
   })
 }
 
-const findDistractorsForQuestion = (
-  questionNumber: QuestionNumber,
-  questionsWithDistractors: ReadonlyArray<QuestionWithDistractors>
-): Option.Option<ReadonlyArray<string>> => {
-  const found = questionsWithDistractors.find((q) => q.questionNumber.toString() === questionNumber)
-  return found ? Option.some(found.distractors) : Option.none()
-}
-
-const extractCorrectAnswers = (civicsQuestion: CivicsQuestion): ReadonlyArray<string> => {
-  switch (civicsQuestion.answers._type) {
+const extractCorrectAnswers = (
+  question: QuestionWithDistractors,
+  userState: StateAbbreviation
+): ReadonlyArray<string> => {
+  switch (question.answers._type) {
     case 'text':
-      return civicsQuestion.answers.choices
+      return question.answers.choices
     case 'senator':
-      return civicsQuestion.answers.choices.map((choice) => choice.senator)
+      return question.answers.choices
+        .filter((choice) => choice.state === userState)
+        .map((choice) => choice.senator)
     case 'representative':
-      return civicsQuestion.answers.choices.map((choice) => choice.representative)
+      return question.answers.choices
+        .filter((choice) => choice.state === userState)
+        .map((choice) => choice.representative)
     case 'governor':
-      return civicsQuestion.answers.choices.map((choice) => choice.governor)
+      return question.answers.choices
+        .filter((choice) => choice.state === userState)
+        .map((choice) => choice.governor)
     case 'capital':
-      return civicsQuestion.answers.choices.map((choice) => choice.capital)
+      return question.answers.choices
+        .filter((choice) => choice.state === userState)
+        .map((choice) => choice.capital)
     default:
       return []
   }
 }
 
 const createQuestionFromData = (
-  civicsQuestion: CivicsQuestion,
-  questionsWithDistractors: ReadonlyArray<QuestionWithDistractors>
+  questionWithDistractors: QuestionWithDistractors,
+  userState: StateAbbreviation
 ): Effect.Effect<Option.Option<Question>, never, never> => {
   return Effect.gen(function* () {
-    const questionNumber = parseQuestionNumber(civicsQuestion.questionNumber)
-    const correctAnswers = extractCorrectAnswers(civicsQuestion)
+    const questionNumber = QuestionNumber(questionWithDistractors.questionNumber.toString())
+    const correctAnswers = extractCorrectAnswers(questionWithDistractors, userState)
 
     if (correctAnswers.length === 0) {
       return Option.none()
     }
 
-    const distractorsOption = findDistractorsForQuestion(questionNumber, questionsWithDistractors)
-
-    if (Option.isNone(distractorsOption)) {
-      return Option.none()
-    }
-
-    const distractors = distractorsOption.value
     const question = yield* createQuestion(
       questionNumber,
-      civicsQuestion.question,
+      questionWithDistractors.question,
       correctAnswers,
-      distractors
+      questionWithDistractors.distractors
     )
 
     return Option.some(question)
@@ -126,8 +118,8 @@ export const loadQuestions = (
   dataSource: QuestionDataSource
 ): Effect.Effect<ReadonlyArray<Question>, never, never> => {
   return Effect.gen(function* () {
-    const questionEffects = dataSource.civicsQuestions.map((civicsQuestion) =>
-      createQuestionFromData(civicsQuestion, dataSource.questionsWithDistractors)
+    const questionEffects = dataSource.questions.map((question) =>
+      createQuestionFromData(question, dataSource.userState)
     )
 
     const questionOptions = yield* Effect.all(questionEffects)
@@ -161,41 +153,20 @@ export const getQuestionCount = (questions: ReadonlyArray<Question>): number => 
   return questions.length
 }
 
-const getQuestionsWithMissingDistractors = (
-  civicsQuestions: ReadonlyArray<CivicsQuestion>,
-  questionsWithDistractors: ReadonlyArray<QuestionWithDistractors>
-): ReadonlyArray<string> => {
-  const distractorNumbers = new Set(
-    questionsWithDistractors.map((q) => q.questionNumber.toString())
-  )
-
-  return civicsQuestions
-    .filter((q) => !distractorNumbers.has(q.questionNumber.toString()))
-    .map((q) => q.questionNumber.toString())
-}
-
 /**
  * Service for managing question data loading and transformation
- * Handles integration between civics2json and distractions packages
+ * Handles loading questions from the distractions package
  */
 export class QuestionDataService extends Effect.Service<QuestionDataService>()(
   'QuestionDataService',
   {
-    effect: Effect.gen(function* () {
-      return {
-        loadQuestions: (dataSource: QuestionDataSource) => loadQuestions(dataSource),
-        getAvailableQuestionNumbers: (questions: ReadonlyArray<Question>) =>
-          getAvailableQuestionNumbers(questions),
-        findQuestionByNumber: (
-          questionNumber: QuestionNumber,
-          questions: ReadonlyArray<Question>
-        ) => findQuestionByNumber(questionNumber, questions),
-        getQuestionCount: (questions: ReadonlyArray<Question>) => getQuestionCount(questions),
-        getQuestionsWithMissingDistractors: (
-          civicsQuestions: ReadonlyArray<CivicsQuestion>,
-          questionsWithDistractors: ReadonlyArray<QuestionWithDistractors>
-        ) => getQuestionsWithMissingDistractors(civicsQuestions, questionsWithDistractors)
-      }
+    effect: Effect.succeed({
+      loadQuestions: (dataSource: QuestionDataSource) => loadQuestions(dataSource),
+      getAvailableQuestionNumbers: (questions: ReadonlyArray<Question>) =>
+        getAvailableQuestionNumbers(questions),
+      findQuestionByNumber: (questionNumber: QuestionNumber, questions: ReadonlyArray<Question>) =>
+        findQuestionByNumber(questionNumber, questions),
+      getQuestionCount: (questions: ReadonlyArray<Question>) => getQuestionCount(questions)
     })
   }
 ) {}
@@ -215,10 +186,6 @@ export const TestQuestionDataServiceLayer = (fn?: {
     questions: ReadonlyArray<Question>
   ) => Option.Option<Question>
   getQuestionCount?: (questions: ReadonlyArray<Question>) => number
-  getQuestionsWithMissingDistractors?: (
-    civicsQuestions: ReadonlyArray<CivicsQuestion>,
-    questionsWithDistractors: ReadonlyArray<QuestionWithDistractors>
-  ) => ReadonlyArray<string>
 }) =>
   Layer.succeed(
     QuestionDataService,
@@ -227,7 +194,6 @@ export const TestQuestionDataServiceLayer = (fn?: {
       loadQuestions: fn?.loadQuestions ?? (() => Effect.succeed([])),
       getAvailableQuestionNumbers: fn?.getAvailableQuestionNumbers ?? (() => []),
       findQuestionByNumber: fn?.findQuestionByNumber ?? (() => Option.none()),
-      getQuestionCount: fn?.getQuestionCount ?? (() => 0),
-      getQuestionsWithMissingDistractors: fn?.getQuestionsWithMissingDistractors ?? (() => [])
+      getQuestionCount: fn?.getQuestionCount ?? (() => 0)
     })
   )

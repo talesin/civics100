@@ -1,6 +1,7 @@
 import { NodeContext, NodeRuntime } from '@effect/platform-node'
-import { Command } from '@effect/cli'
+import { Command, Options } from '@effect/cli'
 import { Effect, Console, Option } from 'effect'
+import type { StateAbbreviation } from 'civics2json'
 import { GameService, type GameState } from './GameService.js'
 import { QuestionDataService } from '../QuestionDataService.js'
 import { QuestionSelector } from '../QuestionSelector.js'
@@ -59,9 +60,17 @@ const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<voi
   })
 
 /**
+ * CLI option for user's state
+ */
+const stateOption = Options.text('state').pipe(
+  Options.withAlias('s'),
+  Options.withDescription('Your state abbreviation (e.g., CA, NY, TX)')
+)
+
+/**
  * Main questionnaire command that starts the interactive game
  */
-const cli = Command.make('questionnaire', {}, () =>
+const cli = Command.make('questionnaire', { state: stateOption }, ({ state }) =>
   Effect.gen(function* () {
     yield* Console.log('🇺🇸 US Civics Questionnaire Engine')
     yield* Console.log('===================================')
@@ -70,9 +79,10 @@ const cli = Command.make('questionnaire', {}, () =>
     yield* Console.log('')
 
     const gameService = yield* GameService
-    const initialState = yield* gameService.initializeGame()
+    const initialState = yield* gameService.initializeGame(state as StateAbbreviation)
 
     yield* Console.log(`Loaded ${initialState.questions.length} questions with distractors.`)
+    yield* Console.log(`State: ${state}`)
     yield* Console.log('')
 
     yield* gameLoop(initialState, gameService)

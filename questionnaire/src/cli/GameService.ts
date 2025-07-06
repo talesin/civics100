@@ -1,10 +1,9 @@
 import { Effect, Console, Option, Layer } from 'effect'
-import type { Question as CivicsQuestion } from 'civics2json'
 import questionsWithDistractors from 'distractions'
-import civicsQuestions from 'civics2json/Questions'
-import { QuestionNumber, type Answers, type Question } from '../types.js'
-import { QuestionSelector } from '../QuestionSelector.js'
-import { QuestionDataService } from '../QuestionDataService.js'
+import type { StateAbbreviation } from 'civics2json'
+import { QuestionNumber, type Answers, type Question } from '../types'
+import { QuestionSelector } from '../QuestionSelector'
+import { QuestionDataService } from '../QuestionDataService'
 
 /**
  * State for the game including loaded questions and user answers
@@ -19,12 +18,13 @@ export type GameState = {
  * Initialize the game state by loading questions from data sources
  */
 const initializeGame = (
-  questionDataService: QuestionDataService
+  questionDataService: QuestionDataService,
+  userState: StateAbbreviation
 ): Effect.Effect<GameState, never, never> => {
   return Effect.gen(function* () {
     const questions = yield* questionDataService.loadQuestions({
-      civicsQuestions: civicsQuestions as ReadonlyArray<CivicsQuestion>,
-      questionsWithDistractors
+      questions: questionsWithDistractors,
+      userState
     })
 
     return {
@@ -168,7 +168,8 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
     const questionSelector = yield* QuestionSelector
 
     return {
-      initializeGame: () => initializeGame(questionDataService),
+      initializeGame: (userState: StateAbbreviation) =>
+        initializeGame(questionDataService, userState),
       getNextQuestion: (state: GameState) =>
         getNextQuestion(state, questionDataService, questionSelector),
       displayQuestion: (question: Question) => displayQuestion(question),
@@ -184,7 +185,7 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
  * Test layer for GameService with mockable functions
  */
 export const TestGameServiceLayer = (fn?: {
-  initializeGame?: () => Effect.Effect<GameState, never, never>
+  initializeGame?: (userState: StateAbbreviation) => Effect.Effect<GameState, never, never>
   getNextQuestion?: (state: GameState) => Effect.Effect<Option.Option<Question>, never, never>
   displayQuestion?: (question: Question) => Effect.Effect<void, never, never>
   displayStats?: (state: GameState) => Effect.Effect<void, never, never>
@@ -200,7 +201,7 @@ export const TestGameServiceLayer = (fn?: {
       _tag: 'GameService',
       initializeGame:
         fn?.initializeGame ??
-        (() =>
+        ((_userState: StateAbbreviation) =>
           Effect.succeed({
             questions: [],
             answers: {},

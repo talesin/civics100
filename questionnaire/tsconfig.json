@@ -2,13 +2,12 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ES2020", "ESNext", "DOM", "DOM.Iterable"],
-    "noEmit": false,
-    "declaration": true,
-    "outDir": "dist",
-    "inlineSourceMap": true,
+    "noEmit": true,
+    "declaration": false,
+    "inlineSourceMap": false,
 
     "module": "ESNext",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node",
     "useDefineForClassFields": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
