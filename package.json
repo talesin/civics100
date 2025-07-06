@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "civics2json",
-    "distractions"
+    "distractions",
+    "questionnaire"
   ],
   "scripts": {
     "test": "npm run test --workspaces",
