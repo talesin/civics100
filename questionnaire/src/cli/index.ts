@@ -9,29 +9,24 @@ import { createInterface } from 'readline'
 /**
  * Prompt for user input using readline
  */
-const promptForInput = (prompt: string): Effect.Effect<string, never, never> => {
-  return Effect.gen(function* () {
-    yield* Console.log(prompt)
+const promptForInput = (prompt: string): Effect.Effect<string, never, never> =>
+  Effect.async<string>((resume) => {
+    const rl = createInterface({
+      input: process.stdin,
+      output: process.stdout
+    })
 
-    return yield* Effect.async<string>((resume) => {
-      const rl = createInterface({
-        input: process.stdin,
-        output: process.stdout
-      })
-
-      rl.question('', (answer: string) => {
-        rl.close()
-        resume(Effect.succeed(answer.trim()))
-      })
+    rl.question(prompt, (answer: string) => {
+      rl.close()
+      resume(Effect.succeed(answer.trim()))
     })
   })
-}
 
 /**
  * Main game loop that handles user interaction
  */
-const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<void, never, never> => {
-  return Effect.gen(function* () {
+const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<void, never, never> =>
+  Effect.gen(function* () {
     if (Option.isNone(state.currentQuestion)) {
       const nextQuestion = yield* gameService.getNextQuestion(state)
 
@@ -44,7 +39,7 @@ const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<voi
       yield* gameService.displayQuestion(nextQuestion.value)
 
       const userInput = yield* promptForInput(
-        'Your answer (A/B/C/D) or \"stats\" for statistics or \"quit\" to exit: '
+        'Your answer (A/B/C/D) or "stats" for statistics or "quit" to exit: '
       )
 
       if (userInput.toLowerCase() === 'quit') {
@@ -58,15 +53,10 @@ const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<voi
         return
       }
 
-      const updatedState = yield* gameService.processAnswer(
-        userInput,
-        nextQuestion.value,
-        newState
-      )
+      const updatedState = yield* gameService.processAnswer(userInput, nextQuestion.value, newState)
       yield* gameLoop(updatedState, gameService)
     }
   })
-}
 
 /**
  * Main questionnaire command that starts the interactive game

@@ -57,7 +57,7 @@ const recordAnswer = (
  */
 const displayQuestion = (question: Question): Effect.Effect<void, never, never> => {
   return Effect.gen(function* () {
-    yield* Console.log(`\\n📝 Question ${question.questionNumber}:`)
+    yield* Console.log(`\n✏️ Question ${question.questionNumber}:`)
     yield* Console.log(question.question)
     yield* Console.log('')
 
@@ -107,13 +107,14 @@ const displayStats = (state: GameState): Effect.Effect<void, never, never> => {
 
     const accuracy = totalAnswers > 0 ? (correctAnswers / totalAnswers) * 100 : 0
 
-    yield* Console.log('\\n📊 Statistics:')
-    yield* Console.log(`Questions available: ${totalQuestions}`)
-    yield* Console.log(`Questions attempted: ${answeredQuestions}`)
-    yield* Console.log(`Total answers: ${totalAnswers}`)
-    yield* Console.log(`Correct answers: ${correctAnswers}`)
-    yield* Console.log(`Accuracy: ${accuracy.toFixed(1)}%`)
-    yield* Console.log('')
+    yield* Console.log(`
+📊 Statistics:
+Questions available: ${totalQuestions}
+Questions attempted: ${answeredQuestions}
+Total answers: ${totalAnswers}
+Correct answers: ${correctAnswers}
+Accuracy: ${accuracy.toFixed(1)}%
+`)
   })
 }
 
