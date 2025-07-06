@@ -9,17 +9,20 @@ export type {
 export { QuestionNumber } from "./types.js";
 
 export {
-  selectQuestion,
-  createQuestion,
-  getQuestionStats,
+  QuestionSelector,
+  TestQuestionSelectorLayer
 } from "./QuestionSelector.js";
 
 export type { QuestionDataSource } from "./QuestionDataService.js";
 
 export {
-  loadQuestions,
-  getAvailableQuestionNumbers,
-  findQuestionByNumber,
-  getQuestionCount,
-  getQuestionsWithMissingDistractors,
+  QuestionDataService,
+  TestQuestionDataServiceLayer
 } from "./QuestionDataService.js";
+
+export type { GameState } from "./cli/GameService.js";
+
+export {
+  GameService,
+  TestGameServiceLayer
+} from "./cli/GameService.js";

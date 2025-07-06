@@ -1,8 +1,7 @@
 import { Effect, Option } from "effect";
 import {
-  selectQuestion,
-  createQuestion,
-  getQuestionStats,
+  QuestionSelector,
+  TestQuestionSelectorLayer
 } from "@src/QuestionSelector";
 import { QuestionNumber, type Answers } from "@src/types";
 
@@ -16,25 +15,32 @@ describe("QuestionSelector", () => {
       const availableQuestions = [q1, q2, q3];
       const answers: Answers = {};
 
-      const result = await Effect.runPromise(
-        selectQuestion(availableQuestions, answers),
-      );
+      await Effect.gen(function* () {
+        const questionSelector = yield* QuestionSelector;
+        const result = yield* questionSelector.selectQuestion(availableQuestions, answers);
 
-      expect(Option.isSome(result)).toBe(true);
-      if (Option.isSome(result)) {
-        expect(availableQuestions).toContain(result.value);
-      }
+        expect(Option.isSome(result)).toBe(true);
+        if (Option.isSome(result)) {
+          expect(availableQuestions).toContain(result.value);
+        }
+      }).pipe(
+        Effect.provide(QuestionSelector.Default),
+        Effect.runPromise
+      );
     });
 
     it("should return None when no questions are available", async () => {
       const availableQuestions: QuestionNumber[] = [];
       const answers: Answers = {};
 
-      const result = await Effect.runPromise(
-        selectQuestion(availableQuestions, answers),
+      await Effect.gen(function* () {
+        const questionSelector = yield* QuestionSelector;
+        const result = yield* questionSelector.selectQuestion(availableQuestions, answers);
+        expect(Option.isNone(result)).toBe(true);
+      }).pipe(
+        Effect.provide(QuestionSelector.Default),
+        Effect.runPromise
       );
-
-      expect(Option.isNone(result)).toBe(true);
     });
 
     it("should prefer questions with incorrect answers", async () => {
@@ -47,7 +53,13 @@ describe("QuestionSelector", () => {
       // Run multiple times to check weighting tendency
       const results = await Promise.all(
         Array.from({ length: 20 }, () =>
-          Effect.runPromise(selectQuestion(availableQuestions, answers)),
+          Effect.gen(function* () {
+            const questionSelector = yield* QuestionSelector;
+            return yield* questionSelector.selectQuestion(availableQuestions, answers);
+          }).pipe(
+            Effect.provide(QuestionSelector.Default),
+            Effect.runPromise
+          )
         ),
       );
 
@@ -60,64 +72,26 @@ describe("QuestionSelector", () => {
     });
   });
 
-  describe("createQuestion", () => {
-    it("should create a question with shuffled answers", async () => {
-      const questionNumber = QuestionNumber("1");
-      const questionText = "What is the capital of the United States?";
-      const correctAnswers = ["Washington, D.C."];
-      const distractors = ["New York", "Los Angeles", "Chicago"];
-
-      const question = await Effect.runPromise(
-        createQuestion(
-          questionNumber,
-          questionText,
-          correctAnswers,
-          distractors,
-        ),
-      );
-
-      expect(question.questionNumber).toBe(questionNumber);
-      expect(question.question).toBe(questionText);
-      expect(question.answers).toHaveLength(4);
-      expect(question.answers).toContain("Washington, D.C.");
-      expect(question.answers).toContain("New York");
-      expect(question.correctAnswer).toBeGreaterThanOrEqual(0);
-      expect(question.correctAnswer).toBeLessThan(4);
-      expect(question.answers[question.correctAnswer]).toBe("Washington, D.C.");
-    });
-
-    it("should handle empty correct answers", async () => {
-      const questionNumber = QuestionNumber("1");
-      const questionText = "Test question";
-      const correctAnswers: string[] = [];
-      const distractors = ["A", "B", "C"];
-
-      const question = await Effect.runPromise(
-        createQuestion(
-          questionNumber,
-          questionText,
-          correctAnswers,
-          distractors,
-        ),
-      );
-
-      expect(question.answers).toHaveLength(0);
-      expect(question.correctAnswer).toBe(-1);
-    });
-  });
 
   describe("getQuestionStats", () => {
-    it("should calculate stats for unanswered question", () => {
+    it("should calculate stats for unanswered question", async () => {
       const answers: Answers = {};
-      const stats = getQuestionStats(q1, answers);
+      
+      await Effect.gen(function* () {
+        const questionSelector = yield* QuestionSelector;
+        const stats = questionSelector.getQuestionStats(q1, answers);
 
-      expect(stats.totalAnswered).toBe(0);
-      expect(stats.correctAnswers).toBe(0);
-      expect(stats.incorrectAnswers).toBe(0);
-      expect(stats.accuracy).toBe(0);
+        expect(stats.totalAnswered).toBe(0);
+        expect(stats.correctAnswers).toBe(0);
+        expect(stats.incorrectAnswers).toBe(0);
+        expect(stats.accuracy).toBe(0);
+      }).pipe(
+        Effect.provide(QuestionSelector.Default),
+        Effect.runPromise
+      );
     });
 
-    it("should calculate stats for answered question", () => {
+    it("should calculate stats for answered question", async () => {
       const answers: Answers = {
         [q1]: [
           { ts: new Date(), correct: true },
@@ -126,15 +100,21 @@ describe("QuestionSelector", () => {
         ],
       };
 
-      const stats = getQuestionStats(q1, answers);
+      await Effect.gen(function* () {
+        const questionSelector = yield* QuestionSelector;
+        const stats = questionSelector.getQuestionStats(q1, answers);
 
-      expect(stats.totalAnswered).toBe(3);
-      expect(stats.correctAnswers).toBe(2);
-      expect(stats.incorrectAnswers).toBe(1);
-      expect(stats.accuracy).toBeCloseTo(2 / 3);
+        expect(stats.totalAnswered).toBe(3);
+        expect(stats.correctAnswers).toBe(2);
+        expect(stats.incorrectAnswers).toBe(1);
+        expect(stats.accuracy).toBeCloseTo(2 / 3);
+      }).pipe(
+        Effect.provide(QuestionSelector.Default),
+        Effect.runPromise
+      );
     });
 
-    it("should handle 100% accuracy", () => {
+    it("should handle 100% accuracy", async () => {
       const answers: Answers = {
         [q1]: [
           { ts: new Date(), correct: true },
@@ -142,9 +122,14 @@ describe("QuestionSelector", () => {
         ],
       };
 
-      const stats = getQuestionStats(q1, answers);
-
-      expect(stats.accuracy).toBe(1);
+      await Effect.gen(function* () {
+        const questionSelector = yield* QuestionSelector;
+        const stats = questionSelector.getQuestionStats(q1, answers);
+        expect(stats.accuracy).toBe(1);
+      }).pipe(
+        Effect.provide(QuestionSelector.Default),
+        Effect.runPromise
+      );
     });
   });
 });

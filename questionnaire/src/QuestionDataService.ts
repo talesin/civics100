@@ -1,8 +1,7 @@
-import { Effect, Array as EffectArray, Option } from 'effect'
+import { Effect, Array as EffectArray, Option, Layer, Random } from 'effect'
 import type { Question as CivicsQuestion } from 'civics2json'
 import type { QuestionWithDistractors } from 'distractions'
 import { QuestionNumber, type Question } from './types.js'
-import { createQuestion } from './QuestionSelector.js'
 
 export type QuestionDataSource = {
   civicsQuestions: ReadonlyArray<CivicsQuestion>
@@ -11,6 +10,61 @@ export type QuestionDataSource = {
 
 const parseQuestionNumber = (questionNumber: number): QuestionNumber => {
   return QuestionNumber(questionNumber.toString())
+}
+
+/**
+ * Shuffles an array of answers using Fisher-Yates algorithm with Effect Random
+ * Returns the shuffled answers array and the index of the correct answer
+ */
+const shuffleAnswers = (
+  correctAnswers: ReadonlyArray<string>,
+  distractors: ReadonlyArray<string>
+): Effect.Effect<{ answers: ReadonlyArray<string>; correctIndex: number }, never, never> => {
+  return Effect.gen(function* () {
+    const correctAnswer = correctAnswers[0]
+    if (correctAnswer === undefined || correctAnswer === '') {
+      return { answers: [], correctIndex: -1 }
+    }
+
+    const allAnswers = [correctAnswer, ...distractors]
+
+    // Manual Fisher-Yates shuffle using Effect Random
+    const mutableAnswers = [...allAnswers]
+    for (let i = mutableAnswers.length - 1; i > 0; i--) {
+      const j = yield* Random.nextIntBetween(0, i + 1)
+      const temp = mutableAnswers[i]
+      const swapValue = mutableAnswers[j]
+      if (temp !== undefined && swapValue !== undefined) {
+        mutableAnswers[i] = swapValue
+        mutableAnswers[j] = temp
+      }
+    }
+
+    const correctIndex = mutableAnswers.indexOf(correctAnswer)
+
+    return { answers: mutableAnswers, correctIndex }
+  })
+}
+
+/**
+ * Creates a Question with shuffled answer choices
+ */
+const createQuestion = (
+  questionNumber: QuestionNumber,
+  questionText: string,
+  correctAnswers: ReadonlyArray<string>,
+  distractors: ReadonlyArray<string>
+): Effect.Effect<Question, never, never> => {
+  return Effect.gen(function* () {
+    const { answers, correctIndex } = yield* shuffleAnswers(correctAnswers, distractors)
+
+    return {
+      questionNumber,
+      question: questionText,
+      correctAnswer: correctIndex,
+      answers
+    }
+  })
 }
 
 const findDistractorsForQuestion = (
@@ -107,7 +161,7 @@ export const getQuestionCount = (questions: ReadonlyArray<Question>): number => 
   return questions.length
 }
 
-export const getQuestionsWithMissingDistractors = (
+const getQuestionsWithMissingDistractors = (
   civicsQuestions: ReadonlyArray<CivicsQuestion>,
   questionsWithDistractors: ReadonlyArray<QuestionWithDistractors>
 ): ReadonlyArray<string> => {
@@ -119,3 +173,61 @@ export const getQuestionsWithMissingDistractors = (
     .filter((q) => !distractorNumbers.has(q.questionNumber.toString()))
     .map((q) => q.questionNumber.toString())
 }
+
+/**
+ * Service for managing question data loading and transformation
+ * Handles integration between civics2json and distractions packages
+ */
+export class QuestionDataService extends Effect.Service<QuestionDataService>()(
+  'QuestionDataService',
+  {
+    effect: Effect.gen(function* () {
+      return {
+        loadQuestions: (dataSource: QuestionDataSource) => loadQuestions(dataSource),
+        getAvailableQuestionNumbers: (questions: ReadonlyArray<Question>) =>
+          getAvailableQuestionNumbers(questions),
+        findQuestionByNumber: (
+          questionNumber: QuestionNumber,
+          questions: ReadonlyArray<Question>
+        ) => findQuestionByNumber(questionNumber, questions),
+        getQuestionCount: (questions: ReadonlyArray<Question>) => getQuestionCount(questions),
+        getQuestionsWithMissingDistractors: (
+          civicsQuestions: ReadonlyArray<CivicsQuestion>,
+          questionsWithDistractors: ReadonlyArray<QuestionWithDistractors>
+        ) => getQuestionsWithMissingDistractors(civicsQuestions, questionsWithDistractors)
+      }
+    })
+  }
+) {}
+
+/**
+ * Test layer for QuestionDataService with mockable functions
+ */
+export const TestQuestionDataServiceLayer = (fn?: {
+  loadQuestions?: (
+    dataSource: QuestionDataSource
+  ) => Effect.Effect<ReadonlyArray<Question>, never, never>
+  getAvailableQuestionNumbers?: (
+    questions: ReadonlyArray<Question>
+  ) => ReadonlyArray<QuestionNumber>
+  findQuestionByNumber?: (
+    questionNumber: QuestionNumber,
+    questions: ReadonlyArray<Question>
+  ) => Option.Option<Question>
+  getQuestionCount?: (questions: ReadonlyArray<Question>) => number
+  getQuestionsWithMissingDistractors?: (
+    civicsQuestions: ReadonlyArray<CivicsQuestion>,
+    questionsWithDistractors: ReadonlyArray<QuestionWithDistractors>
+  ) => ReadonlyArray<string>
+}) =>
+  Layer.succeed(
+    QuestionDataService,
+    QuestionDataService.of({
+      _tag: 'QuestionDataService',
+      loadQuestions: fn?.loadQuestions ?? (() => Effect.succeed([])),
+      getAvailableQuestionNumbers: fn?.getAvailableQuestionNumbers ?? (() => []),
+      findQuestionByNumber: fn?.findQuestionByNumber ?? (() => Option.none()),
+      getQuestionCount: fn?.getQuestionCount ?? (() => 0),
+      getQuestionsWithMissingDistractors: fn?.getQuestionsWithMissingDistractors ?? (() => [])
+    })
+  )

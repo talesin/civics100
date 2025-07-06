@@ -1,5 +1,5 @@
-import { Effect, Option, Random } from 'effect'
-import type { Answers, Question, QuestionNumber, WeightedQuestion, SelectionWeights } from './types'
+import { Effect, Option, Random, Layer } from 'effect'
+import type { Answers, QuestionNumber, WeightedQuestion, SelectionWeights } from './types'
 
 const DEFAULT_WEIGHTS: SelectionWeights = {
   unanswered: 10,
@@ -70,55 +70,7 @@ export const selectQuestion = (
   return selectWeightedRandom(weightedQuestions)
 }
 
-const shuffleAnswers = (
-  correctAnswers: ReadonlyArray<string>,
-  distractors: ReadonlyArray<string>
-): Effect.Effect<{ answers: ReadonlyArray<string>; correctIndex: number }, never, never> => {
-  return Effect.gen(function* () {
-    const correctAnswer = correctAnswers[0]
-    if (correctAnswer === undefined || correctAnswer === '') {
-      return { answers: [], correctIndex: -1 }
-    }
-
-    const allAnswers = [correctAnswer, ...distractors]
-
-    // Manual Fisher-Yates shuffle using Effect Random
-    const mutableAnswers = [...allAnswers]
-    for (let i = mutableAnswers.length - 1; i > 0; i--) {
-      const j = yield* Random.nextIntBetween(0, i + 1)
-      const temp = mutableAnswers[i]
-      const swapValue = mutableAnswers[j]
-      if (temp !== undefined && swapValue !== undefined) {
-        mutableAnswers[i] = swapValue
-        mutableAnswers[j] = temp
-      }
-    }
-
-    const correctIndex = mutableAnswers.indexOf(correctAnswer)
-
-    return { answers: mutableAnswers, correctIndex }
-  })
-}
-
-export const createQuestion = (
-  questionNumber: QuestionNumber,
-  questionText: string,
-  correctAnswers: ReadonlyArray<string>,
-  distractors: ReadonlyArray<string>
-): Effect.Effect<Question, never, never> => {
-  return Effect.gen(function* () {
-    const { answers, correctIndex } = yield* shuffleAnswers(correctAnswers, distractors)
-
-    return {
-      questionNumber,
-      question: questionText,
-      correctAnswer: correctIndex,
-      answers
-    }
-  })
-}
-
-export const getQuestionStats = (questionNumber: QuestionNumber, answers: Answers) => {
+const getQuestionStats = (questionNumber: QuestionNumber, answers: Answers) => {
   const history = answers[questionNumber] ?? []
   const totalAnswered = history.length
   const correctAnswers = history.filter((answer) => answer.correct).length
@@ -132,3 +84,51 @@ export const getQuestionStats = (questionNumber: QuestionNumber, answers: Answer
     accuracy
   }
 }
+
+/**
+ * Service for question selection and statistics
+ * Handles weighted question selection based on answer history
+ */
+export class QuestionSelector extends Effect.Service<QuestionSelector>()('QuestionSelector', {
+  effect: Effect.gen(function* () {
+    return {
+      selectQuestion: (
+        availableQuestions: ReadonlyArray<QuestionNumber>,
+        answers: Answers,
+        weights?: SelectionWeights
+      ) => selectQuestion(availableQuestions, answers, weights),
+      getQuestionStats: (questionNumber: QuestionNumber, answers: Answers) =>
+        getQuestionStats(questionNumber, answers)
+    }
+  })
+}) {}
+
+/**
+ * Test layer for QuestionSelector with mockable functions
+ */
+export const TestQuestionSelectorLayer = (fn?: {
+  selectQuestion?: (
+    availableQuestions: ReadonlyArray<QuestionNumber>,
+    answers: Answers,
+    weights?: SelectionWeights
+  ) => Effect.Effect<Option.Option<QuestionNumber>, never, never>
+  getQuestionStats?: (
+    questionNumber: QuestionNumber,
+    answers: Answers
+  ) => {
+    totalAnswered: number
+    correctAnswers: number
+    incorrectAnswers: number
+    accuracy: number
+  }
+}) =>
+  Layer.succeed(
+    QuestionSelector,
+    QuestionSelector.of({
+      _tag: 'QuestionSelector',
+      selectQuestion: fn?.selectQuestion ?? (() => Effect.succeed(Option.none())),
+      getQuestionStats:
+        fn?.getQuestionStats ??
+        (() => ({ totalAnswered: 0, correctAnswers: 0, incorrectAnswers: 0, accuracy: 0 }))
+    })
+  )
