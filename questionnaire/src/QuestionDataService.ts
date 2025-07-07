@@ -6,6 +6,7 @@ import { QuestionNumber, PairedQuestionNumber, type Question } from './types'
 export type QuestionDataSource = {
   questions: ReadonlyArray<QuestionWithDistractors>
   userState: StateAbbreviation
+  questionNumbers?: ReadonlyArray<number> | undefined
 }
 
 /**
@@ -139,17 +140,39 @@ const createQuestionsFromData = (
 }
 
 /**
+ * Filters questions by question numbers if specified in the data source
+ */
+const filterQuestionsByNumbers = (
+  questions: ReadonlyArray<QuestionWithDistractors>,
+  questionNumbers?: ReadonlyArray<number>
+): ReadonlyArray<QuestionWithDistractors> => {
+  if (!questionNumbers || questionNumbers.length === 0) {
+    return questions
+  }
+
+  const questionNumberSet = new Set(questionNumbers)
+  return questions.filter((question) => questionNumberSet.has(question.questionNumber))
+}
+
+/**
  * Loads and transforms all questions from the data source into paired questions
  *
  * This function processes the entire question set, applying the paired question
- * transformation to each question. The result is a flattened array where each
+ * transformation to each question. If questionNumbers are specified in the data source,
+ * only those questions will be loaded. The result is a flattened array where each
  * paired question can be tracked individually for adaptive learning.
  */
 export const loadQuestions = (
   dataSource: QuestionDataSource
 ): Effect.Effect<ReadonlyArray<Question>, never, never> => {
   return Effect.gen(function* () {
-    const questionEffects = dataSource.questions.map((question) =>
+    // Filter questions by numbers if specified
+    const filteredQuestions = filterQuestionsByNumbers(
+      dataSource.questions,
+      dataSource.questionNumbers
+    )
+
+    const questionEffects = filteredQuestions.map((question) =>
       createQuestionsFromData(question, dataSource.userState)
     )
 

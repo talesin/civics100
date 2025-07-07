@@ -69,25 +69,61 @@ const stateOption = Options.text('state').pipe(
 )
 
 /**
+ * CLI option for filtering questions by question numbers (for testing)
+ */
+const questionsOption = Options.text('questions').pipe(
+  Options.optional,
+  Options.withAlias('q'),
+  Options.withDescription('Comma-separated list of question numbers to test (e.g., "1,20,43,100")')
+)
+
+/**
+ * Parse and validate question numbers from comma-separated string
+ */
+const parseQuestionNumbers = (questionsStr: string): readonly number[] =>
+  questionsStr
+    .split(',')
+    .map((num) => num.trim())
+    .filter((num) => num.length > 0)
+    .map((num) => parseInt(num, 10))
+    .filter((num) => !isNaN(num) && num > 0)
+
+/**
  * Main questionnaire command that starts the interactive game
  */
-const cli = Command.make('questionnaire', { state: stateOption }, ({ state }) =>
-  Effect.gen(function* () {
-    yield* Console.log('🇺🇸 US Civics Questionnaire Engine')
-    yield* Console.log('===================================')
-    yield* Console.log('Answer questions to test your knowledge!')
-    yield* Console.log('Unanswered and incorrect questions will appear more frequently.')
-    yield* Console.log('')
+const cli = Command.make(
+  'questionnaire',
+  { state: stateOption, questions: questionsOption },
+  ({ state, questions }) =>
+    Effect.gen(function* () {
+      yield* Console.log('🇺🇸 US Civics Questionnaire Engine')
+      yield* Console.log('===================================')
+      yield* Console.log('Answer questions to test your knowledge!')
+      yield* Console.log('Unanswered and incorrect questions will appear more frequently.')
+      yield* Console.log('')
 
-    const gameService = yield* GameService
-    const initialState = yield* gameService.initializeGame(state as StateAbbreviation)
+      // Parse question numbers if provided
+      const questionNumbers = Option.isSome(questions)
+        ? parseQuestionNumbers(questions.value)
+        : undefined
 
-    yield* Console.log(`Loaded ${initialState.questions.length} questions with distractors.`)
-    yield* Console.log(`State: ${state}`)
-    yield* Console.log('')
+      if (questionNumbers && questionNumbers.length > 0) {
+        yield* Console.log(`🎯 Testing with specific questions: ${questionNumbers.join(', ')}`)
+        yield* Console.log('')
+      }
 
-    yield* gameLoop(initialState, gameService)
-  })
+      const gameService = yield* GameService
+      const initialState = yield* gameService.initializeGame(
+        state as StateAbbreviation,
+        questionNumbers
+      )
+
+      yield* Console.log(`Loaded ${initialState.questions.length} questions with distractors.`)
+      yield* Console.log(`State: ${state}`)
+      yield* Console.log('')
+
+      yield* gameLoop(initialState, gameService)
+    })
 )
 
 const runnable = Command.run(cli, {

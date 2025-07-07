@@ -24,12 +24,14 @@ export type GameState = {
  */
 const initializeGame = (
   questionDataService: QuestionDataService,
-  userState: StateAbbreviation
+  userState: StateAbbreviation,
+  questionNumbers?: ReadonlyArray<number>
 ): Effect.Effect<GameState, never, never> =>
   Effect.gen(function* () {
     const questions = yield* questionDataService.loadQuestions({
       questions: questionsWithDistractors,
-      userState
+      userState,
+      questionNumbers
     })
 
     return {
@@ -143,29 +145,21 @@ const getNextQuestion = (
       state.answers
     )
 
-    return yield* Option.match(selectedPairedNumber, {
-      onNone: () => Effect.succeed(Option.none()),
-      onSome: (pairedQuestionNumber) =>
-        Effect.succeed(
-          (() => {
-            const questionOption = questionDataService.findQuestionByPairedNumber(
-              pairedQuestionNumber,
-              state.questions
-            )
-            return Option.match(questionOption, {
-              onNone: () => Option.none(),
-              onSome: (question) => {
-                const stats = questionSelector.getPairedQuestionStats(
-                  pairedQuestionNumber,
-                  state.answers
-                )
-                const weight = calculateWeight(stats)
-                return Option.some({ question, weight })
-              }
-            })
-          })()
+    const question = selectedPairedNumber.pipe(
+      Option.flatMap((pairedQuestionNumber) =>
+        questionDataService.findQuestionByPairedNumber(pairedQuestionNumber, state.questions)
+      ),
+      Option.map((question) => {
+        const stats = questionSelector.getPairedQuestionStats(
+          question.pairedQuestionNumber,
+          state.answers
         )
-    })
+        const weight = calculateWeight(stats)
+        return { question, weight }
+      })
+    )
+
+    return question
   })
 
 /**
@@ -254,8 +248,8 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
     const questionSelector = yield* QuestionSelector
 
     return {
-      initializeGame: (userState: StateAbbreviation) =>
-        initializeGame(questionDataService, userState),
+      initializeGame: (userState: StateAbbreviation, questionNumbers?: ReadonlyArray<number>) =>
+        initializeGame(questionDataService, userState, questionNumbers),
       getNextQuestion: (state: GameState) =>
         getNextQuestion(state, questionDataService, questionSelector),
       displayQuestion: (question: Question, weight: number, state: GameState) =>
@@ -272,7 +266,10 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
  * Test layer for GameService with mockable functions
  */
 export const TestGameServiceLayer = (fn?: {
-  initializeGame?: (userState: StateAbbreviation) => Effect.Effect<GameState, never, never>
+  initializeGame?: (
+    userState: StateAbbreviation,
+    questionNumbers?: ReadonlyArray<number>
+  ) => Effect.Effect<GameState, never, never>
   getNextQuestion?: (
     state: GameState
   ) => Effect.Effect<Option.Option<{ question: Question; weight: number }>, never, never>
@@ -294,7 +291,7 @@ export const TestGameServiceLayer = (fn?: {
       _tag: 'GameService',
       initializeGame:
         fn?.initializeGame ??
-        ((_userState: StateAbbreviation) =>
+        ((_userState: StateAbbreviation, _questionNumbers?: ReadonlyArray<number>) =>
           Effect.succeed({
             questions: [],
             answers: {},
