@@ -4,6 +4,7 @@
     "section": "Principles of American Democracy",
     "question": "What is the supreme law of the land?",
     "questionNumber": 1,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -23,6 +24,7 @@
     "section": "Principles of American Democracy",
     "question": "What does the Constitution do?",
     "questionNumber": 2,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -44,6 +46,7 @@
     "section": "Principles of American Democracy",
     "question": "The idea of self-government is in the first three words of the Constitution. What are these words?",
     "questionNumber": 3,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -63,6 +66,7 @@
     "section": "Principles of American Democracy",
     "question": "What is an amendment?",
     "questionNumber": 4,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -71,10 +75,10 @@
       ]
     },
     "distractors": [
-      "a law passed by Congress",
-      "a court decision",
-      "a presidential order",
-      "a state regulation"
+      "a law (passed by Congress)",
+      "a decision (by the courts)",
+      "an order (from the President)",
+      "a regulation (by states)"
     ],
     "_tag": "QuestionWithDistractors"
   },
@@ -83,6 +87,7 @@
     "section": "Principles of American Democracy",
     "question": "What do we call the first ten amendments to the Constitution?",
     "questionNumber": 5,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -102,6 +107,7 @@
     "section": "Principles of American Democracy",
     "question": "What is one right or freedom from the First Amendment?*",
     "questionNumber": 6,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -113,10 +119,10 @@
       ]
     },
     "distractors": [
-      "right to bear arms",
-      "right to vote",
-      "right to trial by jury",
-      "protection from unreasonable search"
+      "bear arms",
+      "vote",
+      "trial by jury",
+      "due process"
     ],
     "_tag": "QuestionWithDistractors"
   },
@@ -125,6 +131,7 @@
     "section": "Principles of American Democracy",
     "question": "How many amendments does the Constitution have?",
     "questionNumber": 7,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -144,6 +151,7 @@
     "section": "Principles of American Democracy",
     "question": "What did the Declaration of Independence do?",
     "questionNumber": 8,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -165,6 +173,7 @@
     "section": "Principles of American Democracy",
     "question": "What are two rights in the Declaration of Independence?",
     "questionNumber": 9,
+    "expectedAnswers": 2,
     "answers": {
       "_type": "text",
       "choices": [
@@ -186,6 +195,7 @@
     "section": "Principles of American Democracy",
     "question": "What is freedom of religion?",
     "questionNumber": 10,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -205,6 +215,7 @@
     "section": "Principles of American Democracy",
     "question": "What is the economic system in the United States?*",
     "questionNumber": 11,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -225,6 +236,7 @@
     "section": "Principles of American Democracy",
     "question": "What is the \"rule of law\"?",
     "questionNumber": 12,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -247,6 +259,7 @@
     "section": "System of Government",
     "question": "Name one branch or part of the government.*",
     "questionNumber": 13,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -271,6 +284,7 @@
     "section": "System of Government",
     "question": "What stops one branch of government from becoming too powerful?",
     "questionNumber": 14,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -291,6 +305,7 @@
     "section": "System of Government",
     "question": "Who is in charge of the executive branch?",
     "questionNumber": 15,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -310,6 +325,7 @@
     "section": "System of Government",
     "question": "Who makes federal laws?",
     "questionNumber": 16,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -331,6 +347,7 @@
     "section": "System of Government",
     "question": "What are the two parts of the U.S. Congress?*",
     "questionNumber": 17,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -350,6 +367,7 @@
     "section": "System of Government",
     "question": "How many U.S. Senators are there?",
     "questionNumber": 18,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -369,6 +387,7 @@
     "section": "System of Government",
     "question": "We elect a U.S. Senator for how many years?",
     "questionNumber": 19,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -388,6 +407,7 @@
     "section": "System of Government",
     "question": "Who is one of your state's U.S. Senators now?*",
     "questionNumber": 20,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "senator",
       "choices": [
@@ -794,10 +814,12 @@
       ]
     },
     "distractors": [
-      "Congress",
-      "legislative",
-      "President",
-      "executive"
+      "Joe Biden",
+      "Nancy Pelosi",
+      "Kevin McCarthy",
+      "Alexandria Ocasio-Cortez",
+      "Mitch McConnell",
+      "Chuck Schumer"
     ],
     "_tag": "QuestionWithDistractors"
   },
@@ -806,6 +828,7 @@
     "section": "System of Government",
     "question": "The House of Representatives has how many voting members?",
     "questionNumber": 21,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -825,6 +848,7 @@
     "section": "System of Government",
     "question": "We elect a U.S. Representative for how many years?",
     "questionNumber": 22,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -844,6 +868,7 @@
     "section": "System of Government",
     "question": "Name your U.S. Representative.",
     "questionNumber": 23,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "representative",
       "choices": [
@@ -2626,6 +2651,7 @@
     "section": "System of Government",
     "question": "Who does a U.S. Senator represent?",
     "questionNumber": 24,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2645,6 +2671,7 @@
     "section": "System of Government",
     "question": "Why do some states have more Representatives than other states?",
     "questionNumber": 25,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2666,6 +2693,7 @@
     "section": "System of Government",
     "question": "We elect a President for how many years?",
     "questionNumber": 26,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2685,6 +2713,7 @@
     "section": "System of Government",
     "question": "In what month do we vote for President?*",
     "questionNumber": 27,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2704,6 +2733,7 @@
     "section": "System of Government",
     "question": "What is the name of the President of the United States now?*",
     "questionNumber": 28,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2725,6 +2755,7 @@
     "section": "System of Government",
     "question": "What is the name of the Vice President of the United States now?",
     "questionNumber": 29,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2745,6 +2776,7 @@
     "section": "System of Government",
     "question": "If the President can no longer serve, who becomes President?",
     "questionNumber": 30,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2764,6 +2796,7 @@
     "section": "System of Government",
     "question": "If both the President and the Vice President can no longer serve, who becomes President?",
     "questionNumber": 31,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2783,6 +2816,7 @@
     "section": "System of Government",
     "question": "Who is the Commander in Chief of the military?",
     "questionNumber": 32,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2802,6 +2836,7 @@
     "section": "System of Government",
     "question": "Who signs bills to become laws?",
     "questionNumber": 33,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2821,6 +2856,7 @@
     "section": "System of Government",
     "question": "Who vetoes bills?",
     "questionNumber": 34,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2840,6 +2876,7 @@
     "section": "System of Government",
     "question": "What does the President's Cabinet do?",
     "questionNumber": 35,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2859,6 +2896,7 @@
     "section": "System of Government",
     "question": "What are two Cabinet-level positions?",
     "questionNumber": 36,
+    "expectedAnswers": 2,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2893,6 +2931,7 @@
     "section": "System of Government",
     "question": "What does the judicial branch do?",
     "questionNumber": 37,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2915,6 +2954,7 @@
     "section": "System of Government",
     "question": "What is the highest court in the United States?",
     "questionNumber": 38,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2934,6 +2974,7 @@
     "section": "System of Government",
     "question": "How many justices are on the Supreme Court?",
     "questionNumber": 39,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2953,6 +2994,7 @@
     "section": "System of Government",
     "question": "Who is the Chief Justice of the United States now?",
     "questionNumber": 40,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2973,6 +3015,7 @@
     "section": "System of Government",
     "question": "Under our Constitution, some powers belong to the federal government. What is one power of the federal government?",
     "questionNumber": 41,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -2995,6 +3038,7 @@
     "section": "System of Government",
     "question": "Under our Constitution, some powers belong to the states. What is one power of the states?",
     "questionNumber": 42,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3018,9 +3062,235 @@
     "section": "System of Government",
     "question": "Who is the Governor of your state now?",
     "questionNumber": 43,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "governor",
-      "choices": []
+      "choices": [
+        {
+          "governor": "Mike Dunleavy",
+          "state": "AK"
+        },
+        {
+          "governor": "Kay Ivey",
+          "state": "AL"
+        },
+        {
+          "governor": "Sarah Huckabee Sanders",
+          "state": "AR"
+        },
+        {
+          "governor": "Pula’ali’i Nikolao Pula",
+          "state": "AS"
+        },
+        {
+          "governor": "Katie Hobbs",
+          "state": "AZ"
+        },
+        {
+          "governor": "Gavin Newsom",
+          "state": "CA"
+        },
+        {
+          "governor": "Jared Polis",
+          "state": "CO"
+        },
+        {
+          "governor": "Ned Lamont",
+          "state": "CT"
+        },
+        {
+          "governor": "D.C. does not have a Governor, but the Mayor is Muriel Bowser",
+          "state": "DC"
+        },
+        {
+          "governor": "Matt Meyer",
+          "state": "DE"
+        },
+        {
+          "governor": "Ron DeSantis",
+          "state": "FL"
+        },
+        {
+          "governor": "Brian P. Kemp",
+          "state": "GA"
+        },
+        {
+          "governor": "Lourdes Aflague Leon Guerrero",
+          "state": "GU"
+        },
+        {
+          "governor": "Josh Green",
+          "state": "HI"
+        },
+        {
+          "governor": "Kim Reynolds",
+          "state": "IA"
+        },
+        {
+          "governor": "Brad Little",
+          "state": "ID"
+        },
+        {
+          "governor": "JB Pritzker",
+          "state": "IL"
+        },
+        {
+          "governor": "Mike Braun",
+          "state": "IN"
+        },
+        {
+          "governor": "Laura Kelly",
+          "state": "KS"
+        },
+        {
+          "governor": "Andy Beshear",
+          "state": "KY"
+        },
+        {
+          "governor": "Jeff Landry",
+          "state": "LA"
+        },
+        {
+          "governor": "Maura Healey",
+          "state": "MA"
+        },
+        {
+          "governor": "Wes Moore",
+          "state": "MD"
+        },
+        {
+          "governor": "Janet T. Mills",
+          "state": "ME"
+        },
+        {
+          "governor": "Gretchen Whitmer",
+          "state": "MI"
+        },
+        {
+          "governor": "Tim Walz",
+          "state": "MN"
+        },
+        {
+          "governor": "Mike Kehoe",
+          "state": "MO"
+        },
+        {
+          "governor": "Arnold Palacios",
+          "state": "MP"
+        },
+        {
+          "governor": "Tate Reeves",
+          "state": "MS"
+        },
+        {
+          "governor": "Greg Gianforte",
+          "state": "MT"
+        },
+        {
+          "governor": "Josh Stein",
+          "state": "NC"
+        },
+        {
+          "governor": "Kelly Armstrong",
+          "state": "ND"
+        },
+        {
+          "governor": "Jim Pillen",
+          "state": "NE"
+        },
+        {
+          "governor": "Kelly Ayotte",
+          "state": "NH"
+        },
+        {
+          "governor": "Phil Murphy",
+          "state": "NJ"
+        },
+        {
+          "governor": "Michelle Lujan Grisham",
+          "state": "NM"
+        },
+        {
+          "governor": "Joe Lombardo",
+          "state": "NV"
+        },
+        {
+          "governor": "Kathy Hochul",
+          "state": "NY"
+        },
+        {
+          "governor": "Mike DeWine",
+          "state": "OH"
+        },
+        {
+          "governor": "J. Kevin Stitt",
+          "state": "OK"
+        },
+        {
+          "governor": "Tina Kotek",
+          "state": "OR"
+        },
+        {
+          "governor": "Josh Shapiro",
+          "state": "PA"
+        },
+        {
+          "governor": "Jenniffer González-Colón",
+          "state": "PR"
+        },
+        {
+          "governor": "Dan McKee",
+          "state": "RI"
+        },
+        {
+          "governor": "Henry McMaster",
+          "state": "SC"
+        },
+        {
+          "governor": "Larry Rhoden",
+          "state": "SD"
+        },
+        {
+          "governor": "Bill Lee",
+          "state": "TN"
+        },
+        {
+          "governor": "Greg Abbott",
+          "state": "TX"
+        },
+        {
+          "governor": "Spencer J. Cox",
+          "state": "UT"
+        },
+        {
+          "governor": "Glenn Youngkin",
+          "state": "VA"
+        },
+        {
+          "governor": "Albert Bryan Jr.",
+          "state": "VI"
+        },
+        {
+          "governor": "Phil Scott",
+          "state": "VT"
+        },
+        {
+          "governor": "Bob Ferguson",
+          "state": "WA"
+        },
+        {
+          "governor": "Tony Evers",
+          "state": "WI"
+        },
+        {
+          "governor": "Patrick Morrisey",
+          "state": "WV"
+        },
+        {
+          "governor": "Mark Gordon",
+          "state": "WY"
+        }
+      ]
     },
     "distractors": [
       "Gavin Newsom",
@@ -3035,6 +3305,7 @@
     "section": "System of Government",
     "question": "What is the capital of your state?*",
     "questionNumber": 44,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "capital",
       "choices": [
@@ -3277,6 +3548,7 @@
     "section": "System of Government",
     "question": "What are the two major political parties in the United States?*",
     "questionNumber": 45,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3296,6 +3568,7 @@
     "section": "System of Government",
     "question": "What is the political party of the President now?",
     "questionNumber": 46,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3315,6 +3588,7 @@
     "section": "System of Government",
     "question": "What is the name of the Speaker of the House of Representatives now?",
     "questionNumber": 47,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3336,6 +3610,7 @@
     "section": "Rights and Responsibilities",
     "question": "There are four amendments to the Constitution about who can vote. Describe one of them.",
     "questionNumber": 48,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3358,6 +3633,7 @@
     "section": "Rights and Responsibilities",
     "question": "What is one responsibility that is only for United States citizens?*",
     "questionNumber": 49,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3378,6 +3654,7 @@
     "section": "Rights and Responsibilities",
     "question": "Name one right only for United States citizens.",
     "questionNumber": 50,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3398,6 +3675,7 @@
     "section": "Rights and Responsibilities",
     "question": "What are two rights of everyone living in the United States?",
     "questionNumber": 51,
+    "expectedAnswers": 2,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3422,6 +3700,7 @@
     "section": "Rights and Responsibilities",
     "question": "What do we show loyalty to when we say the Pledge of Allegiance?",
     "questionNumber": 52,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3442,6 +3721,7 @@
     "section": "Rights and Responsibilities",
     "question": "What is one promise you make when you become a United States citizen?",
     "questionNumber": 53,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3466,6 +3746,7 @@
     "section": "Rights and Responsibilities",
     "question": "How old do citizens have to be to vote for President?*",
     "questionNumber": 54,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3485,6 +3766,7 @@
     "section": "Rights and Responsibilities",
     "question": "What are two ways that Americans can participate in their democracy?",
     "questionNumber": 55,
+    "expectedAnswers": 2,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3513,6 +3795,7 @@
     "section": "Rights and Responsibilities",
     "question": "When is the last day you can send in federal income tax forms?*",
     "questionNumber": 56,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3532,6 +3815,7 @@
     "section": "Rights and Responsibilities",
     "question": "When must all men register for the Selective Service?",
     "questionNumber": 57,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3552,6 +3836,7 @@
     "section": "Colonial Period and Independence",
     "question": "What is one reason colonists came to America?",
     "questionNumber": 58,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3576,6 +3861,7 @@
     "section": "Colonial Period and Independence",
     "question": "Who lived in America before the Europeans arrived?",
     "questionNumber": 59,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3596,6 +3882,7 @@
     "section": "Colonial Period and Independence",
     "question": "What group of people was taken to America and sold as slaves?",
     "questionNumber": 60,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3616,6 +3903,7 @@
     "section": "Colonial Period and Independence",
     "question": "Why did the colonists fight the British?",
     "questionNumber": 61,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3637,6 +3925,7 @@
     "section": "Colonial Period and Independence",
     "question": "Who wrote the Declaration of Independence?",
     "questionNumber": 62,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3656,6 +3945,7 @@
     "section": "Colonial Period and Independence",
     "question": "When was the Declaration of Independence adopted?",
     "questionNumber": 63,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3675,6 +3965,7 @@
     "section": "Colonial Period and Independence",
     "question": "There were 13 original states. Name three.",
     "questionNumber": 64,
+    "expectedAnswers": 3,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3706,6 +3997,7 @@
     "section": "Colonial Period and Independence",
     "question": "What happened at the Constitutional Convention?",
     "questionNumber": 65,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3726,6 +4018,7 @@
     "section": "Colonial Period and Independence",
     "question": "When was the Constitution written?",
     "questionNumber": 66,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3745,6 +4038,7 @@
     "section": "Colonial Period and Independence",
     "question": "The Federalist Papers supported the passage of the U.S. Constitution. Name one of the writers.",
     "questionNumber": 67,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3767,6 +4061,7 @@
     "section": "Colonial Period and Independence",
     "question": "What is one thing Benjamin Franklin is famous for?",
     "questionNumber": 68,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3790,6 +4085,7 @@
     "section": "Colonial Period and Independence",
     "question": "Who is the \"Father of Our Country\"?",
     "questionNumber": 69,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3809,6 +4105,7 @@
     "section": "Colonial Period and Independence",
     "question": "Who was the first President?*",
     "questionNumber": 70,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3828,6 +4125,7 @@
     "section": "1800s",
     "question": "What territory did the United States buy from France in 1803?",
     "questionNumber": 71,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3848,6 +4146,7 @@
     "section": "1800s",
     "question": "Name one war fought by the United States in the 1800s.",
     "questionNumber": 72,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3870,6 +4169,7 @@
     "section": "1800s",
     "question": "Name the U.S. war between the North and the South.",
     "questionNumber": 73,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3890,6 +4190,7 @@
     "section": "1800s",
     "question": "Name one problem that led to the Civil War.",
     "questionNumber": 74,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3911,6 +4212,7 @@
     "section": "1800s",
     "question": "What was one important thing that Abraham Lincoln did?*",
     "questionNumber": 75,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3932,6 +4234,7 @@
     "section": "1800s",
     "question": "What did the Emancipation Proclamation do?",
     "questionNumber": 76,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3954,6 +4257,7 @@
     "section": "1800s",
     "question": "What did Susan B. Anthony do?",
     "questionNumber": 77,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3974,6 +4278,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "Name one war fought by the United States in the 1900s.*",
     "questionNumber": 78,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -3997,6 +4302,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "Who was President during World War I?",
     "questionNumber": 79,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4004,10 +4310,10 @@
       ]
     },
     "distractors": [
-      "Franklin D. Roosevelt",
-      "Theodore Roosevelt",
-      "Harry Truman",
-      "Herbert Hoover"
+      "(Franklin) Roosevelt",
+      "(Theodore) Roosevelt",
+      "(Harry) Truman",
+      "(Herbert) Hoover"
     ],
     "_tag": "QuestionWithDistractors"
   },
@@ -4016,6 +4322,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "Who was President during the Great Depression and World War II?",
     "questionNumber": 80,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4023,10 +4330,10 @@
       ]
     },
     "distractors": [
-      "Theodore Roosevelt",
-      "Harry Truman",
-      "Woodrow Wilson",
-      "Herbert Hoover"
+      "(Theodore) Roosevelt",
+      "(Harry) Truman",
+      "(Woodrow) Wilson",
+      "(Herbert) Hoover"
     ],
     "_tag": "QuestionWithDistractors"
   },
@@ -4035,6 +4342,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "Who did the United States fight in World War II?",
     "questionNumber": 81,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4054,6 +4362,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "Before he was President, Eisenhower was a general. What war was he in?",
     "questionNumber": 82,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4073,6 +4382,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "During the Cold War, what was the main concern of the United States?",
     "questionNumber": 83,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4092,6 +4402,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "What movement tried to end racial discrimination?",
     "questionNumber": 84,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4111,6 +4422,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "What did Martin Luther King, Jr. do?*",
     "questionNumber": 85,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4131,6 +4443,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "What major event happened on September 11, 2001, in the United States?",
     "questionNumber": 86,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4150,6 +4463,7 @@
     "section": "Recent American History and Other Important Historical Information",
     "question": "Name one American Indian tribe in the United States.",
     "questionNumber": 87,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4190,6 +4504,7 @@
     "section": "Geography",
     "question": "Name one of the two longest rivers in the United States.",
     "questionNumber": 88,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4198,10 +4513,10 @@
       ]
     },
     "distractors": [
-      "Colorado River",
-      "Columbia River",
+      "Colorado (River)",
+      "Columbia (River)",
       "Rio Grande",
-      "Ohio River"
+      "Ohio (River)"
     ],
     "_tag": "QuestionWithDistractors"
   },
@@ -4210,6 +4525,7 @@
     "section": "Geography",
     "question": "What ocean is on the West Coast of the United States?",
     "questionNumber": 89,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4217,9 +4533,9 @@
       ]
     },
     "distractors": [
-      "Atlantic Ocean",
-      "Indian Ocean",
-      "Arctic Ocean",
+      "Atlantic (Ocean)",
+      "Indian (Ocean)",
+      "Arctic (Ocean)",
       "Gulf of Mexico"
     ],
     "_tag": "QuestionWithDistractors"
@@ -4229,6 +4545,7 @@
     "section": "Geography",
     "question": "What ocean is on the East Coast of the United States?",
     "questionNumber": 90,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4236,9 +4553,9 @@
       ]
     },
     "distractors": [
-      "Pacific Ocean",
-      "Indian Ocean",
-      "Arctic Ocean",
+      "Pacific (Ocean)",
+      "Indian (Ocean)",
+      "Arctic (Ocean)",
       "Gulf of Mexico"
     ],
     "_tag": "QuestionWithDistractors"
@@ -4248,6 +4565,7 @@
     "section": "Geography",
     "question": "Name one U.S. territory.",
     "questionNumber": 91,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4271,6 +4589,7 @@
     "section": "Geography",
     "question": "Name one state that borders Canada.",
     "questionNumber": 92,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4302,6 +4621,7 @@
     "section": "Geography",
     "question": "Name one state that borders Mexico.",
     "questionNumber": 93,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4324,6 +4644,7 @@
     "section": "Geography",
     "question": "What is the capital of the United States?*",
     "questionNumber": 94,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4343,6 +4664,7 @@
     "section": "Geography",
     "question": "Where is the Statue of Liberty?*",
     "questionNumber": 95,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4363,6 +4685,7 @@
     "section": "Symbols",
     "question": "Why does the flag have 13 stripes?",
     "questionNumber": 96,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4383,6 +4706,7 @@
     "section": "Symbols",
     "question": "Why does the flag have 50 stars?*",
     "questionNumber": 97,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4404,6 +4728,7 @@
     "section": "Symbols",
     "question": "What is the name of the national anthem?",
     "questionNumber": 98,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4411,10 +4736,10 @@
       ]
     },
     "distractors": [
-      "July 4th",
-      "December 25",
-      "November 11",
-      "February 14"
+      "America the Beautiful",
+      "My Country, 'Tis of Thee",
+      "God Bless America",
+      "Battle Hymn of the Republic"
     ],
     "_tag": "QuestionWithDistractors"
   },
@@ -4423,6 +4748,7 @@
     "section": "Holidays",
     "question": "When do we celebrate Independence Day?*",
     "questionNumber": 99,
+    "expectedAnswers": 1,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4442,6 +4768,7 @@
     "section": "Holidays",
     "question": "Name two national U.S. holidays.",
     "questionNumber": 100,
+    "expectedAnswers": 2,
     "answers": {
       "_type": "text",
       "choices": [
@@ -4459,10 +4786,10 @@
       ]
     },
     "distractors": [
-      "the Declaration of Independence",
-      "the Bill of Rights",
-      "the Articles of Confederation",
-      "the Federalist Papers"
+      "Easter",
+      "Mother's Day",
+      "Father's Day",
+      "Halloween"
     ],
     "_tag": "QuestionWithDistractors"
   }

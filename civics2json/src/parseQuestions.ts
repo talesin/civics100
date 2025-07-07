@@ -19,6 +19,88 @@ interface ParsedQuestion {
 type ParsedAnswer = string
 
 /**
+ * Detects the expected number of answers based on question text patterns.
+ * Analyzes the question text for keywords that indicate multiple answers are expected.
+ * Special handling for compound answers where "and" connects parts of a single answer.
+ *
+ * @param questionText - The question text to analyze
+ * @returns The expected number of answers (defaults to 1)
+ */
+const detectExpectedAnswers = (questionText: string): number => {
+  const lowerQuestion = questionText.toLowerCase()
+
+  // Special cases that expect single compound answers despite mentioning multiple items
+  const singleCompoundPatterns = [
+    /what are the two parts of the u\.s\. congress/,
+    /what are the two parts of congress/,
+    /what are the two main political parties/,
+    /what are the two major political parties/, // Fix for Question 45
+    /what are the two houses of congress/
+  ]
+
+  // Questions that ask for "one of" something expect only 1 answer regardless of the number mentioned
+  const askForOnePatterns = [/describe one of them/, /name one of/, /what is one/, /give one/]
+
+  // Check for "ask for one" patterns first (these override number detection)
+  for (const pattern of askForOnePatterns) {
+    if (pattern.test(lowerQuestion)) {
+      return 1
+    }
+  }
+
+  // Check for special compound answer cases
+  for (const pattern of singleCompoundPatterns) {
+    if (pattern.test(lowerQuestion)) {
+      return 1
+    }
+  }
+
+  // Look for specific number patterns
+  const twoPattern =
+    /\b(?:two|2)\s+(?:rights|parts|branches|ways|examples|things|reasons|amendments|types|kinds|names|national|main|major|important)\b/
+  const threePattern =
+    /\b(?:three|3)\s+(?:rights|parts|branches|ways|examples|things|reasons|amendments|types|kinds|names|national|main|major|important)\b/
+  const fourPattern =
+    /\b(?:four|4)\s+(?:rights|parts|branches|ways|examples|things|reasons|amendments|types|kinds|names|national|main|major|important)\b/
+  const fivePattern =
+    /\b(?:five|5)\s+(?:rights|parts|branches|ways|examples|things|reasons|amendments|types|kinds|names|national|main|major|important)\b/
+
+  // Check for "Name three..." patterns anywhere in the question (not just at the beginning)
+  if (
+    threePattern.test(lowerQuestion) ||
+    /^(?:name|what are|give|list)\s+three\b/.test(lowerQuestion) ||
+    /\bname\s+three\b/.test(lowerQuestion) // Fix for Question 64
+  ) {
+    return 3
+  }
+
+  // Check for "Name two..." or "What are two..." patterns
+  if (
+    twoPattern.test(lowerQuestion) ||
+    /^(?:name|what are|give|list)\s+two\b/.test(lowerQuestion)
+  ) {
+    return 2
+  }
+
+  if (
+    fourPattern.test(lowerQuestion) ||
+    /^(?:name|what are|give|list)\s+four\b/.test(lowerQuestion)
+  ) {
+    return 4
+  }
+
+  if (
+    fivePattern.test(lowerQuestion) ||
+    /^(?:name|what are|give|list)\s+five\b/.test(lowerQuestion)
+  ) {
+    return 5
+  }
+
+  // Default to 1 answer expected
+  return 1
+}
+
+/**
  * Line classification result
  */
 type LineClassification =
@@ -203,6 +285,7 @@ export const parseQuestionsFile = (
           section: section.section,
           question: question.question,
           questionNumber: question.questionNumber,
+          expectedAnswers: detectExpectedAnswers(question.question),
           answers: { _type: 'text', choices: question.answers }
         }))
       )

@@ -5,6 +5,7 @@ import { PlatformError } from '@effect/platform/Error'
 import { HttpClientError } from '@effect/platform/HttpClientError'
 import { Question, StatesByAbbreviation } from './types'
 import {
+  GovernorSchema,
   Representative,
   RepresentativeSchema,
   Senator,
@@ -316,6 +317,25 @@ export const fetchAndParseGovernors = (
   c: CivicsConfig
 ) =>
   Effect.fn(function* (options?: { forceFetch?: boolean }) {
+    // Check if we should use existing data (unless force fetch is requested)
+    if (options?.forceFetch !== true) {
+      const governorsFileExists = yield* fs.exists(c.GOVERNORS_JSON_FILE)
+
+      if (governorsFileExists) {
+        const governorsData = yield* fs.readFileString(c.GOVERNORS_JSON_FILE)
+        const parsedData = yield* Schema.decodeUnknown(Schema.parseJson())(governorsData)
+        const governors = yield* Schema.decodeUnknown(Schema.Array(GovernorSchema))(parsedData)
+
+        // If we have valid governor data (non-empty array), use it
+        if (governors.length > 0) {
+          yield* Effect.log(`Using existing governors data from ${c.GOVERNORS_JSON_FILE}`)
+          return governors
+        } else {
+          yield* Effect.log('Existing governors file is empty, proceeding with fresh fetch')
+        }
+      }
+    }
+
     const pages = yield* fetchGovernmentsPages(fs, gc, c)(options)
     const governors = yield* Effect.all(
       pages
@@ -345,7 +365,31 @@ export const getGovernorsQuestions = (
     if (governorsQuestion === undefined) {
       return yield* Effect.fail(new Error('State governors question not found'))
     }
-    const governors = (yield* fetchAndParseGovernors(fs, gc, c)()).map((g) => ({
+
+    // Check if governors.json exists and has data
+    const governorsFileExists = yield* fs.exists(c.GOVERNORS_JSON_FILE)
+    let shouldForceFetch = false
+
+    if (governorsFileExists) {
+      // Check if the file contains actual governor data (not just an empty array)
+      const governorsData = yield* fs.readFileString(c.GOVERNORS_JSON_FILE)
+      const parsedData = yield* Schema.decodeUnknown(Schema.parseJson())(governorsData)
+      const governors = yield* Schema.decodeUnknown(Schema.Array(GovernorSchema))(parsedData)
+
+      if (governors.length === 0) {
+        yield* Effect.log('Governors file is empty, forcing data refresh')
+        shouldForceFetch = true
+      }
+    } else {
+      yield* Effect.log('Governors file does not exist, forcing data fetch')
+      shouldForceFetch = true
+    }
+
+    const governors = (yield* fetchAndParseGovernors(
+      fs,
+      gc,
+      c
+    )({ forceFetch: shouldForceFetch })).map((g) => ({
       governor: g.name,
       state: g.state
     }))

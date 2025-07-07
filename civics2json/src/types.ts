@@ -221,6 +221,7 @@ export const isState = (value: string): value is StateAbbreviation | StateName =
  * @property theme - The theme of the question (e.g. "The United States Constitution")
  * @property section - The section of the question (e.g. "Section 1")
  * @property question - The question text
+ * @property expectedAnswers - The number of answers expected (e.g. 2 for "What are two rights...")
  * @property answers - An array of answers, either text or senators
  */
 export type Question = DeepReadonly<{
@@ -228,6 +229,7 @@ export type Question = DeepReadonly<{
   section: string
   question: string
   questionNumber: number
+  expectedAnswers: number
   answers:
     | { _type: 'text'; choices: string[] }
     | { _type: 'senator'; choices: { senator: string; state: StateAbbreviation }[] }

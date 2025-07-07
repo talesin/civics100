@@ -58,10 +58,10 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     answerType: 'concept',
     correctAnswers: ['a change (to the Constitution)', 'an addition (to the Constitution)'],
     curatedDistractors: [
-      'a law passed by Congress',
-      'a court decision',
-      'a presidential order',
-      'a state regulation'
+      'a law (passed by Congress)',
+      'a decision (by the courts)',
+      'an order (from the President)',
+      'a regulation (by states)'
     ],
     rationale: 'Other types of legal/governmental actions'
   },
@@ -81,12 +81,7 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     question: 'What is one right or freedom from the First Amendment?',
     answerType: 'rights',
     correctAnswers: ['speech', 'religion', 'assembly', 'press', 'petition the government'],
-    curatedDistractors: [
-      'right to bear arms',
-      'right to vote',
-      'right to trial by jury',
-      'protection from unreasonable search'
-    ],
+    curatedDistractors: ['bear arms', 'vote', 'trial by jury', 'due process'],
     rationale: 'Other constitutional rights from different amendments'
   },
   '7': {
@@ -239,6 +234,20 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     correctAnswers: ['six (6)'],
     curatedDistractors: ['two (2)', 'four (4)', 'eight (8)', 'ten (10)'],
     rationale: 'Other term lengths in American government'
+  },
+  '20': {
+    question: "Who is one of your state's U.S. Senators now?",
+    answerType: 'person',
+    correctAnswers: ['Answers will vary by state'],
+    curatedDistractors: [
+      'Joe Biden',
+      'Nancy Pelosi',
+      'Kevin McCarthy',
+      'Alexandria Ocasio-Cortez',
+      'Mitch McConnell',
+      'Chuck Schumer'
+    ],
+    rationale: 'Famous politicians who are not currently senators'
   },
   '21': {
     question: 'The House of Representatives has how many voting members?',
@@ -940,10 +949,10 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     answerType: 'person-historical',
     correctAnswers: ['(Woodrow) Wilson'],
     curatedDistractors: [
-      'Franklin D. Roosevelt',
-      'Theodore Roosevelt',
-      'Harry Truman',
-      'Herbert Hoover'
+      '(Franklin) Roosevelt',
+      '(Theodore) Roosevelt',
+      '(Harry) Truman',
+      '(Herbert) Hoover'
     ],
     rationale: 'Other early 20th-century presidents'
   },
@@ -951,7 +960,12 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     question: 'Who was President during the Great Depression and World War II?',
     answerType: 'person-historical',
     correctAnswers: ['(Franklin) Roosevelt'],
-    curatedDistractors: ['Theodore Roosevelt', 'Harry Truman', 'Woodrow Wilson', 'Herbert Hoover'],
+    curatedDistractors: [
+      '(Theodore) Roosevelt',
+      '(Harry) Truman',
+      '(Woodrow) Wilson',
+      '(Herbert) Hoover'
+    ],
     rationale: 'Other presidents from the early-to-mid 20th century'
   },
   '81': {
@@ -1053,21 +1067,21 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     question: 'Name one of the two longest rivers in the United States.',
     answerType: 'geography',
     correctAnswers: ['Missouri (River)', 'Mississippi (River)'],
-    curatedDistractors: ['Colorado River', 'Columbia River', 'Rio Grande', 'Ohio River'],
+    curatedDistractors: ['Colorado (River)', 'Columbia (River)', 'Rio Grande', 'Ohio (River)'],
     rationale: 'Other major US rivers'
   },
   '89': {
     question: 'What ocean is on the West Coast of the United States?',
     answerType: 'geography',
     correctAnswers: ['Pacific (Ocean)'],
-    curatedDistractors: ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Gulf of Mexico'],
+    curatedDistractors: ['Atlantic (Ocean)', 'Indian (Ocean)', 'Arctic (Ocean)', 'Gulf of Mexico'],
     rationale: 'Other major bodies of water'
   },
   '90': {
     question: 'What ocean is on the East Coast of the United States?',
     answerType: 'geography',
     correctAnswers: ['Atlantic (Ocean)'],
-    curatedDistractors: ['Pacific Ocean', 'Indian Ocean', 'Arctic Ocean', 'Gulf of Mexico'],
+    curatedDistractors: ['Pacific (Ocean)', 'Indian (Ocean)', 'Arctic (Ocean)', 'Gulf of Mexico'],
     rationale: 'Other major bodies of water'
   },
   '91': {
@@ -1163,11 +1177,16 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     rationale: 'Other patriotic American songs'
   },
   '98': {
-    question: 'When do we celebrate Independence Day?',
-    answerType: 'date',
-    correctAnswers: ['July 4'],
-    curatedDistractors: ['July 4th', 'December 25', 'November 11', 'February 14'],
-    rationale: 'Other important American holidays'
+    question: 'What is the name of the national anthem?',
+    answerType: 'anthem',
+    correctAnswers: ['The Star-Spangled Banner'],
+    curatedDistractors: [
+      'America the Beautiful',
+      "My Country, 'Tis of Thee",
+      'God Bless America',
+      'Battle Hymn of the Republic'
+    ],
+    rationale: 'Other patriotic American songs'
   },
   '99': {
     question: 'Name two national U.S. holidays.',
@@ -1188,15 +1207,21 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     rationale: 'Other holidays that are not official federal holidays'
   },
   '100': {
-    question: 'What is the supreme law of the land?',
-    answerType: 'document',
-    correctAnswers: ['the Constitution'],
-    curatedDistractors: [
-      'the Declaration of Independence',
-      'the Bill of Rights',
-      'the Articles of Confederation',
-      'the Federalist Papers'
+    question: 'Name two national U.S. holidays.',
+    answerType: 'holidays',
+    correctAnswers: [
+      "New Year's Day",
+      'Martin Luther King, Jr. Day',
+      "Presidents' Day",
+      'Memorial Day',
+      'Independence Day',
+      'Labor Day',
+      'Columbus Day',
+      'Veterans Day',
+      'Thanksgiving',
+      'Christmas'
     ],
-    rationale: 'Other foundational American documents'
+    curatedDistractors: ['Easter', "Mother's Day", "Father's Day", 'Halloween'],
+    rationale: 'Other holidays that are not official federal holidays'
   }
 }

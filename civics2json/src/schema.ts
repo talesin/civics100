@@ -73,3 +73,56 @@ export type StateGovernmentLink = typeof StateGovernmentLinkSchema.Type
 export type StateGovernmentLinks = ReadonlyArray<StateGovernmentLink>
 
 export type StateGovernmentPage = Readonly<{ state: StateAbbreviation; url: string; html: string }>
+
+export const QuestionSchema = Schema.Struct({
+  theme: Schema.String,
+  section: Schema.String,
+  question: Schema.String,
+  questionNumber: Schema.Number,
+  expectedAnswers: Schema.Number,
+  answers: Schema.Union(
+    Schema.Struct({
+      _type: Schema.Literal('text'),
+      choices: Schema.Array(Schema.String)
+    }),
+    Schema.Struct({
+      _type: Schema.Literal('senator'),
+      choices: Schema.Array(
+        Schema.Struct({
+          senator: Schema.String,
+          state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation))
+        })
+      )
+    }),
+    Schema.Struct({
+      _type: Schema.Literal('representative'),
+      choices: Schema.Array(
+        Schema.Struct({
+          representative: Schema.String,
+          state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation))
+        })
+      )
+    }),
+    Schema.Struct({
+      _type: Schema.Literal('governor'),
+      choices: Schema.Array(
+        Schema.Struct({
+          governor: Schema.String,
+          state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation))
+        })
+      )
+    }),
+    Schema.Struct({
+      _type: Schema.Literal('capital'),
+      choices: Schema.Array(
+        Schema.Struct({
+          capital: Schema.String,
+          state: Schema.Literal(...Object.values(StatesByAbbreviation).map((s) => s.abbreviation))
+        })
+      )
+    })
+  )
+}).annotations({
+  name: 'Question'
+})
+export type QuestionFromSchema = typeof QuestionSchema.Type

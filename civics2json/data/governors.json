@@ -1,1 +1,781 @@
-[]
+[
+  {
+    "state": "AK",
+    "name": "Mike Dunleavy",
+    "governorUrl": "https://gov.alaska.gov/",
+    "contactUrl": "https://gov.alaska.gov/contact/",
+    "phone": "1-907-465-3500",
+    "address": {
+      "street": "P.O. Box 110001",
+      "city": "Juneau",
+      "state": "AK",
+      "zip": "99811-0001"
+    },
+    "stateGovernmentWebsite": "https://alaska.gov/"
+  },
+  {
+    "state": "AL",
+    "name": "Kay Ivey",
+    "governorUrl": "https://governor.alabama.gov/",
+    "contactUrl": "https://governor.alabama.gov/contact/",
+    "phone": "1-334-242-7100",
+    "address": {
+      "street": "600 Dexter Ave.",
+      "city": "Montgomery",
+      "state": "AL",
+      "zip": "36130"
+    },
+    "stateGovernmentWebsite": "https://www.alabama.gov/"
+  },
+  {
+    "state": "AR",
+    "name": "Sarah Huckabee Sanders",
+    "governorUrl": "https://governor.arkansas.gov/",
+    "contactUrl": "https://governor.arkansas.gov/online-services/contact-the-governor/",
+    "phone": "1-501-682-2345",
+    "address": {
+      "street": "500 Woodlane St.",
+      "city": "Little Rock",
+      "state": "AR",
+      "zip": "72201"
+    },
+    "stateGovernmentWebsite": "https://portal.arkansas.gov/"
+  },
+  {
+    "state": "AS",
+    "name": "Pula’ali’i Nikolao Pula",
+    "governorUrl": "https://www.americansamoa.gov/governorpula",
+    "contactUrl": "https://www.americansamoa.gov/contactus",
+    "phone": "1-684-633-4116",
+    "address": {
+      "street": "Office of the Governor",
+      "city": "Pago Pago",
+      "state": "AS",
+      "zip": "96799"
+    },
+    "stateGovernmentWebsite": "https://www.americansamoa.gov/"
+  },
+  {
+    "state": "AZ",
+    "name": "Katie Hobbs",
+    "governorUrl": "https://azgovernor.gov/governor/meet-governor-katie-hobbs",
+    "contactUrl": "https://azgovernor.gov/office-arizona-governor/form/contact-governor-hobbs",
+    "phone": "1-602-542-4331",
+    "address": {
+      "street": "1700 West Washington Street",
+      "city": "Phoenix",
+      "state": "AZ",
+      "zip": "85007"
+    },
+    "stateGovernmentWebsite": "https://az.gov/"
+  },
+  {
+    "state": "CA",
+    "name": "Gavin Newsom",
+    "governorUrl": "https://www.gov.ca.gov/",
+    "contactUrl": "https://www.gov.ca.gov/contact/",
+    "phone": "1-916-445-2841",
+    "address": {
+      "street": "1021 O Street, Suite 9000",
+      "city": "Sacramento",
+      "state": "CA",
+      "zip": "95814"
+    },
+    "stateGovernmentWebsite": "https://www.ca.gov/"
+  },
+  {
+    "state": "CO",
+    "name": "Jared Polis",
+    "governorUrl": "https://www.colorado.gov/governor/",
+    "contactUrl": "https://www.colorado.gov/governor/contact-us",
+    "phone": "1-303-866-2885",
+    "address": {
+      "street": "State Capitol Building",
+      "city": "Denver",
+      "state": "CO",
+      "zip": "80203"
+    },
+    "stateGovernmentWebsite": "https://www.colorado.gov/"
+  },
+  {
+    "state": "CT",
+    "name": "Ned Lamont",
+    "governorUrl": "https://portal.ct.gov/governor",
+    "contactUrl": "https://portal.ct.gov/Office-of-the-Governor/Contact/Email-Governor-Lamont",
+    "phone": "1-860-566-4840",
+    "address": {
+      "street": "210 Capitol Avenue",
+      "city": "Hartford",
+      "state": "CT",
+      "zip": "06106"
+    },
+    "stateGovernmentWebsite": "https://portal.ct.gov/"
+  },
+  {
+    "state": "DC",
+    "name": "D.C. does not have a Governor, but the Mayor is Muriel Bowser",
+    "governorUrl": "https://mayor.dc.gov/",
+    "contactUrl": "https://dcforms.dc.gov/webform/executive-office-mayor-ask-mayor",
+    "phone": "1-202-727-2643",
+    "address": {
+      "street": "1350 Pennsylvania Avenue, NW",
+      "city": "Washington",
+      "state": "DC",
+      "zip": "20004"
+    },
+    "stateGovernmentWebsite": "https://dc.gov/"
+  },
+  {
+    "state": "DE",
+    "name": "Matt Meyer",
+    "governorUrl": "https://governor.delaware.gov/",
+    "contactUrl": "https://governor.delaware.gov/contact/",
+    "address": {
+      "street": "Tatnall Building",
+      "city": "Dover",
+      "state": "DE",
+      "zip": "19901"
+    },
+    "stateGovernmentWebsite": "https://delaware.gov/"
+  },
+  {
+    "state": "FL",
+    "name": "Ron DeSantis",
+    "governorUrl": "https://www.flgov.com/",
+    "contactUrl": "https://flgov.com/eog/leadership/people/ron-desantis/contact",
+    "phone": "1-850-717-9337",
+    "address": {
+      "street": "The Capitol",
+      "city": "Tallahassee",
+      "state": "FL",
+      "zip": "32399-0001"
+    },
+    "stateGovernmentWebsite": "https://www.myflorida.com/"
+  },
+  {
+    "state": "GA",
+    "name": "Brian P. Kemp",
+    "governorUrl": "https://gov.georgia.gov/",
+    "contactUrl": "https://gov.georgia.gov/contact-us",
+    "phone": "1-404-656-1776",
+    "address": {
+      "street": "206 Washington Street",
+      "city": "Atlanta",
+      "state": "GA",
+      "zip": "30334"
+    },
+    "stateGovernmentWebsite": "https://georgia.gov/"
+  },
+  {
+    "state": "GU",
+    "name": "Lourdes Aflague Leon Guerrero",
+    "governorUrl": "https://governor.guam.gov/contact-us/",
+    "phone": "1-671-472-8931",
+    "address": {
+      "street": "Ricardo J. Bordallo Governor's Complex",
+      "city": "Adelup",
+      "state": "GU",
+      "zip": "96910"
+    },
+    "stateGovernmentWebsite": "https://www.guam.gov/"
+  },
+  {
+    "state": "HI",
+    "name": "Josh Green",
+    "governorUrl": "https://governor.hawaii.gov/",
+    "contactUrl": "https://governor.hawaii.gov/contact-us/contact-the-governor/",
+    "phone": "1-808-586-0034",
+    "address": {
+      "street": "Executive Chambers",
+      "city": "Honolulu",
+      "state": "HI",
+      "zip": "96813"
+    },
+    "stateGovernmentWebsite": "https://portal.ehawaii.gov/"
+  },
+  {
+    "state": "IA",
+    "name": "Kim Reynolds",
+    "governorUrl": "https://governor.iowa.gov/",
+    "contactUrl": "https://governor.iowa.gov/contact-office-governor",
+    "phone": "1-515-281-5211",
+    "address": {
+      "street": "State Capitol",
+      "city": "Des Moines",
+      "state": "IA",
+      "zip": "50319"
+    },
+    "stateGovernmentWebsite": "https://www.iowa.gov/"
+  },
+  {
+    "state": "ID",
+    "name": "Brad Little",
+    "governorUrl": "https://gov.idaho.gov/",
+    "contactUrl": "https://gov.idaho.gov/contact/contact-us/",
+    "phone": "1-208-334-2100",
+    "address": {
+      "street": "State Capitol",
+      "city": "Boise",
+      "state": "ID",
+      "zip": "83720"
+    },
+    "stateGovernmentWebsite": "https://www.idaho.gov/"
+  },
+  {
+    "state": "IL",
+    "name": "JB Pritzker",
+    "governorUrl": "https://gov.illinois.gov/",
+    "contactUrl": "https://gov.illinois.gov/contact-us/contact-the-governor.html",
+    "address": {
+      "street": "401 S. Spring St.",
+      "city": "Springfield",
+      "state": "IL",
+      "zip": "62704"
+    },
+    "stateGovernmentWebsite": "https://www.illinois.gov/"
+  },
+  {
+    "state": "IN",
+    "name": "Mike Braun",
+    "governorUrl": "https://www.in.gov/gov/",
+    "contactUrl": "https://www.in.gov/gov/ask-mike/",
+    "phone": "1-317-232-4567",
+    "address": {
+      "street": "Office of the Governor",
+      "city": "Indianapolis",
+      "state": "IN",
+      "zip": "46204"
+    },
+    "stateGovernmentWebsite": "https://www.in.gov/core/index.html"
+  },
+  {
+    "state": "KS",
+    "name": "Laura Kelly",
+    "governorUrl": "https://www.governor.ks.gov/",
+    "contactUrl": "https://www.governor.ks.gov/contact/contact",
+    "address": {
+      "street": "Capitol",
+      "city": "Topeka",
+      "state": "KS",
+      "zip": "66612"
+    },
+    "stateGovernmentWebsite": "https://portal.kansas.gov/"
+  },
+  {
+    "state": "KY",
+    "name": "Andy Beshear",
+    "governorUrl": "https://governor.ky.gov/",
+    "contactUrl": "https://governor.ky.gov/contact/contact-us",
+    "phone": "1-502-564-2611",
+    "address": {
+      "street": "700 Capitol Avenue",
+      "city": "Frankfort",
+      "state": "KY",
+      "zip": "40601"
+    },
+    "stateGovernmentWebsite": "https://www.kentucky.gov/Pages/home.aspx"
+  },
+  {
+    "state": "LA",
+    "name": "Jeff Landry",
+    "governorUrl": "https://gov.louisiana.gov/",
+    "contactUrl": "https://gov.louisiana.gov/page/contact",
+    "phone": "1-225-342-0991",
+    "address": {
+      "street": "PO Box 94004",
+      "city": "Baton Rouge",
+      "state": "LA",
+      "zip": "70804"
+    },
+    "stateGovernmentWebsite": "https://www.louisiana.gov/"
+  },
+  {
+    "state": "MA",
+    "name": "Maura Healey",
+    "governorUrl": "https://www.mass.gov/orgs/governor-maura-healey-and-lt-governor-kim-driscoll",
+    "contactUrl": "https://www.mass.gov/forms/email-the-governors-office",
+    "phone": "1-617-725-4005",
+    "address": {
+      "street": "Massachusetts State House, 24 Beacon St.",
+      "city": "Boston",
+      "state": "MA",
+      "zip": "02133"
+    },
+    "stateGovernmentWebsite": "https://www.mass.gov/"
+  },
+  {
+    "state": "MD",
+    "name": "Wes Moore",
+    "governorUrl": "https://governor.maryland.gov/leadership/Pages/governor.aspx",
+    "contactUrl": "https://md.accessgov.com/governor/Forms/Page/cs/contact-the-governor/1",
+    "phone": "1-410-974-3901",
+    "address": {
+      "street": "100 State Circle",
+      "city": "Annapolis",
+      "state": "MD",
+      "zip": "21401"
+    },
+    "stateGovernmentWebsite": "https://www.maryland.gov/Pages/default.aspx"
+  },
+  {
+    "state": "ME",
+    "name": "Janet T. Mills",
+    "governorUrl": "https://www.maine.gov/governor/mills/",
+    "contactUrl": "https://www.maine.gov/governor/mills/contact",
+    "phone": "1-207-287-3531",
+    "address": {
+      "street": "1 State House Station",
+      "city": "Augusta",
+      "state": "ME",
+      "zip": "04333"
+    },
+    "stateGovernmentWebsite": "https://www.maine.gov/portal/index.html"
+  },
+  {
+    "state": "MI",
+    "name": "Gretchen Whitmer",
+    "governorUrl": "https://www.michigan.gov/whitmer",
+    "contactUrl": "https://www.michigan.gov/whitmer/contact",
+    "phone": "1-517-335-7858",
+    "address": {
+      "street": "P.O. Box 30013",
+      "city": "Lansing",
+      "state": "MI",
+      "zip": "48909"
+    },
+    "stateGovernmentWebsite": "https://www.michigan.gov/som"
+  },
+  {
+    "state": "MN",
+    "name": "Tim Walz",
+    "governorUrl": "https://mn.gov/governor/",
+    "contactUrl": "https://mn.gov/governor/connect/contact-us/contact-form.jsp",
+    "phone": "1-651-201-3400",
+    "address": {
+      "street": "130 State Capitol",
+      "city": "Saint Paul",
+      "state": "MN",
+      "zip": "55155"
+    },
+    "stateGovernmentWebsite": "https://mn.gov/portal/"
+  },
+  {
+    "state": "MO",
+    "name": "Mike Kehoe",
+    "governorUrl": "https://governor.mo.gov/",
+    "contactUrl": "https://governor.mo.gov/contact-us",
+    "phone": "1-573-751-3222",
+    "address": {
+      "street": "P.O. Box 720",
+      "city": "Jefferson City",
+      "state": "MO",
+      "zip": "65102"
+    },
+    "stateGovernmentWebsite": "https://www.mo.gov/"
+  },
+  {
+    "state": "MP",
+    "name": "Arnold Palacios",
+    "governorUrl": "https://governor.cnmi.gov/",
+    "contactUrl": "https://governor.cnmi.gov/contact/",
+    "phone": "1-670-237-2200",
+    "address": {
+      "street": "Caller Box 10007",
+      "city": "Saipan",
+      "state": "MP",
+      "zip": "96950"
+    },
+    "stateGovernmentWebsite": "https://www.doi.gov/oia/islands/cnmi"
+  },
+  {
+    "state": "MS",
+    "name": "Tate Reeves",
+    "governorUrl": "https://governorreeves.ms.gov/",
+    "phone": "1-601-359-3150",
+    "address": {
+      "street": "P.O. Box 139",
+      "city": "Jackson",
+      "state": "MS",
+      "zip": "39205"
+    },
+    "stateGovernmentWebsite": "https://www.ms.gov/"
+  },
+  {
+    "state": "MT",
+    "name": "Greg Gianforte",
+    "governorUrl": "https://governor.mt.gov/",
+    "contactUrl": "https://governor.mt.gov/Contact/",
+    "phone": "1-406-444-3111",
+    "address": {
+      "street": "PO Box 200801",
+      "city": "Helena",
+      "state": "MT",
+      "zip": "59620"
+    },
+    "stateGovernmentWebsite": "https://mt.gov/"
+  },
+  {
+    "state": "NC",
+    "name": "Josh Stein",
+    "governorUrl": "https://governor.nc.gov/",
+    "contactUrl": "https://governor.nc.gov/contact/contact-governor-stein",
+    "phone": "1-919-814-2000",
+    "address": {
+      "street": "20301 Mail Service Center",
+      "city": "Raleigh",
+      "state": "NC",
+      "zip": "27699"
+    },
+    "stateGovernmentWebsite": "https://www.nc.gov/"
+  },
+  {
+    "state": "ND",
+    "name": "Kelly Armstrong",
+    "governorUrl": "https://www.governor.nd.gov/",
+    "contactUrl": "https://www.governor.nd.gov/contact",
+    "phone": "1-701-328-2200",
+    "address": {
+      "street": "600 East Boulevard Avenue",
+      "city": "Bismarck",
+      "state": "ND",
+      "zip": "58505"
+    },
+    "stateGovernmentWebsite": "https://www.nd.gov/"
+  },
+  {
+    "state": "NE",
+    "name": "Jim Pillen",
+    "governorUrl": "https://governor.nebraska.gov/",
+    "contactUrl": "https://governor.nebraska.gov/contact-governor",
+    "phone": "1-402-471-2244",
+    "address": {
+      "street": "P.O. Box 94848",
+      "city": "Lincoln",
+      "state": "NE",
+      "zip": "68509"
+    },
+    "stateGovernmentWebsite": "https://www.nebraska.gov/"
+  },
+  {
+    "state": "NH",
+    "name": "Kelly Ayotte",
+    "governorUrl": "https://www.governor.nh.gov/",
+    "contactUrl": "https://www.governor.nh.gov/contact-governor-ayotte",
+    "phone": "1-603-271-2121",
+    "address": {
+      "street": "107 North Main Street",
+      "city": "Concord",
+      "state": "NH",
+      "zip": "03301"
+    },
+    "stateGovernmentWebsite": "https://www.nh.gov/index.htm"
+  },
+  {
+    "state": "NJ",
+    "name": "Phil Murphy",
+    "governorUrl": "https://www.nj.gov/governor/",
+    "contactUrl": "https://www.nj.gov/governor/contact/all/",
+    "phone": "1-609-292-6000",
+    "address": {
+      "street": "Office of Governor",
+      "city": "Trenton",
+      "state": "NJ",
+      "zip": "08625"
+    },
+    "stateGovernmentWebsite": "https://www.nj.gov/"
+  },
+  {
+    "state": "NM",
+    "name": "Michelle Lujan Grisham",
+    "governorUrl": "https://www.governor.state.nm.us/",
+    "contactUrl": "https://www.governor.state.nm.us/contact-the-governor/",
+    "phone": "1-505-476-2200",
+    "address": {
+      "street": "490 Old Santa Fe Trail Room 400",
+      "city": "Santa Fe",
+      "state": "NM",
+      "zip": "87501"
+    },
+    "stateGovernmentWebsite": "https://www.nm.gov/"
+  },
+  {
+    "state": "NV",
+    "name": "Joe Lombardo",
+    "governorUrl": "https://gov.nv.gov/",
+    "contactUrl": "https://gov.nv.gov/Contact/Contact/",
+    "phone": "1-775-684-5670",
+    "address": {
+      "street": "State Capitol Building",
+      "city": "Carson City",
+      "state": "NV",
+      "zip": "89701"
+    },
+    "stateGovernmentWebsite": "https://nv.gov/"
+  },
+  {
+    "state": "NY",
+    "name": "Kathy Hochul",
+    "governorUrl": "https://www.governor.ny.gov/",
+    "contactUrl": "https://www.governor.ny.gov/content/governor-contact-form",
+    "phone": "1-518-474-8390",
+    "address": {
+      "street": "NYS State Capitol Building",
+      "city": "Albany",
+      "state": "NY",
+      "zip": "12224"
+    },
+    "stateGovernmentWebsite": "https://www.ny.gov/"
+  },
+  {
+    "state": "OH",
+    "name": "Mike DeWine",
+    "governorUrl": "https://governor.ohio.gov/home",
+    "contactUrl": "https://governor.ohio.gov/contact",
+    "phone": "1-614-644-4357",
+    "address": {
+      "street": "Riffe Center, 30th Floor",
+      "city": "Columbus",
+      "state": "OH",
+      "zip": "43215"
+    },
+    "stateGovernmentWebsite": "https://ohio.gov/home"
+  },
+  {
+    "state": "OK",
+    "name": "J. Kevin Stitt",
+    "governorUrl": "https://oklahoma.gov/governor.html",
+    "contactUrl": "https://oklahoma.gov/governor/contact.html",
+    "phone": "1-405-521-2342",
+    "address": {
+      "street": "2300 No. Lincoln Blvd., Suite 212",
+      "city": "Oklahoma City",
+      "state": "OK",
+      "zip": "73105"
+    },
+    "stateGovernmentWebsite": "https://oklahoma.gov/"
+  },
+  {
+    "state": "OR",
+    "name": "Tina Kotek",
+    "governorUrl": "https://www.oregon.gov/gov/Pages/index.aspx",
+    "contactUrl": "https://www.oregon.gov/gov/pages/contact-us.aspx",
+    "phone": "1-503-378-4582",
+    "address": {
+      "street": "900 Court Street, Suite 254",
+      "city": "Salem",
+      "state": "OR",
+      "zip": "97301"
+    },
+    "stateGovernmentWebsite": "https://www.oregon.gov/pages/index.aspx"
+  },
+  {
+    "state": "PA",
+    "name": "Josh Shapiro",
+    "governorUrl": "https://www.pa.gov/en/governor.html",
+    "contactUrl": "https://www.governor.pa.gov/contact/",
+    "phone": "1-717-787-2500",
+    "address": {
+      "street": "Office of the Governor",
+      "city": "Harrisburg",
+      "state": "PA",
+      "zip": "17120"
+    },
+    "stateGovernmentWebsite": "https://www.pa.gov/"
+  },
+  {
+    "state": "PR",
+    "name": "Jenniffer González-Colón",
+    "governorUrl": "https://www.fortaleza.pr.gov/",
+    "contactUrl": "https://www.fortaleza.pr.gov/#Contactenos",
+    "phone": "1-787-721-7000",
+    "address": {
+      "street": "PO Box 9020082",
+      "city": "San Juan",
+      "state": "PR",
+      "zip": "00902"
+    },
+    "stateGovernmentWebsite": "https://www.pr.gov/"
+  },
+  {
+    "state": "RI",
+    "name": "Dan McKee",
+    "governorUrl": "https://governor.ri.gov/",
+    "contactUrl": "https://governor.ri.gov/contact",
+    "phone": "1-401-222-2080",
+    "address": {
+      "street": "82 Smith St.",
+      "city": "Providence",
+      "state": "RI",
+      "zip": "02903"
+    },
+    "stateGovernmentWebsite": "https://www.ri.gov/"
+  },
+  {
+    "state": "SC",
+    "name": "Henry McMaster",
+    "governorUrl": "https://governor.sc.gov/",
+    "contactUrl": "https://governor.sc.gov/contact-governors-office",
+    "phone": "1-803-734-2100",
+    "address": {
+      "street": "State House",
+      "city": "Columbia",
+      "state": "SC",
+      "zip": "29201"
+    },
+    "stateGovernmentWebsite": "https://sc.gov/"
+  },
+  {
+    "state": "SD",
+    "name": "Larry Rhoden",
+    "governorUrl": "https://governor.sd.gov/",
+    "contactUrl": "https://governor.sd.gov/office/contact.aspx",
+    "phone": "1-605-773-3212",
+    "address": {
+      "street": "500 E. Capitol Ave.",
+      "city": "Pierre",
+      "state": "SD",
+      "zip": "57501"
+    },
+    "stateGovernmentWebsite": "https://www.sd.gov"
+  },
+  {
+    "state": "TN",
+    "name": "Bill Lee",
+    "governorUrl": "https://www.tn.gov/governor.html",
+    "contactUrl": "https://www.tn.gov/governor/contact-us.html",
+    "phone": "1-615-741-2001",
+    "address": {
+      "street": "1st Floor, State Capitol",
+      "city": "Nashville",
+      "state": "TN",
+      "zip": "37243"
+    },
+    "stateGovernmentWebsite": "https://www.tn.gov/"
+  },
+  {
+    "state": "TX",
+    "name": "Greg Abbott",
+    "governorUrl": "https://gov.texas.gov/",
+    "contactUrl": "https://gov.texas.gov/contact",
+    "phone": "1-512-463-2000",
+    "address": {
+      "street": "P.O. Box 12428",
+      "city": "Austin",
+      "state": "TX",
+      "zip": "78711"
+    },
+    "stateGovernmentWebsite": "https://www.texas.gov/"
+  },
+  {
+    "state": "UT",
+    "name": "Spencer J. Cox",
+    "governorUrl": "https://governor.utah.gov/",
+    "contactUrl": "https://governor.utah.gov/contact/",
+    "phone": "1-801-538-1000",
+    "address": {
+      "street": "350 N. State St., Suite 200",
+      "city": "Salt Lake City",
+      "state": "UT",
+      "zip": "84114"
+    },
+    "stateGovernmentWebsite": "https://www.utah.gov/index.html"
+  },
+  {
+    "state": "VA",
+    "name": "Glenn Youngkin",
+    "governorUrl": "https://www.governor.virginia.gov/",
+    "contactUrl": "https://www.governor.virginia.gov/communicating-with-the-governors-office/",
+    "phone": "1-804-786-2211",
+    "address": {
+      "street": "P.O. Box 1475",
+      "city": "Richmond",
+      "state": "VA",
+      "zip": "23218"
+    },
+    "stateGovernmentWebsite": "https://www.virginia.gov/"
+  },
+  {
+    "state": "VI",
+    "name": "Albert Bryan Jr.",
+    "governorUrl": "https://www.vi.gov/governor-bryan/",
+    "contactUrl": "https://www.vi.gov/contact/",
+    "phone": "1-340-774-0001",
+    "address": {
+      "street": "5047 (21-22) Kongens Gade",
+      "city": "St. Thomas",
+      "state": "VI",
+      "zip": "00802"
+    },
+    "stateGovernmentWebsite": "https://www.vi.gov/"
+  },
+  {
+    "state": "VT",
+    "name": "Phil Scott",
+    "governorUrl": "https://governor.vermont.gov/",
+    "contactUrl": "https://governor.vermont.gov/contact",
+    "phone": "1-802-828-3333",
+    "address": {
+      "street": "109 State St., Pavilion",
+      "city": "Montpelier",
+      "state": "VT",
+      "zip": "05609"
+    },
+    "stateGovernmentWebsite": "https://www.vermont.gov/"
+  },
+  {
+    "state": "WA",
+    "name": "Bob Ferguson",
+    "governorUrl": "https://governor.wa.gov/",
+    "contactUrl": "https://governor.wa.gov/contacting-governor/contacting-governors-office",
+    "phone": "1-360-902-4111",
+    "address": {
+      "street": "PO Box 40002",
+      "city": "Olympia",
+      "state": "WA",
+      "zip": "98504"
+    },
+    "stateGovernmentWebsite": "https://wa.gov/"
+  },
+  {
+    "state": "WI",
+    "name": "Tony Evers",
+    "governorUrl": "https://evers.wi.gov/pages/home.aspx",
+    "contactUrl": "https://evers.wi.gov/Pages/connect.aspx",
+    "phone": "1-608-266-1212",
+    "address": {
+      "street": "P.O. Box 7863",
+      "city": "Madison",
+      "state": "WI",
+      "zip": "53707"
+    },
+    "stateGovernmentWebsite": "https://www.wisconsin.gov/Pages/Home.aspx"
+  },
+  {
+    "state": "WV",
+    "name": "Patrick Morrisey",
+    "governorUrl": "https://governor.wv.gov/",
+    "contactUrl": "https://wv.accessgov.com/governor/Forms/Page/submitcomment-governor/contact-governor/0",
+    "phone": "1-304-558-2000",
+    "address": {
+      "street": "1900 Kanawha Blvd., E",
+      "city": "Charleston",
+      "state": "WV",
+      "zip": "25305"
+    },
+    "stateGovernmentWebsite": "https://www.wv.gov/Pages/default.aspx"
+  },
+  {
+    "state": "WY",
+    "name": "Mark Gordon",
+    "governorUrl": "https://governor.wyo.gov/",
+    "contactUrl": "https://governor.wyo.gov/contact/governor",
+    "phone": "1-307-777-7434",
+    "address": {
+      "street": "200 W. 24th St.",
+      "city": "Cheyenne",
+      "state": "WY",
+      "zip": "82002"
+    },
+    "stateGovernmentWebsite": "https://www.wyo.gov/"
+  }
+]

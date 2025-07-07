@@ -3,7 +3,8 @@ import { Effect } from 'effect'
 import {
   filterQualityDistractors,
   validateDistractorCompleteness,
-  semanticValidation
+  semanticValidation,
+  standardizeDistractorFormat
 } from '@src/services/DistractorQualityService'
 import { SimilarityService, TestSimilarityServiceLayer } from '@src/services/SimilarityService'
 
@@ -125,6 +126,36 @@ describe('DistractorQualityService', () => {
         const result = yield* filterQualityDistractors(service)(candidates, correctAnswers)
         expect(result).toEqual(['Good Distractor'])
       }).pipe(Effect.provide(similarityService), Effect.runPromise)
+    })
+  })
+
+  describe('standardizeDistractorFormat', () => {
+    it('should remove "right to" prefix when correct answers are in short form', () => {
+      const correctAnswers = ['speech', 'religion', 'assembly']
+      const distractor = 'right to bear arms'
+      const result = standardizeDistractorFormat(distractor, correctAnswers)
+      expect(result).toBe('bear arms')
+    })
+
+    it('should not modify distractors when format already matches', () => {
+      const correctAnswers = ['speech', 'religion']
+      const distractor = 'vote'
+      const result = standardizeDistractorFormat(distractor, correctAnswers)
+      expect(result).toBe('vote')
+    })
+
+    it('should add "The" prefix for anthem-related distractors when correct answer has it', () => {
+      const correctAnswers = ['The Star-Spangled Banner']
+      const distractor = 'America the Beautiful'
+      const result = standardizeDistractorFormat(distractor, correctAnswers)
+      expect(result).toBe('The America the Beautiful')
+    })
+
+    it('should handle parentheses correctly for amendment questions', () => {
+      const correctAnswers = ['a change (to the Constitution)', 'an addition (to the Constitution)']
+      const distractor = 'a law passed by Congress'
+      const result = standardizeDistractorFormat(distractor, correctAnswers)
+      expect(result).toBe('a law passed by Congress')
     })
   })
 })
