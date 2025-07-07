@@ -8,6 +8,9 @@
   ],
   "scripts": {
     "test": "npm run test --workspaces",
-    "build": "npm run build --workspaces"
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "package": "npm run package --workspaces"
   }
 }

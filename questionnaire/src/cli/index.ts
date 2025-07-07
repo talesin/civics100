@@ -29,15 +29,16 @@ const promptForInput = (prompt: string): Effect.Effect<string, never, never> =>
 const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<void, never, never> =>
   Effect.gen(function* () {
     if (Option.isNone(state.currentQuestion)) {
-      const nextQuestion = yield* gameService.getNextQuestion(state)
+      const nextQuestionWithWeight = yield* gameService.getNextQuestion(state)
 
-      if (Option.isNone(nextQuestion)) {
+      if (Option.isNone(nextQuestionWithWeight)) {
         yield* Console.log('🎉 No more questions available!')
         return
       }
 
-      const newState = { ...state, currentQuestion: nextQuestion }
-      yield* gameService.displayQuestion(nextQuestion.value)
+      const { question, weight } = nextQuestionWithWeight.value
+      const newState = { ...state, currentQuestion: Option.some(question) }
+      yield* gameService.displayQuestion(question, weight, newState)
 
       const userInput = yield* promptForInput(
         'Your answer (A/B/C/D) or "stats" for statistics or "quit" to exit: '
@@ -54,7 +55,7 @@ const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<voi
         return
       }
 
-      const updatedState = yield* gameService.processAnswer(userInput, nextQuestion.value, newState)
+      const updatedState = yield* gameService.processAnswer(userInput, question, newState)
       yield* gameLoop(updatedState, gameService)
     }
   })

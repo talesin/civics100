@@ -74,6 +74,70 @@ export const validateDistractorCompleteness = (distractor: string): boolean => {
   return !fragmentPatterns.some((pattern) => pattern.test(trimmed))
 }
 
+/**
+ * Standardizes distractor format to match the format of correct answers.
+ * This helps ensure distractors don't stand out due to inconsistent formatting.
+ */
+export const standardizeDistractorFormat = (
+  distractor: string,
+  correctAnswers: readonly string[]
+): string => {
+  const trimmedDistractor = distractor.trim()
+
+  // Analyze the format patterns in correct answers
+  const hasParentheses = correctAnswers.some(
+    (answer) => answer.includes('(') && answer.includes(')')
+  )
+  const startsWithRightTo = correctAnswers.some((answer) =>
+    answer.toLowerCase().startsWith('right to')
+  )
+  const isShortForm = correctAnswers.every((answer) => answer.split(' ').length <= 2)
+  const hasArticles = correctAnswers.some((answer) => /^(the|a|an)\s/.test(answer.toLowerCase()))
+
+  let standardized = trimmedDistractor
+
+  // If correct answers have parentheses, consider adding them to distractors that could benefit
+  if (hasParentheses && !standardized.includes('(')) {
+    // For amendment-related questions, add constitutional context
+    if (correctAnswers.some((answer) => answer.toLowerCase().includes('constitution'))) {
+      if (
+        standardized.toLowerCase().includes('law') ||
+        standardized.toLowerCase().includes('decision') ||
+        standardized.toLowerCase().includes('order')
+      ) {
+        // Don't add parentheses to these as they're different concepts
+      }
+    }
+  }
+
+  // If correct answers are in short form (1-2 words), prefer short form distractors
+  if (isShortForm && standardized.toLowerCase().startsWith('right to ')) {
+    // Convert "right to bear arms" to "bear arms" to match short format
+    standardized = standardized.replace(/^right to /i, '')
+  }
+
+  // If correct answers don't start with "right to", remove it from distractors
+  if (!startsWithRightTo && standardized.toLowerCase().startsWith('right to ')) {
+    standardized = standardized.replace(/^right to /i, '')
+  }
+
+  // If correct answers have articles, ensure distractors do too when appropriate
+  if (hasArticles && !standardized.toLowerCase().match(/^(the|a|an)\s/)) {
+    // Add article for anthem names, songs, documents
+    if (
+      standardized.toLowerCase().includes('banner') ||
+      standardized.toLowerCase().includes('hymn') ||
+      standardized.toLowerCase().includes('song') ||
+      standardized.toLowerCase().includes('america') ||
+      standardized.toLowerCase().includes('hymn')
+    ) {
+      standardized = 'The ' + standardized
+    }
+  }
+
+  return standardized
+}
+
 export const semanticValidation = (distractor: string, questionType: string): boolean => {
   const distractorLower = distractor.toLowerCase()
 
@@ -106,6 +170,17 @@ export const semanticValidation = (distractor: string, questionType: string): bo
         /^the [A-Z]/.test(distractor)
       )
 
+    case 'anthem':
+      // Should look like a song/anthem name
+      return (
+        distractorLower.includes('banner') ||
+        distractorLower.includes('anthem') ||
+        distractorLower.includes('song') ||
+        distractorLower.includes('hymn') ||
+        /^the [A-Z]/.test(distractor) ||
+        /^[A-Z].*[A-Z]/.test(distractor) // Proper capitalization pattern
+      )
+
     default:
       return true // Allow anything for other types
   }
@@ -133,7 +208,12 @@ export const applyEnhancedQualityFilters =
         semanticValidation(distractor, questionType)
       )
 
-      return semanticallyValid
+      // Apply format standardization to ensure consistency with correct answers
+      const formatStandardized = semanticallyValid.map((distractor) =>
+        standardizeDistractorFormat(distractor, correctAnswers)
+      )
+
+      return formatStandardized
     })
 
 export class DistractorQualityService extends Effect.Service<DistractorQualityService>()(
@@ -146,6 +226,7 @@ export class DistractorQualityService extends Effect.Service<DistractorQualitySe
         filterQualityDistractors: filterQualityDistractors(similarityService),
         validateDistractorCompleteness,
         semanticValidation,
+        standardizeDistractorFormat,
         applyEnhancedQualityFilters: applyEnhancedQualityFilters(similarityService)
       }
     }),
@@ -160,6 +241,7 @@ export const TestDistractorQualityServiceLayer = (fn?: {
   ) => Effect.Effect<string[], SimilarityError>
   validateDistractorCompleteness?: (distractor: string) => boolean
   semanticValidation?: (distractor: string, questionType: string) => boolean
+  standardizeDistractorFormat?: (distractor: string, correctAnswers: readonly string[]) => string
   applyEnhancedQualityFilters?: (
     candidates: readonly string[],
     correctAnswers: readonly string[],
@@ -173,6 +255,7 @@ export const TestDistractorQualityServiceLayer = (fn?: {
       filterQualityDistractors: fn?.filterQualityDistractors ?? (() => Effect.succeed([])),
       validateDistractorCompleteness: fn?.validateDistractorCompleteness ?? (() => true),
       semanticValidation: fn?.semanticValidation ?? (() => true),
+      standardizeDistractorFormat: fn?.standardizeDistractorFormat ?? ((distractor) => distractor),
       applyEnhancedQualityFilters: fn?.applyEnhancedQualityFilters ?? (() => Effect.succeed([]))
     })
   )

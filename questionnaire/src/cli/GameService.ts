@@ -1,16 +1,21 @@
 import { Effect, Console, Option, Layer } from 'effect'
 import questionsWithDistractors from 'distractions'
 import type { StateAbbreviation } from 'civics2json'
-import { QuestionNumber, type Answers, type Question } from '../types'
+import { PairedQuestionNumber, type PairedAnswers, type Question } from '../types'
 import { QuestionSelector } from '../QuestionSelector'
 import { QuestionDataService } from '../QuestionDataService'
 
 /**
  * State for the game including loaded questions and user answers
+ *
+ * Uses the paired question system where:
+ * - questions: Array of individual paired questions (one per correct answer)
+ * - answers: Performance history tracked per pairedQuestionNumber
+ * - currentQuestion: The specific paired question being presented
  */
 export type GameState = {
   questions: ReadonlyArray<Question>
-  answers: Answers
+  answers: PairedAnswers
   currentQuestion: Option.Option<Question>
 }
 
@@ -35,26 +40,34 @@ const initializeGame = (
   })
 
 /**
- * Record a user's answer to a question
+ * Record a user's answer to a specific paired question
+ *
+ * This maintains separate answer histories for each paired question,
+ * enabling granular tracking of performance on individual answer choices.
+ * Each pairedQuestionNumber (e.g., "20-0", "20-1") gets its own history.
  */
 const recordAnswer = (
-  questionNumber: QuestionNumber,
+  pairedQuestionNumber: PairedQuestionNumber,
   isCorrect: boolean,
-  answers: Answers
-): Answers => {
-  const currentHistory = answers[questionNumber] ?? []
+  answers: PairedAnswers
+): PairedAnswers => {
+  const currentHistory = answers[pairedQuestionNumber] ?? []
   const newEntry = { ts: new Date(), correct: isCorrect }
 
   return {
     ...answers,
-    [questionNumber]: [...currentHistory, newEntry]
+    [pairedQuestionNumber]: [...currentHistory, newEntry]
   }
 }
 
 /**
- * Calculate overall game statistics across all questions
+ * Calculate overall game statistics across all paired questions
+ *
+ * Aggregates performance data from all paired questions to provide
+ * comprehensive learning analytics. Each paired question contributes
+ * its individual performance history to the overall statistics.
  */
-const calculateOverallStats = (answers: Answers) => {
+const calculateOverallStats = (answers: PairedAnswers) => {
   const allAnswers = Object.values(answers).flat()
   const totalAnswered = allAnswers.length
   const correctAnswers = allAnswers.filter((answer) => answer.correct).length
@@ -71,12 +84,32 @@ const calculateOverallStats = (answers: Answers) => {
 }
 
 /**
- * Display a question with its answer choices
+ * Display a paired question with its answer choices and performance information
+ *
+ * Shows both the original question number and the paired question identifier
+ * to help users understand they're working with a specific answer variant.
+ * The expected answer and performance stats are specific to this paired question.
  */
-const displayQuestion = (question: Question): Effect.Effect<void, never, never> =>
+const displayQuestion = (
+  question: Question,
+  weight: number,
+  state: GameState,
+  questionSelector: QuestionSelector
+): Effect.Effect<void, never, never> =>
   Effect.gen(function* () {
-    yield* Console.log(`\n✏️ Question ${question.questionNumber}:`)
+    const stats = questionSelector.getPairedQuestionStats(
+      question.pairedQuestionNumber,
+      state.answers
+    )
+
+    yield* Console.log(
+      `\n✏️ Question ${question.questionNumber} (${question.pairedQuestionNumber}):`
+    )
     yield* Console.log(question.question)
+    yield* Console.log(`🎯 Expected answer: "${question.correctAnswerText}"`)
+    yield* Console.log(
+      `⚖️ Selection weight: ${weight.toFixed(2)} | History: ${stats.totalAnswered} attempts, ${(stats.accuracy * 100).toFixed(1)}% accuracy`
+    )
     yield* Console.log('')
 
     for (let i = 0; i < question.answers.length; i++) {
@@ -88,23 +121,63 @@ const displayQuestion = (question: Question): Effect.Effect<void, never, never> 
   })
 
 /**
- * Get the next question to ask based on weighted selection
+ * Get the next paired question to ask based on weighted selection
+ *
+ * Uses the adaptive learning algorithm to select a paired question based on
+ * individual performance history. Each paired question is weighted according
+ * to its specific answer performance, enabling focused practice on weak areas.
+ *
+ * Returns both the question and its selection weight for display
  */
 const getNextQuestion = (
   state: GameState,
   questionDataService: QuestionDataService,
   questionSelector: QuestionSelector
-): Effect.Effect<Option.Option<Question>, never, never> =>
+): Effect.Effect<Option.Option<{ question: Question; weight: number }>, never, never> =>
   Effect.gen(function* () {
-    const availableNumbers = questionDataService.getAvailableQuestionNumbers(state.questions)
-    const selectedNumber = yield* questionSelector.selectQuestion(availableNumbers, state.answers)
+    const availablePairedNumbers = questionDataService.getAvailablePairedQuestionNumbers(
+      state.questions
+    )
+    const selectedPairedNumber = yield* questionSelector.selectPairedQuestion(
+      availablePairedNumbers,
+      state.answers
+    )
 
-    return Option.match(selectedNumber, {
-      onNone: () => Option.none(),
-      onSome: (questionNumber) =>
-        questionDataService.findQuestionByNumber(questionNumber, state.questions)
+    return yield* Option.match(selectedPairedNumber, {
+      onNone: () => Effect.succeed(Option.none()),
+      onSome: (pairedQuestionNumber) =>
+        Effect.succeed(
+          (() => {
+            const questionOption = questionDataService.findQuestionByPairedNumber(
+              pairedQuestionNumber,
+              state.questions
+            )
+            return Option.match(questionOption, {
+              onNone: () => Option.none(),
+              onSome: (question) => {
+                const stats = questionSelector.getPairedQuestionStats(
+                  pairedQuestionNumber,
+                  state.answers
+                )
+                const weight = calculateWeight(stats)
+                return Option.some({ question, weight })
+              }
+            })
+          })()
+        )
     })
   })
+
+/**
+ * Calculate weight for display based on question stats
+ */
+const calculateWeight = (stats: { totalAnswered: number; accuracy: number }): number => {
+  if (stats.totalAnswered === 0) {
+    return 10 // Unanswered weight
+  }
+  // Interpolate between incorrect (5) and correct (1) weights
+  return 5 + (1 - 5) * stats.accuracy
+}
 
 /**
  * Display game statistics
@@ -158,7 +231,7 @@ const processAnswer = (
       yield* Console.log(`❌ Incorrect. The correct answer was ${correctLetter}.`)
     }
 
-    const newAnswers = recordAnswer(question.questionNumber, isCorrect, state.answers)
+    const newAnswers = recordAnswer(question.pairedQuestionNumber, isCorrect, state.answers)
 
     const overallStats = calculateOverallStats(newAnswers)
     yield* Console.log(
@@ -185,7 +258,8 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
         initializeGame(questionDataService, userState),
       getNextQuestion: (state: GameState) =>
         getNextQuestion(state, questionDataService, questionSelector),
-      displayQuestion: (question: Question) => displayQuestion(question),
+      displayQuestion: (question: Question, weight: number, state: GameState) =>
+        displayQuestion(question, weight, state, questionSelector),
       displayStats: (state: GameState) => displayStats(state),
       processAnswer: (userInput: string, question: Question, state: GameState) =>
         processAnswer(userInput, question, state)
@@ -199,8 +273,14 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
  */
 export const TestGameServiceLayer = (fn?: {
   initializeGame?: (userState: StateAbbreviation) => Effect.Effect<GameState, never, never>
-  getNextQuestion?: (state: GameState) => Effect.Effect<Option.Option<Question>, never, never>
-  displayQuestion?: (question: Question) => Effect.Effect<void, never, never>
+  getNextQuestion?: (
+    state: GameState
+  ) => Effect.Effect<Option.Option<{ question: Question; weight: number }>, never, never>
+  displayQuestion?: (
+    question: Question,
+    weight: number,
+    state: GameState
+  ) => Effect.Effect<void, never, never>
   displayStats?: (state: GameState) => Effect.Effect<void, never, never>
   processAnswer?: (
     userInput: string,

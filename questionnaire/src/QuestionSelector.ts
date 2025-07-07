@@ -36,7 +36,15 @@
  */
 
 import { Effect, Option, Random, Layer } from 'effect'
-import type { Answers, QuestionNumber, WeightedQuestion, SelectionWeights } from './types'
+import type {
+  Answers,
+  PairedAnswers,
+  QuestionNumber,
+  PairedQuestionNumber,
+  WeightedQuestion,
+  PairedWeightedQuestion,
+  SelectionWeights
+} from './types'
 
 /**
  * Default weights for adaptive question selection algorithm.
@@ -304,6 +312,110 @@ const getQuestionStats = (questionNumber: QuestionNumber, answers: Answers) => {
 }
 
 /**
+ * Calculate the selection weight for a paired question based on answer history.
+ * Uses the same algorithm as regular questions but works with paired question numbers.
+ */
+const calculatePairedQuestionWeight = (
+  pairedQuestionNumber: PairedQuestionNumber,
+  answers: PairedAnswers,
+  weights: SelectionWeights = DEFAULT_WEIGHTS
+): number => {
+  const history = answers[pairedQuestionNumber]
+
+  if (!history || history.length === 0) {
+    return weights.unanswered
+  }
+
+  const recentAnswers = history.slice(-5)
+  const correctAnswers = recentAnswers.filter((answer) => answer.correct).length
+  const averageCorrectness = correctAnswers / recentAnswers.length
+
+  const interpolatedWeight =
+    weights.incorrect + (weights.correct - weights.incorrect) * averageCorrectness
+
+  return interpolatedWeight
+}
+
+/**
+ * Transform available paired questions into weighted questions for selection.
+ */
+const createWeightedPairedQuestions = (
+  availablePairedQuestions: ReadonlyArray<PairedQuestionNumber>,
+  answers: PairedAnswers,
+  weights?: SelectionWeights
+): ReadonlyArray<PairedWeightedQuestion> => {
+  return availablePairedQuestions.map((pairedQuestionNumber) => ({
+    pairedQuestionNumber,
+    weight: calculatePairedQuestionWeight(pairedQuestionNumber, answers, weights)
+  }))
+}
+
+/**
+ * Perform weighted random selection for paired questions.
+ */
+const selectWeightedRandomPaired = (
+  weightedPairedQuestions: ReadonlyArray<PairedWeightedQuestion>
+): Effect.Effect<Option.Option<PairedQuestionNumber>, never, never> =>
+  Effect.gen(function* () {
+    if (weightedPairedQuestions.length === 0) {
+      return Option.none()
+    }
+
+    const totalWeight = weightedPairedQuestions.reduce((sum, wq) => sum + wq.weight, 0)
+
+    if (totalWeight === 0) {
+      return Option.none()
+    }
+
+    const randomValue = yield* Random.nextIntBetween(1, totalWeight + 1)
+
+    let cumulativeWeight = 0
+    for (const weightedPairedQuestion of weightedPairedQuestions) {
+      cumulativeWeight += weightedPairedQuestion.weight
+
+      if (randomValue <= cumulativeWeight) {
+        return Option.some(weightedPairedQuestion.pairedQuestionNumber)
+      }
+    }
+
+    return Option.none()
+  })
+
+/**
+ * Main selection function for paired questions.
+ */
+export const selectPairedQuestion = (
+  availablePairedQuestions: ReadonlyArray<PairedQuestionNumber>,
+  answers: PairedAnswers,
+  weights?: SelectionWeights
+): Effect.Effect<Option.Option<PairedQuestionNumber>, never, never> => {
+  const weightedPairedQuestions = createWeightedPairedQuestions(
+    availablePairedQuestions,
+    answers,
+    weights
+  )
+  return selectWeightedRandomPaired(weightedPairedQuestions)
+}
+
+const getPairedQuestionStats = (
+  pairedQuestionNumber: PairedQuestionNumber,
+  answers: PairedAnswers
+) => {
+  const history = answers[pairedQuestionNumber] ?? []
+  const totalAnswered = history.length
+  const correctAnswers = history.filter((answer) => answer.correct).length
+  const incorrectAnswers = totalAnswered - correctAnswers
+  const accuracy = totalAnswered > 0 ? correctAnswers / totalAnswered : 0
+
+  return {
+    totalAnswered,
+    correctAnswers,
+    incorrectAnswers,
+    accuracy
+  }
+}
+
+/**
  * Service for question selection and statistics
  * Handles weighted question selection based on answer history
  */
@@ -314,8 +426,15 @@ export class QuestionSelector extends Effect.Service<QuestionSelector>()('Questi
       answers: Answers,
       weights?: SelectionWeights
     ) => selectQuestion(availableQuestions, answers, weights),
+    selectPairedQuestion: (
+      availablePairedQuestions: ReadonlyArray<PairedQuestionNumber>,
+      answers: PairedAnswers,
+      weights?: SelectionWeights
+    ) => selectPairedQuestion(availablePairedQuestions, answers, weights),
     getQuestionStats: (questionNumber: QuestionNumber, answers: Answers) =>
-      getQuestionStats(questionNumber, answers)
+      getQuestionStats(questionNumber, answers),
+    getPairedQuestionStats: (pairedQuestionNumber: PairedQuestionNumber, answers: PairedAnswers) =>
+      getPairedQuestionStats(pairedQuestionNumber, answers)
   })
 }) {}
 
@@ -328,9 +447,23 @@ export const TestQuestionSelectorLayer = (fn?: {
     answers: Answers,
     weights?: SelectionWeights
   ) => Effect.Effect<Option.Option<QuestionNumber>, never, never>
+  selectPairedQuestion?: (
+    availablePairedQuestions: ReadonlyArray<PairedQuestionNumber>,
+    answers: PairedAnswers,
+    weights?: SelectionWeights
+  ) => Effect.Effect<Option.Option<PairedQuestionNumber>, never, never>
   getQuestionStats?: (
     questionNumber: QuestionNumber,
     answers: Answers
+  ) => {
+    totalAnswered: number
+    correctAnswers: number
+    incorrectAnswers: number
+    accuracy: number
+  }
+  getPairedQuestionStats?: (
+    pairedQuestionNumber: PairedQuestionNumber,
+    answers: PairedAnswers
   ) => {
     totalAnswered: number
     correctAnswers: number
@@ -343,8 +476,12 @@ export const TestQuestionSelectorLayer = (fn?: {
     QuestionSelector.of({
       _tag: 'QuestionSelector',
       selectQuestion: fn?.selectQuestion ?? (() => Effect.succeed(Option.none())),
+      selectPairedQuestion: fn?.selectPairedQuestion ?? (() => Effect.succeed(Option.none())),
       getQuestionStats:
         fn?.getQuestionStats ??
+        (() => ({ totalAnswered: 0, correctAnswers: 0, incorrectAnswers: 0, accuracy: 0 })),
+      getPairedQuestionStats:
+        fn?.getPairedQuestionStats ??
         (() => ({ totalAnswered: 0, correctAnswers: 0, incorrectAnswers: 0, accuracy: 0 }))
     })
   )

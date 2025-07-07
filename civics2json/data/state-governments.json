@@ -1,226 +1,282 @@
 [
   {
     "state": "AK",
-    "url": "/states/alaska"
+    "url": "https://www.usa.gov/states/alaska",
+    "file": "data/state-governments/AK.html"
   },
   {
     "state": "AL",
-    "url": "/states/alabama"
+    "url": "https://www.usa.gov/states/alabama",
+    "file": "data/state-governments/AL.html"
   },
   {
     "state": "AR",
-    "url": "/states/arkansas"
+    "url": "https://www.usa.gov/states/arkansas",
+    "file": "data/state-governments/AR.html"
   },
   {
     "state": "AS",
-    "url": "/states/american-samoa"
+    "url": "https://www.usa.gov/states/american-samoa",
+    "file": "data/state-governments/AS.html"
   },
   {
     "state": "AZ",
-    "url": "/states/arizona"
+    "url": "https://www.usa.gov/states/arizona",
+    "file": "data/state-governments/AZ.html"
   },
   {
     "state": "CA",
-    "url": "/states/california"
+    "url": "https://www.usa.gov/states/california",
+    "file": "data/state-governments/CA.html"
   },
   {
     "state": "CO",
-    "url": "/states/colorado"
+    "url": "https://www.usa.gov/states/colorado",
+    "file": "data/state-governments/CO.html"
   },
   {
     "state": "CT",
-    "url": "/states/connecticut"
+    "url": "https://www.usa.gov/states/connecticut",
+    "file": "data/state-governments/CT.html"
   },
   {
     "state": "DC",
-    "url": "/states/district-of-columbia"
+    "url": "https://www.usa.gov/states/district-of-columbia",
+    "file": "data/state-governments/DC.html"
   },
   {
     "state": "DE",
-    "url": "/states/delaware"
+    "url": "https://www.usa.gov/states/delaware",
+    "file": "data/state-governments/DE.html"
   },
   {
     "state": "FL",
-    "url": "/states/florida"
+    "url": "https://www.usa.gov/states/florida",
+    "file": "data/state-governments/FL.html"
   },
   {
     "state": "GA",
-    "url": "/states/georgia"
+    "url": "https://www.usa.gov/states/georgia",
+    "file": "data/state-governments/GA.html"
   },
   {
     "state": "GU",
-    "url": "/states/guam"
+    "url": "https://www.usa.gov/states/guam",
+    "file": "data/state-governments/GU.html"
   },
   {
     "state": "HI",
-    "url": "/states/hawaii"
+    "url": "https://www.usa.gov/states/hawaii",
+    "file": "data/state-governments/HI.html"
   },
   {
     "state": "IA",
-    "url": "/states/iowa"
+    "url": "https://www.usa.gov/states/iowa",
+    "file": "data/state-governments/IA.html"
   },
   {
     "state": "ID",
-    "url": "/states/idaho"
+    "url": "https://www.usa.gov/states/idaho",
+    "file": "data/state-governments/ID.html"
   },
   {
     "state": "IL",
-    "url": "/states/illinois"
+    "url": "https://www.usa.gov/states/illinois",
+    "file": "data/state-governments/IL.html"
   },
   {
     "state": "IN",
-    "url": "/states/indiana"
+    "url": "https://www.usa.gov/states/indiana",
+    "file": "data/state-governments/IN.html"
   },
   {
     "state": "KS",
-    "url": "/states/kansas"
+    "url": "https://www.usa.gov/states/kansas",
+    "file": "data/state-governments/KS.html"
   },
   {
     "state": "KY",
-    "url": "/states/kentucky"
+    "url": "https://www.usa.gov/states/kentucky",
+    "file": "data/state-governments/KY.html"
   },
   {
     "state": "LA",
-    "url": "/states/louisiana"
+    "url": "https://www.usa.gov/states/louisiana",
+    "file": "data/state-governments/LA.html"
   },
   {
     "state": "MA",
-    "url": "/states/massachusetts"
+    "url": "https://www.usa.gov/states/massachusetts",
+    "file": "data/state-governments/MA.html"
   },
   {
     "state": "MD",
-    "url": "/states/maryland"
+    "url": "https://www.usa.gov/states/maryland",
+    "file": "data/state-governments/MD.html"
   },
   {
     "state": "ME",
-    "url": "/states/maine"
+    "url": "https://www.usa.gov/states/maine",
+    "file": "data/state-governments/ME.html"
   },
   {
     "state": "MI",
-    "url": "/states/michigan"
+    "url": "https://www.usa.gov/states/michigan",
+    "file": "data/state-governments/MI.html"
   },
   {
     "state": "MN",
-    "url": "/states/minnesota"
+    "url": "https://www.usa.gov/states/minnesota",
+    "file": "data/state-governments/MN.html"
   },
   {
     "state": "MO",
-    "url": "/states/missouri"
+    "url": "https://www.usa.gov/states/missouri",
+    "file": "data/state-governments/MO.html"
   },
   {
     "state": "MP",
-    "url": "/states/northern-mariana-islands"
+    "url": "https://www.usa.gov/states/northern-mariana-islands",
+    "file": "data/state-governments/MP.html"
   },
   {
     "state": "MS",
-    "url": "/states/mississippi"
+    "url": "https://www.usa.gov/states/mississippi",
+    "file": "data/state-governments/MS.html"
   },
   {
     "state": "MT",
-    "url": "/states/montana"
+    "url": "https://www.usa.gov/states/montana",
+    "file": "data/state-governments/MT.html"
   },
   {
     "state": "NC",
-    "url": "/states/north-carolina"
+    "url": "https://www.usa.gov/states/north-carolina",
+    "file": "data/state-governments/NC.html"
   },
   {
     "state": "ND",
-    "url": "/states/north-dakota"
+    "url": "https://www.usa.gov/states/north-dakota",
+    "file": "data/state-governments/ND.html"
   },
   {
     "state": "NE",
-    "url": "/states/nebraska"
+    "url": "https://www.usa.gov/states/nebraska",
+    "file": "data/state-governments/NE.html"
   },
   {
     "state": "NH",
-    "url": "/states/new-hampshire"
+    "url": "https://www.usa.gov/states/new-hampshire",
+    "file": "data/state-governments/NH.html"
   },
   {
     "state": "NJ",
-    "url": "/states/new-jersey"
+    "url": "https://www.usa.gov/states/new-jersey",
+    "file": "data/state-governments/NJ.html"
   },
   {
     "state": "NM",
-    "url": "/states/new-mexico"
+    "url": "https://www.usa.gov/states/new-mexico",
+    "file": "data/state-governments/NM.html"
   },
   {
     "state": "NV",
-    "url": "/states/nevada"
+    "url": "https://www.usa.gov/states/nevada",
+    "file": "data/state-governments/NV.html"
   },
   {
     "state": "NY",
-    "url": "/states/new-york"
+    "url": "https://www.usa.gov/states/new-york",
+    "file": "data/state-governments/NY.html"
   },
   {
     "state": "OH",
-    "url": "/states/ohio"
+    "url": "https://www.usa.gov/states/ohio",
+    "file": "data/state-governments/OH.html"
   },
   {
     "state": "OK",
-    "url": "/states/oklahoma"
+    "url": "https://www.usa.gov/states/oklahoma",
+    "file": "data/state-governments/OK.html"
   },
   {
     "state": "OR",
-    "url": "/states/oregon"
+    "url": "https://www.usa.gov/states/oregon",
+    "file": "data/state-governments/OR.html"
   },
   {
     "state": "PA",
-    "url": "/states/pennsylvania"
+    "url": "https://www.usa.gov/states/pennsylvania",
+    "file": "data/state-governments/PA.html"
   },
   {
     "state": "PR",
-    "url": "/states/puerto-rico"
+    "url": "https://www.usa.gov/states/puerto-rico",
+    "file": "data/state-governments/PR.html"
   },
   {
     "state": "RI",
-    "url": "/states/rhode-island"
+    "url": "https://www.usa.gov/states/rhode-island",
+    "file": "data/state-governments/RI.html"
   },
   {
     "state": "SC",
-    "url": "/states/south-carolina"
+    "url": "https://www.usa.gov/states/south-carolina",
+    "file": "data/state-governments/SC.html"
   },
   {
     "state": "SD",
-    "url": "/states/south-dakota"
+    "url": "https://www.usa.gov/states/south-dakota",
+    "file": "data/state-governments/SD.html"
   },
   {
     "state": "TN",
-    "url": "/states/tennessee"
+    "url": "https://www.usa.gov/states/tennessee",
+    "file": "data/state-governments/TN.html"
   },
   {
     "state": "TX",
-    "url": "/states/texas"
+    "url": "https://www.usa.gov/states/texas",
+    "file": "data/state-governments/TX.html"
   },
   {
     "state": "UT",
-    "url": "/states/utah"
+    "url": "https://www.usa.gov/states/utah",
+    "file": "data/state-governments/UT.html"
   },
   {
     "state": "VA",
-    "url": "/states/virginia"
+    "url": "https://www.usa.gov/states/virginia",
+    "file": "data/state-governments/VA.html"
   },
   {
     "state": "VI",
-    "url": "/states/u-s-virgin-islands"
+    "url": "https://www.usa.gov/states/u-s-virgin-islands",
+    "file": "data/state-governments/VI.html"
   },
   {
     "state": "VT",
-    "url": "/states/vermont"
+    "url": "https://www.usa.gov/states/vermont",
+    "file": "data/state-governments/VT.html"
   },
   {
     "state": "WA",
-    "url": "/states/washington"
+    "url": "https://www.usa.gov/states/washington",
+    "file": "data/state-governments/WA.html"
   },
   {
     "state": "WI",
-    "url": "/states/wisconsin"
+    "url": "https://www.usa.gov/states/wisconsin",
+    "file": "data/state-governments/WI.html"
   },
   {
     "state": "WV",
-    "url": "/states/west-virginia"
+    "url": "https://www.usa.gov/states/west-virginia",
+    "file": "data/state-governments/WV.html"
   },
   {
     "state": "WY",
-    "url": "/states/wyoming"
+    "url": "https://www.usa.gov/states/wyoming",
+    "file": "data/state-governments/WY.html"
   }
 ]
