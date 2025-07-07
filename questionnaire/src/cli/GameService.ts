@@ -20,8 +20,8 @@ export type GameState = {
 const initializeGame = (
   questionDataService: QuestionDataService,
   userState: StateAbbreviation
-): Effect.Effect<GameState, never, never> => {
-  return Effect.gen(function* () {
+): Effect.Effect<GameState, never, never> =>
+  Effect.gen(function* () {
     const questions = yield* questionDataService.loadQuestions({
       questions: questionsWithDistractors,
       userState
@@ -33,7 +33,6 @@ const initializeGame = (
       currentQuestion: Option.none()
     }
   })
-}
 
 /**
  * Record a user's answer to a question
@@ -74,8 +73,8 @@ const calculateOverallStats = (answers: Answers) => {
 /**
  * Display a question with its answer choices
  */
-const displayQuestion = (question: Question): Effect.Effect<void, never, never> => {
-  return Effect.gen(function* () {
+const displayQuestion = (question: Question): Effect.Effect<void, never, never> =>
+  Effect.gen(function* () {
     yield* Console.log(`\n✏️ Question ${question.questionNumber}:`)
     yield* Console.log(question.question)
     yield* Console.log('')
@@ -87,7 +86,6 @@ const displayQuestion = (question: Question): Effect.Effect<void, never, never> 
 
     yield* Console.log('')
   })
-}
 
 /**
  * Get the next question to ask based on weighted selection
@@ -96,8 +94,8 @@ const getNextQuestion = (
   state: GameState,
   questionDataService: QuestionDataService,
   questionSelector: QuestionSelector
-): Effect.Effect<Option.Option<Question>, never, never> => {
-  return Effect.gen(function* () {
+): Effect.Effect<Option.Option<Question>, never, never> =>
+  Effect.gen(function* () {
     const availableNumbers = questionDataService.getAvailableQuestionNumbers(state.questions)
     const selectedNumber = yield* questionSelector.selectQuestion(availableNumbers, state.answers)
 
@@ -107,13 +105,12 @@ const getNextQuestion = (
         questionDataService.findQuestionByNumber(questionNumber, state.questions)
     })
   })
-}
 
 /**
  * Display game statistics
  */
-const displayStats = (state: GameState): Effect.Effect<void, never, never> => {
-  return Effect.gen(function* () {
+const displayStats = (state: GameState): Effect.Effect<void, never, never> =>
+  Effect.gen(function* () {
     const totalQuestions = state.questions.length
     const answeredQuestions = Object.keys(state.answers).length
     const totalAnswers = Object.values(state.answers).reduce(
@@ -135,7 +132,6 @@ Correct answers: ${correctAnswers}
 Accuracy: ${accuracy.toFixed(1)}%
 `)
   })
-}
 
 /**
  * Process a user's answer input
@@ -144,8 +140,8 @@ const processAnswer = (
   userInput: string,
   question: Question,
   state: GameState
-): Effect.Effect<GameState, never, never> => {
-  return Effect.gen(function* () {
+): Effect.Effect<GameState, never, never> =>
+  Effect.gen(function* () {
     const answerIndex = userInput.toUpperCase().charCodeAt(0) - 65 // A=0, B=1, etc.
 
     if (answerIndex < 0 || answerIndex >= question.answers.length) {
@@ -175,7 +171,6 @@ const processAnswer = (
       currentQuestion: Option.none()
     }
   })
-}
 
 /**
  * Service for managing game flow and user interactions

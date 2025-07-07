@@ -161,12 +161,10 @@ export class QuestionDataService extends Effect.Service<QuestionDataService>()(
   'QuestionDataService',
   {
     effect: Effect.succeed({
-      loadQuestions: (dataSource: QuestionDataSource) => loadQuestions(dataSource),
-      getAvailableQuestionNumbers: (questions: ReadonlyArray<Question>) =>
-        getAvailableQuestionNumbers(questions),
-      findQuestionByNumber: (questionNumber: QuestionNumber, questions: ReadonlyArray<Question>) =>
-        findQuestionByNumber(questionNumber, questions),
-      getQuestionCount: (questions: ReadonlyArray<Question>) => getQuestionCount(questions)
+      loadQuestions,
+      getAvailableQuestionNumbers,
+      findQuestionByNumber,
+      getQuestionCount
     })
   }
 ) {}
