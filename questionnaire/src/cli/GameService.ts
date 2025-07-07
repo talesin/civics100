@@ -53,6 +53,25 @@ const recordAnswer = (
 }
 
 /**
+ * Calculate overall game statistics across all questions
+ */
+const calculateOverallStats = (answers: Answers) => {
+  const allAnswers = Object.values(answers).flat()
+  const totalAnswered = allAnswers.length
+  const correctAnswers = allAnswers.filter((answer) => answer.correct).length
+  const questionsAttempted = Object.keys(answers).length
+  const accuracy = totalAnswered > 0 ? correctAnswers / totalAnswered : 0
+
+  return {
+    questionsAttempted,
+    totalAnswered,
+    correctAnswers,
+    incorrectAnswers: totalAnswered - correctAnswers,
+    accuracy
+  }
+}
+
+/**
  * Display a question with its answer choices
  */
 const displayQuestion = (question: Question): Effect.Effect<void, never, never> => {
@@ -124,8 +143,7 @@ Accuracy: ${accuracy.toFixed(1)}%
 const processAnswer = (
   userInput: string,
   question: Question,
-  state: GameState,
-  questionSelector: QuestionSelector
+  state: GameState
 ): Effect.Effect<GameState, never, never> => {
   return Effect.gen(function* () {
     const answerIndex = userInput.toUpperCase().charCodeAt(0) - 65 // A=0, B=1, etc.
@@ -146,9 +164,9 @@ const processAnswer = (
 
     const newAnswers = recordAnswer(question.questionNumber, isCorrect, state.answers)
 
-    const stats = questionSelector.getQuestionStats(question.questionNumber, newAnswers)
+    const overallStats = calculateOverallStats(newAnswers)
     yield* Console.log(
-      `Question stats - Answered: ${stats.totalAnswered}, Accuracy: ${(stats.accuracy * 100).toFixed(1)}%`
+      `Overall progress - Questions: ${overallStats.questionsAttempted}, Answers: ${overallStats.totalAnswered}, Accuracy: ${(overallStats.accuracy * 100).toFixed(1)}%`
     )
 
     return {
@@ -175,7 +193,7 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
       displayQuestion: (question: Question) => displayQuestion(question),
       displayStats: (state: GameState) => displayStats(state),
       processAnswer: (userInput: string, question: Question, state: GameState) =>
-        processAnswer(userInput, question, state, questionSelector)
+        processAnswer(userInput, question, state)
     }
   }),
   dependencies: [QuestionDataService.Default, QuestionSelector.Default]
