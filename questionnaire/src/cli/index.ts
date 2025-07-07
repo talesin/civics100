@@ -10,7 +10,7 @@ import { createInterface } from 'readline'
 /**
  * Prompt for user input using readline
  */
-const promptForInput = (prompt: string): Effect.Effect<string, never, never> =>
+const promptForInput = (prompt: string): Effect.Effect<string> =>
   Effect.async<string>((resume) => {
     const rl = createInterface({
       input: process.stdin,
@@ -26,7 +26,7 @@ const promptForInput = (prompt: string): Effect.Effect<string, never, never> =>
 /**
  * Main game loop that handles user interaction
  */
-const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<void, never, never> =>
+const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<void> =>
   Effect.gen(function* () {
     if (Option.isNone(state.currentQuestion)) {
       const nextQuestionWithWeight = yield* gameService.getNextQuestion(state)
