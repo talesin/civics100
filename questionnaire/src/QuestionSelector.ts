@@ -12,11 +12,13 @@
  * ## Algorithm Overview
  *
  * The selection process uses a weighted random approach where each question receives a weight
- * based on the user's answer history:
+ * based on the user's recent answer history (last 5 attempts):
  *
  * - **Unanswered Questions** (Weight: 10): Maximum priority for comprehensive coverage
- * - **Previously Incorrect** (Weight: 5): Medium priority for remediation and practice
- * - **Previously Correct** (Weight: 1): Low priority but still included for retention
+ * - **Answered Questions** (Weight: 5-1): Interpolated between incorrect(5) and correct(1) weights
+ *   - 0% recent success = weight 5 (maximum remediation priority)
+ *   - 100% recent success = weight 1 (minimum retention priority)
+ *   - Partial success rates get proportionally interpolated weights (e.g., 50% = weight 3)
  *
  * ## Educational Benefits
  *
@@ -80,15 +82,17 @@ const DEFAULT_WEIGHTS: SelectionWeights = {
  *    - Prevents knowledge gaps from skipped content
  *    - Gets immediate priority in the learning sequence
  *
- * 2. **Most Recent Performance**: Uses only the last answer to determine current status
- *    - Reflects user's current understanding level
- *    - Allows questions to transition between difficulty categories
- *    - Avoids penalizing users indefinitely for past mistakes
+ * 2. **Recent Performance Trend**: Uses average of last 5 answers for continuous weight calculation
+ *    - More stable than single-answer decisions, reduces noise from lucky/unlucky attempts
+ *    - Captures learning progress trends over multiple attempts
+ *    - Calculates interpolated weight based on exact success rate percentage
+ *    - Allows gradual transitions between difficulty categories based on performance
  *
- * 3. **Binary Classification**: Questions are either "mastered" (correct) or "struggling" (incorrect)
- *    - Mastered: Lower weight for occasional retention review
- *    - Struggling: Higher weight for focused remediation practice
- *    - Simple categorization prevents over-optimization complexity
+ * 3. **Continuous Weight Interpolation**: Weight varies smoothly between correct and incorrect bounds
+ *    - 0% success rate = full incorrect weight (maximum remediation priority)
+ *    - 100% success rate = full correct weight (minimum retention priority)
+ *    - Partial success rates get proportionally interpolated weights
+ *    - Provides more nuanced selection probability than binary classification
  *
  * **Adaptive Learning Benefits:**
  * - Questions become easier to encounter as user improves
@@ -113,10 +117,19 @@ const calculateQuestionWeight = (
     return weights.unanswered
   }
 
-  // Use most recent answer to determine current mastery level
-  // This allows questions to move between categories as user improves
-  const lastAnswer = history[history.length - 1]
-  return lastAnswer?.correct === true ? weights.correct : weights.incorrect
+  // Use average of last 5 answers to calculate interpolated weight
+  // This provides more nuanced weighting than binary classification
+  const recentAnswers = history.slice(-5)
+  const correctAnswers = recentAnswers.filter((answer) => answer.correct).length
+  const averageCorrectness = correctAnswers / recentAnswers.length
+
+  // Interpolate between incorrect and correct weights based on success rate
+  // 0% success = weights.incorrect, 100% success = weights.correct
+  // Linear interpolation: weight = incorrect + (correct - incorrect) * success_rate
+  const interpolatedWeight =
+    weights.incorrect + (weights.correct - weights.incorrect) * averageCorrectness
+
+  return interpolatedWeight
 }
 
 /**
@@ -199,21 +212,21 @@ const createWeightedQuestions = (
  */
 const selectWeightedRandom = (
   weightedQuestions: ReadonlyArray<WeightedQuestion>
-): Effect.Effect<Option.Option<QuestionNumber>, never, never> => {
-  // Handle empty question set - no selections possible
-  if (weightedQuestions.length === 0) {
-    return Effect.succeed(Option.none())
-  }
+): Effect.Effect<Option.Option<QuestionNumber>, never, never> =>
+  Effect.gen(function* () {
+    // Handle empty question set - no selections possible
+    if (weightedQuestions.length === 0) {
+      return Option.none()
+    }
 
-  // Calculate total weight for roulette wheel size
-  const totalWeight = weightedQuestions.reduce((sum, wq) => sum + wq.weight, 0)
+    // Calculate total weight for roulette wheel size
+    const totalWeight = weightedQuestions.reduce((sum, wq) => sum + wq.weight, 0)
 
-  // Handle case where all questions have zero weight
-  if (totalWeight === 0) {
-    return Effect.succeed(Option.none())
-  }
+    // Handle case where all questions have zero weight
+    if (totalWeight === 0) {
+      return Option.none()
+    }
 
-  return Effect.gen(function* () {
     // Generate random value for roulette wheel spin (1 to totalWeight inclusive)
     const randomValue = yield* Random.nextIntBetween(1, totalWeight + 1)
 
@@ -231,7 +244,6 @@ const selectWeightedRandom = (
     // Should never reach here with valid inputs, but included for safety
     return Option.none()
   })
-}
 
 /**
  * Main orchestration function for adaptive question selection.
