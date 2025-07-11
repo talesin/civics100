@@ -32,8 +32,6 @@ Wrap all non-local or unsafe code in Effect.try or Effect.tryPromise.
 Use Effect.try or Effect.tryPromise instead of try/catch
 Keep Effect.try and Effect.tryPromise to the specific line of code that may throw an error
 Avoid external state libraries (e.g., no Redux or Zustand).
-When using Effect, refer to local source code in: /Users/jeremy/Documents/Code/\_sources/effect-ts/effect/packages/effect/src
-When using Effect, refer to example usage in: /Users/jeremy/Documents/Code/\_sources/effect-ts/website/content/src/content/docs/docs
 Use ?? instead of || when checking for null or undefined.
 Do not use implicit boolean expressions.
 Do not fix linting errors; let me address them first.
