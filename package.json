@@ -4,7 +4,8 @@
   "workspaces": [
     "civics2json",
     "distractions",
-    "questionnaire"
+    "questionnaire",
+    "website"
   ],
   "scripts": {
     "test": "npm run test --workspaces",

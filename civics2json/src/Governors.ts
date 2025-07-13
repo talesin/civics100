@@ -182,6 +182,17 @@ export const TestGovernorsClientLayer = (fn?: {
           Stream.fromIterable<{ state: StateAbbreviation; url: string; html: string }>([])),
       parseStateLinks: fn?.parseStateLinks ?? ((_html) => Effect.succeed([])),
       parseGovernorInfo:
-        fn?.parseGovernorInfo ?? ((_html, _state) => Effect.succeed({} as Governor))
+        fn?.parseGovernorInfo ?? ((_html, state) => Effect.succeed({
+          state,
+          name: 'Test Governor',
+          governorUrl: 'https://example.com/governor',
+          address: {
+            street: '123 Capitol St',
+            city: 'Capitol City',
+            state: 'Test State',
+            zip: '12345'
+          },
+          stateGovernmentWebsite: 'https://example.com/state'
+        }))
     })
   )
