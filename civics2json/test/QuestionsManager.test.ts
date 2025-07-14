@@ -126,7 +126,8 @@ describe('constructQuestions', () => {
   const defaultFileSystemLayer = FileSystem.layerNoop({
     writeFileString: () => Effect.void,
     readFileString: () => Effect.succeed(''),
-    exists: () => Effect.succeed(false)
+    exists: () => Effect.succeed(false),
+    makeDirectory: () => Effect.void
   })
   const defaultGovernorsClientLayer = TestGovernorsClientLayer({
     fetchGovernmentsIndex: () => Effect.succeed('')
