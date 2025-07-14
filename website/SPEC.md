@@ -102,6 +102,15 @@ The US Civics questionnaire will now follow a constrained session model. Each se
 ### As a user, I want to be able to select a US state so that I can take the quiz with the relevant questions.
 - Given I am on the questionnaire page, when I select a US state, then the US state should be set to the selected state.
 
+### As a user, I want the randomness of the questions to change based on my answers so that I can learn from my mistakes.
+- Given I am on the questionnaire page, when I answer a question, then the randomness of the questions should change based on my answers.
+- Given a particular question, when I answer incorrectly, then this question should be more likely to appear again in the next session.
+- Given a particular question, when I answer correctly, then this question should be less likely to appear again in the next session.
+
+### As a user, I want each session to hold a unique set of questions so that I can learn from my mistakes.
+- Given I am on the questionnaire page, when I complete a session, then the questions should be shuffled and the randomness of the questions should change based on my answers.
+
+
 ## Test Scenarios (Acceptance Criteria)
 
 | Scenario         | Given                 | When                               | Then                                   |

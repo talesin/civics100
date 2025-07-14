@@ -14,12 +14,14 @@ const generateSessionId = (): string => {
 
 const createNewSession = (
   settings: GameSettings,
+  existingPairedAnswers?: import("questionnaire").PairedAnswers,
 ): Effect.Effect<GameSession, never, QuestionDataService> => {
   return Effect.gen(function* () {
     const questionDataService = yield* QuestionDataService;
     const questions = yield* questionDataService.generateGameQuestions(
       settings.maxQuestions,
       settings.userState,
+      existingPairedAnswers ?? {},
     );
 
     return {
@@ -31,6 +33,7 @@ const createNewSession = (
       isCompleted: false,
       isEarlyWin: false,
       startedAt: new Date(),
+      pairedAnswers: existingPairedAnswers ?? {},
     };
   });
 };
@@ -108,6 +111,7 @@ export class SessionService extends Effect.Service<SessionService>()(
 export const TestSessionServiceLayer = (fn?: {
   createNewSession?: (
     settings: GameSettings,
+    existingPairedAnswers?: import("questionnaire").PairedAnswers,
   ) => Effect.Effect<GameSession, never, never>;
   processAnswer?: (
     session: GameSession,
@@ -138,6 +142,7 @@ export const TestSessionServiceLayer = (fn?: {
             isCompleted: false,
             isEarlyWin: false,
             startedAt: new Date(),
+            pairedAnswers: {},
           })),
       processAnswer: fn?.processAnswer ?? ((session) => session),
       calculateResult:

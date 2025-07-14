@@ -8,11 +8,11 @@ import type {
   QuestionDataSource,
 } from "questionnaire";
 import { civicsQuestionsWithDistractors } from "questionnaire/data";
-import { loadQuestions } from "questionnaire";
+import { loadQuestions, getAvailablePairedQuestionNumbers, findQuestionByPairedNumber } from "questionnaire";
 
 /**
  * Service for managing adaptive learning with answer tracking and weighted question selection
- * Integrates the sophisticated QuestionSelector from the questionnaire package
+ * This is now a thin wrapper around the questionnaire package's comprehensive QuestionSelector
  */
 
 /**
@@ -42,9 +42,7 @@ const getNextQuestion = (
     const allQuestions = yield* loadAllQuestions(userState);
 
     // Get all available paired question numbers
-    const availablePairedQuestions = allQuestions.map(
-      (q) => q.pairedQuestionNumber,
-    );
+    const availablePairedQuestions = getAvailablePairedQuestionNumbers(allQuestions);
 
     // Use QuestionSelector to get the next question with adaptive weighting
     const selectedPairedQuestionNumber =
@@ -55,36 +53,33 @@ const getNextQuestion = (
 
     // Find the actual question object
     return Option.flatMap(selectedPairedQuestionNumber, (pairedQNum) =>
-      Option.fromNullable(
-        allQuestions.find((q) => q.pairedQuestionNumber === pairedQNum),
-      ),
+      findQuestionByPairedNumber(pairedQNum, allQuestions)
     );
   });
 };
 
 /**
  * Record an answer for adaptive learning
- * Updates the paired answers history for future question selection
+ * Delegates to QuestionSelector's recordPairedAnswer function
  */
 const recordAnswer = (
   pairedQuestionNumber: PairedQuestionNumber,
   isCorrect: boolean,
   pairedAnswers: PairedAnswers,
-): PairedAnswers => {
-  const currentHistory = pairedAnswers[pairedQuestionNumber] ?? [];
-  const newAnswer = {
-    ts: new Date(),
-    correct: isCorrect,
-  };
-
-  return {
-    ...pairedAnswers,
-    [pairedQuestionNumber]: [...currentHistory, newAnswer],
-  };
+): Effect.Effect<PairedAnswers, never, QuestionSelector> => {
+  return Effect.gen(function* () {
+    const questionSelector = yield* QuestionSelector;
+    return questionSelector.recordPairedAnswer(
+      pairedQuestionNumber,
+      isCorrect,
+      pairedAnswers,
+    );
+  });
 };
 
 /**
  * Get statistics for a specific paired question
+ * Delegates to QuestionSelector's getPairedQuestionStats function
  */
 const getQuestionStats = (
   pairedQuestionNumber: PairedQuestionNumber,
@@ -110,44 +105,24 @@ const getQuestionStats = (
 
 /**
  * Get overall learning progress statistics
+ * Delegates to QuestionSelector's getLearningProgress function
  */
 const getLearningProgress = (
   pairedAnswers: PairedAnswers,
-): {
-  totalQuestionsAttempted: number;
-  totalAnswers: number;
-  overallAccuracy: number;
-  masteredQuestions: number;
-} => {
-  const pairedQuestionNumbers = Object.keys(
-    pairedAnswers,
-  ) as PairedQuestionNumber[];
-
-  let totalAnswers = 0;
-  let correctAnswers = 0;
-  let masteredQuestions = 0;
-
-  for (const pairedQuestionNumber of pairedQuestionNumbers) {
-    const history = pairedAnswers[pairedQuestionNumber] ?? [];
-    totalAnswers += history.length;
-    correctAnswers += history.filter((answer) => answer.correct).length;
-
-    // Consider a question "mastered" if last 3 answers were correct
-    const recentAnswers = history.slice(-3);
-    if (
-      recentAnswers.length >= 3 &&
-      recentAnswers.every((answer) => answer.correct)
-    ) {
-      masteredQuestions++;
-    }
-  }
-
-  return {
-    totalQuestionsAttempted: pairedQuestionNumbers.length,
-    totalAnswers,
-    overallAccuracy: totalAnswers > 0 ? correctAnswers / totalAnswers : 0,
-    masteredQuestions,
-  };
+): Effect.Effect<
+  {
+    totalQuestionsAttempted: number;
+    totalAnswers: number;
+    overallAccuracy: number;
+    masteredQuestions: number;
+  },
+  never,
+  QuestionSelector
+> => {
+  return Effect.gen(function* () {
+    const questionSelector = yield* QuestionSelector;
+    return questionSelector.getLearningProgress(pairedAnswers);
+  });
 };
 
 export class AdaptiveLearningService extends Effect.Service<AdaptiveLearningService>()(
@@ -175,7 +150,7 @@ export const TestAdaptiveLearningServiceLayer = (fn?: {
     pairedQuestionNumber: PairedQuestionNumber,
     isCorrect: boolean,
     pairedAnswers: PairedAnswers,
-  ) => PairedAnswers;
+  ) => Effect.Effect<PairedAnswers, never, never>;
   getQuestionStats?: (
     pairedQuestionNumber: PairedQuestionNumber,
     pairedAnswers: PairedAnswers,
@@ -189,12 +164,16 @@ export const TestAdaptiveLearningServiceLayer = (fn?: {
     never,
     never
   >;
-  getLearningProgress?: (pairedAnswers: PairedAnswers) => {
-    totalQuestionsAttempted: number;
-    totalAnswers: number;
-    overallAccuracy: number;
-    masteredQuestions: number;
-  };
+  getLearningProgress?: (pairedAnswers: PairedAnswers) => Effect.Effect<
+    {
+      totalQuestionsAttempted: number;
+      totalAnswers: number;
+      overallAccuracy: number;
+      masteredQuestions: number;
+    },
+    never,
+    never
+  >;
 }) =>
   Layer.succeed(
     AdaptiveLearningService,
@@ -203,7 +182,7 @@ export const TestAdaptiveLearningServiceLayer = (fn?: {
       loadAllQuestions: fn?.loadAllQuestions ?? (() => Effect.succeed([])),
       getNextQuestion:
         fn?.getNextQuestion ?? (() => Effect.succeed(Option.none())),
-      recordAnswer: fn?.recordAnswer ?? ((_, __, answers) => answers),
+      recordAnswer: fn?.recordAnswer ?? (() => Effect.succeed({})),
       getQuestionStats:
         fn?.getQuestionStats ??
         (() =>
@@ -215,7 +194,7 @@ export const TestAdaptiveLearningServiceLayer = (fn?: {
           })),
       getLearningProgress:
         fn?.getLearningProgress ??
-        (() => ({
+        (() => Effect.succeed({
           totalQuestionsAttempted: 0,
           totalAnswers: 0,
           overallAccuracy: 0,

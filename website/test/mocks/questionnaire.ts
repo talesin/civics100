@@ -1,9 +1,53 @@
 // Mock questionnaire main module for testing
 import { Effect } from "effect";
-import type { QuestionDataSource, Question } from "./questionnaire-types";
+import type { QuestionDataSource, Question, PairedQuestionNumber } from "./questionnaire-types";
 
 export * from "./questionnaire-data";
 export * from "./questionnaire-types";
+
+// Mock utility functions
+export const getAvailablePairedQuestionNumbers = (questions: Question[]): PairedQuestionNumber[] => {
+  return questions.map(q => q.pairedQuestionNumber);
+};
+
+export const findQuestionByPairedNumber = (
+  pairedQuestionNumber: PairedQuestionNumber,
+  questions: Question[]
+): any => {
+  const found = questions.find(q => q.pairedQuestionNumber === pairedQuestionNumber);
+  return found ? { _tag: "Some", value: found } : { _tag: "None" };
+};
+
+export const getQuestionCount = (questions: Question[]): number => {
+  return questions.length;
+};
+
+// Mock QuestionSelector as Effect service
+class MockQuestionSelector {
+  static of = (service: any) => service;
+  static pipe = () => MockQuestionSelector;
+  static Default = Effect.succeed({
+    selectPairedQuestion: () => Effect.succeed({
+      _tag: "Some",
+      value: "1-0" as PairedQuestionNumber
+    }),
+    getPairedQuestionStats: () => Effect.succeed({
+      totalAnswered: 0,
+      correctAnswers: 0,
+      incorrectAnswers: 0,
+      accuracy: 0
+    }),
+    recordPairedAnswer: (_: any, __: any, answers: any) => answers,
+    getLearningProgress: () => ({
+      totalQuestionsAttempted: 0,
+      totalAnswers: 0,
+      overallAccuracy: 0,
+      masteredQuestions: 0,
+    })
+  });
+}
+
+export const QuestionSelector = MockQuestionSelector;
 
 // Mock loadQuestions function
 export const loadQuestions = (

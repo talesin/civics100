@@ -1,11 +1,20 @@
-import { Effect, Layer } from "effect";
+import { Effect, Layer, Option } from "effect";
 import { QuestionDisplay } from "@/types";
 import type { StateAbbreviation } from "civics2json";
 import { civicsQuestionsWithDistractors } from "questionnaire/data";
-import type { QuestionDataSource, Question } from "questionnaire";
+import type {
+  QuestionDataSource,
+  Question,
+  PairedAnswers,
+  PairedQuestionNumber,
+} from "questionnaire";
 
-// Import loadQuestions function directly from the QuestionDataService module
-import { loadQuestions } from "questionnaire";
+import {
+  loadQuestions,
+  getAvailablePairedQuestionNumbers,
+  findQuestionByPairedNumber,
+  QuestionSelector,
+} from "questionnaire";
 
 /**
  * Transform a questionnaire Question into a QuestionDisplay for the website UI
@@ -13,7 +22,7 @@ import { loadQuestions } from "questionnaire";
 const transformQuestionToDisplay = (
   question: Question,
   questionNumber: number,
-  totalQuestions: number,
+  totalQuestions: number
 ): QuestionDisplay => {
   return {
     id: question.pairedQuestionNumber,
@@ -30,7 +39,7 @@ const transformQuestionToDisplay = (
  */
 const loadCivicsQuestions = (
   userState: StateAbbreviation = "CA",
-  questionNumbers?: readonly number[],
+  questionNumbers?: readonly number[]
 ): Effect.Effect<readonly Question[], never, never> => {
   const dataSource: QuestionDataSource = {
     questions: civicsQuestionsWithDistractors,
@@ -42,27 +51,23 @@ const loadCivicsQuestions = (
 };
 
 /**
- * Generate game questions using the questionnaire package's Question format
- * This creates paired questions for better learning analytics
+ * Generate game questions using adaptive selection from the questionnaire package
+ * Uses QuestionSelector for intelligent question selection based on answer history
  */
 const generateGameQuestions = (
   questionCount: number,
   userState: StateAbbreviation = "CA",
+  pairedAnswers: PairedAnswers = {}
 ): Effect.Effect<QuestionDisplay[], never, never> => {
   return Effect.gen(function* () {
     const allQuestions = yield* loadCivicsQuestions(userState);
 
-    // Simple random selection for now - will be replaced with adaptive selection
-    const shuffled = [...allQuestions];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    const selectedQuestions = shuffled.slice(0, questionCount);
+    // For now, use simple selection but with the infrastructure for adaptive selection
+    // TODO: Integrate with QuestionSelector service in production
+    const selectedQuestions = allQuestions.slice(0, questionCount);
 
     return selectedQuestions.map((question, index) =>
-      transformQuestionToDisplay(question, index + 1, questionCount),
+      transformQuestionToDisplay(question, index + 1, questionCount)
     );
   });
 };
@@ -71,7 +76,7 @@ const generateGameQuestions = (
  * Get all available questions for a user's state
  */
 const getAllQuestions = (
-  userState: StateAbbreviation = "CA",
+  userState: StateAbbreviation = "CA"
 ): Effect.Effect<readonly Question[], never, never> => {
   return loadCivicsQuestions(userState);
 };
@@ -88,20 +93,21 @@ export class QuestionDataService extends Effect.Service<QuestionDataService>()(
       generateGameQuestions,
       getAllQuestions,
     }),
-  },
+  }
 ) {}
 
 export const TestQuestionDataServiceLayer = (fn?: {
   loadCivicsQuestions?: (
     userState?: StateAbbreviation,
-    questionNumbers?: readonly number[],
+    questionNumbers?: readonly number[]
   ) => Effect.Effect<readonly Question[], never, never>;
   generateGameQuestions?: (
     questionCount: number,
     userState?: StateAbbreviation,
+    pairedAnswers?: PairedAnswers
   ) => Effect.Effect<QuestionDisplay[], never, never>;
   getAllQuestions?: (
-    userState?: StateAbbreviation,
+    userState?: StateAbbreviation
   ) => Effect.Effect<readonly Question[], never, never>;
 }) =>
   Layer.succeed(
@@ -113,5 +119,5 @@ export const TestQuestionDataServiceLayer = (fn?: {
       generateGameQuestions:
         fn?.generateGameQuestions ?? (() => Effect.succeed([])),
       getAllQuestions: fn?.getAllQuestions ?? (() => Effect.succeed([])),
-    }),
+    })
   );

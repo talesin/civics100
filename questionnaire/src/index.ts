@@ -13,7 +13,14 @@ export { QuestionSelector, TestQuestionSelectorLayer } from './QuestionSelector.
 
 export type { QuestionDataSource } from './QuestionDataService.js'
 
-export { QuestionDataService, TestQuestionDataServiceLayer, loadQuestions } from './QuestionDataService.js'
+export { 
+  QuestionDataService, 
+  TestQuestionDataServiceLayer, 
+  loadQuestions, 
+  getAvailablePairedQuestionNumbers,
+  findQuestionByPairedNumber,
+  getQuestionCount
+} from './QuestionDataService.js'
 
 // Re-export question data for consuming packages
 export { rawCivicsQuestions, civicsQuestionsWithDistractors } from './data/index.js'

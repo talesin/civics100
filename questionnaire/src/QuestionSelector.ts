@@ -416,6 +416,70 @@ const getPairedQuestionStats = (
 }
 
 /**
+ * Record an answer for adaptive learning
+ * Updates the paired answers history for future question selection
+ */
+const recordPairedAnswer = (
+  pairedQuestionNumber: PairedQuestionNumber,
+  isCorrect: boolean,
+  pairedAnswers: PairedAnswers,
+): PairedAnswers => {
+  const currentHistory = pairedAnswers[pairedQuestionNumber] ?? [];
+  const newAnswer = {
+    ts: new Date(),
+    correct: isCorrect,
+  };
+
+  return {
+    ...pairedAnswers,
+    [pairedQuestionNumber]: [...currentHistory, newAnswer],
+  };
+};
+
+/**
+ * Get overall learning progress statistics
+ * Includes determination of "mastered" questions (3 consecutive correct answers)
+ */
+const getLearningProgress = (
+  pairedAnswers: PairedAnswers,
+): {
+  totalQuestionsAttempted: number;
+  totalAnswers: number;
+  overallAccuracy: number;
+  masteredQuestions: number;
+} => {
+  const pairedQuestionNumbers = Object.keys(
+    pairedAnswers,
+  ) as PairedQuestionNumber[];
+
+  let totalAnswers = 0;
+  let correctAnswers = 0;
+  let masteredQuestions = 0;
+
+  for (const pairedQuestionNumber of pairedQuestionNumbers) {
+    const history = pairedAnswers[pairedQuestionNumber] ?? [];
+    totalAnswers += history.length;
+    correctAnswers += history.filter((answer) => answer.correct).length;
+
+    // Consider a question "mastered" if last 3 answers were correct
+    const recentAnswers = history.slice(-3);
+    if (
+      recentAnswers.length >= 3 &&
+      recentAnswers.every((answer) => answer.correct)
+    ) {
+      masteredQuestions++;
+    }
+  }
+
+  return {
+    totalQuestionsAttempted: pairedQuestionNumbers.length,
+    totalAnswers,
+    overallAccuracy: totalAnswers > 0 ? correctAnswers / totalAnswers : 0,
+    masteredQuestions,
+  };
+};
+
+/**
  * Service for question selection and statistics
  * Handles weighted question selection based on answer history
  */
@@ -434,7 +498,14 @@ export class QuestionSelector extends Effect.Service<QuestionSelector>()('Questi
     getQuestionStats: (questionNumber: QuestionNumber, answers: Answers) =>
       getQuestionStats(questionNumber, answers),
     getPairedQuestionStats: (pairedQuestionNumber: PairedQuestionNumber, answers: PairedAnswers) =>
-      getPairedQuestionStats(pairedQuestionNumber, answers)
+      getPairedQuestionStats(pairedQuestionNumber, answers),
+    recordPairedAnswer: (
+      pairedQuestionNumber: PairedQuestionNumber,
+      isCorrect: boolean,
+      pairedAnswers: PairedAnswers,
+    ) => recordPairedAnswer(pairedQuestionNumber, isCorrect, pairedAnswers),
+    getLearningProgress: (pairedAnswers: PairedAnswers) =>
+      getLearningProgress(pairedAnswers)
   })
 }) {}
 
@@ -470,6 +541,17 @@ export const TestQuestionSelectorLayer = (fn?: {
     incorrectAnswers: number
     accuracy: number
   }
+  recordPairedAnswer?: (
+    pairedQuestionNumber: PairedQuestionNumber,
+    isCorrect: boolean,
+    pairedAnswers: PairedAnswers,
+  ) => PairedAnswers
+  getLearningProgress?: (pairedAnswers: PairedAnswers) => {
+    totalQuestionsAttempted: number
+    totalAnswers: number
+    overallAccuracy: number
+    masteredQuestions: number
+  }
 }) =>
   Layer.succeed(
     QuestionSelector,
@@ -482,6 +564,13 @@ export const TestQuestionSelectorLayer = (fn?: {
         (() => ({ totalAnswered: 0, correctAnswers: 0, incorrectAnswers: 0, accuracy: 0 })),
       getPairedQuestionStats:
         fn?.getPairedQuestionStats ??
-        (() => ({ totalAnswered: 0, correctAnswers: 0, incorrectAnswers: 0, accuracy: 0 }))
+        (() => ({ totalAnswered: 0, correctAnswers: 0, incorrectAnswers: 0, accuracy: 0 })),
+      recordPairedAnswer: fn?.recordPairedAnswer ?? ((_, __, answers) => answers),
+      getLearningProgress: fn?.getLearningProgress ?? (() => ({
+        totalQuestionsAttempted: 0,
+        totalAnswers: 0,
+        overallAccuracy: 0,
+        masteredQuestions: 0,
+      }))
     })
   )
