@@ -96,6 +96,12 @@ The US Civics questionnaire will now follow a constrained session model. Each se
 ### As a user, I want to be limited to 10 questions per quiz so that sessions are focused and short.
 - Given I start a new quiz, when the session begins, then I should only be asked up to 10 questions total.
 
+### As a user, I want to the US state to default to my location so that I can take the quiz with the relevant questions.
+- Given I am on the questionnaire page, when I load the page, then the US state should default to my location.
+
+### As a user, I want to be able to select a US state so that I can take the quiz with the relevant questions.
+- Given I am on the questionnaire page, when I select a US state, then the US state should be set to the selected state.
+
 ## Test Scenarios (Acceptance Criteria)
 
 | Scenario         | Given                 | When                               | Then                                   |
