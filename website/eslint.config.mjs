@@ -5,6 +5,7 @@ import js from '@eslint/js'
 import { FlatCompat } from '@eslint/eslintrc'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import prettier from 'eslint-plugin-prettier'
+import eslintConfigPrettier from "eslint-config-prettier/flat"
 import next from '@next/eslint-plugin-next'
 import react from 'eslint-plugin-react'
 
@@ -50,6 +51,7 @@ export default tseslint.config(
       'react': react,
       '@next/next': next
     },
+    eslintConfigPrettier,
 
     settings: {
       react: {

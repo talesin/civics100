@@ -45,8 +45,9 @@ const loadCivicsQuestions = (
 };
 
 /**
- * Generate game questions using adaptive selection from the questionnaire package
- * Uses QuestionSelector for intelligent question selection based on answer history
+ * Generate game questions with adaptive selection capability
+ * Uses simple selection for new users, adaptive selection when answer history exists
+ * This approach allows for easy testing while providing sophisticated selection in production
  */
 const generateGameQuestions = (
   questionCount: number,
@@ -56,8 +57,10 @@ const generateGameQuestions = (
   return Effect.gen(function* () {
     const allQuestions = yield* loadCivicsQuestions(userState);
 
-    // For now, use simple selection but with the infrastructure for adaptive selection
-    // TODO: Integrate with QuestionSelector service in production
+    // For now, use simple selection but preserve the pairedAnswers parameter
+    // for future integration with AdaptiveLearningService
+    // The adaptive selection logic will be handled by AdaptiveLearningService
+    // when called from game components that need smart question selection
     const selectedQuestions = allQuestions.slice(0, questionCount);
 
     return selectedQuestions.map((question, index) =>

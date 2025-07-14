@@ -22,32 +22,26 @@ export const getQuestionCount = (questions: Question[]): number => {
   return questions.length;
 };
 
-// Mock QuestionSelector as Effect service
-class MockQuestionSelector {
-  static of = (service: any) => service;
-  static pipe = () => MockQuestionSelector;
-  static Default = Effect.succeed({
-    selectPairedQuestion: () => Effect.succeed({
-      _tag: "Some",
-      value: "1-0" as PairedQuestionNumber
-    }),
-    getPairedQuestionStats: () => Effect.succeed({
-      totalAnswered: 0,
-      correctAnswers: 0,
-      incorrectAnswers: 0,
-      accuracy: 0
-    }),
-    recordPairedAnswer: (_: any, __: any, answers: any) => answers,
-    getLearningProgress: () => ({
-      totalQuestionsAttempted: 0,
-      totalAnswers: 0,
-      overallAccuracy: 0,
-      masteredQuestions: 0,
-    })
-  });
-}
-
-export const QuestionSelector = MockQuestionSelector;
+// Mock QuestionSelector - not used in current implementation but kept for future use
+export const QuestionSelector = {
+  selectPairedQuestion: () => ({
+    _tag: "Some",
+    value: "1-0" as PairedQuestionNumber
+  }),
+  getPairedQuestionStats: () => ({
+    totalAnswered: 0,
+    correctAnswers: 0,
+    incorrectAnswers: 0,
+    accuracy: 0
+  }),
+  recordPairedAnswer: (_: any, __: any, answers: any) => answers,
+  getLearningProgress: () => ({
+    totalQuestionsAttempted: 0,
+    totalAnswers: 0,
+    overallAccuracy: 0,
+    masteredQuestions: 0,
+  })
+};
 
 // Mock loadQuestions function
 export const loadQuestions = (
