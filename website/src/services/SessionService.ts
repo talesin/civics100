@@ -1,40 +1,50 @@
-import { Effect, Layer } from 'effect'
-import { GameSession, GameResult, UserAnswer, QuestionDisplay, GameSettings } from '@/types'
-import { QuestionDataService } from './QuestionDataService'
+import { Effect, Layer } from "effect";
+import {
+  GameSession,
+  GameResult,
+  UserAnswer,
+  QuestionDisplay,
+  GameSettings,
+} from "@/types";
+import { QuestionDataService } from "./QuestionDataService";
 
 const generateSessionId = (): string => {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-}
+  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+};
 
-const createNewSession = (settings: GameSettings): Effect.Effect<GameSession, never, QuestionDataService> => {
+const createNewSession = (
+  settings: GameSettings,
+): Effect.Effect<GameSession, never, QuestionDataService> => {
   return Effect.gen(function* () {
-    const questionDataService = yield* QuestionDataService
-    const questions = yield* questionDataService.generateGameQuestions(settings.maxQuestions)
-    
+    const questionDataService = yield* QuestionDataService;
+    const questions = yield* questionDataService.generateGameQuestions(
+      settings.maxQuestions,
+    );
+
     return {
       id: generateSessionId(),
-      questions: questions.map(q => q.id),
+      questions: questions.map((q) => q.id),
       currentQuestionIndex: 0,
       correctAnswers: 0,
       totalAnswered: 0,
       isCompleted: false,
       isEarlyWin: false,
-      startedAt: new Date()
-    }
-  })
-}
+      startedAt: new Date(),
+    };
+  });
+};
 
 const processAnswer = (
   session: GameSession,
   answer: UserAnswer,
-  settings: GameSettings
+  settings: GameSettings,
 ): GameSession => {
-  const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0)
-  const newTotalAnswered = session.totalAnswered + 1
-  const newCurrentIndex = session.currentQuestionIndex + 1
+  const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0);
+  const newTotalAnswered = session.totalAnswered + 1;
+  const newCurrentIndex = session.currentQuestionIndex + 1;
 
-  const isEarlyWin = newCorrectAnswers >= settings.winThreshold
-  const isCompleted = isEarlyWin || newTotalAnswered >= settings.maxQuestions
+  const isEarlyWin = newCorrectAnswers >= settings.winThreshold;
+  const isCompleted = isEarlyWin || newTotalAnswered >= settings.maxQuestions;
 
   return {
     ...session,
@@ -43,14 +53,15 @@ const processAnswer = (
     totalAnswered: newTotalAnswered,
     isCompleted,
     isEarlyWin,
-    completedAt: isCompleted ? new Date() : undefined
-  }
-}
+    completedAt: isCompleted ? new Date() : undefined,
+  };
+};
 
 const calculateResult = (session: GameSession): GameResult => {
-  const percentage = session.totalAnswered > 0 
-    ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
-    : 0
+  const percentage =
+    session.totalAnswered > 0
+      ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
+      : 0;
 
   return {
     sessionId: session.id,
@@ -58,25 +69,29 @@ const calculateResult = (session: GameSession): GameResult => {
     correctAnswers: session.correctAnswers,
     percentage,
     isEarlyWin: session.isEarlyWin,
-    completedAt: session.completedAt ?? new Date()
-  }
-}
+    completedAt: session.completedAt ?? new Date(),
+  };
+};
 
 const getCurrentQuestion = (
   session: GameSession,
-  questions: QuestionDisplay[]
+  questions: QuestionDisplay[],
 ): QuestionDisplay | undefined => {
-  return questions.find(q => q.id === session.questions[session.currentQuestionIndex])
-}
+  return questions.find(
+    (q) => q.id === session.questions[session.currentQuestionIndex],
+  );
+};
 
 const canContinue = (session: GameSession, settings: GameSettings): boolean => {
-  return !session.isCompleted && 
-         session.currentQuestionIndex < session.questions.length &&
-         session.correctAnswers < settings.winThreshold
-}
+  return (
+    !session.isCompleted &&
+    session.currentQuestionIndex < session.questions.length &&
+    session.correctAnswers < settings.winThreshold
+  );
+};
 
 export class SessionService extends Effect.Service<SessionService>()(
-  'SessionService',
+  "SessionService",
   {
     effect: Effect.succeed({
       createNewSession,
@@ -84,44 +99,58 @@ export class SessionService extends Effect.Service<SessionService>()(
       calculateResult,
       getCurrentQuestion,
       canContinue,
-      generateSessionId: () => generateSessionId()
-    })
-  }
+      generateSessionId: () => generateSessionId(),
+    }),
+  },
 ) {}
 
 export const TestSessionServiceLayer = (fn?: {
-  createNewSession?: (settings: GameSettings) => Effect.Effect<GameSession, never, never>
-  processAnswer?: (session: GameSession, answer: UserAnswer, settings: GameSettings) => GameSession
-  calculateResult?: (session: GameSession) => GameResult
-  getCurrentQuestion?: (session: GameSession, questions: QuestionDisplay[]) => QuestionDisplay | undefined
-  canContinue?: (session: GameSession, settings: GameSettings) => boolean
-  generateSessionId?: () => string
+  createNewSession?: (
+    settings: GameSettings,
+  ) => Effect.Effect<GameSession, never, never>;
+  processAnswer?: (
+    session: GameSession,
+    answer: UserAnswer,
+    settings: GameSettings,
+  ) => GameSession;
+  calculateResult?: (session: GameSession) => GameResult;
+  getCurrentQuestion?: (
+    session: GameSession,
+    questions: QuestionDisplay[],
+  ) => QuestionDisplay | undefined;
+  canContinue?: (session: GameSession, settings: GameSettings) => boolean;
+  generateSessionId?: () => string;
 }) =>
   Layer.succeed(
     SessionService,
     SessionService.of({
-      _tag: 'SessionService',
-      createNewSession: fn?.createNewSession ?? (() => Effect.succeed({
-        id: 'test-session',
-        questions: [],
-        currentQuestionIndex: 0,
-        correctAnswers: 0,
-        totalAnswered: 0,
-        isCompleted: false,
-        isEarlyWin: false,
-        startedAt: new Date()
-      })),
+      _tag: "SessionService",
+      createNewSession:
+        fn?.createNewSession ??
+        (() =>
+          Effect.succeed({
+            id: "test-session",
+            questions: [],
+            currentQuestionIndex: 0,
+            correctAnswers: 0,
+            totalAnswered: 0,
+            isCompleted: false,
+            isEarlyWin: false,
+            startedAt: new Date(),
+          })),
       processAnswer: fn?.processAnswer ?? ((session) => session),
-      calculateResult: fn?.calculateResult ?? (() => ({
-        sessionId: 'test',
-        totalQuestions: 0,
-        correctAnswers: 0,
-        percentage: 0,
-        isEarlyWin: false,
-        completedAt: new Date()
-      })),
+      calculateResult:
+        fn?.calculateResult ??
+        (() => ({
+          sessionId: "test",
+          totalQuestions: 0,
+          correctAnswers: 0,
+          percentage: 0,
+          isEarlyWin: false,
+          completedAt: new Date(),
+        })),
       getCurrentQuestion: fn?.getCurrentQuestion ?? (() => undefined),
       canContinue: fn?.canContinue ?? (() => false),
-      generateSessionId: fn?.generateSessionId ?? (() => 'test-id')
-    })
-  )
+      generateSessionId: fn?.generateSessionId ?? (() => "test-id"),
+    }),
+  );

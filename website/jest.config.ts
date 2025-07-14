@@ -9,7 +9,11 @@ const config: Config = {
     '**/*.(test|spec).+(ts|tsx|js)'
   ],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest'
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: {
+        jsx: 'react-jsx'
+      }
+    }]
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

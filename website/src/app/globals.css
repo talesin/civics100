@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../styles/design-tokens.css";
 
 :root {
   --background: #ffffff;
@@ -19,10 +20,33 @@
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    sans-serif;
+  line-height: var(--line-height-normal);
+  font-size: var(--font-size-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Improved focus management */
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
 }
 
 /* Custom animations for game transitions */
@@ -132,11 +156,7 @@ body {
 
 /* Improved progress bar */
 .progress-bar {
-  background: linear-gradient(
-    90deg,
-    rgb(59 130 246),
-    rgb(139 92 246)
-  );
+  background: linear-gradient(90deg, rgb(59 130 246), rgb(139 92 246));
   transition: width 0.4s ease-in-out;
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
 }
@@ -149,7 +169,7 @@ body {
 }
 
 .answer-button::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -175,19 +195,21 @@ body {
 
 /* Loading states */
 .loading-dots::after {
-  content: '';
+  content: "";
   animation: loading-dots 1.5s infinite;
 }
 
 @keyframes loading-dots {
-  0%, 20% {
-    content: '.';
+  0%,
+  20% {
+    content: ".";
   }
   40% {
-    content: '..';
+    content: "..";
   }
-  60%, 100% {
-    content: '...';
+  60%,
+  100% {
+    content: "...";
   }
 }
 
@@ -196,4 +218,105 @@ body {
   .progress-bar {
     box-shadow: 0 2px 4px rgba(59, 130, 246, 0.5);
   }
+}
+
+/* Print styles */
+@media print {
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .skip-link,
+  header,
+  footer,
+  nav,
+  button,
+  .keyboard-help,
+  .theme-toggle {
+    display: none !important;
+  }
+
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+
+  h1,
+  h2,
+  h3 {
+    page-break-after: avoid;
+  }
+
+  .card {
+    border: 1px solid #ccc;
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .animate-spin {
+    animation: none;
+  }
+
+  .animate-bounce {
+    animation: none;
+  }
+
+  .animate-pulse {
+    animation: none;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card {
+    border: 2px solid;
+  }
+
+  button {
+    border: 2px solid;
+  }
+
+  .focus-ring:focus-visible {
+    outline: 3px solid;
+    outline-offset: 3px;
+  }
+}
+
+/* Forced colors mode (Windows High Contrast) */
+@media (forced-colors: active) {
+  .btn-primary,
+  .btn-success,
+  .btn-error {
+    border: 2px solid;
+  }
+
+  .progress-bar {
+    border: 1px solid;
+  }
+}
+
+/* Selection styles */
+::selection {
+  background: var(--color-primary-500);
+  color: white;
+}
+
+::-moz-selection {
+  background: var(--color-primary-500);
+  color: white;
 }
