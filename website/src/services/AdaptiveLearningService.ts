@@ -8,7 +8,11 @@ import type {
   QuestionDataSource,
 } from "questionnaire";
 import { civicsQuestionsWithDistractors } from "questionnaire/data";
-import { loadQuestions, getAvailablePairedQuestionNumbers, findQuestionByPairedNumber } from "questionnaire";
+import {
+  loadQuestions,
+  getAvailablePairedQuestionNumbers,
+  findQuestionByPairedNumber,
+} from "questionnaire";
 
 /**
  * Service for managing adaptive learning with answer tracking and weighted question selection
@@ -42,7 +46,8 @@ const getNextQuestion = (
     const allQuestions = yield* loadAllQuestions(userState);
 
     // Get all available paired question numbers
-    const availablePairedQuestions = getAvailablePairedQuestionNumbers(allQuestions);
+    const availablePairedQuestions =
+      getAvailablePairedQuestionNumbers(allQuestions);
 
     // Use QuestionSelector to get the next question with adaptive weighting
     const selectedPairedQuestionNumber =
@@ -53,7 +58,7 @@ const getNextQuestion = (
 
     // Find the actual question object
     return Option.flatMap(selectedPairedQuestionNumber, (pairedQNum) =>
-      findQuestionByPairedNumber(pairedQNum, allQuestions)
+      findQuestionByPairedNumber(pairedQNum, allQuestions),
     );
   });
 };
@@ -194,11 +199,12 @@ export const TestAdaptiveLearningServiceLayer = (fn?: {
           })),
       getLearningProgress:
         fn?.getLearningProgress ??
-        (() => Effect.succeed({
-          totalQuestionsAttempted: 0,
-          totalAnswers: 0,
-          overallAccuracy: 0,
-          masteredQuestions: 0,
-        })),
+        (() =>
+          Effect.succeed({
+            totalQuestionsAttempted: 0,
+            totalAnswers: 0,
+            overallAccuracy: 0,
+            masteredQuestions: 0,
+          })),
     }),
   );

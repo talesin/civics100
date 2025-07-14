@@ -1,4 +1,4 @@
-import { Effect, Layer, Option } from "effect";
+import { Effect, Layer } from "effect";
 import { QuestionDisplay } from "@/types";
 import type { StateAbbreviation } from "civics2json";
 import { civicsQuestionsWithDistractors } from "questionnaire/data";
@@ -6,15 +6,9 @@ import type {
   QuestionDataSource,
   Question,
   PairedAnswers,
-  PairedQuestionNumber,
 } from "questionnaire";
 
-import {
-  loadQuestions,
-  getAvailablePairedQuestionNumbers,
-  findQuestionByPairedNumber,
-  QuestionSelector,
-} from "questionnaire";
+import { loadQuestions } from "questionnaire";
 
 /**
  * Transform a questionnaire Question into a QuestionDisplay for the website UI
@@ -22,7 +16,7 @@ import {
 const transformQuestionToDisplay = (
   question: Question,
   questionNumber: number,
-  totalQuestions: number
+  totalQuestions: number,
 ): QuestionDisplay => {
   return {
     id: question.pairedQuestionNumber,
@@ -39,7 +33,7 @@ const transformQuestionToDisplay = (
  */
 const loadCivicsQuestions = (
   userState: StateAbbreviation = "CA",
-  questionNumbers?: readonly number[]
+  questionNumbers?: readonly number[],
 ): Effect.Effect<readonly Question[], never, never> => {
   const dataSource: QuestionDataSource = {
     questions: civicsQuestionsWithDistractors,
@@ -57,7 +51,7 @@ const loadCivicsQuestions = (
 const generateGameQuestions = (
   questionCount: number,
   userState: StateAbbreviation = "CA",
-  pairedAnswers: PairedAnswers = {}
+  _pairedAnswers: PairedAnswers = {},
 ): Effect.Effect<QuestionDisplay[], never, never> => {
   return Effect.gen(function* () {
     const allQuestions = yield* loadCivicsQuestions(userState);
@@ -67,7 +61,7 @@ const generateGameQuestions = (
     const selectedQuestions = allQuestions.slice(0, questionCount);
 
     return selectedQuestions.map((question, index) =>
-      transformQuestionToDisplay(question, index + 1, questionCount)
+      transformQuestionToDisplay(question, index + 1, questionCount),
     );
   });
 };
@@ -76,7 +70,7 @@ const generateGameQuestions = (
  * Get all available questions for a user's state
  */
 const getAllQuestions = (
-  userState: StateAbbreviation = "CA"
+  userState: StateAbbreviation = "CA",
 ): Effect.Effect<readonly Question[], never, never> => {
   return loadCivicsQuestions(userState);
 };
@@ -93,21 +87,21 @@ export class QuestionDataService extends Effect.Service<QuestionDataService>()(
       generateGameQuestions,
       getAllQuestions,
     }),
-  }
+  },
 ) {}
 
 export const TestQuestionDataServiceLayer = (fn?: {
   loadCivicsQuestions?: (
     userState?: StateAbbreviation,
-    questionNumbers?: readonly number[]
+    questionNumbers?: readonly number[],
   ) => Effect.Effect<readonly Question[], never, never>;
   generateGameQuestions?: (
     questionCount: number,
     userState?: StateAbbreviation,
-    pairedAnswers?: PairedAnswers
+    pairedAnswers?: PairedAnswers,
   ) => Effect.Effect<QuestionDisplay[], never, never>;
   getAllQuestions?: (
-    userState?: StateAbbreviation
+    userState?: StateAbbreviation,
   ) => Effect.Effect<readonly Question[], never, never>;
 }) =>
   Layer.succeed(
@@ -119,5 +113,5 @@ export const TestQuestionDataServiceLayer = (fn?: {
       generateGameQuestions:
         fn?.generateGameQuestions ?? (() => Effect.succeed([])),
       getAllQuestions: fn?.getAllQuestions ?? (() => Effect.succeed([])),
-    })
+    }),
   );
