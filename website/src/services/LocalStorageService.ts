@@ -1,4 +1,4 @@
-import { Effect, Layer, Option } from "effect";
+import { Effect, Layer, Option, Schema } from "effect";
 import { GameResult, GameSettings, DEFAULT_GAME_SETTINGS } from "@/types";
 
 const STORAGE_KEYS = {
@@ -9,27 +9,14 @@ const STORAGE_KEYS = {
 
 const STORAGE_VERSION = "1.0.0";
 
-const safeJsonParse = (
-  json: string | null,
-): Effect.Effect<Option.Option<unknown>, never, never> => {
-  return Effect.gen(function* () {
-    if (json === null) {
-      return Option.none();
-    }
-
-    const parseResult = yield* Effect.try(() => JSON.parse(json)).pipe(
-      Effect.catchAll(() => Effect.succeed(null)),
-    );
-
-    return parseResult !== null ? Option.some(parseResult) : Option.none();
-  });
-};
+const safeJsonParse = (json: string | null): Option.Option<unknown> =>
+  Schema.decodeUnknownOption(Schema.parseJson())(json);
 
 const safeJsonStringify = <T>(
-  value: T,
+  value: T
 ): Effect.Effect<string, never, never> => {
   return Effect.try(() => JSON.stringify(value)).pipe(
-    Effect.catchAll(() => Effect.succeed("")),
+    Effect.catchAll(() => Effect.succeed(""))
   );
 };
 
@@ -59,7 +46,7 @@ const migrateStorageIfNeeded = (): Effect.Effect<void, never, never> => {
 };
 
 const saveGameResult = (
-  result: GameResult,
+  result: GameResult
 ): Effect.Effect<void, never, never> => {
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return;
@@ -90,7 +77,7 @@ const getGameResults = (): Effect.Effect<
     yield* migrateStorageIfNeeded();
 
     const json = localStorage.getItem(STORAGE_KEYS.GAME_RESULTS);
-    const parsed = yield* safeJsonParse(json);
+    const parsed = safeJsonParse(json);
 
     const results = Option.getOrElse(parsed, () => []);
 
@@ -116,7 +103,7 @@ const getGameResults = (): Effect.Effect<
 };
 
 const saveGameSettings = (
-  settings: GameSettings,
+  settings: GameSettings
 ): Effect.Effect<void, never, never> => {
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return;
@@ -137,7 +124,7 @@ const getGameSettings = (): Effect.Effect<GameSettings, never, never> => {
     yield* migrateStorageIfNeeded();
 
     const json = localStorage.getItem(STORAGE_KEYS.GAME_SETTINGS);
-    const parsed = yield* safeJsonParse(json);
+    const parsed = safeJsonParse(json);
 
     const settings = Option.getOrElse(parsed, () => DEFAULT_GAME_SETTINGS);
     const settingsRecord = settings as Record<string, unknown>;
@@ -168,7 +155,7 @@ const clearAllData = (): Effect.Effect<void, never, never> => {
 };
 
 const getRecentResults = (
-  count: number,
+  count: number
 ): Effect.Effect<readonly GameResult[], never, never> => {
   return Effect.gen(function* () {
     const allResults = yield* getGameResults();
@@ -200,7 +187,7 @@ const getGameStats = (): Effect.Effect<
 
     const totalGames = results.length;
     const averageScore = Math.round(
-      results.reduce((sum, r) => sum + r.percentage, 0) / totalGames,
+      results.reduce((sum, r) => sum + r.percentage, 0) / totalGames
     );
     const bestScore = Math.max(...results.map((r) => r.percentage));
     const earlyWins = results.filter((r) => r.isEarlyWin).length;
@@ -227,19 +214,19 @@ export class LocalStorageService extends Effect.Service<LocalStorageService>()(
       getGameStats,
       checkStorageAvailable: () => checkStorageAvailable(),
     }),
-  },
+  }
 ) {}
 
 export const TestLocalStorageServiceLayer = (fn?: {
   saveGameResult?: (result: GameResult) => Effect.Effect<void, never, never>;
   getGameResults?: () => Effect.Effect<readonly GameResult[], never, never>;
   saveGameSettings?: (
-    settings: GameSettings,
+    settings: GameSettings
   ) => Effect.Effect<void, never, never>;
   getGameSettings?: () => Effect.Effect<GameSettings, never, never>;
   clearAllData?: () => Effect.Effect<void, never, never>;
   getRecentResults?: (
-    count: number,
+    count: number
   ) => Effect.Effect<readonly GameResult[], never, never>;
   getGameStats?: () => Effect.Effect<
     {
@@ -274,5 +261,5 @@ export const TestLocalStorageServiceLayer = (fn?: {
             earlyWins: 0,
           })),
       checkStorageAvailable: fn?.checkStorageAvailable ?? (() => false),
-    }),
+    })
   );
