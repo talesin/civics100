@@ -42,6 +42,17 @@ export interface UserAnswer {
   answeredAt: Date
 }
 
+export type QuestionAnswer = UserAnswer
+
+export type GameQuestion = QuestionDisplay
+
+export interface GameStats {
+  totalGames: number
+  averageScore: number
+  bestScore: number
+  earlyWins: number
+}
+
 export const DEFAULT_GAME_SETTINGS: GameSettings = {
   maxQuestions: 10,
   winThreshold: 6,
