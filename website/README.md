@@ -170,13 +170,7 @@ The project is configured for automatic deployment to GitHub Pages via GitHub Ac
 
 ### Manual Deployment
 
-```bash
-# Build for production
-npm run build
-
-# The static files will be in the 'dist' directory
-# Upload the contents of 'dist' to your web server
-```
+See [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ### Configuration
 
@@ -223,19 +217,9 @@ The US Civics questionnaire follows a constrained session model with **10 random
 
 See [SPEC.md](SPEC.md).
 
-## 🏗️ Architecture Decisions
+## 🏗️ Architecture
 
-### Design Patterns
-- **Hexagonal Architecture**: Clean separation of concerns with service layer abstraction
-- **Effect-TS Functional Programming**: Type-safe, composable effects for side effect management
-- **Component Composition**: Reusable, testable React components with clear interfaces
-- **Static Generation**: Pre-rendered HTML for optimal performance and SEO
-
-### Technical Decisions
-- **No Redux/Zustand**: Uses Effect-TS services and React hooks for state management
-- **Static Export**: All pages pre-rendered at build time for GitHub Pages deployment
-- **Effect-TS Patterns**: Follows established patterns from civics2json package
-- **Type Safety**: Strict TypeScript with Effect schemas for runtime validation
+See [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## 📊 Project Achievements
 
@@ -257,16 +241,6 @@ See [SPEC.md](SPEC.md).
 - **Performance**: Optimized bundle sizes and lazy loading
 - **SEO**: Complete meta tags, semantic HTML, and sitemap
 - **Security**: CSP headers, input validation, and safe storage practices
-
-## 🤝 Contributing
-
-1. **Fork the repository**
-2. **Create a feature branch** (`git checkout -b feature/amazing-feature`)
-3. **Make changes** with proper tests and documentation
-4. **Run quality checks** (`npm test && npm run lint`)
-5. **Commit changes** (`git commit -m 'Add amazing feature'`)
-6. **Push to branch** (`git push origin feature/amazing-feature`)
-7. **Open a Pull Request**
 
 ### Development Guidelines
 

@@ -8,6 +8,8 @@ export interface GameSession {
   isEarlyWin: boolean;
   startedAt: Date;
   completedAt?: Date;
+  // Add adaptive learning state
+  pairedAnswers?: import("questionnaire").PairedAnswers;
 }
 
 export interface QuestionDisplay {
@@ -22,7 +24,7 @@ export interface QuestionDisplay {
 export interface GameSettings {
   maxQuestions: number;
   winThreshold: number;
-  userState: string;
+  userState: import("civics2json").StateAbbreviation;
   darkMode: boolean;
 }
 
@@ -56,6 +58,6 @@ export interface GameStats {
 export const DEFAULT_GAME_SETTINGS: GameSettings = {
   maxQuestions: 10,
   winThreshold: 6,
-  userState: "CA",
+  userState: "CA" as import("civics2json").StateAbbreviation,
   darkMode: false,
 };

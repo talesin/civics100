@@ -22,7 +22,9 @@ const config: Config = {
   ],
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^questionnaire/data$': '<rootDir>/test/mocks/questionnaire-data.ts',
+    '^questionnaire$': '<rootDir>/test/mocks/questionnaire.ts'
   },
   testTimeout: 10000
 }

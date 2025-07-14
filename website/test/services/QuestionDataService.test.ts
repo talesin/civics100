@@ -14,14 +14,15 @@ describe('QuestionDataService', () => {
       expect(Array.isArray(questions)).toBe(true)
       expect(questions.length).toBeGreaterThan(0)
       
-      // Check first question structure
+      // Check first question structure (now using questionnaire package's Question format)
       const firstQuestion = questions[0]
-      expect(firstQuestion).toHaveProperty('theme')
       expect(firstQuestion).toHaveProperty('question')
       expect(firstQuestion).toHaveProperty('questionNumber')
+      expect(firstQuestion).toHaveProperty('pairedQuestionNumber')
+      expect(firstQuestion).toHaveProperty('correctAnswer')
+      expect(firstQuestion).toHaveProperty('correctAnswerText')
       expect(firstQuestion).toHaveProperty('answers')
-      expect(firstQuestion.answers).toHaveProperty('choices')
-      expect(Array.isArray(firstQuestion.answers.choices)).toBe(true)
+      expect(Array.isArray(firstQuestion.answers)).toBe(true)
     })
 
     await Effect.runPromise(program.pipe(Effect.provide(QuestionDataService.Default)))

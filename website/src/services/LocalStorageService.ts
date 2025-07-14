@@ -1,9 +1,11 @@
 import { Effect, Layer, Option, Schema } from "effect";
 import { GameResult, GameSettings, DEFAULT_GAME_SETTINGS } from "@/types";
+import type { PairedAnswers } from "questionnaire";
 
 const STORAGE_KEYS = {
   GAME_RESULTS: "civics100_game_results",
   GAME_SETTINGS: "civics100_game_settings",
+  PAIRED_ANSWERS: "civics100_paired_answers",
   VERSION: "civics100_storage_version",
 } as const;
 
@@ -13,10 +15,10 @@ const safeJsonParse = (json: string | null): Option.Option<unknown> =>
   Schema.decodeUnknownOption(Schema.parseJson())(json);
 
 const safeJsonStringify = <T>(
-  value: T
+  value: T,
 ): Effect.Effect<string, never, never> => {
   return Effect.try(() => JSON.stringify(value)).pipe(
-    Effect.catchAll(() => Effect.succeed(""))
+    Effect.catchAll(() => Effect.succeed("")),
   );
 };
 
@@ -46,7 +48,7 @@ const migrateStorageIfNeeded = (): Effect.Effect<void, never, never> => {
 };
 
 const saveGameResult = (
-  result: GameResult
+  result: GameResult,
 ): Effect.Effect<void, never, never> => {
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return;
@@ -103,7 +105,7 @@ const getGameResults = (): Effect.Effect<
 };
 
 const saveGameSettings = (
-  settings: GameSettings
+  settings: GameSettings,
 ): Effect.Effect<void, never, never> => {
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return;
@@ -137,7 +139,8 @@ const getGameSettings = (): Effect.Effect<GameSettings, never, never> => {
         (settingsRecord.winThreshold as number) ??
         DEFAULT_GAME_SETTINGS.winThreshold,
       userState:
-        (settingsRecord.userState as string) ?? DEFAULT_GAME_SETTINGS.userState,
+        (settingsRecord.userState as import("civics2json").StateAbbreviation) ??
+        DEFAULT_GAME_SETTINGS.userState,
       darkMode:
         (settingsRecord.darkMode as boolean) ?? DEFAULT_GAME_SETTINGS.darkMode,
     };
@@ -155,7 +158,7 @@ const clearAllData = (): Effect.Effect<void, never, never> => {
 };
 
 const getRecentResults = (
-  count: number
+  count: number,
 ): Effect.Effect<readonly GameResult[], never, never> => {
   return Effect.gen(function* () {
     const allResults = yield* getGameResults();
@@ -187,7 +190,7 @@ const getGameStats = (): Effect.Effect<
 
     const totalGames = results.length;
     const averageScore = Math.round(
-      results.reduce((sum, r) => sum + r.percentage, 0) / totalGames
+      results.reduce((sum, r) => sum + r.percentage, 0) / totalGames,
     );
     const bestScore = Math.max(...results.map((r) => r.percentage));
     const earlyWins = results.filter((r) => r.isEarlyWin).length;
@@ -201,6 +204,35 @@ const getGameStats = (): Effect.Effect<
   });
 };
 
+const savePairedAnswers = (
+  pairedAnswers: PairedAnswers,
+): Effect.Effect<void, never, never> => {
+  return Effect.gen(function* () {
+    if (!checkStorageAvailable()) return;
+
+    yield* migrateStorageIfNeeded();
+
+    const jsonString = yield* safeJsonStringify(pairedAnswers);
+    if (jsonString) {
+      localStorage.setItem(STORAGE_KEYS.PAIRED_ANSWERS, jsonString);
+    }
+  });
+};
+
+const getPairedAnswers = (): Effect.Effect<PairedAnswers, never, never> => {
+  return Effect.gen(function* () {
+    if (!checkStorageAvailable()) return {};
+
+    yield* migrateStorageIfNeeded();
+
+    const json = localStorage.getItem(STORAGE_KEYS.PAIRED_ANSWERS);
+    const parsed = safeJsonParse(json);
+
+    const pairedAnswers = Option.getOrElse(parsed, () => ({}));
+    return pairedAnswers as PairedAnswers;
+  });
+};
+
 export class LocalStorageService extends Effect.Service<LocalStorageService>()(
   "LocalStorageService",
   {
@@ -209,24 +241,30 @@ export class LocalStorageService extends Effect.Service<LocalStorageService>()(
       getGameResults,
       saveGameSettings,
       getGameSettings,
+      savePairedAnswers,
+      getPairedAnswers,
       clearAllData,
       getRecentResults,
       getGameStats,
       checkStorageAvailable: () => checkStorageAvailable(),
     }),
-  }
+  },
 ) {}
 
 export const TestLocalStorageServiceLayer = (fn?: {
   saveGameResult?: (result: GameResult) => Effect.Effect<void, never, never>;
   getGameResults?: () => Effect.Effect<readonly GameResult[], never, never>;
   saveGameSettings?: (
-    settings: GameSettings
+    settings: GameSettings,
   ) => Effect.Effect<void, never, never>;
   getGameSettings?: () => Effect.Effect<GameSettings, never, never>;
+  savePairedAnswers?: (
+    pairedAnswers: PairedAnswers,
+  ) => Effect.Effect<void, never, never>;
+  getPairedAnswers?: () => Effect.Effect<PairedAnswers, never, never>;
   clearAllData?: () => Effect.Effect<void, never, never>;
   getRecentResults?: (
-    count: number
+    count: number,
   ) => Effect.Effect<readonly GameResult[], never, never>;
   getGameStats?: () => Effect.Effect<
     {
@@ -249,6 +287,9 @@ export const TestLocalStorageServiceLayer = (fn?: {
       saveGameSettings: fn?.saveGameSettings ?? (() => Effect.succeed(void 0)),
       getGameSettings:
         fn?.getGameSettings ?? (() => Effect.succeed(DEFAULT_GAME_SETTINGS)),
+      savePairedAnswers:
+        fn?.savePairedAnswers ?? (() => Effect.succeed(void 0)),
+      getPairedAnswers: fn?.getPairedAnswers ?? (() => Effect.succeed({})),
       clearAllData: fn?.clearAllData ?? (() => Effect.succeed(void 0)),
       getRecentResults: fn?.getRecentResults ?? (() => Effect.succeed([])),
       getGameStats:
@@ -261,5 +302,5 @@ export const TestLocalStorageServiceLayer = (fn?: {
             earlyWins: 0,
           })),
       checkStorageAvailable: fn?.checkStorageAvailable ?? (() => false),
-    })
+    }),
   );

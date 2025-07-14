@@ -25,7 +25,7 @@ export const useKeyboardNavigation = ({
       // Prevent default behavior for game controls
       if (
         ["1", "2", "3", "4", "a", "b", "c", "d", "enter", " ", "r"].includes(
-          event.key.toLowerCase()
+          event.key.toLowerCase(),
         )
       ) {
         event.preventDefault();
@@ -68,12 +68,12 @@ export const useKeyboardNavigation = ({
       if (event.key === "?" || event.key === "/") {
         // Could show help modal in future
         console.log(
-          "Keyboard shortcuts: 1-4 or A-D to select answers, Enter/Space for next, R to restart"
+          "Keyboard shortcuts: 1-4 or A-D to select answers, Enter/Space for next, R to restart",
         );
         return;
       }
     },
-    [onSelectAnswer, onNext, onRestart, isAnswered, totalAnswers, disabled]
+    [onSelectAnswer, onNext, onRestart, isAnswered, totalAnswers, disabled],
   );
 
   useEffect(() => {

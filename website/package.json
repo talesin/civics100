@@ -19,7 +19,8 @@
     "effect": "^3.16.13",
     "next": "15.3.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "questionnaire": "*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
