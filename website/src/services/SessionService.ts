@@ -9,16 +9,16 @@ import {
 import { QuestionDataService } from "./QuestionDataService";
 
 const generateSessionId = (): string => {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
 };
 
 const createNewSession = (
-  settings: GameSettings,
+  settings: GameSettings
 ): Effect.Effect<GameSession, never, QuestionDataService> => {
   return Effect.gen(function* () {
     const questionDataService = yield* QuestionDataService;
     const questions = yield* questionDataService.generateGameQuestions(
-      settings.maxQuestions,
+      settings.maxQuestions
     );
 
     return {
@@ -37,7 +37,7 @@ const createNewSession = (
 const processAnswer = (
   session: GameSession,
   answer: UserAnswer,
-  settings: GameSettings,
+  settings: GameSettings
 ): GameSession => {
   const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0);
   const newTotalAnswered = session.totalAnswered + 1;
@@ -75,10 +75,10 @@ const calculateResult = (session: GameSession): GameResult => {
 
 const getCurrentQuestion = (
   session: GameSession,
-  questions: QuestionDisplay[],
+  questions: QuestionDisplay[]
 ): QuestionDisplay | undefined => {
   return questions.find(
-    (q) => q.id === session.questions[session.currentQuestionIndex],
+    (q) => q.id === session.questions[session.currentQuestionIndex]
   );
 };
 
@@ -101,22 +101,22 @@ export class SessionService extends Effect.Service<SessionService>()(
       canContinue,
       generateSessionId: () => generateSessionId(),
     }),
-  },
+  }
 ) {}
 
 export const TestSessionServiceLayer = (fn?: {
   createNewSession?: (
-    settings: GameSettings,
+    settings: GameSettings
   ) => Effect.Effect<GameSession, never, never>;
   processAnswer?: (
     session: GameSession,
     answer: UserAnswer,
-    settings: GameSettings,
+    settings: GameSettings
   ) => GameSession;
   calculateResult?: (session: GameSession) => GameResult;
   getCurrentQuestion?: (
     session: GameSession,
-    questions: QuestionDisplay[],
+    questions: QuestionDisplay[]
   ) => QuestionDisplay | undefined;
   canContinue?: (session: GameSession, settings: GameSettings) => boolean;
   generateSessionId?: () => string;
@@ -152,5 +152,5 @@ export const TestSessionServiceLayer = (fn?: {
       getCurrentQuestion: fn?.getCurrentQuestion ?? (() => undefined),
       canContinue: fn?.canContinue ?? (() => false),
       generateSessionId: fn?.generateSessionId ?? (() => "test-id"),
-    }),
+    })
   );
