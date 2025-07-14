@@ -63,59 +63,73 @@ The US Civics questionnaire will now follow a constrained session model. Each se
 ## User Stories
 
 ### As a user, I want to see the home page with my previous results so that I can see how I did.
+
 - Given I am on the home page, when I load the page, then I see my previous results.
 
 ### As a user, I want to see the home page with information about the US Civics questions and answers so that I can learn about the questions and answers.
+
 - Given I am on the home page, when I load the page, then I see information and links about the US Civics questions and answers.
 
 ### As a user, I want to take the questionnaire so that I can test my knowledge of the US Civics questions and answers.
+
 - Given I am on the home page, when I click the "Take the Questionnaire" button, then I am taken to the questionnaire page.
 
 ### As a user, I want the questions to be shuffled so that I can test my knowledge of the US Civics questions and answers.
+
 - Given I am on the questionnaire page, when I load the page, then the questions are shuffled.
 
 ### As a user, I want to be able to select answers on the displayed card so that I can answer the question.
+
 - Given I am on the questionnaire page, when I click an answer, then the answer is selected.
 - Given I am on the questionnaire page, when I click an answer, then the answer is highlighted.
 
 ### As a user, I want to receive immediate feedback after each answer so that I can learn as I go.
+
 - Given I answer a question, when I select an option, then I see whether the answer is correct.
 
 ### As a user, I want to see my progress through the deck so that I know how far I've gone.
+
 - Given I am on the questionnaire page, when I view the current card, then I see the question number and total.
 
 ### As a user, I want to see a summary of my results after completing the quiz so that I can track my performance.
+
 - Given I complete the last question or reach 6 correct answers, when the quiz ends, then I see a results screen.
 
 ### As a user, I want to retake the questionnaire so that I can improve my score.
+
 - Given I see my results, when I click "Retake Quiz", then a new shuffled game begins.
 
 ### As a user, I want the quiz to end after 6 correct answers so that I can measure quick success.
+
 - Given I am taking the questionnaire, when I reach 6 correct answers, then the game should end and take me to the results screen.
 
 ### As a user, I want to be limited to 10 questions per quiz so that sessions are focused and short.
+
 - Given I start a new quiz, when the session begins, then I should only be asked up to 10 questions total.
 
 ### As a user, I want to the US state to default to my location so that I can take the quiz with the relevant questions.
+
 - Given I am on the questionnaire page, when I load the page, then the US state should default to my location.
 
 ### As a user, I want to be able to select a US state so that I can take the quiz with the relevant questions.
+
 - Given I am on the questionnaire page, when I select a US state, then the US state should be set to the selected state.
 
 ### As a user, I want the randomness of the questions to change based on my answers so that I can learn from my mistakes.
+
 - Given I am on the questionnaire page, when I answer a question, then the randomness of the questions should change based on my answers.
-- Given a particular question, when I answer incorrectly, then this question should be more likely to appear again in the next session.
-- Given a particular question, when I answer correctly, then this question should be less likely to appear again in the next session.
+- Given a particular question, when I answer incorrectly, then this question should be more likely to appear again in the next test.
+- Given a particular question, when I answer correctly, then this question should be less likely to appear again in the next test.
 
-### As a user, I want each session to hold a unique set of questions so that I can learn from my mistakes.
-- Given I am on the questionnaire page, when I complete a session, then the questions should be shuffled and the randomness of the questions should change based on my answers.
+### As a user, I want each test to hold a unique set of questions so that I can learn from my mistakes.
 
+- Given I am on the questionnaire page, when I complete a test, then the questions should be shuffled and the randomness of the questions should change based on my answers.
 
 ## Test Scenarios (Acceptance Criteria)
 
-| Scenario         | Given                 | When                               | Then                                   |
-|------------------|------------------------|-------------------------------------|----------------------------------------|
-| Early Win        | Quiz starts            | User reaches 6 correct answers      | Show results screen, mark quiz as completed early |
-| Full Attempt     | Quiz starts            | User answers all 10 questions       | Show results screen                    |
-| Progress Tracking| Quiz in progress       | User answers each question          | Show current card (e.g. "Card 4 of 10")|
-| Retake           | Quiz ends              | User clicks "Retake Quiz"           | Restart quiz with new shuffled 10-question subset |
+| Scenario          | Given            | When                           | Then                                              |
+| ----------------- | ---------------- | ------------------------------ | ------------------------------------------------- |
+| Early Win         | Quiz starts      | User reaches 6 correct answers | Show results screen, mark quiz as completed early |
+| Full Attempt      | Quiz starts      | User answers all 10 questions  | Show results screen                               |
+| Progress Tracking | Quiz in progress | User answers each question     | Show current card (e.g. "Card 4 of 10")           |
+| Retake            | Quiz ends        | User clicks "Retake Quiz"      | Restart quiz with new shuffled 10-question subset |
