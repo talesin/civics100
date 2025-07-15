@@ -1,42 +1,33 @@
 // Mock questionnaire main module for testing
-import { Effect } from 'effect'
-import type { QuestionDataSource, Question, PairedQuestionNumber } from './questionnaire-types'
+import { Effect, Option } from 'effect'
+import { PairedQuestionNumber, Question, QuestionDataSource, QuestionNumber } from 'questionnaire'
 
 export * from './questionnaire-data'
-export * from './questionnaire-types'
 
 // Mock utility functions
-export const getAvailablePairedQuestionNumbers = (
-  questions: Question[]
-): PairedQuestionNumber[] => {
-  return questions.map((q) => q.pairedQuestionNumber)
-}
+export const getAvailablePairedQuestionNumbers = (questions: Question[]): PairedQuestionNumber[] =>
+  questions.map((q) => q.pairedQuestionNumber)
 
 export const findQuestionByPairedNumber = (
   pairedQuestionNumber: PairedQuestionNumber,
   questions: Question[]
-): any => {
+) => {
   const found = questions.find((q) => q.pairedQuestionNumber === pairedQuestionNumber)
-  return found ? { _tag: 'Some', value: found } : { _tag: 'None' }
+  return Option.fromNullable(found)
 }
 
-export const getQuestionCount = (questions: Question[]): number => {
-  return questions.length
-}
+export const getQuestionCount = (questions: Question[]): number => questions.length
 
 // Mock QuestionSelector - not used in current implementation but kept for future use
 export const QuestionSelector = {
-  selectPairedQuestion: () => ({
-    _tag: 'Some',
-    value: '1-0' as PairedQuestionNumber
-  }),
+  selectPairedQuestion: () => Option.some(PairedQuestionNumber('1-0')),
   getPairedQuestionStats: () => ({
     totalAnswered: 0,
     correctAnswers: 0,
     incorrectAnswers: 0,
     accuracy: 0
   }),
-  recordPairedAnswer: (_: any, __: any, answers: any) => answers,
+  recordPairedAnswer: (_: unknown, __: unknown, answers: unknown) => answers,
   getLearningProgress: () => ({
     totalQuestionsAttempted: 0,
     totalAnswers: 0,
@@ -47,13 +38,13 @@ export const QuestionSelector = {
 
 // Mock loadQuestions function
 export const loadQuestions = (
-  dataSource: QuestionDataSource
+  _dataSource: QuestionDataSource
 ): Effect.Effect<readonly Question[], never, never> => {
   // Simple mock implementation that returns sample questions
   const mockQuestions: Question[] = [
     {
-      questionNumber: '1' as any,
-      pairedQuestionNumber: '1-0' as any,
+      questionNumber: QuestionNumber('1'),
+      pairedQuestionNumber: PairedQuestionNumber('1-0'),
       question: 'What is the supreme law of the land?',
       correctAnswer: 0,
       correctAnswerText: 'the Constitution',
@@ -65,8 +56,8 @@ export const loadQuestions = (
       ]
     },
     {
-      questionNumber: '2' as any,
-      pairedQuestionNumber: '2-0' as any,
+      questionNumber: QuestionNumber('2'),
+      pairedQuestionNumber: PairedQuestionNumber('2-0'),
       question: 'What does the Constitution do?',
       correctAnswer: 1,
       correctAnswerText: 'sets up the government',
@@ -78,8 +69,8 @@ export const loadQuestions = (
       ]
     },
     {
-      questionNumber: '3' as any,
-      pairedQuestionNumber: '3-0' as any,
+      questionNumber: QuestionNumber('3'),
+      pairedQuestionNumber: PairedQuestionNumber('3-0'),
       question:
         'The idea of self-government is in the first three words of the Constitution. What are these words?',
       correctAnswer: 2,
@@ -87,8 +78,8 @@ export const loadQuestions = (
       answers: ['We the Nation', 'We the Government', 'We the People', 'We the Citizens']
     },
     {
-      questionNumber: '4' as any,
-      pairedQuestionNumber: '4-0' as any,
+      questionNumber: QuestionNumber('4'),
+      pairedQuestionNumber: PairedQuestionNumber('4-0'),
       question: 'What is an amendment?',
       correctAnswer: 0,
       correctAnswerText: 'a change to the Constitution',
@@ -100,8 +91,8 @@ export const loadQuestions = (
       ]
     },
     {
-      questionNumber: '5' as any,
-      pairedQuestionNumber: '5-0' as any,
+      questionNumber: QuestionNumber('5'),
+      pairedQuestionNumber: PairedQuestionNumber('5-0'),
       question: 'What do we call the first ten amendments to the Constitution?',
       correctAnswer: 3,
       correctAnswerText: 'the Bill of Rights',
@@ -113,8 +104,8 @@ export const loadQuestions = (
       ]
     },
     {
-      questionNumber: '6' as any,
-      pairedQuestionNumber: '6-0' as any,
+      questionNumber: QuestionNumber('6'),
+      pairedQuestionNumber: PairedQuestionNumber('6-0'),
       question: 'What is one right or freedom from the First Amendment?',
       correctAnswer: 0,
       correctAnswerText: 'speech',

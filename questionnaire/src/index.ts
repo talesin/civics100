@@ -13,10 +13,10 @@ export { QuestionSelector, TestQuestionSelectorLayer } from './QuestionSelector.
 
 export type { QuestionDataSource } from './QuestionDataService.js'
 
-export { 
-  QuestionDataService, 
-  TestQuestionDataServiceLayer, 
-  loadQuestions, 
+export {
+  QuestionDataService,
+  TestQuestionDataServiceLayer,
+  loadQuestions,
   getAvailablePairedQuestionNumbers,
   findQuestionByPairedNumber,
   getQuestionCount

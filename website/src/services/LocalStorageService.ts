@@ -80,13 +80,15 @@ const getGameResults = (): Effect.Effect<readonly GameResult[], never, never> =>
     return results.map((r: unknown) => {
       const result = r as Record<string, unknown>
       return {
-        sessionId: (result.sessionId as string) || '',
-        totalQuestions: (result.totalQuestions as number) || 0,
-        correctAnswers: (result.correctAnswers as number) || 0,
-        percentage: (result.percentage as number) || 0,
-        isEarlyWin: (result.isEarlyWin as boolean) || false,
+        sessionId: (result['sessionId'] as string) || '',
+        totalQuestions: (result['totalQuestions'] as number) || 0,
+        correctAnswers: (result['correctAnswers'] as number) || 0,
+        percentage: (result['percentage'] as number) || 0,
+        isEarlyWin: (result['isEarlyWin'] as boolean) || false,
         completedAt:
-          result.completedAt !== undefined ? new Date(result.completedAt as string) : new Date()
+          result['completedAt'] !== undefined
+            ? new Date(result['completedAt'] as string)
+            : new Date()
       }
     })
   })
@@ -118,12 +120,14 @@ const getGameSettings = (): Effect.Effect<GameSettings, never, never> => {
     const settingsRecord = settings as Record<string, unknown>
 
     return {
-      maxQuestions: (settingsRecord.maxQuestions as number) ?? DEFAULT_GAME_SETTINGS.maxQuestions,
-      winThreshold: (settingsRecord.winThreshold as number) ?? DEFAULT_GAME_SETTINGS.winThreshold,
+      maxQuestions:
+        (settingsRecord['maxQuestions'] as number) ?? DEFAULT_GAME_SETTINGS.maxQuestions,
+      winThreshold:
+        (settingsRecord['winThreshold'] as number) ?? DEFAULT_GAME_SETTINGS.winThreshold,
       userState:
-        (settingsRecord.userState as import('civics2json').StateAbbreviation) ??
+        (settingsRecord['userState'] as import('civics2json').StateAbbreviation) ??
         DEFAULT_GAME_SETTINGS.userState,
-      darkMode: (settingsRecord.darkMode as boolean) ?? DEFAULT_GAME_SETTINGS.darkMode
+      darkMode: (settingsRecord['darkMode'] as boolean) ?? DEFAULT_GAME_SETTINGS.darkMode
     }
   })
 }

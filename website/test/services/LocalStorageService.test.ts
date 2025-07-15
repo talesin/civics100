@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals'
 import { Effect } from 'effect'
-import { LocalStorageService, TestLocalStorageServiceLayer } from '@/services/LocalStorageService'
-import { DEFAULT_GAME_SETTINGS } from '@/types'
+import { LocalStorageService } from '@/services/LocalStorageService'
+import { DEFAULT_GAME_SETTINGS, GameSettings, GameResult } from '@/types'
 
 // Get localStorage mock from setup
 const localStorageMock = window.localStorage
@@ -15,7 +15,7 @@ describe('LocalStorageService', () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
 
-      const testResult = {
+      const testResult: GameResult = {
         sessionId: 'test-session-1',
         totalQuestions: 10,
         correctAnswers: 8,
@@ -30,12 +30,12 @@ describe('LocalStorageService', () => {
       expect(results).toBeDefined()
       expect(Array.isArray(results)).toBe(true)
       expect(results.length).toBe(1)
-      expect(results[0].sessionId).toBe('test-session-1')
-      expect(results[0].totalQuestions).toBe(10)
-      expect(results[0].correctAnswers).toBe(8)
-      expect(results[0].percentage).toBe(80)
-      expect(results[0].isEarlyWin).toBe(false)
-      expect(results[0].completedAt).toBeInstanceOf(Date)
+      expect(results?.[0]?.sessionId).toBe('test-session-1')
+      expect(results?.[0]?.totalQuestions).toBe(10)
+      expect(results?.[0]?.correctAnswers).toBe(8)
+      expect(results?.[0]?.percentage).toBe(80)
+      expect(results?.[0]?.isEarlyWin).toBe(false)
+      expect(results?.[0]?.completedAt).toBeInstanceOf(Date)
     })
 
     await Effect.runPromise(program.pipe(Effect.provide(LocalStorageService.Default)))
@@ -45,7 +45,7 @@ describe('LocalStorageService', () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
 
-      const testSettings = {
+      const testSettings: GameSettings = {
         maxQuestions: 15,
         winThreshold: 8,
         userState: 'NY',
@@ -127,8 +127,8 @@ describe('LocalStorageService', () => {
       const recentResults = yield* storageService.getRecentResults(2)
 
       expect(recentResults.length).toBe(2)
-      expect(recentResults[0].sessionId).toBe('session-3') // Most recent first
-      expect(recentResults[1].sessionId).toBe('session-2')
+      expect(recentResults?.[0]?.sessionId).toBe('session-3') // Most recent first
+      expect(recentResults?.[1]?.sessionId).toBe('session-2')
     })
 
     await Effect.runPromise(program.pipe(Effect.provide(LocalStorageService.Default)))
