@@ -39,7 +39,7 @@ export default tseslint.config(
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
-    'plugin:prettier/recommended',
+    // 'plugin:prettier/recommended',
     'plugin:@next/next/recommended',
     'next/core-web-vitals',
     'next/typescript'
@@ -51,7 +51,6 @@ export default tseslint.config(
       'react': react,
       '@next/next': next
     },
-    eslintConfigPrettier,
 
     settings: {
       react: {
@@ -66,6 +65,7 @@ export default tseslint.config(
       }
     }
   },
+  eslintConfigPrettier,
 
   {
     rules: {

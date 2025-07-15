@@ -14,7 +14,7 @@ describe('LocalStorageService', () => {
   it('should save and retrieve game results', async () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
-      
+
       const testResult = {
         sessionId: 'test-session-1',
         totalQuestions: 10,
@@ -23,10 +23,10 @@ describe('LocalStorageService', () => {
         isEarlyWin: false,
         completedAt: new Date()
       }
-      
+
       yield* storageService.saveGameResult(testResult)
       const results = yield* storageService.getGameResults()
-      
+
       expect(results).toBeDefined()
       expect(Array.isArray(results)).toBe(true)
       expect(results.length).toBe(1)
@@ -44,17 +44,17 @@ describe('LocalStorageService', () => {
   it('should save and retrieve game settings', async () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
-      
+
       const testSettings = {
         maxQuestions: 15,
         winThreshold: 8,
         userState: 'NY',
         darkMode: true
       }
-      
+
       yield* storageService.saveGameSettings(testSettings)
       const settings = yield* storageService.getGameSettings()
-      
+
       expect(settings).toBeDefined()
       expect(settings.maxQuestions).toBe(15)
       expect(settings.winThreshold).toBe(8)
@@ -69,7 +69,7 @@ describe('LocalStorageService', () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
       const settings = yield* storageService.getGameSettings()
-      
+
       expect(settings).toEqual(DEFAULT_GAME_SETTINGS)
     })
 
@@ -80,7 +80,7 @@ describe('LocalStorageService', () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
       const results = yield* storageService.getGameResults()
-      
+
       expect(results).toBeDefined()
       expect(Array.isArray(results)).toBe(true)
       expect(results.length).toBe(0)
@@ -92,7 +92,7 @@ describe('LocalStorageService', () => {
   it('should get recent results in reverse chronological order', async () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
-      
+
       const results = [
         {
           sessionId: 'session-1',
@@ -119,13 +119,13 @@ describe('LocalStorageService', () => {
           completedAt: new Date('2023-01-03')
         }
       ]
-      
+
       for (const result of results) {
         yield* storageService.saveGameResult(result)
       }
-      
+
       const recentResults = yield* storageService.getRecentResults(2)
-      
+
       expect(recentResults.length).toBe(2)
       expect(recentResults[0].sessionId).toBe('session-3') // Most recent first
       expect(recentResults[1].sessionId).toBe('session-2')
@@ -137,7 +137,7 @@ describe('LocalStorageService', () => {
   it('should calculate game statistics correctly', async () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
-      
+
       const results = [
         {
           sessionId: 'session-1',
@@ -164,13 +164,13 @@ describe('LocalStorageService', () => {
           completedAt: new Date()
         }
       ]
-      
+
       for (const result of results) {
         yield* storageService.saveGameResult(result)
       }
-      
+
       const stats = yield* storageService.getGameStats()
-      
+
       expect(stats.totalGames).toBe(3)
       expect(stats.averageScore).toBe(80) // (80 + 60 + 100) / 3 = 80
       expect(stats.bestScore).toBe(100)
@@ -184,7 +184,7 @@ describe('LocalStorageService', () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
       const stats = yield* storageService.getGameStats()
-      
+
       expect(stats.totalGames).toBe(0)
       expect(stats.averageScore).toBe(0)
       expect(stats.bestScore).toBe(0)
@@ -197,7 +197,7 @@ describe('LocalStorageService', () => {
   it('should clear all data', async () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
-      
+
       // Save some data first
       const testResult = {
         sessionId: 'test-session',
@@ -207,19 +207,19 @@ describe('LocalStorageService', () => {
         isEarlyWin: false,
         completedAt: new Date()
       }
-      
+
       yield* storageService.saveGameResult(testResult)
       yield* storageService.saveGameSettings({ ...DEFAULT_GAME_SETTINGS, darkMode: true })
-      
+
       // Verify data exists
       const resultsBefore = yield* storageService.getGameResults()
       const settingsBefore = yield* storageService.getGameSettings()
       expect(resultsBefore.length).toBe(1)
       expect(settingsBefore.darkMode).toBe(true)
-      
+
       // Clear all data
       yield* storageService.clearAllData()
-      
+
       // Verify data is cleared
       const resultsAfter = yield* storageService.getGameResults()
       const settingsAfter = yield* storageService.getGameSettings()

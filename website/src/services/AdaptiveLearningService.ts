@@ -1,18 +1,18 @@
-import { Effect, Layer, Option } from "effect";
-import type { StateAbbreviation } from "civics2json";
-import { QuestionSelector } from "questionnaire";
+import { Effect, Layer, Option } from 'effect'
+import type { StateAbbreviation } from 'civics2json'
+import { QuestionSelector } from 'questionnaire'
 import type {
   PairedAnswers,
   PairedQuestionNumber,
   Question,
-  QuestionDataSource,
-} from "questionnaire";
-import { civicsQuestionsWithDistractors } from "questionnaire/data";
+  QuestionDataSource
+} from 'questionnaire'
+import { civicsQuestionsWithDistractors } from 'questionnaire/data'
 import {
   loadQuestions,
   getAvailablePairedQuestionNumbers,
-  findQuestionByPairedNumber,
-} from "questionnaire";
+  findQuestionByPairedNumber
+} from 'questionnaire'
 
 /**
  * Service for managing adaptive learning with answer tracking and weighted question selection
@@ -23,188 +23,103 @@ import {
  * Load all available paired questions for a user's state
  */
 const loadAllQuestions = (
-  userState: StateAbbreviation = "CA",
-): Effect.Effect<readonly Question[], never, never> => {
+  userState: StateAbbreviation = 'CA'
+): Effect.Effect<readonly Question[]> => {
   const dataSource: QuestionDataSource = {
     questions: civicsQuestionsWithDistractors,
-    userState,
-  };
+    userState
+  }
 
-  return loadQuestions(dataSource);
-};
+  return loadQuestions(dataSource)
+}
 
 /**
  * Get the next question using adaptive learning algorithm
  * Uses weighted selection based on answer history
  */
-const getNextQuestion = (
-  userState: StateAbbreviation,
-  pairedAnswers: PairedAnswers,
-): Effect.Effect<Option.Option<Question>, never, QuestionSelector> => {
-  return Effect.gen(function* () {
-    const questionSelector = yield* QuestionSelector;
-    const allQuestions = yield* loadAllQuestions(userState);
+const getNextQuestion = (questionSelector: QuestionSelector) =>
+  Effect.fn(function* (userState: StateAbbreviation, pairedAnswers: PairedAnswers) {
+    const allQuestions = yield* loadAllQuestions(userState)
 
     // Get all available paired question numbers
-    const availablePairedQuestions =
-      getAvailablePairedQuestionNumbers(allQuestions);
+    const availablePairedQuestions = getAvailablePairedQuestionNumbers(allQuestions)
 
     // Use QuestionSelector to get the next question with adaptive weighting
-    const selectedPairedQuestionNumber =
-      yield* questionSelector.selectPairedQuestion(
-        availablePairedQuestions,
-        pairedAnswers,
-      );
+    const selectedPairedQuestionNumber = yield* questionSelector.selectPairedQuestion(
+      availablePairedQuestions,
+      pairedAnswers
+    )
 
     // Find the actual question object
     return Option.flatMap(selectedPairedQuestionNumber, (pairedQNum) =>
-      findQuestionByPairedNumber(pairedQNum, allQuestions),
-    );
-  });
-};
+      findQuestionByPairedNumber(pairedQNum, allQuestions)
+    )
+  })
 
 /**
  * Record an answer for adaptive learning
  * Delegates to QuestionSelector's recordPairedAnswer function
  */
-const recordAnswer = (
-  pairedQuestionNumber: PairedQuestionNumber,
-  isCorrect: boolean,
-  pairedAnswers: PairedAnswers,
-): Effect.Effect<PairedAnswers, never, QuestionSelector> => {
-  return Effect.gen(function* () {
-    const questionSelector = yield* QuestionSelector;
-    return questionSelector.recordPairedAnswer(
-      pairedQuestionNumber,
-      isCorrect,
-      pairedAnswers,
-    );
-  });
-};
+const recordAnswer =
+  (questionSelector: QuestionSelector) =>
+  (pairedQuestionNumber: PairedQuestionNumber, isCorrect: boolean, pairedAnswers: PairedAnswers) =>
+    questionSelector.recordPairedAnswer(pairedQuestionNumber, isCorrect, pairedAnswers)
 
 /**
  * Get statistics for a specific paired question
  * Delegates to QuestionSelector's getPairedQuestionStats function
  */
-const getQuestionStats = (
-  pairedQuestionNumber: PairedQuestionNumber,
-  pairedAnswers: PairedAnswers,
-): Effect.Effect<
-  {
-    totalAnswered: number;
-    correctAnswers: number;
-    incorrectAnswers: number;
-    accuracy: number;
-  },
-  never,
-  QuestionSelector
-> => {
-  return Effect.gen(function* () {
-    const questionSelector = yield* QuestionSelector;
-    return questionSelector.getPairedQuestionStats(
-      pairedQuestionNumber,
-      pairedAnswers,
-    );
-  });
-};
+const getQuestionStats =
+  (questionSelector: QuestionSelector) =>
+  (pairedQuestionNumber: PairedQuestionNumber, pairedAnswers: PairedAnswers) =>
+    questionSelector.getPairedQuestionStats(pairedQuestionNumber, pairedAnswers)
 
 /**
  * Get overall learning progress statistics
  * Delegates to QuestionSelector's getLearningProgress function
  */
-const getLearningProgress = (
-  pairedAnswers: PairedAnswers,
-): Effect.Effect<
-  {
-    totalQuestionsAttempted: number;
-    totalAnswers: number;
-    overallAccuracy: number;
-    masteredQuestions: number;
-  },
-  never,
-  QuestionSelector
-> => {
-  return Effect.gen(function* () {
-    const questionSelector = yield* QuestionSelector;
-    return questionSelector.getLearningProgress(pairedAnswers);
-  });
-};
+const getLearningProgress =
+  (questionSelector: QuestionSelector) => (pairedAnswers: PairedAnswers) =>
+    questionSelector.getLearningProgress(pairedAnswers)
 
 export class AdaptiveLearningService extends Effect.Service<AdaptiveLearningService>()(
-  "AdaptiveLearningService",
+  'AdaptiveLearningService',
   {
-    effect: Effect.succeed({
-      loadAllQuestions,
-      getNextQuestion,
-      recordAnswer,
-      getQuestionStats,
-      getLearningProgress,
+    effect: Effect.gen(function* () {
+      const questionSelector = yield* QuestionSelector
+      return {
+        loadAllQuestions,
+        getNextQuestion: getNextQuestion(questionSelector),
+        recordAnswer: recordAnswer(questionSelector),
+        getQuestionStats: getQuestionStats(questionSelector),
+        getLearningProgress: getLearningProgress(questionSelector)
+      }
     }),
-  },
+    dependencies: [QuestionSelector.Default]
+  }
 ) {}
 
 export const TestAdaptiveLearningServiceLayer = (fn?: {
-  loadAllQuestions?: (
-    userState?: StateAbbreviation,
-  ) => Effect.Effect<readonly Question[], never, never>;
-  getNextQuestion?: (
-    userState: StateAbbreviation,
-    pairedAnswers: PairedAnswers,
-  ) => Effect.Effect<Option.Option<Question>, never, never>;
-  recordAnswer?: (
-    pairedQuestionNumber: PairedQuestionNumber,
-    isCorrect: boolean,
-    pairedAnswers: PairedAnswers,
-  ) => Effect.Effect<PairedAnswers, never, never>;
-  getQuestionStats?: (
-    pairedQuestionNumber: PairedQuestionNumber,
-    pairedAnswers: PairedAnswers,
-  ) => Effect.Effect<
-    {
-      totalAnswered: number;
-      correctAnswers: number;
-      incorrectAnswers: number;
-      accuracy: number;
-    },
-    never,
-    never
-  >;
-  getLearningProgress?: (pairedAnswers: PairedAnswers) => Effect.Effect<
-    {
-      totalQuestionsAttempted: number;
-      totalAnswers: number;
-      overallAccuracy: number;
-      masteredQuestions: number;
-    },
-    never,
-    never
-  >;
+  loadAllQuestions?: AdaptiveLearningService['loadAllQuestions']
+  getNextQuestion?: AdaptiveLearningService['getNextQuestion']
+  recordAnswer?: AdaptiveLearningService['recordAnswer']
+  getQuestionStats?: AdaptiveLearningService['getQuestionStats']
+  getLearningProgress?: AdaptiveLearningService['getLearningProgress']
 }) =>
   Layer.succeed(
     AdaptiveLearningService,
     AdaptiveLearningService.of({
-      _tag: "AdaptiveLearningService",
+      _tag: 'AdaptiveLearningService',
       loadAllQuestions: fn?.loadAllQuestions ?? (() => Effect.succeed([])),
-      getNextQuestion:
-        fn?.getNextQuestion ?? (() => Effect.succeed(Option.none())),
-      recordAnswer: fn?.recordAnswer ?? (() => Effect.succeed({})),
+      getNextQuestion: fn?.getNextQuestion ?? (() => Effect.succeed(Option.none())),
+      recordAnswer:
+        fn?.recordAnswer ??
+        ((() => Effect.succeed({})) as unknown as AdaptiveLearningService['recordAnswer']),
       getQuestionStats:
         fn?.getQuestionStats ??
-        (() =>
-          Effect.succeed({
-            totalAnswered: 0,
-            correctAnswers: 0,
-            incorrectAnswers: 0,
-            accuracy: 0,
-          })),
+        ((() => Effect.succeed({})) as unknown as AdaptiveLearningService['getQuestionStats']),
       getLearningProgress:
         fn?.getLearningProgress ??
-        (() =>
-          Effect.succeed({
-            totalQuestionsAttempted: 0,
-            totalAnswers: 0,
-            overallAccuracy: 0,
-            masteredQuestions: 0,
-          })),
-    }),
-  );
+        ((() => Effect.succeed({})) as unknown as AdaptiveLearningService['getLearningProgress'])
+    })
+  )

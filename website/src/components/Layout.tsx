@@ -1,26 +1,24 @@
-import React, { useState } from "react";
-import Link from "next/link";
-import ThemeToggle from "./ThemeToggle";
+import React, { useState } from 'react'
+import Link from 'next/link'
+import ThemeToggle from './ThemeToggle'
 
 interface LayoutProps {
-  children: React.ReactNode;
-  title?: string;
-  showHeader?: boolean;
-  className?: string;
+  children: React.ReactNode
+  title?: string
+  showHeader?: boolean
+  className?: string
 }
 
 export default function Layout({
   children,
-  title = "US Civics Test",
+  title = 'US Civics Test',
   showHeader = true,
-  className = "",
+  className = ''
 }: LayoutProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <div
-      className={`min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 ${className}`}
-    >
+    <div className={`min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 ${className}`}>
       {/* Skip to main content link for accessibility */}
       <a href="#main-content" className="skip-link">
         Skip to main content
@@ -32,10 +30,7 @@ export default function Layout({
             <div className="flex justify-between items-center h-16">
               {/* Logo/Title */}
               <div className="flex items-center flex-shrink-0">
-                <Link
-                  href="/"
-                  className="flex items-center space-x-3 focus-ring rounded-md p-1"
-                >
+                <Link href="/" className="flex items-center space-x-3 focus-ring rounded-md p-1">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-red-600 rounded-md flex items-center justify-center">
                     <span className="text-white font-bold text-sm">🇺🇸</span>
                   </div>
@@ -75,12 +70,7 @@ export default function Layout({
                   aria-controls="mobile-menu"
                   aria-label="Toggle main menu"
                 >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     {mobileMenuOpen ? (
                       <path
                         strokeLinecap="round"
@@ -103,11 +93,7 @@ export default function Layout({
 
             {/* Mobile Navigation */}
             {mobileMenuOpen && (
-              <div
-                className="md:hidden"
-                id="mobile-menu"
-                data-testid="mobile-menu"
-              >
+              <div className="md:hidden" id="mobile-menu" data-testid="mobile-menu">
                 <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                   <Link
                     href="/"
@@ -131,11 +117,7 @@ export default function Layout({
       )}
 
       {/* Main content */}
-      <main
-        id="main-content"
-        className="flex-1 container py-6 sm:py-8 lg:py-12"
-        role="main"
-      >
+      <main id="main-content" className="flex-1 container py-6 sm:py-8 lg:py-12" role="main">
         {children}
       </main>
 
@@ -147,14 +129,12 @@ export default function Layout({
               <div className="w-6 h-6 bg-gradient-to-br from-blue-600 to-red-600 rounded flex items-center justify-center">
                 <span className="text-white text-xs">🇺🇸</span>
               </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                US Civics Test Practice
-              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">US Civics Test Practice</p>
             </div>
             <p className="text-xs text-gray-400 dark:text-gray-500 max-w-2xl mx-auto">
-              Test your knowledge of American civics and history with questions
-              based on the official U.S. Citizenship Test. Practice makes
-              perfect for understanding our democracy.
+              Test your knowledge of American civics and history with questions based on the
+              official U.S. Citizenship Test. Practice makes perfect for understanding our
+              democracy.
             </p>
             <div className="flex justify-center space-x-6 text-xs text-gray-400 dark:text-gray-500">
               <span>Educational Use Only</span>
@@ -165,5 +145,5 @@ export default function Layout({
         </div>
       </footer>
     </div>
-  );
+  )
 }

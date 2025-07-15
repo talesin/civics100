@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "../styles/design-tokens.css";
+@import 'tailwindcss';
+@import '../styles/design-tokens.css';
 
 :root {
   --background: #ffffff;
@@ -28,10 +28,10 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family:
-    "Inter",
+    'Inter',
     system-ui,
     -apple-system,
-    "Segoe UI",
+    'Segoe UI',
     sans-serif;
   line-height: var(--line-height-normal);
   font-size: var(--font-size-base);
@@ -169,18 +169,13 @@ body {
 }
 
 .answer-button::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.1),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   transition: left 0.5s;
 }
 
@@ -195,21 +190,21 @@ body {
 
 /* Loading states */
 .loading-dots::after {
-  content: "";
+  content: '';
   animation: loading-dots 1.5s infinite;
 }
 
 @keyframes loading-dots {
   0%,
   20% {
-    content: ".";
+    content: '.';
   }
   40% {
-    content: "..";
+    content: '..';
   }
   60%,
   100% {
-    content: "...";
+    content: '...';
   }
 }
 

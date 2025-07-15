@@ -141,7 +141,9 @@ const func = Effect.fn(
 
 ## Dependency Injection
 
-The dependency injection pattern is used to provide dependencies to services. This allows for testing and dependency injection. This is using a currying pattern to provide the dependencies to the service. The first function should contain the dependencies arguments and return an Effect.fn that contains the arguments for the actual function.
+A tenet of Effect-TS is that dependencies shouldn't be exposed by functions within a service. This is because it can lead to code that is hard to test and maintain. Services should be the only place that dependencies are exposed. Use function currying to pass dependencies to functions.
+
+The dependency injection pattern is used to provide dependencies to functions. The first function should contain the dependencies arguments and return an Effect.fn that contains the arguments for the actual function.
 
 Keep the service class minimal with just the code to define and configure it. All exported or supporting functions should be declared out side the class.
 

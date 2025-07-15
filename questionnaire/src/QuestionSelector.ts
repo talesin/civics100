@@ -422,52 +422,47 @@ const getPairedQuestionStats = (
 const recordPairedAnswer = (
   pairedQuestionNumber: PairedQuestionNumber,
   isCorrect: boolean,
-  pairedAnswers: PairedAnswers,
+  pairedAnswers: PairedAnswers
 ): PairedAnswers => {
-  const currentHistory = pairedAnswers[pairedQuestionNumber] ?? [];
+  const currentHistory = pairedAnswers[pairedQuestionNumber] ?? []
   const newAnswer = {
     ts: new Date(),
-    correct: isCorrect,
-  };
+    correct: isCorrect
+  }
 
   return {
     ...pairedAnswers,
-    [pairedQuestionNumber]: [...currentHistory, newAnswer],
-  };
-};
+    [pairedQuestionNumber]: [...currentHistory, newAnswer]
+  }
+}
 
 /**
  * Get overall learning progress statistics
  * Includes determination of "mastered" questions (3 consecutive correct answers)
  */
 const getLearningProgress = (
-  pairedAnswers: PairedAnswers,
+  pairedAnswers: PairedAnswers
 ): {
-  totalQuestionsAttempted: number;
-  totalAnswers: number;
-  overallAccuracy: number;
-  masteredQuestions: number;
+  totalQuestionsAttempted: number
+  totalAnswers: number
+  overallAccuracy: number
+  masteredQuestions: number
 } => {
-  const pairedQuestionNumbers = Object.keys(
-    pairedAnswers,
-  ) as PairedQuestionNumber[];
+  const pairedQuestionNumbers = Object.keys(pairedAnswers) as PairedQuestionNumber[]
 
-  let totalAnswers = 0;
-  let correctAnswers = 0;
-  let masteredQuestions = 0;
+  let totalAnswers = 0
+  let correctAnswers = 0
+  let masteredQuestions = 0
 
   for (const pairedQuestionNumber of pairedQuestionNumbers) {
-    const history = pairedAnswers[pairedQuestionNumber] ?? [];
-    totalAnswers += history.length;
-    correctAnswers += history.filter((answer) => answer.correct).length;
+    const history = pairedAnswers[pairedQuestionNumber] ?? []
+    totalAnswers += history.length
+    correctAnswers += history.filter((answer) => answer.correct).length
 
     // Consider a question "mastered" if last 3 answers were correct
-    const recentAnswers = history.slice(-3);
-    if (
-      recentAnswers.length >= 3 &&
-      recentAnswers.every((answer) => answer.correct)
-    ) {
-      masteredQuestions++;
+    const recentAnswers = history.slice(-3)
+    if (recentAnswers.length >= 3 && recentAnswers.every((answer) => answer.correct)) {
+      masteredQuestions++
     }
   }
 
@@ -475,9 +470,9 @@ const getLearningProgress = (
     totalQuestionsAttempted: pairedQuestionNumbers.length,
     totalAnswers,
     overallAccuracy: totalAnswers > 0 ? correctAnswers / totalAnswers : 0,
-    masteredQuestions,
-  };
-};
+    masteredQuestions
+  }
+}
 
 /**
  * Service for question selection and statistics
@@ -502,10 +497,9 @@ export class QuestionSelector extends Effect.Service<QuestionSelector>()('Questi
     recordPairedAnswer: (
       pairedQuestionNumber: PairedQuestionNumber,
       isCorrect: boolean,
-      pairedAnswers: PairedAnswers,
+      pairedAnswers: PairedAnswers
     ) => recordPairedAnswer(pairedQuestionNumber, isCorrect, pairedAnswers),
-    getLearningProgress: (pairedAnswers: PairedAnswers) =>
-      getLearningProgress(pairedAnswers)
+    getLearningProgress: (pairedAnswers: PairedAnswers) => getLearningProgress(pairedAnswers)
   })
 }) {}
 
@@ -544,7 +538,7 @@ export const TestQuestionSelectorLayer = (fn?: {
   recordPairedAnswer?: (
     pairedQuestionNumber: PairedQuestionNumber,
     isCorrect: boolean,
-    pairedAnswers: PairedAnswers,
+    pairedAnswers: PairedAnswers
   ) => PairedAnswers
   getLearningProgress?: (pairedAnswers: PairedAnswers) => {
     totalQuestionsAttempted: number
@@ -566,11 +560,13 @@ export const TestQuestionSelectorLayer = (fn?: {
         fn?.getPairedQuestionStats ??
         (() => ({ totalAnswered: 0, correctAnswers: 0, incorrectAnswers: 0, accuracy: 0 })),
       recordPairedAnswer: fn?.recordPairedAnswer ?? ((_, __, answers) => answers),
-      getLearningProgress: fn?.getLearningProgress ?? (() => ({
-        totalQuestionsAttempted: 0,
-        totalAnswers: 0,
-        overallAccuracy: 0,
-        masteredQuestions: 0,
-      }))
+      getLearningProgress:
+        fn?.getLearningProgress ??
+        (() => ({
+          totalQuestionsAttempted: 0,
+          totalAnswers: 0,
+          overallAccuracy: 0,
+          masteredQuestions: 0
+        }))
     })
   )
