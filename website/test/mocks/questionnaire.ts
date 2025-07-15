@@ -1,6 +1,28 @@
 // Mock questionnaire main module for testing
-import { Effect, Option } from 'effect'
-import { PairedQuestionNumber, Question, QuestionDataSource, QuestionNumber } from 'questionnaire'
+import { Effect, Option, Brand } from 'effect'
+
+// Mock Brand types - these need to be defined here instead of imported
+export type QuestionNumber = string & Brand.Brand<'QuestionNumber'>
+export const QuestionNumber = Brand.nominal<QuestionNumber>()
+
+export type PairedQuestionNumber = string & Brand.Brand<'PairedQuestionNumber'>
+export const PairedQuestionNumber = Brand.nominal<PairedQuestionNumber>()
+
+// Mock other types that are imported
+export type Question = {
+  questionNumber: QuestionNumber
+  pairedQuestionNumber: PairedQuestionNumber
+  question: string
+  correctAnswer: number
+  correctAnswerText: string
+  answers: ReadonlyArray<string>
+}
+
+export type QuestionDataSource = {
+  questions: unknown
+  userState: string
+  questionNumbers?: readonly number[]
+}
 
 export * from './questionnaire-data'
 
