@@ -7,11 +7,18 @@ export default function ThemeToggle() {
   useEffect(() => {
     setMounted(true)
     // Check for saved theme preference or default to system preference
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme !== null) {
-      setIsDark(savedTheme === 'dark')
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark')
-    } else {
+    try {
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme !== null) {
+        setIsDark(savedTheme === 'dark')
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark')
+      } else {
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        setIsDark(systemDark)
+        document.documentElement.classList.toggle('dark', systemDark)
+      }
+    } catch {
+      // Fallback to system preference if localStorage fails
       const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
       setIsDark(systemDark)
       document.documentElement.classList.toggle('dark', systemDark)
@@ -21,7 +28,11 @@ export default function ThemeToggle() {
   const toggleTheme = () => {
     const newTheme = !isDark
     setIsDark(newTheme)
-    localStorage.setItem('theme', newTheme ? 'dark' : 'light')
+    try {
+      localStorage.setItem('theme', newTheme ? 'dark' : 'light')
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
     document.documentElement.classList.toggle('dark', newTheme)
   }
 

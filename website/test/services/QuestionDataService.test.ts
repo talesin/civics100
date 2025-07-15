@@ -4,12 +4,12 @@ import { QuestionDataService } from '@/services/QuestionDataService'
 import { TestAdaptiveLearningServiceLayer } from '@/services/AdaptiveLearningService'
 
 describe('QuestionDataService', () => {
-  // Create test layer that provides both QuestionDataService and AdaptiveLearningService
-  const testLayer = QuestionDataService.DefaultWithoutDependencies.pipe(
-    Layer.provide(TestAdaptiveLearningServiceLayer())
-  )
-
   it('should load sample civics questions', async () => {
+    // Create test layer inside the test to avoid module loading issues
+    const testLayer = QuestionDataService.DefaultWithoutDependencies.pipe(
+      Layer.provide(TestAdaptiveLearningServiceLayer())
+    )
+
     await Effect.gen(function* () {
       const questionService = yield* QuestionDataService
       const questions = yield* questionService.loadCivicsQuestions()
@@ -31,6 +31,10 @@ describe('QuestionDataService', () => {
   })
 
   it('should generate game questions with proper structure', async () => {
+    const testLayer = QuestionDataService.DefaultWithoutDependencies.pipe(
+      Layer.provide(TestAdaptiveLearningServiceLayer())
+    )
+
     await Effect.gen(function* () {
       const questionService = yield* QuestionDataService
       const gameQuestions = yield* questionService.generateGameQuestions(5)
@@ -56,6 +60,10 @@ describe('QuestionDataService', () => {
   })
 
   it('should randomize question selection', async () => {
+    const testLayer = QuestionDataService.DefaultWithoutDependencies.pipe(
+      Layer.provide(TestAdaptiveLearningServiceLayer())
+    )
+
     await Effect.gen(function* () {
       const questionService = yield* QuestionDataService
       const questions1 = yield* questionService.generateGameQuestions(3)
@@ -69,6 +77,10 @@ describe('QuestionDataService', () => {
   })
 
   it('should handle empty question count', async () => {
+    const testLayer = QuestionDataService.DefaultWithoutDependencies.pipe(
+      Layer.provide(TestAdaptiveLearningServiceLayer())
+    )
+
     await Effect.gen(function* () {
       const questionService = yield* QuestionDataService
       const gameQuestions = yield* questionService.generateGameQuestions(0)

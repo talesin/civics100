@@ -41,6 +41,74 @@ const loadCivicsQuestions = (
   return loadQuestions(dataSource)
 }
 
+// -----------------------------------------------------------------------------
+// Helper functions extracted from generateGameQuestions for better readability
+// -----------------------------------------------------------------------------
+
+const shuffleQuestions = (questions: readonly Question[]): Question[] => {
+  const shuffled = [...questions]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    const elementJ = shuffled[j]
+    const elementI = shuffled[i]
+    if (elementJ !== undefined && elementI !== undefined) {
+      shuffled[i] = elementJ
+      shuffled[j] = elementI
+    }
+  }
+  return shuffled
+}
+
+const selectRandomQuestions = (
+  allQuestions: readonly Question[],
+  questionCount: number
+): Question[] => {
+  const shuffledQuestions = shuffleQuestions(allQuestions)
+  return shuffledQuestions.slice(0, questionCount)
+}
+
+const selectAdaptiveQuestions = (
+  adaptiveLearningService: AdaptiveLearningService,
+  allQuestions: readonly Question[],
+  questionCount: number,
+  userState: StateAbbreviation,
+  pairedAnswers: PairedAnswers
+): Effect.Effect<Question[]> =>
+  Effect.gen(function* () {
+    const selectedQuestions: Question[] = []
+    const usedPairedQuestionNumbers = new Set<string>()
+
+    for (let i = 0; i < questionCount; i++) {
+      const filteredPairedAnswers = Object.fromEntries(
+        Object.entries(pairedAnswers).filter(([pqn]) => !usedPairedQuestionNumbers.has(pqn))
+      )
+
+      const nextQuestionOption = yield* adaptiveLearningService.getNextQuestion(
+        userState,
+        filteredPairedAnswers
+      )
+
+      if (Option.isSome(nextQuestionOption)) {
+        const question = nextQuestionOption.value
+        selectedQuestions.push(question)
+        usedPairedQuestionNumbers.add(question.pairedQuestionNumber)
+      } else {
+        const remainingQuestions = allQuestions.filter(
+          (q) => !usedPairedQuestionNumbers.has(q.pairedQuestionNumber)
+        )
+        if (remainingQuestions.length > 0) {
+          const fallbackQuestion = remainingQuestions[0]
+          if (fallbackQuestion) {
+            selectedQuestions.push(fallbackQuestion)
+            usedPairedQuestionNumbers.add(fallbackQuestion.pairedQuestionNumber)
+          }
+        }
+      }
+    }
+
+    return selectedQuestions
+  })
+
 /**
  * Generate game questions using true adaptive selection
  * Uses AdaptiveLearningService for intelligent question selection based on user performance
@@ -53,69 +121,21 @@ const generateGameQuestions = (adaptiveLearningService: AdaptiveLearningService)
   ) {
     const allQuestions = yield* loadCivicsQuestions(userState)
 
-    // Check if user has answer history for adaptive selection
     const hasAnswerHistory = Object.keys(pairedAnswers).length > 0
 
-    if (hasAnswerHistory) {
-      // Use adaptive selection for returning users
-      const selectedQuestions: Question[] = []
-      const usedPairedQuestionNumbers = new Set<string>()
-
-      for (let i = 0; i < questionCount; i++) {
-        // Create updated pairedAnswers that excludes already selected questions
-        // This prevents duplicates in the current session
-        const filteredPairedAnswers = Object.fromEntries(
-          Object.entries(pairedAnswers).filter(([pqn]) => !usedPairedQuestionNumbers.has(pqn))
-        )
-
-        const nextQuestionOption = yield* adaptiveLearningService.getNextQuestion(
+    const questions: Question[] = hasAnswerHistory
+      ? yield* selectAdaptiveQuestions(
+          adaptiveLearningService,
+          allQuestions,
+          questionCount,
           userState,
-          filteredPairedAnswers
+          pairedAnswers
         )
+      : selectRandomQuestions(allQuestions, questionCount)
 
-        if (Option.isSome(nextQuestionOption)) {
-          const question = nextQuestionOption.value
-          selectedQuestions.push(question)
-          usedPairedQuestionNumbers.add(question.pairedQuestionNumber)
-        } else {
-          // Fallback: if adaptive selection fails, pick from remaining questions
-          const remainingQuestions = allQuestions.filter(
-            (q) => !usedPairedQuestionNumbers.has(q.pairedQuestionNumber)
-          )
-          if (remainingQuestions.length > 0) {
-            const fallbackQuestion = remainingQuestions[0]
-            if (fallbackQuestion) {
-              selectedQuestions.push(fallbackQuestion)
-              usedPairedQuestionNumbers.add(fallbackQuestion.pairedQuestionNumber)
-            }
-          }
-        }
-      }
-
-      return selectedQuestions.map((question, index) =>
-        transformQuestionToDisplay(question, index + 1, questionCount)
-      )
-    } else {
-      // Use randomized selection for new users to ensure variety
-      const shuffledQuestions = [...allQuestions]
-
-      // Fisher-Yates shuffle for fair randomization
-      for (let i = shuffledQuestions.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1))
-        const elementJ = shuffledQuestions[j]
-        const elementI = shuffledQuestions[i]
-        if (elementJ !== undefined && elementI !== undefined) {
-          shuffledQuestions[i] = elementJ
-          shuffledQuestions[j] = elementI
-        }
-      }
-
-      const selectedQuestions = shuffledQuestions.slice(0, questionCount)
-
-      return selectedQuestions.map((question, index) =>
-        transformQuestionToDisplay(question, index + 1, questionCount)
-      )
-    }
+    return questions.map((question, index) =>
+      transformQuestionToDisplay(question, index + 1, questionCount)
+    )
   })
 
 /**

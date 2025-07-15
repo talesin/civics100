@@ -15,30 +15,42 @@ const safeJsonParse = (json: string | null): Option.Option<unknown> =>
   Schema.decodeUnknownOption(Schema.parseJson())(json)
 
 const safeJsonStringify = <T>(value: T): Effect.Effect<string, never, never> => {
-  return Effect.try(() => JSON.stringify(value)).pipe(Effect.catchAll(() => Effect.succeed('')))
+  return Effect.try({
+    try: () => JSON.stringify(value),
+    catch: () => ''
+  }).pipe(Effect.catchAll(() => Effect.succeed('')))
 }
 
 const checkStorageAvailable = (): boolean => {
   if (typeof window === 'undefined') return false
 
-  try {
-    const test = '__storage_test__'
-    localStorage.setItem(test, test)
-    localStorage.removeItem(test)
-    return true
-  } catch {
-    return false
-  }
+  return Effect.runSync(
+    Effect.try({
+      try: () => {
+        const test = '__storage_test__'
+        localStorage.setItem(test, test)
+        localStorage.removeItem(test)
+        return true
+      },
+      catch: () => false
+    })
+  )
 }
 
 const migrateStorageIfNeeded = (): Effect.Effect<void, never, never> => {
-  return Effect.sync(() => {
+  return Effect.gen(function* () {
     if (!checkStorageAvailable()) return
 
-    const currentVersion = localStorage.getItem(STORAGE_KEYS.VERSION)
+    const currentVersion = yield* Effect.try({
+      try: () => localStorage.getItem(STORAGE_KEYS.VERSION),
+      catch: () => null
+    }).pipe(Effect.catchAll(() => Effect.succeed(null)))
 
     if (currentVersion !== STORAGE_VERSION) {
-      localStorage.setItem(STORAGE_KEYS.VERSION, STORAGE_VERSION)
+      yield* Effect.try({
+        try: () => localStorage.setItem(STORAGE_KEYS.VERSION, STORAGE_VERSION),
+        catch: () => void 0
+      }).pipe(Effect.catchAll(() => Effect.succeed(void 0)))
     }
   })
 }
@@ -57,7 +69,10 @@ const saveGameResult = (result: GameResult): Effect.Effect<void, never, never> =
 
     const jsonString = yield* safeJsonStringify(resultsToKeep)
     if (jsonString) {
-      localStorage.setItem(STORAGE_KEYS.GAME_RESULTS, jsonString)
+      yield* Effect.try({
+        try: () => localStorage.setItem(STORAGE_KEYS.GAME_RESULTS, jsonString),
+        catch: () => void 0
+      }).pipe(Effect.catchAll(() => Effect.succeed(void 0)))
     }
   })
 }
@@ -68,7 +83,10 @@ const getGameResults = (): Effect.Effect<readonly GameResult[], never, never> =>
 
     yield* migrateStorageIfNeeded()
 
-    const json = localStorage.getItem(STORAGE_KEYS.GAME_RESULTS)
+    const json = yield* Effect.try({
+      try: () => localStorage.getItem(STORAGE_KEYS.GAME_RESULTS),
+      catch: () => null
+    }).pipe(Effect.catchAll(() => Effect.succeed(null)))
     const parsed = safeJsonParse(json)
 
     const results = Option.getOrElse(parsed, () => [])
@@ -102,7 +120,10 @@ const saveGameSettings = (settings: GameSettings): Effect.Effect<void, never, ne
 
     const jsonString = yield* safeJsonStringify(settings)
     if (jsonString) {
-      localStorage.setItem(STORAGE_KEYS.GAME_SETTINGS, jsonString)
+      yield* Effect.try({
+        try: () => localStorage.setItem(STORAGE_KEYS.GAME_SETTINGS, jsonString),
+        catch: () => void 0
+      }).pipe(Effect.catchAll(() => Effect.succeed(void 0)))
     }
   })
 }
@@ -113,7 +134,10 @@ const getGameSettings = (): Effect.Effect<GameSettings, never, never> => {
 
     yield* migrateStorageIfNeeded()
 
-    const json = localStorage.getItem(STORAGE_KEYS.GAME_SETTINGS)
+    const json = yield* Effect.try({
+      try: () => localStorage.getItem(STORAGE_KEYS.GAME_SETTINGS),
+      catch: () => null
+    }).pipe(Effect.catchAll(() => Effect.succeed(null)))
     const parsed = safeJsonParse(json)
 
     const settings = Option.getOrElse(parsed, () => DEFAULT_GAME_SETTINGS)
@@ -133,12 +157,17 @@ const getGameSettings = (): Effect.Effect<GameSettings, never, never> => {
 }
 
 const clearAllData = (): Effect.Effect<void, never, never> => {
-  return Effect.sync(() => {
+  return Effect.gen(function* () {
     if (!checkStorageAvailable()) return
 
-    Object.values(STORAGE_KEYS).forEach((key) => {
-      localStorage.removeItem(key)
-    })
+    yield* Effect.try({
+      try: () => {
+        Object.values(STORAGE_KEYS).forEach((key) => {
+          localStorage.removeItem(key)
+        })
+      },
+      catch: () => void 0
+    }).pipe(Effect.catchAll(() => Effect.succeed(void 0)))
   })
 }
 
@@ -193,7 +222,10 @@ const savePairedAnswers = (pairedAnswers: PairedAnswers): Effect.Effect<void, ne
 
     const jsonString = yield* safeJsonStringify(pairedAnswers)
     if (jsonString) {
-      localStorage.setItem(STORAGE_KEYS.PAIRED_ANSWERS, jsonString)
+      yield* Effect.try({
+        try: () => localStorage.setItem(STORAGE_KEYS.PAIRED_ANSWERS, jsonString),
+        catch: () => void 0
+      }).pipe(Effect.catchAll(() => Effect.succeed(void 0)))
     }
   })
 }
@@ -204,7 +236,10 @@ const getPairedAnswers = (): Effect.Effect<PairedAnswers, never, never> => {
 
     yield* migrateStorageIfNeeded()
 
-    const json = localStorage.getItem(STORAGE_KEYS.PAIRED_ANSWERS)
+    const json = yield* Effect.try({
+      try: () => localStorage.getItem(STORAGE_KEYS.PAIRED_ANSWERS),
+      catch: () => null
+    }).pipe(Effect.catchAll(() => Effect.succeed(null)))
     const parsed = safeJsonParse(json)
 
     const pairedAnswers = Option.getOrElse(parsed, () => ({}))
@@ -231,25 +266,16 @@ export class LocalStorageService extends Effect.Service<LocalStorageService>()(
 ) {}
 
 export const TestLocalStorageServiceLayer = (fn?: {
-  saveGameResult?: (result: GameResult) => Effect.Effect<void, never, never>
-  getGameResults?: () => Effect.Effect<readonly GameResult[], never, never>
-  saveGameSettings?: (settings: GameSettings) => Effect.Effect<void, never, never>
-  getGameSettings?: () => Effect.Effect<GameSettings, never, never>
-  savePairedAnswers?: (pairedAnswers: PairedAnswers) => Effect.Effect<void, never, never>
-  getPairedAnswers?: () => Effect.Effect<PairedAnswers, never, never>
-  clearAllData?: () => Effect.Effect<void, never, never>
-  getRecentResults?: (count: number) => Effect.Effect<readonly GameResult[], never, never>
-  getGameStats?: () => Effect.Effect<
-    {
-      totalGames: number
-      averageScore: number
-      bestScore: number
-      earlyWins: number
-    },
-    never,
-    never
-  >
-  checkStorageAvailable?: () => boolean
+  saveGameResult?: LocalStorageService['saveGameResult']
+  getGameResults?: LocalStorageService['getGameResults']
+  saveGameSettings?: LocalStorageService['saveGameSettings']
+  getGameSettings?: LocalStorageService['getGameSettings']
+  savePairedAnswers?: LocalStorageService['savePairedAnswers']
+  getPairedAnswers?: LocalStorageService['getPairedAnswers']
+  clearAllData?: LocalStorageService['clearAllData']
+  getRecentResults?: LocalStorageService['getRecentResults']
+  getGameStats?: LocalStorageService['getGameStats']
+  checkStorageAvailable?: LocalStorageService['checkStorageAvailable']
 }) =>
   Layer.succeed(
     LocalStorageService,

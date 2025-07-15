@@ -24,7 +24,7 @@ describe('SessionService', () => {
   )
 
   it('should create a new session with correct structure', async () => {
-    Effect.gen(function* () {
+    await Effect.gen(function* () {
       const sessionService = yield* SessionService
       const session = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
 
@@ -44,7 +44,7 @@ describe('SessionService', () => {
   })
 
   it('should process correct answers correctly', async () => {
-    Effect.gen(function* () {
+    await Effect.gen(function* () {
       const sessionService = yield* SessionService
       const session = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
 
@@ -70,7 +70,7 @@ describe('SessionService', () => {
   })
 
   it('should process incorrect answers correctly', async () => {
-    Effect.gen(function* () {
+    await Effect.gen(function* () {
       const sessionService = yield* SessionService
       const session = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
 
@@ -96,7 +96,7 @@ describe('SessionService', () => {
   })
 
   it('should detect early win at 6 correct answers', async () => {
-    Effect.gen(function* () {
+    await Effect.gen(function* () {
       const sessionService = yield* SessionService
       let session = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
 
@@ -120,7 +120,7 @@ describe('SessionService', () => {
   })
 
   it('should complete session after max questions', async () => {
-    Effect.gen(function* () {
+    await Effect.gen(function* () {
       const sessionService = yield* SessionService
       let session = yield* sessionService.createNewSession({
         ...DEFAULT_GAME_SETTINGS,
@@ -150,7 +150,7 @@ describe('SessionService', () => {
   })
 
   it('should calculate results correctly', async () => {
-    Effect.gen(function* () {
+    await Effect.gen(function* () {
       const sessionService = yield* SessionService
 
       const session = {
@@ -177,7 +177,7 @@ describe('SessionService', () => {
   })
 
   it('should check session continuation correctly', async () => {
-    Effect.gen(function* () {
+    await Effect.gen(function* () {
       const sessionService = yield* SessionService
 
       const activeSession = {

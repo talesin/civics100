@@ -9,7 +9,7 @@ import GameResults from '@/components/GameResults'
 import { SessionService } from '@/services/SessionService'
 import { LocalStorageService } from '@/services/LocalStorageService'
 import { QuestionDataService } from '@/services/QuestionDataService'
-import { AdaptiveLearningService } from '@/services/AdaptiveLearningService'
+import { runWithServicesAndErrorHandling } from '@/services/ServiceProvider'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import {
@@ -19,7 +19,6 @@ import {
   GameResult,
   GameQuestion as GameQuestionType
 } from '@/types'
-import { QuestionSelector } from 'questionnaire'
 
 type GameState = 'loading' | 'playing' | 'answered' | 'transitioning' | 'completed'
 
@@ -37,50 +36,48 @@ export default function Game() {
   const initializeGame = useCallback(() => {
     setGameState('loading')
 
-    Effect.gen(function* () {
-      const sessionService = yield* SessionService
-      const questionService = yield* QuestionDataService
+    runWithServicesAndErrorHandling(
+      Effect.gen(function* () {
+        const sessionService = yield* SessionService
+        const questionService = yield* QuestionDataService
 
-      const newSession = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
-      const gameQuestions = yield* questionService.generateGameQuestions(
-        DEFAULT_GAME_SETTINGS.maxQuestions
-      )
+        const newSession = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
+        const gameQuestions = yield* questionService.generateGameQuestions(
+          DEFAULT_GAME_SETTINGS.maxQuestions
+        )
 
-      setSession(newSession)
-      setQuestions(gameQuestions)
-      setCurrentQuestionIndex(0)
-      setShowEarlyWinOption(false)
-      setGameState('playing')
-    })
-      .pipe(
-        Effect.provide(SessionService.Default),
-        Effect.provide(QuestionDataService.Default),
-        Effect.provide(AdaptiveLearningService.Default),
-        Effect.provide(QuestionSelector.Default),
-        Effect.runPromise
-      )
-      .catch(console.error)
+        setSession(newSession)
+        setQuestions(gameQuestions)
+        setCurrentQuestionIndex(0)
+        setShowEarlyWinOption(false)
+        setGameState('playing')
+      }),
+      console.error
+    )
   }, [])
 
   const completeGame = useCallback(
     (finalSession: GameSession) => {
-      return Effect.gen(function* () {
-        const sessionService = yield* SessionService
-        const storageService = yield* LocalStorageService
+      runWithServicesAndErrorHandling(
+        Effect.gen(function* () {
+          const sessionService = yield* SessionService
+          const storageService = yield* LocalStorageService
 
-        const result = sessionService.calculateResult(finalSession)
-        yield* storageService.saveGameResult(result)
+          const result = sessionService.calculateResult(finalSession)
+          yield* storageService.saveGameResult(result)
 
-        // Play completion sound
-        if (finalSession.isEarlyWin) {
-          playEarlyWin()
-        } else {
-          playComplete()
-        }
+          // Play completion sound
+          if (finalSession.isEarlyWin) {
+            playEarlyWin()
+          } else {
+            playComplete()
+          }
 
-        setGameResult(result)
-        setGameState('completed')
-      })
+          setGameResult(result)
+          setGameState('completed')
+        }),
+        console.error
+      )
     },
     [playComplete, playEarlyWin]
   )
@@ -93,33 +90,29 @@ export default function Game() {
     (answer: QuestionAnswer) => {
       if (!session || gameState !== 'playing') return
 
-      Effect.gen(function* () {
-        const sessionService = yield* SessionService
+      runWithServicesAndErrorHandling(
+        Effect.gen(function* () {
+          const sessionService = yield* SessionService
 
-        const updatedSession = sessionService.processAnswer(session, answer, DEFAULT_GAME_SETTINGS)
-        setSession(updatedSession)
-        setGameState('answered')
+          const updatedSession = sessionService.processAnswer(session, answer, DEFAULT_GAME_SETTINGS)
+          setSession(updatedSession)
+          setGameState('answered')
 
-        // Check for early win condition
-        if (
-          updatedSession.correctAnswers >= DEFAULT_GAME_SETTINGS.winThreshold &&
-          !updatedSession.isCompleted
-        ) {
-          setShowEarlyWinOption(true)
-        }
+          // Check for early win condition
+          if (
+            updatedSession.correctAnswers >= DEFAULT_GAME_SETTINGS.winThreshold &&
+            !updatedSession.isCompleted
+          ) {
+            setShowEarlyWinOption(true)
+          }
 
-        // Auto-complete if all questions answered or early win achieved
-        if (updatedSession.isCompleted) {
-          yield* completeGame(updatedSession)
-        }
-      })
-        .pipe(
-          Effect.provide(SessionService.Default),
-          Effect.provide(LocalStorageService.Default),
-          Effect.provide(QuestionSelector.Default),
-          Effect.runPromise
-        )
-        .catch(console.error)
+          // Auto-complete if all questions answered or early win achieved
+          if (updatedSession.isCompleted) {
+            completeGame(updatedSession)
+          }
+        }),
+        console.error
+      )
     },
     [session, gameState, completeGame]
   )
@@ -144,13 +137,7 @@ export default function Game() {
           totalAnswered: session.totalAnswered
         }
 
-        Effect.runPromise(
-          completeGame(completedSession).pipe(
-            Effect.provide(SessionService.Default),
-            Effect.provide(LocalStorageService.Default),
-            Effect.provide(QuestionSelector.Default)
-          )
-        ).catch(console.error)
+        completeGame(completedSession)
       }
     }, 300)
   }, [session, currentQuestionIndex, questions.length, completeGame])
@@ -166,13 +153,6 @@ export default function Game() {
     }
 
     completeGame(earlyFinishSession)
-      .pipe(
-        Effect.provide(SessionService.Default),
-        Effect.provide(LocalStorageService.Default),
-        Effect.provide(QuestionSelector.Default),
-        Effect.runPromise
-      )
-      .catch(console.error)
   }, [session, completeGame])
 
   const handleRestart = useCallback(() => {
@@ -204,10 +184,14 @@ export default function Game() {
 
   // Show keyboard help on first visit
   useEffect(() => {
-    const hasSeenHelp = localStorage.getItem('civics-keyboard-help-seen')
-    if (hasSeenHelp === null) {
-      setShowKeyboardHelp(true)
-      localStorage.setItem('civics-keyboard-help-seen', 'true')
+    try {
+      const hasSeenHelp = localStorage.getItem('civics-keyboard-help-seen')
+      if (hasSeenHelp === null) {
+        setShowKeyboardHelp(true)
+        localStorage.setItem('civics-keyboard-help-seen', 'true')
+      }
+    } catch {
+      // Silently fail if localStorage is unavailable
     }
   }, [])
 
