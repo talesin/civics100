@@ -125,6 +125,10 @@ The US Civics questionnaire will now follow a constrained session model. Each se
 
 - Given I am on the questionnaire page, when I complete a test, then the questions should be shuffled and the randomness of the questions should change based on my answers.
 
+### As a user, I want to see the percentage of all questions available I have answered correctly so that I can track my progress.
+
+- Given I am on the questionnaire page, when I answer a question, then the percentage of all questions available I have answered correctly should be updated.
+
 ## Test Scenarios (Acceptance Criteria)
 
 | Scenario          | Given            | When                           | Then                                              |

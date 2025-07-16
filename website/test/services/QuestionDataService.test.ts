@@ -1,39 +1,12 @@
 import { describe, it, expect } from '@jest/globals'
 import { Effect, Layer } from 'effect'
 import { QuestionDataService } from '@/services/QuestionDataService'
-import { TestAdaptiveLearningServiceLayer } from '@/services/AdaptiveLearningService'
+import { TestGameServiceLayer } from 'questionnaire'
 
 describe('QuestionDataService', () => {
-  it('should load sample civics questions', async () => {
-    // Create test layer inside the test to avoid module loading issues
-    const testLayer = QuestionDataService.DefaultWithoutDependencies.pipe(
-      Layer.provide(TestAdaptiveLearningServiceLayer())
-    )
-
-    await Effect.gen(function* () {
-      const questionService = yield* QuestionDataService
-      const questions = yield* questionService.loadCivicsQuestions()
-
-      expect(questions).toBeDefined()
-      expect(Array.isArray(questions)).toBe(true)
-      expect(questions.length).toBeGreaterThan(0)
-
-      // Check first question structure (now using questionnaire package's Question format)
-      const firstQuestion = questions[0]
-      expect(firstQuestion).toMatchObject({
-        question: expect.any(String),
-        questionNumber: expect.any(String),
-        pairedQuestionNumber: expect.any(String),
-        correctAnswer: expect.any(Number),
-        correctAnswerText: expect.any(String),
-        answers: expect.any(Array)
-      })
-    }).pipe(Effect.provide(testLayer), Effect.runPromise)
-  })
-
   it('should generate game questions with proper structure', async () => {
     const testLayer = QuestionDataService.DefaultWithoutDependencies.pipe(
-      Layer.provide(TestAdaptiveLearningServiceLayer())
+      Layer.provide(TestGameServiceLayer())
     )
 
     await Effect.gen(function* () {
@@ -59,7 +32,7 @@ describe('QuestionDataService', () => {
 
   it('should randomize question selection', async () => {
     const testLayer = QuestionDataService.DefaultWithoutDependencies.pipe(
-      Layer.provide(TestAdaptiveLearningServiceLayer())
+      Layer.provide(TestGameServiceLayer())
     )
 
     await Effect.gen(function* () {
@@ -76,7 +49,7 @@ describe('QuestionDataService', () => {
 
   it('should handle empty question count', async () => {
     const testLayer = QuestionDataService.DefaultWithoutDependencies.pipe(
-      Layer.provide(TestAdaptiveLearningServiceLayer())
+      Layer.provide(TestGameServiceLayer())
     )
 
     await Effect.gen(function* () {

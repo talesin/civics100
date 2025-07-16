@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from '@jest/globals'
 import { Effect } from 'effect'
 import { LocalStorageService } from '@/services/LocalStorageService'
-import { DEFAULT_GAME_SETTINGS, GameSettings, GameResult } from '@/types'
+import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings, GameResult } from '@/types'
 
 // Get localStorage mock from setup
 const localStorageMock = window.localStorage
@@ -46,7 +46,7 @@ describe('LocalStorageService', () => {
     const program = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
 
-      const testSettings: GameSettings = {
+      const testSettings: WebsiteGameSettings = {
         maxQuestions: 15,
         winThreshold: 8,
         userState: 'NY',

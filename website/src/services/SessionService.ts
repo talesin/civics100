@@ -1,108 +1,92 @@
 import { Effect, Layer } from 'effect'
-import { GameSession, GameResult, UserAnswer, QuestionDisplay, GameSettings } from '@/types'
-import { QuestionDataService } from './QuestionDataService'
+import { QuestionDisplay, WebsiteGameSettings as WebsiteGameSettings } from '@/types'
+import type {
+  WebGameSession,
+  GameResult,
+  UserAnswer,
+  GameSettings as QuestionnaireGameSettings
+} from 'questionnaire'
+import { GameService } from 'questionnaire'
 
-const generateSessionId = (): string => {
-  return `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
+/**
+ * Convert website GameSettings to questionnaire GameSettings
+ */
+const convertWebsiteToQuestionnaireSettings = (
+  websiteSettings: WebsiteGameSettings
+): QuestionnaireGameSettings => {
+  const { darkMode: _darkMode, ...questionnaireSettings } = websiteSettings
+  return questionnaireSettings
 }
 
-const createNewSession = (
-  questionDataService: QuestionDataService
-): ((
-  settings: GameSettings,
-  existingPairedAnswers?: import('questionnaire').PairedAnswers
-) => Effect.Effect<GameSession>) =>
+/**
+ * Create a new web game session using questionnaire's GameService
+ */
+const createNewSession = (gameService: GameService) =>
   Effect.fn(function* (
-    settings: GameSettings,
+    settings: WebsiteGameSettings,
     existingPairedAnswers?: import('questionnaire').PairedAnswers
   ) {
-    const questions = yield* questionDataService.generateGameQuestions(
-      settings.maxQuestions,
-      settings.userState,
-      existingPairedAnswers ?? {}
+    const questionnaireSettings = convertWebsiteToQuestionnaireSettings(settings)
+    const { session } = yield* gameService.createWebGameSession(
+      questionnaireSettings,
+      existingPairedAnswers
     )
-
-    return {
-      id: generateSessionId(),
-      questions: questions.map((q) => q.id),
-      currentQuestionIndex: 0,
-      correctAnswers: 0,
-      totalAnswered: 0,
-      isCompleted: false,
-      isEarlyWin: false,
-      startedAt: new Date(),
-      pairedAnswers: existingPairedAnswers ?? {}
-    }
+    return session
   })
 
-const processAnswer = (
-  session: GameSession,
-  answer: UserAnswer,
-  settings: GameSettings
-): GameSession => {
-  const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0)
-  const newTotalAnswered = session.totalAnswered + 1
-  const newCurrentIndex = session.currentQuestionIndex + 1
-
-  const isEarlyWin = newCorrectAnswers >= settings.winThreshold
-  const isCompleted = isEarlyWin || newTotalAnswered >= settings.maxQuestions
-
-  return {
-    ...session,
-    currentQuestionIndex: newCurrentIndex,
-    correctAnswers: newCorrectAnswers,
-    totalAnswered: newTotalAnswered,
-    isCompleted,
-    isEarlyWin,
-    completedAt: isCompleted ? new Date() : undefined
+/**
+ * Process answer using questionnaire's GameService
+ */
+const processAnswer =
+  (gameService: GameService) =>
+  (session: WebGameSession, answer: UserAnswer): WebGameSession => {
+    return gameService.processWebGameAnswer(session, answer)
   }
-}
 
-const calculateResult = (session: GameSession): GameResult => {
-  const percentage =
-    session.totalAnswered > 0
-      ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
-      : 0
-
-  return {
-    sessionId: session.id,
-    totalQuestions: session.totalAnswered,
-    correctAnswers: session.correctAnswers,
-    percentage,
-    isEarlyWin: session.isEarlyWin,
-    completedAt: session.completedAt ?? new Date()
+/**
+ * Calculate result using questionnaire's GameService
+ */
+const calculateResult =
+  (gameService: GameService) =>
+  (session: WebGameSession): GameResult => {
+    return gameService.calculateGameResult(session)
   }
-}
 
+/**
+ * Get current question from a list of questions
+ */
 const getCurrentQuestion = (
-  session: GameSession,
+  session: WebGameSession,
   questions: QuestionDisplay[]
 ): QuestionDisplay | undefined => {
   return questions.find((q) => q.id === session.questions[session.currentQuestionIndex])
 }
 
-const canContinue = (session: GameSession, settings: GameSettings): boolean => {
+/**
+ * Check if the session can continue
+ */
+const canContinue = (session: WebGameSession): boolean => {
   return (
     !session.isCompleted &&
     session.currentQuestionIndex < session.questions.length &&
-    session.correctAnswers < settings.winThreshold
+    session.correctAnswers < session.settings.winThreshold
   )
 }
 
 export class SessionService extends Effect.Service<SessionService>()('SessionService', {
   effect: Effect.gen(function* () {
-    const questionDataService = yield* QuestionDataService
+    const gameService = yield* GameService
 
     return {
-      createNewSession: createNewSession(questionDataService),
-      processAnswer,
-      calculateResult,
+      createNewSession: createNewSession(gameService),
+      processAnswer: processAnswer(gameService),
+      calculateResult: calculateResult(gameService),
       getCurrentQuestion,
       canContinue,
-      generateSessionId: () => generateSessionId()
+      generateSessionId: () => gameService.generateSessionId()
     }
   }),
-  dependencies: [QuestionDataService.Default]
+  dependencies: [GameService.Default]
 }) {}
 
 export const TestSessionServiceLayer = (fn?: {
@@ -129,7 +113,12 @@ export const TestSessionServiceLayer = (fn?: {
             isCompleted: false,
             isEarlyWin: false,
             startedAt: new Date(),
-            pairedAnswers: {}
+            pairedAnswers: {},
+            settings: {
+              maxQuestions: 10,
+              winThreshold: 6,
+              userState: 'CA' as import('civics2json').StateAbbreviation
+            }
           })),
       processAnswer: fn?.processAnswer ?? ((session) => session),
       calculateResult:

@@ -1,5 +1,5 @@
 import { Effect, Layer, Option, Schema } from 'effect'
-import { GameResult, GameSettings, DEFAULT_GAME_SETTINGS } from '@/types'
+import { GameResult, WebsiteGameSettings, DEFAULT_GAME_SETTINGS } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 
 const STORAGE_KEYS = {
@@ -112,7 +112,7 @@ const getGameResults = (): Effect.Effect<readonly GameResult[], never, never> =>
   })
 }
 
-const saveGameSettings = (settings: GameSettings): Effect.Effect<void, never, never> => {
+const saveGameSettings = (settings: WebsiteGameSettings): Effect.Effect<void, never, never> => {
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return
 
@@ -128,7 +128,7 @@ const saveGameSettings = (settings: GameSettings): Effect.Effect<void, never, ne
   })
 }
 
-const getGameSettings = (): Effect.Effect<GameSettings, never, never> => {
+const getGameSettings = (): Effect.Effect<WebsiteGameSettings, never, never> => {
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return DEFAULT_GAME_SETTINGS
 

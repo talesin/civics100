@@ -1,28 +1,13 @@
 import { describe, it, expect } from '@jest/globals'
 import { Effect, Layer } from 'effect'
 import { SessionService } from '@/services/SessionService'
-import { TestQuestionDataServiceLayer } from '@/services/QuestionDataService'
 import { DEFAULT_GAME_SETTINGS } from '@/types'
+import { TestGameServiceLayer, WebGameSession } from 'questionnaire'
 
 describe('SessionService', () => {
   const testLayer = SessionService.DefaultWithoutDependencies.pipe(
-    Layer.provide(
-      TestQuestionDataServiceLayer({
-        generateGameQuestions: (count: number) =>
-          Effect.succeed(
-            Array.from({ length: count }, (_, i) => ({
-              id: `question-${i + 1}`,
-              questionText: `Test question ${i + 1}`,
-              answers: ['Answer A', 'Answer B', 'Answer C', 'Answer D'],
-              correctAnswerIndex: 0,
-              questionNumber: i + 1,
-              totalQuestions: count
-            }))
-          )
-      })
-    )
+    Layer.provide(TestGameServiceLayer())
   )
-
   it('should create a new session with correct structure', async () => {
     await Effect.gen(function* () {
       const sessionService = yield* SessionService
@@ -54,11 +39,7 @@ describe('SessionService', () => {
         answeredAt: new Date()
       }
 
-      const updatedSession = sessionService.processAnswer(
-        session,
-        correctAnswer,
-        DEFAULT_GAME_SETTINGS
-      )
+      const updatedSession = sessionService.processAnswer(session, correctAnswer)
 
       expect(updatedSession).toMatchObject({
         correctAnswers: 1,
@@ -82,11 +63,7 @@ describe('SessionService', () => {
         answeredAt: new Date()
       }
 
-      const updatedSession = sessionService.processAnswer(
-        session,
-        incorrectAnswer,
-        DEFAULT_GAME_SETTINGS
-      )
+      const updatedSession = sessionService.processAnswer(session, incorrectAnswer)
 
       expect(updatedSession).toMatchObject({
         correctAnswers: 0,
@@ -111,7 +88,7 @@ describe('SessionService', () => {
           isCorrect: true,
           answeredAt: new Date()
         }
-        session = sessionService.processAnswer(session, correctAnswer, DEFAULT_GAME_SETTINGS)
+        session = sessionService.processAnswer(session, correctAnswer)
       }
 
       expect(session).toMatchObject({
@@ -140,10 +117,7 @@ describe('SessionService', () => {
           isCorrect: i < 2, // First 2 correct, last incorrect
           answeredAt: new Date()
         }
-        session = sessionService.processAnswer(session, answer, {
-          ...DEFAULT_GAME_SETTINGS,
-          maxQuestions: 3
-        })
+        session = sessionService.processAnswer(session, answer)
       }
 
       expect(session.correctAnswers).toBe(2)
@@ -158,7 +132,7 @@ describe('SessionService', () => {
     await Effect.gen(function* () {
       const sessionService = yield* SessionService
 
-      const session = {
+      const session: WebGameSession = {
         id: 'test-session',
         questions: ['q1', 'q2', 'q3', 'q4', 'q5'],
         currentQuestionIndex: 5,
@@ -167,7 +141,14 @@ describe('SessionService', () => {
         isCompleted: true,
         isEarlyWin: false,
         startedAt: new Date(),
-        completedAt: new Date()
+        completedAt: new Date(),
+        pairedAnswers: {},
+        settings: {
+          maxQuestions: 0,
+          winThreshold: 0,
+          userState: 'CA',
+          questionNumbers: undefined
+        }
       }
 
       const result = sessionService.calculateResult(session)
@@ -185,7 +166,7 @@ describe('SessionService', () => {
     await Effect.gen(function* () {
       const sessionService = yield* SessionService
 
-      const activeSession = {
+      const activeSession: WebGameSession = {
         id: 'test-session',
         questions: ['q1', 'q2', 'q3'],
         currentQuestionIndex: 1,
@@ -193,23 +174,30 @@ describe('SessionService', () => {
         totalAnswered: 1,
         isCompleted: false,
         isEarlyWin: false,
-        startedAt: new Date()
+        startedAt: new Date(),
+        pairedAnswers: {},
+        settings: {
+          maxQuestions: 0,
+          winThreshold: 0,
+          userState: 'CA',
+          questionNumbers: undefined
+        }
       }
 
-      const completedSession = {
+      const completedSession: WebGameSession = {
         ...activeSession,
         isCompleted: true
       }
 
-      const earlyWinSession = {
+      const earlyWinSession: WebGameSession = {
         ...activeSession,
         correctAnswers: 6,
         isEarlyWin: true
       }
 
-      expect(sessionService.canContinue(activeSession, DEFAULT_GAME_SETTINGS)).toBe(true)
-      expect(sessionService.canContinue(completedSession, DEFAULT_GAME_SETTINGS)).toBe(false)
-      expect(sessionService.canContinue(earlyWinSession, DEFAULT_GAME_SETTINGS)).toBe(false)
+      expect(sessionService.canContinue(activeSession)).toBe(true)
+      expect(sessionService.canContinue(completedSession)).toBe(false)
+      expect(sessionService.canContinue(earlyWinSession)).toBe(false)
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 })

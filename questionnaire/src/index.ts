@@ -4,7 +4,12 @@ export type {
   PairedAnswers,
   Question,
   QuestionStats,
-  SelectionWeights
+  SelectionWeights,
+  GameSettings,
+  WebGameSession,
+  UserAnswer,
+  GameResult,
+  QuestionDisplay
 } from './types.js'
 
 export { QuestionNumber, PairedQuestionNumber } from './types.js'
@@ -21,6 +26,8 @@ export {
   findQuestionByPairedNumber,
   getQuestionCount
 } from './QuestionDataService.js'
+
+export { GameService, TestGameServiceLayer } from './cli/GameService.js'
 
 // Re-export question data for consuming packages
 export { rawCivicsQuestions, civicsQuestionsWithDistractors } from './data/index.js'

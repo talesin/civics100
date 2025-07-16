@@ -1,9 +1,8 @@
 import { Effect, Layer } from 'effect'
-import { QuestionSelector } from 'questionnaire'
+import { GameService } from 'questionnaire'
 import { QuestionDataService } from './QuestionDataService'
 import { SessionService } from './SessionService'
 import { LocalStorageService } from './LocalStorageService'
-import { AdaptiveLearningService } from './AdaptiveLearningService'
 
 /**
  * Centralized service layer that provides all application services
@@ -13,8 +12,7 @@ import { AdaptiveLearningService } from './AdaptiveLearningService'
  */
 export const AppServiceLayer = Layer.mergeAll(
   LocalStorageService.Default,
-  QuestionSelector.Default,
-  AdaptiveLearningService.Default,
+  GameService.Default,
   QuestionDataService.Default,
   SessionService.Default
 )
