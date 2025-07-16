@@ -20,13 +20,14 @@ describe('QuestionDataService', () => {
 
       // Check first question structure (now using questionnaire package's Question format)
       const firstQuestion = questions[0]
-      expect(firstQuestion).toHaveProperty('question')
-      expect(firstQuestion).toHaveProperty('questionNumber')
-      expect(firstQuestion).toHaveProperty('pairedQuestionNumber')
-      expect(firstQuestion).toHaveProperty('correctAnswer')
-      expect(firstQuestion).toHaveProperty('correctAnswerText')
-      expect(firstQuestion).toHaveProperty('answers')
-      expect(Array.isArray(firstQuestion?.answers)).toBe(true)
+      expect(firstQuestion).toMatchObject({
+        question: expect.any(String),
+        questionNumber: expect.any(String),
+        pairedQuestionNumber: expect.any(String),
+        correctAnswer: expect.any(Number),
+        correctAnswerText: expect.any(String),
+        answers: expect.any(Array)
+      })
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
@@ -45,17 +46,14 @@ describe('QuestionDataService', () => {
 
       // Check question display structure
       const firstQuestion = gameQuestions[0]
-      expect(firstQuestion).toHaveProperty('id')
-      expect(firstQuestion).toHaveProperty('questionText')
-      expect(firstQuestion).toHaveProperty('answers')
-      expect(firstQuestion).toHaveProperty('correctAnswerIndex')
-      expect(firstQuestion).toHaveProperty('questionNumber')
-      expect(firstQuestion).toHaveProperty('totalQuestions')
-
-      expect(firstQuestion?.questionNumber).toBe(1)
-      expect(firstQuestion?.totalQuestions).toBe(5)
-      expect(Array.isArray(firstQuestion?.answers)).toBe(true)
-      expect(typeof firstQuestion?.correctAnswerIndex).toBe('number')
+      expect(firstQuestion).toMatchObject({
+        id: expect.any(String),
+        questionText: expect.any(String),
+        answers: expect.any(Array),
+        correctAnswerIndex: expect.any(Number),
+        questionNumber: 1,
+        totalQuestions: 5
+      })
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 

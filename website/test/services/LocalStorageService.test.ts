@@ -28,14 +28,15 @@ describe('LocalStorageService', () => {
       const results = yield* storageService.getGameResults()
 
       expect(results).toBeDefined()
-      expect(Array.isArray(results)).toBe(true)
-      expect(results.length).toBe(1)
-      expect(results?.[0]?.sessionId).toBe('test-session-1')
-      expect(results?.[0]?.totalQuestions).toBe(10)
-      expect(results?.[0]?.correctAnswers).toBe(8)
-      expect(results?.[0]?.percentage).toBe(80)
-      expect(results?.[0]?.isEarlyWin).toBe(false)
-      expect(results?.[0]?.completedAt).toBeInstanceOf(Date)
+      expect(results).toHaveLength(1)
+      expect(results?.[0]).toMatchObject({
+        sessionId: 'test-session-1',
+        totalQuestions: 10,
+        correctAnswers: 8,
+        percentage: 80,
+        isEarlyWin: false,
+        completedAt: expect.any(Date)
+      })
     })
 
     await Effect.runPromise(program.pipe(Effect.provide(LocalStorageService.Default)))
@@ -55,11 +56,12 @@ describe('LocalStorageService', () => {
       yield* storageService.saveGameSettings(testSettings)
       const settings = yield* storageService.getGameSettings()
 
-      expect(settings).toBeDefined()
-      expect(settings.maxQuestions).toBe(15)
-      expect(settings.winThreshold).toBe(8)
-      expect(settings.userState).toBe('NY')
-      expect(settings.darkMode).toBe(true)
+      expect(settings).toMatchObject({
+        maxQuestions: 15,
+        winThreshold: 8,
+        userState: 'NY',
+        darkMode: true
+      })
     })
 
     await Effect.runPromise(program.pipe(Effect.provide(LocalStorageService.Default)))
@@ -126,9 +128,9 @@ describe('LocalStorageService', () => {
 
       const recentResults = yield* storageService.getRecentResults(2)
 
-      expect(recentResults.length).toBe(2)
-      expect(recentResults?.[0]?.sessionId).toBe('session-3') // Most recent first
-      expect(recentResults?.[1]?.sessionId).toBe('session-2')
+      expect(recentResults).toHaveLength(2)
+      expect(recentResults?.[0]).toMatchObject({ sessionId: 'session-3' }) // Most recent first
+      expect(recentResults?.[1]).toMatchObject({ sessionId: 'session-2' })
     })
 
     await Effect.runPromise(program.pipe(Effect.provide(LocalStorageService.Default)))

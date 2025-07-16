@@ -28,18 +28,17 @@ describe('SessionService', () => {
       const sessionService = yield* SessionService
       const session = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
 
-      expect(session).toBeDefined()
-      expect(session.id).toBeDefined()
-      expect(typeof session.id).toBe('string')
-      expect(session.questions).toBeDefined()
-      expect(Array.isArray(session.questions)).toBe(true)
-      expect(session.questions.length).toBe(DEFAULT_GAME_SETTINGS.maxQuestions)
-      expect(session.currentQuestionIndex).toBe(0)
-      expect(session.correctAnswers).toBe(0)
-      expect(session.totalAnswered).toBe(0)
-      expect(session.isCompleted).toBe(false)
-      expect(session.isEarlyWin).toBe(false)
-      expect(session.startedAt).toBeInstanceOf(Date)
+      expect(session).toMatchObject({
+        id: expect.any(String),
+        questions: expect.any(Array),
+        currentQuestionIndex: 0,
+        correctAnswers: 0,
+        totalAnswered: 0,
+        isCompleted: false,
+        isEarlyWin: false,
+        startedAt: expect.any(Date)
+      })
+      expect(session.questions).toHaveLength(DEFAULT_GAME_SETTINGS.maxQuestions)
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
@@ -61,11 +60,13 @@ describe('SessionService', () => {
         DEFAULT_GAME_SETTINGS
       )
 
-      expect(updatedSession.correctAnswers).toBe(1)
-      expect(updatedSession.totalAnswered).toBe(1)
-      expect(updatedSession.currentQuestionIndex).toBe(1)
-      expect(updatedSession.isCompleted).toBe(false)
-      expect(updatedSession.isEarlyWin).toBe(false)
+      expect(updatedSession).toMatchObject({
+        correctAnswers: 1,
+        totalAnswered: 1,
+        currentQuestionIndex: 1,
+        isCompleted: false,
+        isEarlyWin: false
+      })
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
@@ -87,11 +88,13 @@ describe('SessionService', () => {
         DEFAULT_GAME_SETTINGS
       )
 
-      expect(updatedSession.correctAnswers).toBe(0)
-      expect(updatedSession.totalAnswered).toBe(1)
-      expect(updatedSession.currentQuestionIndex).toBe(1)
-      expect(updatedSession.isCompleted).toBe(false)
-      expect(updatedSession.isEarlyWin).toBe(false)
+      expect(updatedSession).toMatchObject({
+        correctAnswers: 0,
+        totalAnswered: 1,
+        currentQuestionIndex: 1,
+        isCompleted: false,
+        isEarlyWin: false
+      })
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
@@ -111,11 +114,13 @@ describe('SessionService', () => {
         session = sessionService.processAnswer(session, correctAnswer, DEFAULT_GAME_SETTINGS)
       }
 
-      expect(session.correctAnswers).toBe(6)
-      expect(session.totalAnswered).toBe(6)
-      expect(session.isCompleted).toBe(true)
-      expect(session.isEarlyWin).toBe(true)
-      expect(session.completedAt).toBeInstanceOf(Date)
+      expect(session).toMatchObject({
+        correctAnswers: 6,
+        totalAnswered: 6,
+        isCompleted: true,
+        isEarlyWin: true,
+        completedAt: expect.any(Date)
+      })
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
