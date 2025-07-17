@@ -1,6 +1,7 @@
 // Test setup file to provide required globals for Effect-TS and browser APIs
 
 import { TextEncoder, TextDecoder } from 'util'
+import '@testing-library/jest-dom'
 
 // Polyfill TextEncoder/TextDecoder for Effect-TS
 global.TextEncoder = TextEncoder as any
