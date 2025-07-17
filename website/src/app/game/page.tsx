@@ -17,7 +17,7 @@ import {
   GameSession,
   QuestionAnswer,
   GameResult,
-  GameQuestion as GameQuestionType
+  QuestionDisplay as GameQuestionType
 } from '@/types'
 
 type GameState = 'loading' | 'playing' | 'answered' | 'transitioning' | 'completed'
@@ -94,7 +94,7 @@ export default function Game() {
         Effect.gen(function* () {
           const sessionService = yield* SessionService
 
-          const updatedSession = sessionService.processAnswer(session, answer, DEFAULT_GAME_SETTINGS)
+          const updatedSession = sessionService.processAnswer(session, answer)
           setSession(updatedSession)
           setGameState('answered')
 

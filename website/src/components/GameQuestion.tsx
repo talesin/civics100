@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { GameQuestion as GameQuestionType, QuestionAnswer } from '@/types'
+import { QuestionDisplay as GameQuestionType, QuestionAnswer } from '@/types'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 

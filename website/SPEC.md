@@ -129,6 +129,11 @@ The US Civics questionnaire will now follow a constrained session model. Each se
 
 - Given I am on the questionnaire page, when I answer a question, then the percentage of all questions available I have answered correctly should be updated.
 
+### As a user, I want to see a list of all question I have answered with my track record so that I can review my performance.
+
+- Given I am on the results page, I want a link to a question bank so that I can review my performance.
+- Given I am on the question bank, I want to see a list of all questions I have answered with my track record so that I can review my performance.
+
 ## Test Scenarios (Acceptance Criteria)
 
 | Scenario          | Given            | When                           | Then                                              |

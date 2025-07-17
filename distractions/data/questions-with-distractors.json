@@ -4694,10 +4694,10 @@
       ]
     },
     "distractors": [
-      "because there are 50 original colonies",
-      "because there are 50 senators",
-      "because there are 50 founding fathers",
-      "because it represents 50 years of independence"
+      "because there are 13 senators",
+      "because there are 13 founding fathers",
+      "because it represents 13 years of independence",
+      "because there are 13 amendments"
     ],
     "_tag": "QuestionWithDistractors"
   },
@@ -4716,10 +4716,10 @@
       ]
     },
     "distractors": [
-      "America the Beautiful",
-      "God Bless America",
-      "My Country, 'Tis of Thee",
-      "Battle Hymn of the Republic"
+      "because there are 50 original colonies",
+      "because there are 50 senators",
+      "because there are 50 founding fathers",
+      "because it represents 50 years of independence"
     ],
     "_tag": "QuestionWithDistractors"
   },
@@ -4756,10 +4756,10 @@
       ]
     },
     "distractors": [
-      "Easter",
-      "Mother's Day",
-      "Father's Day",
-      "Halloween"
+      "July 3",
+      "July 5",
+      "December 25",
+      "January 1"
     ],
     "_tag": "QuestionWithDistractors"
   },
