@@ -58,6 +58,8 @@ export type Question = DeepReadonly<{
   answers: ReadonlyArray<string>
 }>
 
+export type QuestionArray = ReadonlyArray<Question>
+
 export type WeightedQuestion = {
   questionNumber: QuestionNumber
   weight: number
@@ -79,4 +81,67 @@ export type SelectionWeights = {
   unanswered: number
   incorrect: number
   correct: number
+}
+
+/**
+ * Game session configuration for both CLI and web games
+ */
+export type GameSettings = {
+  maxQuestions: number
+  winThreshold: number
+  userState: import('civics2json').StateAbbreviation
+  questionNumbers?: ReadonlyArray<number> | undefined
+}
+
+/**
+ * Web/GUI game session state
+ * Tracks session-based game progress with session ID and completion status
+ */
+export type GameSession = {
+  id: string
+  questions: ReadonlyArray<string> // Question IDs
+  currentQuestionIndex: number
+  correctAnswers: number
+  totalAnswered: number
+  isCompleted: boolean
+  isEarlyWin: boolean
+  startedAt: Date
+  completedAt?: Date
+  pairedAnswers: PairedAnswers
+  settings: GameSettings
+}
+
+/**
+ * User's answer to a specific question
+ */
+export type UserAnswer = {
+  questionId: string
+  selectedAnswerIndex: number
+  isCorrect: boolean
+  answeredAt: Date
+}
+
+/**
+ * Final game result after completion
+ */
+export type GameResult = {
+  sessionId: string
+  totalQuestions: number
+  correctAnswers: number
+  percentage: number
+  isEarlyWin: boolean
+  completedAt: Date
+}
+
+/**
+ * Question formatted for UI display
+ * Transformation of core Question type for web/GUI consumption
+ */
+export type QuestionDisplay = {
+  id: string
+  questionText: string
+  answers: ReadonlyArray<string>
+  correctAnswerIndex: number
+  questionNumber: number
+  totalQuestions: number
 }

@@ -1,5 +1,5 @@
 import { Effect, Option } from 'effect'
-import { QuestionSelector } from '@src/QuestionSelector'
+import { QuestionSelector } from '@src/services/QuestionSelector'
 import { QuestionNumber, type Answers } from '@src/types'
 
 describe('QuestionSelector', () => {

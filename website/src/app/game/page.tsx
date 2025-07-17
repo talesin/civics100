@@ -1,147 +1,147 @@
-"use client";
+'use client'
 
-import React, { useState, useEffect, useCallback } from "react";
-import { Effect } from "effect";
-import Layout from "@/components/Layout";
-import GameQuestion from "@/components/GameQuestion";
-import GameControls from "@/components/GameControls";
-import GameResults from "@/components/GameResults";
-import { SessionService } from "@/services/SessionService";
-import { LocalStorageService } from "@/services/LocalStorageService";
-import { QuestionDataService } from "@/services/QuestionDataService";
-import { useGameSounds } from "@/hooks/useGameSounds";
-import { useKeyboardNavigation } from "@/hooks/useKeyboardNavigation";
+import React, { useState, useEffect, useCallback } from 'react'
+import { Effect } from 'effect'
+import Layout from '@/components/Layout'
+import GameQuestion from '@/components/GameQuestion'
+import GameControls from '@/components/GameControls'
+import GameResults from '@/components/GameResults'
+import { SessionService } from '@/services/SessionService'
+import { LocalStorageService } from '@/services/LocalStorageService'
+import { QuestionDataService } from '@/services/QuestionDataService'
+import { runWithServicesAndErrorHandling } from '@/services/ServiceProvider'
+import { useGameSounds } from '@/hooks/useGameSounds'
+import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import {
   DEFAULT_GAME_SETTINGS,
   GameSession,
   QuestionAnswer,
   GameResult,
-  GameQuestion as GameQuestionType,
-} from "@/types";
+  QuestionDisplay as GameQuestionType,
+  WebsiteGameSettings
+} from '@/types'
 
-type GameState =
-  | "loading"
-  | "playing"
-  | "answered"
-  | "transitioning"
-  | "completed";
+type GameState = 'loading' | 'playing' | 'answered' | 'transitioning' | 'completed'
 
 export default function Game() {
-  const [gameState, setGameState] = useState<GameState>("loading");
-  const [session, setSession] = useState<GameSession | null>(null);
-  const [questions, setQuestions] = useState<GameQuestionType[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [gameResult, setGameResult] = useState<GameResult | null>(null);
-  const [showEarlyWinOption, setShowEarlyWinOption] = useState(false);
-  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false);
+  const [gameState, setGameState] = useState<GameState>('loading')
+  const [session, setSession] = useState<GameSession | null>(null)
+  const [questions, setQuestions] = useState<GameQuestionType[]>([])
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
+  const [gameResult, setGameResult] = useState<GameResult | null>(null)
+  const [showEarlyWinOption, setShowEarlyWinOption] = useState(false)
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+  const [gameSettings, setGameSettings] = useState<WebsiteGameSettings>(DEFAULT_GAME_SETTINGS)
 
-  const { playComplete, playEarlyWin } = useGameSounds();
+  const { playComplete, playEarlyWin } = useGameSounds()
 
   const initializeGame = useCallback(() => {
-    setGameState("loading");
+    setGameState('loading')
 
-    const setupGame = Effect.gen(function* () {
-      const sessionService = yield* SessionService;
-      const questionService = yield* QuestionDataService;
+    runWithServicesAndErrorHandling(
+      Effect.gen(function* () {
+        const sessionService = yield* SessionService
+        const questionService = yield* QuestionDataService
 
-      const newSession = yield* sessionService.createNewSession(
-        DEFAULT_GAME_SETTINGS,
-      );
-      const gameQuestions = yield* questionService.generateGameQuestions(
-        DEFAULT_GAME_SETTINGS.maxQuestions,
-      );
+        const newSession = yield* sessionService.createNewSession(gameSettings)
+        const gameQuestions = yield* questionService.generateGameQuestions(
+          gameSettings.maxQuestions
+        )
 
-      setSession(newSession);
-      setQuestions(gameQuestions);
-      setCurrentQuestionIndex(0);
-      setShowEarlyWinOption(false);
-      setGameState("playing");
-    });
-
-    Effect.runPromise(
-      setupGame.pipe(
-        Effect.provide(SessionService.Default),
-        Effect.provide(QuestionDataService.Default),
-      ),
-    ).catch(console.error);
-  }, []);
+        setSession(newSession)
+        setQuestions(gameQuestions)
+        setCurrentQuestionIndex(0)
+        setShowEarlyWinOption(false)
+        setGameState('playing')
+      }),
+      console.error
+    )
+  }, [gameSettings])
 
   const completeGame = useCallback(
     (finalSession: GameSession) => {
-      return Effect.gen(function* () {
-        const sessionService = yield* SessionService;
-        const storageService = yield* LocalStorageService;
+      runWithServicesAndErrorHandling(
+        Effect.gen(function* () {
+          const sessionService = yield* SessionService
+          const storageService = yield* LocalStorageService
 
-        const result = sessionService.calculateResult(finalSession);
-        yield* storageService.saveGameResult(result);
+          const result = sessionService.calculateResult(finalSession)
+          yield* storageService.saveGameResult(result)
 
-        // Play completion sound
-        if (finalSession.isEarlyWin) {
-          playEarlyWin();
-        } else {
-          playComplete();
-        }
+          // Play completion sound
+          if (finalSession.isEarlyWin) {
+            playEarlyWin()
+          } else {
+            playComplete()
+          }
 
-        setGameResult(result);
-        setGameState("completed");
-      });
+          setGameResult(result)
+          setGameState('completed')
+        }),
+        console.error
+      )
     },
-    [playComplete, playEarlyWin],
-  );
+    [playComplete, playEarlyWin]
+  )
+
+  // Load game settings from localStorage
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('civics-game-settings')
+      if (savedSettings !== null) {
+        const parsed = JSON.parse(savedSettings) as WebsiteGameSettings
+        setGameSettings(parsed)
+      }
+    } catch (error) {
+      console.error('Failed to load game settings:', error)
+    }
+  }, [])
 
   useEffect(() => {
-    initializeGame();
-  }, [initializeGame]);
+    initializeGame()
+  }, [initializeGame])
 
   const handleAnswer = useCallback(
     (answer: QuestionAnswer) => {
-      if (!session || gameState !== "playing") return;
+      if (!session || gameState !== 'playing') return
 
-      const processAnswer = Effect.gen(function* () {
-        const sessionService = yield* SessionService;
+      runWithServicesAndErrorHandling(
+        Effect.gen(function* () {
+          const sessionService = yield* SessionService
 
-        const updatedSession = sessionService.processAnswer(
-          session,
-          answer,
-          DEFAULT_GAME_SETTINGS,
-        );
-        setSession(updatedSession);
-        setGameState("answered");
+          const updatedSession = sessionService.processAnswer(session, answer)
+          setSession(updatedSession)
+          setGameState('answered')
 
-        // Check for early win condition
-        if (
-          updatedSession.correctAnswers >= DEFAULT_GAME_SETTINGS.winThreshold &&
-          !updatedSession.isCompleted
-        ) {
-          setShowEarlyWinOption(true);
-        }
+          // Check for early win condition
+          if (
+            updatedSession.correctAnswers >= gameSettings.winThreshold &&
+            !updatedSession.isCompleted
+          ) {
+            setShowEarlyWinOption(true)
+          }
 
-        // Auto-complete if all questions answered or early win achieved
-        if (updatedSession.isCompleted) {
-          yield* completeGame(updatedSession);
-        }
-      });
-
-      Effect.runPromise(
-        processAnswer.pipe(
-          Effect.provide(SessionService.Default),
-          Effect.provide(LocalStorageService.Default),
-        ),
-      ).catch(console.error);
+          // Auto-complete if all questions answered or early win achieved
+          if (updatedSession.isCompleted) {
+            completeGame(updatedSession)
+          }
+        }),
+        console.error
+      )
     },
-    [session, gameState, completeGame],
-  );
+    [session, gameState, completeGame, gameSettings.winThreshold]
+  )
 
   const handleNext = useCallback(() => {
-    if (!session) return;
+    if (!session) return
 
-    setGameState("transitioning");
+    setGameState('transitioning')
 
     // Add transition delay for better UX
     setTimeout(() => {
       if (currentQuestionIndex < questions.length - 1) {
-        setCurrentQuestionIndex((prev) => prev + 1);
-        setGameState("playing");
+        setCurrentQuestionIndex((prev) => prev + 1)
+        setGameState('playing')
       } else {
         // Complete the session
         const completedSession = {
@@ -149,98 +149,86 @@ export default function Game() {
           isCompleted: true,
           completedAt: new Date(),
           currentQuestionIndex: currentQuestionIndex + 1,
-          totalAnswered: session.totalAnswered,
-        };
+          totalAnswered: session.totalAnswered
+        }
 
-        Effect.runPromise(
-          completeGame(completedSession).pipe(
-            Effect.provide(SessionService.Default),
-            Effect.provide(LocalStorageService.Default),
-          ),
-        ).catch(console.error);
+        completeGame(completedSession)
       }
-    }, 300);
-  }, [session, currentQuestionIndex, questions.length, completeGame]);
+    }, 300)
+  }, [session, currentQuestionIndex, questions.length, completeGame])
 
   const handleEarlyFinish = useCallback(() => {
-    if (!session) return;
+    if (!session) return
 
     const earlyFinishSession = {
       ...session,
       isCompleted: true,
       isEarlyWin: true,
-      completedAt: new Date(),
-    };
+      completedAt: new Date()
+    }
 
-    Effect.runPromise(
-      completeGame(earlyFinishSession).pipe(
-        Effect.provide(SessionService.Default),
-        Effect.provide(LocalStorageService.Default),
-      ),
-    ).catch(console.error);
-  }, [session, completeGame]);
+    completeGame(earlyFinishSession)
+  }, [session, completeGame])
 
   const handleRestart = useCallback(() => {
-    setSession(null);
-    setQuestions([]);
-    setCurrentQuestionIndex(0);
-    setGameResult(null);
-    setShowEarlyWinOption(false);
-    initializeGame();
-  }, [initializeGame]);
+    setSession(null)
+    setQuestions([])
+    setCurrentQuestionIndex(0)
+    setGameResult(null)
+    setShowEarlyWinOption(false)
+    initializeGame()
+  }, [initializeGame])
 
   const handlePlayAgain = useCallback(() => {
-    handleRestart();
-  }, [handleRestart]);
+    handleRestart()
+  }, [handleRestart])
 
   const handleViewHistory = useCallback(() => {
-    window.location.href = "/results";
-  }, []);
+    window.location.href = '/results'
+  }, [])
 
   // Keyboard navigation for main game controls
   useKeyboardNavigation({
     onSelectAnswer: () => {}, // Handled by GameQuestion component
-    onNext:
-      gameState === "answered" && !showEarlyWinOption ? handleNext : () => {},
+    onNext: gameState === 'answered' && !showEarlyWinOption ? handleNext : () => {},
     onRestart: handleRestart,
-    isAnswered: gameState === "answered",
+    isAnswered: gameState === 'answered',
     totalAnswers: 4, // Not used for main game controls
-    disabled:
-      gameState === "loading" ||
-      gameState === "transitioning" ||
-      gameState === "completed",
-  });
+    disabled: gameState === 'loading' || gameState === 'transitioning' || gameState === 'completed'
+  })
 
   // Show keyboard help on first visit
   useEffect(() => {
-    const hasSeenHelp = localStorage.getItem("civics-keyboard-help-seen");
-    if (hasSeenHelp === null) {
-      setShowKeyboardHelp(true);
-      localStorage.setItem("civics-keyboard-help-seen", "true");
+    try {
+      const hasSeenHelp = localStorage.getItem('civics-keyboard-help-seen')
+      if (hasSeenHelp === null) {
+        setShowKeyboardHelp(true)
+        localStorage.setItem('civics-keyboard-help-seen', 'true')
+      }
+    } catch {
+      // Silently fail if localStorage is unavailable
     }
-  }, []);
+  }, [])
 
   // Current question based on index
-  const currentQuestion = questions[currentQuestionIndex];
+  const currentQuestion = questions[currentQuestionIndex]
 
   // Loading state
-  if (gameState === "loading") {
+  if (gameState === 'loading') {
     return (
       <Layout title="Loading Game...">
         <div className="flex items-center justify-center min-h-96">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-300">
-              Preparing your civics test...
-            </p>
+            <p className="text-gray-600 dark:text-gray-300">Preparing your civics test...</p>
           </div>
         </div>
       </Layout>
-    );
+    )
   }
 
   // Transition state
-  if (gameState === "transitioning") {
+  if (gameState === 'transitioning') {
     return (
       <Layout title="Loading Next Question...">
         <div className="flex items-center justify-center min-h-96">
@@ -262,17 +250,15 @@ export default function Game() {
                 </svg>
               </div>
             </div>
-            <p className="text-gray-600 dark:text-gray-300">
-              Loading next question...
-            </p>
+            <p className="text-gray-600 dark:text-gray-300">Loading next question...</p>
           </div>
         </div>
       </Layout>
-    );
+    )
   }
 
   // Completed state
-  if (gameState === "completed" && gameResult) {
+  if (gameState === 'completed' && gameResult) {
     return (
       <Layout title="Test Complete">
         <GameResults
@@ -281,15 +267,11 @@ export default function Game() {
           onViewHistory={handleViewHistory}
         />
       </Layout>
-    );
+    )
   }
 
   // Error state
-  if (
-    session === null ||
-    currentQuestion === undefined ||
-    questions.length === 0
-  ) {
+  if (session === null || currentQuestion === undefined || questions.length === 0) {
     return (
       <Layout title="Game Error">
         <div className="text-center">
@@ -308,9 +290,7 @@ export default function Game() {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-            Game Error
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Game Error</h2>
           <p className="text-red-600 dark:text-red-400 mb-6">
             There was an error loading the game. Please try again.
           </p>
@@ -322,47 +302,42 @@ export default function Game() {
           </button>
         </div>
       </Layout>
-    );
+    )
   }
 
   // Update session with current index for display
   const displaySession = {
     ...session,
     currentQuestionIndex,
-    questions: questions.map((q) => q.id),
-  };
+    questions: questions.map((q) => q.id)
+  }
 
   return (
-    <Layout
-      title={`Question ${currentQuestionIndex + 1} of ${questions.length}`}
-    >
+    <Layout title={`Question ${currentQuestionIndex + 1} of ${questions.length}`}>
       <div className="space-y-6">
         {/* Question Component with Animation */}
         <div
           className={`transition-all duration-300 ${
-            gameState === "playing"
-              ? "opacity-100 transform translate-y-0"
-              : "opacity-75"
+            gameState === 'playing' ? 'opacity-100 transform translate-y-0' : 'opacity-75'
           }`}
         >
           <GameQuestion
             question={currentQuestion}
             onAnswer={handleAnswer}
-            disabled={gameState !== "playing"}
+            disabled={gameState !== 'playing'}
           />
         </div>
 
         {/* Early Win Option */}
-        {showEarlyWinOption && gameState === "answered" && (
+        {showEarlyWinOption && gameState === 'answered' && (
           <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 animate-fade-in">
             <div className="text-center">
               <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
                 🎉 Congratulations! You can pass now!
               </h3>
               <p className="text-green-700 dark:text-green-300 mb-4 text-sm">
-                You&apos;ve answered {session.correctAnswers} questions
-                correctly. You can finish now or continue to answer all{" "}
-                {questions.length} questions.
+                You&apos;ve answered {session.correctAnswers} out of {gameSettings.winThreshold} questions correctly to pass. You can finish
+                now or continue to answer all {questions.length} questions.
               </p>
               <div className="flex space-x-3 justify-center">
                 <button
@@ -387,7 +362,7 @@ export default function Game() {
           session={displaySession}
           onNext={showEarlyWinOption ? undefined : handleNext}
           onRestart={handleRestart}
-          showNext={gameState === "answered" && !showEarlyWinOption}
+          showNext={gameState === 'answered' && !showEarlyWinOption}
           showRestart={true}
         />
 
@@ -434,12 +409,7 @@ export default function Game() {
           className="fixed bottom-4 right-4 bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-40"
           title="Show keyboard shortcuts"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -450,5 +420,5 @@ export default function Game() {
         </button>
       </div>
     </Layout>
-  );
+  )
 }

@@ -5,6 +5,7 @@ import js from '@eslint/js'
 import { FlatCompat } from '@eslint/eslintrc'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import prettier from 'eslint-plugin-prettier'
+import eslintConfigPrettier from "eslint-config-prettier/flat"
 import next from '@next/eslint-plugin-next'
 import react from 'eslint-plugin-react'
 
@@ -38,7 +39,7 @@ export default tseslint.config(
     'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'plugin:react/recommended',
-    'plugin:prettier/recommended',
+    // 'plugin:prettier/recommended',
     'plugin:@next/next/recommended',
     'next/core-web-vitals',
     'next/typescript'
@@ -64,6 +65,7 @@ export default tseslint.config(
       }
     }
   },
+  eslintConfigPrettier,
 
   {
     rules: {

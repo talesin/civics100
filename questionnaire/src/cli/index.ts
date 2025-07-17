@@ -2,9 +2,9 @@ import { NodeContext, NodeRuntime } from '@effect/platform-node'
 import { Command, Options } from '@effect/cli'
 import { Effect, Console, Option } from 'effect'
 import type { StateAbbreviation } from 'civics2json'
-import { GameService, type GameState } from './GameService.js'
-import { QuestionDataService } from '../QuestionDataService.js'
-import { QuestionSelector } from '../QuestionSelector.js'
+import { CLIGameService, type GameState } from './CLIGameService.js'
+import { QuestionDataService } from '../services/QuestionDataService.js'
+import { QuestionSelector } from '../services/QuestionSelector.js'
 import { createInterface } from 'readline'
 
 /**
@@ -26,7 +26,7 @@ const promptForInput = (prompt: string): Effect.Effect<string> =>
 /**
  * Main game loop that handles user interaction
  */
-const gameLoop = (state: GameState, gameService: GameService): Effect.Effect<void> =>
+const gameLoop = (state: GameState, gameService: CLIGameService): Effect.Effect<void> =>
   Effect.gen(function* () {
     if (Option.isNone(state.currentQuestion)) {
       const nextQuestionWithWeight = yield* gameService.getNextQuestion(state)
@@ -112,7 +112,7 @@ const cli = Command.make(
         yield* Console.log('')
       }
 
-      const gameService = yield* GameService
+      const gameService = yield* CLIGameService
       const initialState = yield* gameService.initializeGame(
         state as StateAbbreviation,
         questionNumbers
@@ -134,7 +134,7 @@ const runnable = Command.run(cli, {
 runnable(process.argv).pipe(
   Effect.provide(QuestionDataService.Default),
   Effect.provide(QuestionSelector.Default),
-  Effect.provide(GameService.Default),
+  Effect.provide(CLIGameService.Default),
   Effect.provide(NodeContext.layer),
   NodeRuntime.runMain
 )

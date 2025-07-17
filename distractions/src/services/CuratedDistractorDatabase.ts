@@ -1149,6 +1149,22 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
 
   // INTEGRATED CIVICS - SYMBOLS AND HOLIDAYS (Questions 96-100)
   '96': {
+    question: 'Why does the flag have 13 stripes?',
+    answerType: 'concept',
+    correctAnswers: [
+      'because there were 13 original colonies',
+      'because the stripes represent the original colonies',
+      'because there were 13 original states'
+    ],
+    curatedDistractors: [
+      'because there are 13 senators',
+      'because there are 13 founding fathers',
+      'because it represents 13 years of independence',
+      'because there are 13 amendments'
+    ],
+    rationale: 'Other numbers or concepts that could be confused with the number of original colonies'
+  },
+  '97': {
     question: 'Why does the flag have 50 stars?',
     answerType: 'concept',
     correctAnswers: [
@@ -1164,18 +1180,6 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     ],
     rationale: 'Other numbers or concepts that could be confused with the number of states'
   },
-  '97': {
-    question: 'What is the name of the national anthem?',
-    answerType: 'concept',
-    correctAnswers: ['The Star-Spangled Banner'],
-    curatedDistractors: [
-      'America the Beautiful',
-      'God Bless America',
-      "My Country, 'Tis of Thee",
-      'Battle Hymn of the Republic'
-    ],
-    rationale: 'Other patriotic American songs'
-  },
   '98': {
     question: 'What is the name of the national anthem?',
     answerType: 'anthem',
@@ -1189,22 +1193,16 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     rationale: 'Other patriotic American songs'
   },
   '99': {
-    question: 'Name two national U.S. holidays.',
-    answerType: 'concept',
-    correctAnswers: [
-      "New Year's Day",
-      'Martin Luther King, Jr. Day',
-      "Presidents' Day",
-      'Memorial Day',
-      'Independence Day',
-      'Labor Day',
-      'Columbus Day',
-      'Veterans Day',
-      'Thanksgiving',
-      'Christmas'
+    question: 'When do we celebrate Independence Day?',
+    answerType: 'date',
+    correctAnswers: ['July 4'],
+    curatedDistractors: [
+      'July 3',
+      'July 5',
+      'December 25',
+      'January 1'
     ],
-    curatedDistractors: ['Easter', "Mother's Day", "Father's Day", 'Halloween'],
-    rationale: 'Other holidays that are not official federal holidays'
+    rationale: 'Other dates that could be confused with Independence Day'
   },
   '100': {
     question: 'Name two national U.S. holidays.',

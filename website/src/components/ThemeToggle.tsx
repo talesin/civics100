@@ -1,31 +1,40 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react'
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [isDark, setIsDark] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true);
+    setMounted(true)
     // Check for saved theme preference or default to system preference
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme !== null) {
-      setIsDark(savedTheme === "dark");
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-    } else {
-      const systemDark = window.matchMedia(
-        "(prefers-color-scheme: dark)",
-      ).matches;
-      setIsDark(systemDark);
-      document.documentElement.classList.toggle("dark", systemDark);
+    try {
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme !== null) {
+        setIsDark(savedTheme === 'dark')
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark')
+      } else {
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        setIsDark(systemDark)
+        document.documentElement.classList.toggle('dark', systemDark)
+      }
+    } catch {
+      // Fallback to system preference if localStorage fails
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      setIsDark(systemDark)
+      document.documentElement.classList.toggle('dark', systemDark)
     }
-  }, []);
+  }, [])
 
   const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    localStorage.setItem("theme", newTheme ? "dark" : "light");
-    document.documentElement.classList.toggle("dark", newTheme);
-  };
+    const newTheme = !isDark
+    setIsDark(newTheme)
+    try {
+      localStorage.setItem('theme', newTheme ? 'dark' : 'light')
+    } catch {
+      // Silently fail if localStorage is unavailable
+    }
+    document.documentElement.classList.toggle('dark', newTheme)
+  }
 
   // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {
@@ -33,23 +42,18 @@ export default function ThemeToggle() {
       <button className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus-ring">
         <div className="w-5 h-5 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
       </button>
-    );
+    )
   }
 
   return (
     <button
       onClick={toggleTheme}
       className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus-ring transition-colors"
-      aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
-      title={`Switch to ${isDark ? "light" : "dark"} mode`}
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
       {isDark ? (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -58,12 +62,7 @@ export default function ThemeToggle() {
           />
         </svg>
       ) : (
-        <svg
-          className="w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -73,5 +72,5 @@ export default function ThemeToggle() {
         </svg>
       )}
     </button>
-  );
+  )
 }

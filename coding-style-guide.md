@@ -1,11 +1,7 @@
----
-trigger: always_on
----
-
 # General
 
-Refer to README.md for the app description.
-Refer to PLAN.md for the app plan.
+If there is a README.md refer to it for the app description.
+If there is a TASKS.md refer to it for specific tasks
 Never overwrite my .envrc file.
 
 # Coding
@@ -15,7 +11,7 @@ Use descriptive variable names—no abbreviations.
 Use descriptive function names—no abbreviations.
 Use descriptive class names—no abbreviations.
 Always check for existing code before writing new code.
-Do not drastically change existing patterns; iterate on them first.
+Do not drastically change existing patterns iterate on them first.
 Always prefer simple solutions.
 Avoid code duplication where possible—check for existing implementations before writing new code.
 Keep the codebase simple and easy to understand.
@@ -25,16 +21,21 @@ Write thorough tests for all code.
 
 # TypeScript
 
-Use Effect schemas for all JSON validation.
 Prefer pure functions and immutability in TypeScript.
-Avoid returning null; prefer undefined and, where possible, use tagged union types.
+Avoid returning null prefer undefined and, where possible, use tagged union types.
+Avoid the use of the any type, prefer explicitly typed or unknown
+Avoid external state libraries (e.g., no Redux or Zustand).
+Use ?? instead of || when checking for null or undefined.
+Do not use implicit boolean expressions, always use explicit boolean comparisons for non-boolean values, e.g. `if (value1 === null || value1 === undefined)` instead of `if (value)`.
+Do not fix linting errors let me address them first.
+Prefer the use of types over interfaces unless there's precedence (ie. if there are specific examples or patterns to follow)
+Except at the edges, all effectful code (that is any non pure functions), will be written using Effect-TS.
+Use Effect schemas for all JSON validation.
 Wrap all non-local or unsafe code in Effect.try or Effect.tryPromise.
 Use Effect.try or Effect.tryPromise instead of try/catch
 Keep Effect.try and Effect.tryPromise to the specific line of code that may throw an error
-Avoid external state libraries (e.g., no Redux or Zustand).
-Use ?? instead of || when checking for null or undefined.
-Do not use implicit boolean expressions.
-Do not fix linting errors; let me address them first.
+Do not throw errors use Effect patterns
+When testing prefer the use of expect(value).toMatchObject({...}) over multiple expect statements, unless there's no other way to test the code.
 
 ## Effect Services
 
@@ -56,15 +57,21 @@ export class ExampleService extends Effect.Service<ExampleService>()(
 ) {}
 
 export const TestExampleServiceLayer = (fn?: {
-  executeSomething?: () => Effect.Effect<string, ExampleError>;
-  executeAnother?: () => Effect.Effect<readonly Representative[], AnotherError>;
+  executeSomething?: ExampleService["executeSomething"];
+  executeAnother?: ExampleService["executeAnother"];
 }) =>
   Layer.succeed(
     ExampleService,
     ExampleService.of({
       _tag: "ExampleService",
-      executeSomething: fn?.executeSomething ?? (() => Effect.succeed("")),
-      executeAnother: fn?.executeAnother ?? (() => Effect.succeed([])),
+      executeSomething:
+        fn?.executeSomething ??
+        ((() =>
+          Effect.succeed("")) as unknown as ExampleService["executeSomething"]),
+      executeAnother:
+        fn?.executeAnother ??
+        ((() =>
+          Effect.succeed([])) as unknown as ExampleService["executeAnother"]),
     })
   );
 ```
@@ -120,28 +127,39 @@ const func = Effect.fn(
 
 ## Testing with Effect
 
-```typescript
-  it('should do the thing', async () => {
-    // use test layer to mock dependencies
-    const testLayer = TestLayer({
-      doTheThing: () => Effect.succeed([])
-    })
+When testing with Effect, you will need to do something similar to the following. Prefer testing each function in isolation passing in mock dependencies.
 
-    // run effect with test layer
-    await Effect.gen(function* () {
-      const service = yield* MyService
-      const result = yield* service.doTheThing()
-      expect(result).toEqual({ ... })
-    }).pipe(
-      Effect.provide(testLayer),
-      Effect.runPromise
-    )
+```typescript
+// function to test
+const doTheThing = (service: Service) => Effect.fn(function* (arg: string) {
+  const result = yield* service.doTheOtherThing()
+  return result + arg
+})
+
+
+it('should do the thing', async () => {
+  // use test layer to mock dependencies
+  const testLayer = TestLayer({
+    doTheOtherThing: () => Effect.succeed([])
   })
+
+  // run effect with test layer
+  await Effect.gen(function* () {
+    const service = yield* MyService // get dependencies
+    const result = yield* doTheThing(service)('arg) // call function with test data
+    expect(result).toEqual({ ... })
+  }).pipe(
+    Effect.provide(testLayer), // provide test layer
+    Effect.runPromise
+  )
+})
 ```
 
 ## Dependency Injection
 
-The dependency injection pattern is used to provide dependencies to services. This allows for testing and dependency injection. This is using a currying pattern to provide the dependencies to the service. The first function should contain the dependencies arguments and return an Effect.fn that contains the arguments for the actual function.
+A tenet of Effect-TS is that dependencies shouldn't be exposed by functions within a service. This is because it can lead to code that is hard to test and maintain. Services should be the only place that dependencies are exposed. Use function currying to pass dependencies to functions.
+
+The dependency injection pattern is used to provide dependencies to functions. The first function should contain the dependencies arguments and return an Effect.fn that contains the arguments for the actual function.
 
 Keep the service class minimal with just the code to define and configure it. All exported or supporting functions should be declared out side the class.
 
@@ -178,7 +196,3 @@ type Person = {
 
 const Person = Data.tagged<Person>("Person");
 ```
-
-# Rust
-
-Rust commands must not expose unsafe code.

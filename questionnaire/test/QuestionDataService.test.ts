@@ -1,7 +1,7 @@
 import { Effect, Option } from 'effect'
 import type { QuestionWithDistractors } from 'distractions'
 import type { StateAbbreviation } from 'civics2json'
-import { QuestionDataService, type QuestionDataSource } from '@src/QuestionDataService'
+import { QuestionDataService, type QuestionDataSource } from '@src/services/QuestionDataService'
 import { QuestionNumber, PairedQuestionNumber } from '@src/types'
 
 describe('QuestionDataService', () => {
@@ -11,6 +11,7 @@ describe('QuestionDataService', () => {
       theme: 'AMERICAN GOVERNMENT',
       section: 'Principles of American Democracy',
       question: 'What is the supreme law of the land?',
+      expectedAnswers: 1,
       answers: {
         _type: 'text',
         choices: ['the Constitution']
@@ -27,6 +28,7 @@ describe('QuestionDataService', () => {
       theme: 'AMERICAN GOVERNMENT',
       section: 'Principles of American Democracy',
       question: 'What does the Constitution do?',
+      expectedAnswers: 2,
       answers: {
         _type: 'text',
         choices: ['sets up the government', 'defines the government']
@@ -39,6 +41,7 @@ describe('QuestionDataService', () => {
       theme: 'AMERICAN GOVERNMENT',
       section: 'System of Government',
       question: "Who is one of your state's U.S. Senators now?",
+      expectedAnswers: 2,
       answers: {
         _type: 'senator',
         choices: [

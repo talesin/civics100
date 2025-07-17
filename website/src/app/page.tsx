@@ -1,41 +1,45 @@
-"use client";
+'use client'
 
-import React, { useState, useEffect } from "react";
-import { Effect } from "effect";
-import Layout from "@/components/Layout";
-import StatsSummary from "@/components/StatsSummary";
-import { LocalStorageService } from "@/services/LocalStorageService";
-import { GameStats } from "@/types";
+import React, { useState, useEffect } from 'react'
+import { Effect } from 'effect'
+import Layout from '@/components/Layout'
+import StatsSummary from '@/components/StatsSummary'
+import { LocalStorageService } from '@/services/LocalStorageService'
+import { GameStats } from '@/types'
 
 export default function Home() {
   const [stats, setStats] = useState<GameStats>({
     totalGames: 0,
     averageScore: 0,
     bestScore: 0,
-    earlyWins: 0,
-  });
-  const [isLoading, setIsLoading] = useState(true);
+    earlyWins: 0
+  })
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const loadStats = Effect.gen(function* () {
-      const storageService = yield* LocalStorageService;
-      const gameStats = yield* storageService.getGameStats();
-      setStats(gameStats);
-      setIsLoading(false);
-    });
+      const storageService = yield* LocalStorageService
+      const gameStats = yield* storageService.getGameStats()
+      setStats(gameStats)
+      setIsLoading(false)
+    })
 
-    Effect.runPromise(
-      loadStats.pipe(Effect.provide(LocalStorageService.Default)),
-    ).catch(console.error);
-  }, []);
+    Effect.runPromise(loadStats.pipe(Effect.provide(LocalStorageService.Default))).catch(
+      console.error
+    )
+  }, [])
 
   const handleStartGame = () => {
-    window.location.href = "/game";
-  };
+    window.location.href = '/settings'
+  }
+
+  const handleQuickStart = () => {
+    window.location.href = '/game'
+  }
 
   const handleViewResults = () => {
-    window.location.href = "/results";
-  };
+    window.location.href = '/results'
+  }
 
   if (isLoading) {
     return (
@@ -44,7 +48,7 @@ export default function Home() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
       </Layout>
-    );
+    )
   }
 
   return (
@@ -59,9 +63,9 @@ export default function Home() {
               US Civics Test
             </h1>
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto text-balance">
-              Test your knowledge of American civics and history. Answer
-              questions about the Constitution, government structure, and
-              American history to see if you can pass the citizenship test.
+              Test your knowledge of American civics and history. Answer questions about the
+              Constitution, government structure, and American history to see if you can pass the
+              citizenship test.
             </p>
           </div>
 
@@ -100,9 +104,8 @@ export default function Home() {
                 Take the Test
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6 text-balance">
-                Start a new civics test with up to 10 questions. You need 6
-                correct answers to pass, or you can continue to answer all 10
-                questions.
+                Start a new civics test with up to 10 questions. You need 6 correct answers to pass,
+                or you can continue to answer all 10 questions.
               </p>
               <div className="flex flex-wrap gap-2 justify-center mb-6">
                 <span className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 px-2 py-1 rounded">
@@ -116,12 +119,20 @@ export default function Home() {
                 </span>
               </div>
             </div>
-            <button
-              onClick={handleStartGame}
-              className="w-full btn-primary py-3 px-6 rounded-lg font-semibold text-base shadow-md hover:shadow-lg focus-ring"
-            >
-              Start New Test
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={handleStartGame}
+                className="w-full btn-primary py-3 px-6 rounded-lg font-semibold text-base shadow-md hover:shadow-lg focus-ring"
+              >
+                Customize & Start Test
+              </button>
+              <button
+                onClick={handleQuickStart}
+                className="w-full btn-secondary py-2 px-4 rounded-lg font-medium text-sm shadow-sm hover:shadow-md focus-ring"
+              >
+                Quick Start (Default Settings)
+              </button>
+            </div>
           </div>
 
           <div className="card card-interactive group">
@@ -145,8 +156,8 @@ export default function Home() {
                 View Results
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6 text-balance">
-                Review your past test results, track your progress, and see
-                detailed statistics about your civics knowledge.
+                Review your past test results, track your progress, and see detailed statistics
+                about your civics knowledge.
               </p>
               <div className="flex flex-wrap gap-2 justify-center mb-6">
                 <span className="text-xs bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-300 px-2 py-1 rounded">
@@ -177,9 +188,7 @@ export default function Home() {
           </h3>
           <div className="grid md:grid-cols-3 gap-6 text-sm text-gray-600 dark:text-gray-300">
             <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                Test Format
-              </h4>
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">Test Format</h4>
               <ul className="space-y-1">
                 <li>• Up to 10 multiple choice questions</li>
                 <li>• Pass with 6 correct answers</li>
@@ -187,9 +196,7 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                Topics Covered
-              </h4>
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">Topics Covered</h4>
               <ul className="space-y-1">
                 <li>• American Government</li>
                 <li>• American History</li>
@@ -197,9 +204,7 @@ export default function Home() {
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                Features
-              </h4>
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">Features</h4>
               <ul className="space-y-1">
                 <li>• Track your progress</li>
                 <li>• Immediate feedback</li>
@@ -210,5 +215,5 @@ export default function Home() {
         </div>
       </div>
     </Layout>
-  );
+  )
 }

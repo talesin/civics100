@@ -12,16 +12,21 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./data": {
+      "import": "./dist/data/index.js",
+      "types": "./dist/data/index.d.ts"
     }
   },
   "scripts": {
     "clean": "rm -rf dist/ node_modules/ build/ coverage/ package-lock.json",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "build": "tsup src/index.ts --dts --format esm --out-dir dist",
-    "package": "npm run clean && npm install && npm run lint && npm run start && npm run build",
+    "build": "tsup src/index.ts src/data/index.ts --dts --format esm --out-dir dist && npm run list-todos",
+    "package": "npm run clean && npm install && npm run lint && npm run build",
     "test": "jest",
-    "start": "npx tsx src/cli/index.ts"
+    "start": "npx tsx src/cli/index.ts",
+    "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
     "@effect/cli": "^0.63.4",

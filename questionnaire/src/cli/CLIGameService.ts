@@ -2,11 +2,11 @@ import { Effect, Console, Option, Layer } from 'effect'
 import questionsWithDistractors from 'distractions'
 import type { StateAbbreviation } from 'civics2json'
 import { PairedQuestionNumber, type PairedAnswers, type Question } from '../types'
-import { QuestionSelector } from '../QuestionSelector'
-import { QuestionDataService } from '../QuestionDataService'
+import { QuestionSelector } from '../services/QuestionSelector'
+import { QuestionDataService } from '../services/QuestionDataService'
 
 /**
- * State for the game including loaded questions and user answers
+ * State for the CLI game including loaded questions and user answers
  *
  * Uses the paired question system where:
  * - questions: Array of individual paired questions (one per correct answer)
@@ -22,12 +22,8 @@ export type GameState = {
 /**
  * Initialize the game state by loading questions from data sources
  */
-const initializeGame = (
-  questionDataService: QuestionDataService,
-  userState: StateAbbreviation,
-  questionNumbers?: ReadonlyArray<number>
-): Effect.Effect<GameState, never, never> =>
-  Effect.gen(function* () {
+const initializeGame = (questionDataService: QuestionDataService) =>
+  Effect.fn(function* (userState: StateAbbreviation, questionNumbers?: ReadonlyArray<number>) {
     const questions = yield* questionDataService.loadQuestions({
       questions: questionsWithDistractors,
       userState,
@@ -92,13 +88,8 @@ const calculateOverallStats = (answers: PairedAnswers) => {
  * to help users understand they're working with a specific answer variant.
  * The expected answer and performance stats are specific to this paired question.
  */
-const displayQuestion = (
-  question: Question,
-  weight: number,
-  state: GameState,
-  questionSelector: QuestionSelector
-): Effect.Effect<void, never, never> =>
-  Effect.gen(function* () {
+const displayQuestion = (questionSelector: QuestionSelector) =>
+  Effect.fn(function* (question: Question, weight: number, state: GameState) {
     const stats = questionSelector.getPairedQuestionStats(
       question.pairedQuestionNumber,
       state.answers
@@ -132,11 +123,10 @@ const displayQuestion = (
  * Returns both the question and its selection weight for display
  */
 const getNextQuestion = (
-  state: GameState,
   questionDataService: QuestionDataService,
   questionSelector: QuestionSelector
-): Effect.Effect<Option.Option<{ question: Question; weight: number }>, never, never> =>
-  Effect.gen(function* () {
+) =>
+  Effect.fn(function* (state: GameState) {
     const availablePairedNumbers = questionDataService.getAvailablePairedQuestionNumbers(
       state.questions
     )
@@ -201,7 +191,7 @@ Accuracy: ${accuracy.toFixed(1)}%
   })
 
 /**
- * Process a user's answer input
+ * Process a user's answer input for CLI
  */
 const processAnswer = (
   userInput: string,
@@ -240,55 +230,42 @@ const processAnswer = (
   })
 
 /**
- * Service for managing game flow and user interactions
+ * CLI-specific GameService for command-line interface interactions
+ * Contains CLI-focused game logic and user interaction functionality
  */
-export class GameService extends Effect.Service<GameService>()('GameService', {
+export class CLIGameService extends Effect.Service<CLIGameService>()('CLIGameService', {
   effect: Effect.gen(function* () {
     const questionDataService = yield* QuestionDataService
     const questionSelector = yield* QuestionSelector
 
     return {
-      initializeGame: (userState: StateAbbreviation, questionNumbers?: ReadonlyArray<number>) =>
-        initializeGame(questionDataService, userState, questionNumbers),
-      getNextQuestion: (state: GameState) =>
-        getNextQuestion(state, questionDataService, questionSelector),
-      displayQuestion: (question: Question, weight: number, state: GameState) =>
-        displayQuestion(question, weight, state, questionSelector),
-      displayStats: (state: GameState) => displayStats(state),
-      processAnswer: (userInput: string, question: Question, state: GameState) =>
-        processAnswer(userInput, question, state)
+      // CLI-focused methods
+      initializeGame: initializeGame(questionDataService),
+      getNextQuestion: getNextQuestion(questionDataService, questionSelector),
+      displayQuestion: displayQuestion(questionSelector),
+      displayStats,
+      processAnswer
     }
   }),
   dependencies: [QuestionDataService.Default, QuestionSelector.Default]
 }) {}
 
 /**
- * Test layer for GameService with mockable functions
+ * Test layer for CLIGameService with mockable functions
  */
-export const TestGameServiceLayer = (fn?: {
-  initializeGame?: (
-    userState: StateAbbreviation,
-    questionNumbers?: ReadonlyArray<number>
-  ) => Effect.Effect<GameState, never, never>
-  getNextQuestion?: (
-    state: GameState
-  ) => Effect.Effect<Option.Option<{ question: Question; weight: number }>, never, never>
-  displayQuestion?: (
-    question: Question,
-    weight: number,
-    state: GameState
-  ) => Effect.Effect<void, never, never>
-  displayStats?: (state: GameState) => Effect.Effect<void, never, never>
-  processAnswer?: (
-    userInput: string,
-    question: Question,
-    state: GameState
-  ) => Effect.Effect<GameState, never, never>
+export const TestCLIGameServiceLayer = (fn?: {
+  // CLI methods
+  initializeGame?: CLIGameService['initializeGame']
+  getNextQuestion?: CLIGameService['getNextQuestion']
+  displayQuestion?: CLIGameService['displayQuestion']
+  displayStats?: CLIGameService['displayStats']
+  processAnswer?: CLIGameService['processAnswer']
 }) =>
   Layer.succeed(
-    GameService,
-    GameService.of({
-      _tag: 'GameService',
+    CLIGameService,
+    CLIGameService.of({
+      _tag: 'CLIGameService',
+      // CLI methods
       initializeGame:
         fn?.initializeGame ??
         ((_userState: StateAbbreviation, _questionNumbers?: ReadonlyArray<number>) =>

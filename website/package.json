@@ -5,19 +5,22 @@
   "scripts": {
     "clean": "rm -rf dist/ node_modules/ build/ coverage/ .next/  package-lock.json",
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "npm run clean && npm install && npm run lint && npm run test && NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
     "export": "next build",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
     "@effect/platform": "^0.88.0",
+    "civics2json": "*",
     "effect": "^3.16.13",
     "next": "15.3.5",
+    "questionnaire": "*",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -26,11 +29,12 @@
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
-    "@types/node": "^20",
-    "@types/react": "^19",
+    "@types/node": "20.19.8",
+    "@types/react": "19.1.8",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "eslint-config-prettier": "^10.1.5",
     "jest-environment-jsdom": "^29.7.0",
     "tailwindcss": "^4",
     "typescript": "^5"

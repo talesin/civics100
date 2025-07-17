@@ -7,7 +7,7 @@
     "inlineSourceMap": false,
 
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "useDefineForClassFields": true,
     "resolveJsonModule": true,
     "isolatedModules": true,

@@ -1,61 +1,29 @@
-export interface GameSession {
-  id: string;
-  questions: string[];
-  currentQuestionIndex: number;
-  correctAnswers: number;
-  totalAnswered: number;
-  isCompleted: boolean;
-  isEarlyWin: boolean;
-  startedAt: Date;
-  completedAt?: Date;
+import { GameSettings } from 'questionnaire'
+
+// Re-export types from questionnaire package for consistency
+export type {
+  GameSession,
+  GameResult,
+  UserAnswer as QuestionAnswer,
+  QuestionDisplay,
+  GameSettings
+} from 'questionnaire'
+
+// Website-specific GameSettings that extends questionnaire GameSettings
+export interface WebsiteGameSettings extends GameSettings {
+  darkMode: boolean
 }
-
-export interface QuestionDisplay {
-  id: string;
-  questionText: string;
-  answers: string[];
-  correctAnswerIndex: number;
-  questionNumber: number;
-  totalQuestions: number;
-}
-
-export interface GameSettings {
-  maxQuestions: number;
-  winThreshold: number;
-  userState: string;
-  darkMode: boolean;
-}
-
-export interface GameResult {
-  sessionId: string;
-  totalQuestions: number;
-  correctAnswers: number;
-  percentage: number;
-  isEarlyWin: boolean;
-  completedAt: Date;
-}
-
-export interface UserAnswer {
-  questionId: string;
-  selectedAnswerIndex: number;
-  isCorrect: boolean;
-  answeredAt: Date;
-}
-
-export type QuestionAnswer = UserAnswer;
-
-export type GameQuestion = QuestionDisplay;
 
 export interface GameStats {
-  totalGames: number;
-  averageScore: number;
-  bestScore: number;
-  earlyWins: number;
+  totalGames: number
+  averageScore: number
+  bestScore: number
+  earlyWins: number
 }
 
-export const DEFAULT_GAME_SETTINGS: GameSettings = {
+export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
   maxQuestions: 10,
   winThreshold: 6,
-  userState: "CA",
-  darkMode: false,
-};
+  userState: 'CA' as import('civics2json').StateAbbreviation,
+  darkMode: false
+}
