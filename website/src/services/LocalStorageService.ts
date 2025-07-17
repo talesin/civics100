@@ -24,17 +24,14 @@ const safeJsonStringify = <T>(value: T): Effect.Effect<string, never, never> => 
 const checkStorageAvailable = (): boolean => {
   if (typeof window === 'undefined') return false
 
-  return Effect.runSync(
-    Effect.try({
-      try: () => {
-        const test = '__storage_test__'
-        localStorage.setItem(test, test)
-        localStorage.removeItem(test)
-        return true
-      },
-      catch: () => false
-    })
-  )
+  try {
+    const test = '__storage_test__'
+    localStorage.setItem(test, test)
+    localStorage.removeItem(test)
+    return true
+  } catch {
+    return false
+  }
 }
 
 const migrateStorageIfNeeded = (): Effect.Effect<void, never, never> => {

@@ -16,6 +16,7 @@ export default function Settings() {
   // Load settings from localStorage on component mount
   useEffect(() => {
     try {
+      // TODO: migrate settings to use LocalStorageService
       const savedSettings = localStorage.getItem('civics-game-settings')
       if (savedSettings !== null) {
         const parsed = JSON.parse(savedSettings) as WebsiteGameSettings
@@ -39,27 +40,27 @@ export default function Settings() {
   }
 
   const handleStateChange = (state: StateAbbreviation) => {
-    setSettings(prev => ({ ...prev, userState: state }))
+    setSettings((prev) => ({ ...prev, userState: state }))
     setHasChanges(true)
   }
 
   const handleMaxQuestionsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(event.target.value)
-    setSettings(prev => ({ ...prev, maxQuestions: value }))
+    setSettings((prev) => ({ ...prev, maxQuestions: value }))
     setHasChanges(true)
   }
 
   const handleWinThresholdChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(event.target.value)
-    setSettings(prev => ({ ...prev, winThreshold: value }))
+    setSettings((prev) => ({ ...prev, winThreshold: value }))
     setHasChanges(true)
   }
 
   const handleDarkModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.checked
-    setSettings(prev => ({ ...prev, darkMode: value }))
+    setSettings((prev) => ({ ...prev, darkMode: value }))
     setHasChanges(true)
-    
+
     // Apply dark mode immediately
     if (value) {
       document.documentElement.classList.add('dark')
@@ -78,7 +79,7 @@ export default function Settings() {
   const resetToDefaults = () => {
     setSettings(DEFAULT_GAME_SETTINGS)
     setHasChanges(true)
-    
+
     // Reset dark mode
     if (DEFAULT_GAME_SETTINGS.darkMode) {
       document.documentElement.classList.add('dark')
@@ -104,12 +105,8 @@ export default function Settings() {
     <Layout title="Game Settings">
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Game Settings
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Customize your civics test experience
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Game Settings</h1>
+          <p className="text-gray-600 dark:text-gray-300">Customize your civics test experience</p>
         </div>
 
         <div className="card card-elevated space-y-6">
@@ -119,7 +116,8 @@ export default function Settings() {
               Location Settings
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Select your state to get personalized questions about your representatives, senators, and governor.
+              Select your state to get personalized questions about your representatives, senators,
+              and governor.
             </p>
             <StateSelector
               selectedState={settings.userState}
@@ -132,14 +130,12 @@ export default function Settings() {
 
           {/* Game Settings */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Game Settings
-            </h2>
-            
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Game Settings</h2>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label 
-                  htmlFor="max-questions" 
+                <label
+                  htmlFor="max-questions"
                   className="text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   Questions per game:
@@ -159,8 +155,8 @@ export default function Settings() {
               </div>
 
               <div className="space-y-2">
-                <label 
-                  htmlFor="win-threshold" 
+                <label
+                  htmlFor="win-threshold"
                   className="text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
                   Pass threshold:
@@ -188,7 +184,8 @@ export default function Settings() {
             </div>
 
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              The game will end early if you reach the pass threshold before answering all questions.
+              The game will end early if you reach the pass threshold before answering all
+              questions.
             </div>
           </div>
 
@@ -196,10 +193,8 @@ export default function Settings() {
 
           {/* Appearance Settings */}
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              Appearance
-            </h2>
-            
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Appearance</h2>
+
             <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
@@ -208,8 +203,8 @@ export default function Settings() {
                 onChange={handleDarkModeChange}
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
               />
-              <label 
-                htmlFor="dark-mode" 
+              <label
+                htmlFor="dark-mode"
                 className="text-sm font-medium text-gray-700 dark:text-gray-300"
               >
                 Enable dark mode
@@ -226,7 +221,7 @@ export default function Settings() {
           >
             Reset to Defaults
           </button>
-          
+
           <div className="flex gap-3">
             <button
               onClick={saveSettings}
