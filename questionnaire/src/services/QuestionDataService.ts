@@ -1,7 +1,7 @@
 import { Effect, Option, Layer, Random } from 'effect'
 import type { QuestionWithDistractors } from 'distractions'
 import type { StateAbbreviation } from 'civics2json'
-import { QuestionNumber, PairedQuestionNumber, type Question } from './types'
+import { QuestionNumber, PairedQuestionNumber, type Question } from '../types'
 
 export type QuestionDataSource = {
   questions: ReadonlyArray<QuestionWithDistractors>

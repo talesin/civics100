@@ -44,7 +44,7 @@ import type {
   WeightedQuestion,
   PairedWeightedQuestion,
   SelectionWeights
-} from './types'
+} from '../types'
 
 /**
  * Default weights for adaptive question selection algorithm.

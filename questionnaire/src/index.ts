@@ -14,9 +14,9 @@ export type {
 
 export { QuestionNumber, PairedQuestionNumber } from './types.js'
 
-export { QuestionSelector, TestQuestionSelectorLayer } from './QuestionSelector.js'
+export { QuestionSelector, TestQuestionSelectorLayer } from './services/QuestionSelector.js'
 
-export type { QuestionDataSource } from './QuestionDataService.js'
+export type { QuestionDataSource } from './services/QuestionDataService.js'
 
 export {
   QuestionDataService,
@@ -25,14 +25,14 @@ export {
   getAvailablePairedQuestionNumbers,
   findQuestionByPairedNumber,
   getQuestionCount
-} from './QuestionDataService.js'
+} from './services/QuestionDataService.js'
 
-export { GameService, TestGameServiceLayer } from './cli/GameService.js'
+export { GameService, TestGameServiceLayer } from './services/GameService.js'
 
 // Import services to access their defaults
-import { GameService } from './cli/GameService.js'
-import { QuestionDataService } from './QuestionDataService.js'
-import { QuestionSelector } from './QuestionSelector.js'
+import { GameService } from './services/GameService.js'
+import { QuestionDataService } from './services/QuestionDataService.js'
+import { QuestionSelector } from './services/QuestionSelector.js'
 
 // Export service defaults for dependency injection
 export const GameServiceDefault = GameService.Default

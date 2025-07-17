@@ -1,7 +1,7 @@
 import { Effect, Option } from 'effect'
 import type { QuestionWithDistractors } from 'distractions'
 import type { StateAbbreviation } from 'civics2json'
-import { QuestionDataService, type QuestionDataSource } from '@src/QuestionDataService'
+import { QuestionDataService, type QuestionDataSource } from '@src/services/QuestionDataService'
 import { QuestionNumber, PairedQuestionNumber } from '@src/types'
 
 describe('QuestionDataService', () => {

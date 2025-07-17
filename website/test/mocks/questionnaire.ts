@@ -113,11 +113,6 @@ import { Layer, Effect } from 'effect'
 // Create a proper mock GameService
 export class GameService extends Effect.Service<GameService>()('GameService', {
   effect: Effect.succeed({
-    initializeGame: () => Effect.succeed({ questions: [], answers: {}, currentQuestion: null }),
-    getNextQuestion: () => Effect.succeed(null),
-    displayQuestion: () => Effect.succeed(undefined),
-    displayStats: () => Effect.succeed(undefined),
-    processAnswer: () => Effect.succeed({}),
     createWebGameSession: () => Effect.succeed({ 
       session: {
         id: 'test-session',
@@ -163,11 +158,6 @@ export const GameServiceDefault = GameService.Default
 export const TestGameServiceLayer = (fn?: any) =>
   Layer.succeed(GameService, GameService.of({
     _tag: 'GameService',
-    initializeGame: fn?.initializeGame ?? (() => Effect.succeed({ questions: [], answers: {}, currentQuestion: null })),
-    getNextQuestion: fn?.getNextQuestion ?? (() => Effect.succeed(null)),
-    displayQuestion: fn?.displayQuestion ?? (() => Effect.succeed(undefined)),
-    displayStats: fn?.displayStats ?? (() => Effect.succeed(undefined)),
-    processAnswer: fn?.processAnswer ?? (() => Effect.succeed({})),
     createWebGameSession: fn?.createWebGameSession ?? ((settings: any) => Effect.succeed({
       session: {
         id: 'test-session',

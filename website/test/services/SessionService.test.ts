@@ -2,7 +2,8 @@ import { describe, it, expect } from '@jest/globals'
 import { Effect, Layer } from 'effect'
 import { SessionService } from '@/services/SessionService'
 import { DEFAULT_GAME_SETTINGS } from '@/types'
-import { TestGameServiceLayer, WebGameSession } from 'questionnaire'
+import { WebGameSession } from 'questionnaire'
+import { TestGameServiceLayer } from 'questionnaire'
 
 describe('SessionService', () => {
   const testLayer = SessionService.DefaultWithoutDependencies.pipe(
