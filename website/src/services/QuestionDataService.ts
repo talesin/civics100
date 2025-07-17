@@ -1,7 +1,7 @@
 import { Effect, Layer } from 'effect'
 import { QuestionDisplay, QuestionnaireGameSettings } from '@/types'
 import type { StateAbbreviation } from 'civics2json'
-import { GameService, PairedAnswers } from 'questionnaire'
+import { GameService, GameServiceDefault, PairedAnswers } from 'questionnaire'
 
 /**
  * Convert website GameSettings to questionnaire GameSettings
@@ -53,7 +53,7 @@ export class QuestionDataService extends Effect.Service<QuestionDataService>()(
         generateGameQuestions: generateGameQuestions(gameService)
       }
     }),
-    dependencies: [GameService.Default]
+    dependencies: [GameServiceDefault]
   }
 ) {}
 

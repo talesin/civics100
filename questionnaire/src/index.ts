@@ -29,6 +29,16 @@ export {
 
 export { GameService, TestGameServiceLayer } from './cli/GameService.js'
 
+// Import services to access their defaults
+import { GameService } from './cli/GameService.js'
+import { QuestionDataService } from './QuestionDataService.js'
+import { QuestionSelector } from './QuestionSelector.js'
+
+// Export service defaults for dependency injection
+export const GameServiceDefault = GameService.Default
+export const QuestionDataServiceDefault = QuestionDataService.Default
+export const QuestionSelectorDefault = QuestionSelector.Default
+
 // Re-export question data for consuming packages
 export { rawCivicsQuestions, civicsQuestionsWithDistractors } from './data/index.js'
 export type { QuestionWithDistractors } from './data/index.js'

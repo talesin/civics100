@@ -177,8 +177,8 @@ describe('SessionService', () => {
         startedAt: new Date(),
         pairedAnswers: {},
         settings: {
-          maxQuestions: 0,
-          winThreshold: 0,
+          maxQuestions: 10,
+          winThreshold: 6,
           userState: 'CA',
           questionNumbers: undefined
         }

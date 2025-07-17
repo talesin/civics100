@@ -24,6 +24,54 @@ export type QuestionDataSource = {
   questionNumbers?: readonly number[]
 }
 
+export type PairedAnswers = Record<PairedQuestionNumber, Array<{ ts: Date; correct: boolean }>>
+
+export type GameSettings = {
+  maxQuestions: number
+  winThreshold: number
+  userState: string
+  questionNumbers?: readonly number[]
+}
+
+export type WebGameSession = {
+  id: string
+  questions: ReadonlyArray<string>
+  currentQuestionIndex: number
+  correctAnswers: number
+  totalAnswered: number
+  isCompleted: boolean
+  isEarlyWin: boolean
+  startedAt: Date
+  completedAt?: Date
+  pairedAnswers: PairedAnswers
+  settings: GameSettings
+}
+
+export type UserAnswer = {
+  questionId: string
+  selectedAnswerIndex: number
+  isCorrect: boolean
+  answeredAt: Date
+}
+
+export type GameResult = {
+  sessionId: string
+  totalQuestions: number
+  correctAnswers: number
+  percentage: number
+  isEarlyWin: boolean
+  completedAt: Date
+}
+
+export type QuestionDisplay = {
+  id: string
+  questionText: string
+  answers: ReadonlyArray<string>
+  correctAnswerIndex: number
+  questionNumber: number
+  totalQuestions: number
+}
+
 export * from './questionnaire-data'
 
 // Mock utility functions
@@ -59,6 +107,130 @@ export const QuestionSelector = {
 }
 
 // Mock loadQuestions function
+// Mock services
+import { Layer, Effect } from 'effect'
+
+// Create a proper mock GameService
+export class GameService extends Effect.Service<GameService>()('GameService', {
+  effect: Effect.succeed({
+    initializeGame: () => Effect.succeed({ questions: [], answers: {}, currentQuestion: null }),
+    getNextQuestion: () => Effect.succeed(null),
+    displayQuestion: () => Effect.succeed(undefined),
+    displayStats: () => Effect.succeed(undefined),
+    processAnswer: () => Effect.succeed({}),
+    createWebGameSession: () => Effect.succeed({ 
+      session: {
+        id: 'test-session',
+        questions: [],
+        currentQuestionIndex: 0,
+        correctAnswers: 0,
+        totalAnswered: 0,
+        isCompleted: false,
+        isEarlyWin: false,
+        startedAt: new Date(),
+        pairedAnswers: {},
+        settings: {
+          maxQuestions: 10,
+          winThreshold: 6,
+          userState: 'CA'
+        }
+      }, 
+      questions: [] 
+    }),
+    processWebGameAnswer: (session: any) => session,
+    calculateGameResult: () => ({
+      sessionId: 'test',
+      totalQuestions: 0,
+      correctAnswers: 0,
+      percentage: 0,
+      isEarlyWin: false,
+      completedAt: new Date()
+    }),
+    transformQuestionToDisplay: (question: any, questionNumber: number, totalQuestions: number) => ({
+      id: 'test-question',
+      questionText: 'Test question',
+      answers: [],
+      correctAnswerIndex: 0,
+      questionNumber,
+      totalQuestions
+    }),
+    generateSessionId: () => 'test-session-id'
+  })
+}) {}
+
+export const GameServiceDefault = GameService.Default
+
+export const TestGameServiceLayer = (fn?: any) =>
+  Layer.succeed(GameService, GameService.of({
+    _tag: 'GameService',
+    initializeGame: fn?.initializeGame ?? (() => Effect.succeed({ questions: [], answers: {}, currentQuestion: null })),
+    getNextQuestion: fn?.getNextQuestion ?? (() => Effect.succeed(null)),
+    displayQuestion: fn?.displayQuestion ?? (() => Effect.succeed(undefined)),
+    displayStats: fn?.displayStats ?? (() => Effect.succeed(undefined)),
+    processAnswer: fn?.processAnswer ?? (() => Effect.succeed({})),
+    createWebGameSession: fn?.createWebGameSession ?? ((settings: any) => Effect.succeed({
+      session: {
+        id: 'test-session',
+        questions: Array.from({ length: settings.maxQuestions }, (_, i) => `${i + 1}-0`),
+        currentQuestionIndex: 0,
+        correctAnswers: 0,
+        totalAnswered: 0,
+        isCompleted: false,
+        isEarlyWin: false,
+        startedAt: new Date(),
+        pairedAnswers: {},
+        settings
+      },
+      questions: Array.from({ length: settings.maxQuestions }, (_, i) => ({
+        questionNumber: QuestionNumber((i + 1).toString()),
+        pairedQuestionNumber: PairedQuestionNumber(`${i + 1}-0`),
+        question: `Test question ${i + 1}`,
+        correctAnswer: 0,
+        correctAnswerText: `Test answer ${i + 1}`,
+        answers: [`Test answer ${i + 1}`, 'Wrong answer 1', 'Wrong answer 2', 'Wrong answer 3']
+      }))
+    })),
+    processWebGameAnswer: fn?.processWebGameAnswer ?? ((session: any, answer: any) => {
+      const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0)
+      const newTotalAnswered = session.totalAnswered + 1
+      const newCurrentIndex = session.currentQuestionIndex + 1
+      const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold
+      const isCompleted = isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
+      
+      const updatedSession = {
+        ...session,
+        currentQuestionIndex: newCurrentIndex,
+        correctAnswers: newCorrectAnswers,
+        totalAnswered: newTotalAnswered,
+        isCompleted,
+        isEarlyWin
+      }
+      
+      if (isCompleted) {
+        updatedSession.completedAt = new Date()
+      }
+      
+      return updatedSession
+    }),
+    calculateGameResult: fn?.calculateGameResult ?? ((session: any) => ({
+      sessionId: session.id,
+      totalQuestions: session.totalAnswered,
+      correctAnswers: session.correctAnswers,
+      percentage: session.totalAnswered > 0 ? Math.round((session.correctAnswers / session.totalAnswered) * 100) : 0,
+      isEarlyWin: session.isEarlyWin,
+      completedAt: session.completedAt ?? new Date()
+    })),
+    transformQuestionToDisplay: fn?.transformQuestionToDisplay ?? ((question: any, questionNumber: number, totalQuestions: number) => ({
+      id: 'test-question',
+      questionText: 'Test question',
+      answers: [],
+      correctAnswerIndex: 0,
+      questionNumber,
+      totalQuestions
+    })),
+    generateSessionId: fn?.generateSessionId ?? (() => 'test-session-id')
+  }))
+
 export const loadQuestions = (
   _dataSource: QuestionDataSource
 ): Effect.Effect<readonly Question[], never, never> => {

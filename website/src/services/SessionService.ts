@@ -6,7 +6,7 @@ import type {
   UserAnswer,
   GameSettings as QuestionnaireGameSettings
 } from 'questionnaire'
-import { GameService } from 'questionnaire'
+import { GameService, GameServiceDefault } from 'questionnaire'
 
 /**
  * Convert website GameSettings to questionnaire GameSettings
@@ -86,7 +86,7 @@ export class SessionService extends Effect.Service<SessionService>()('SessionSer
       generateSessionId: () => gameService.generateSessionId()
     }
   }),
-  dependencies: [GameService.Default]
+  dependencies: [GameServiceDefault]
 }) {}
 
 export const TestSessionServiceLayer = (fn?: {

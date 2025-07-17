@@ -444,19 +444,14 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
       getNextQuestion: getNextQuestion(questionDataService, questionSelector),
       displayQuestion: displayQuestion(questionSelector),
       displayStats,
-      processAnswer: (userInput: string, question: Question, state: GameState) =>
-        processAnswer(userInput, question, state),
+      processAnswer,
 
       // Web session management methods
       createWebGameSession: createWebGameSession(questionDataService, questionSelector),
       processWebGameAnswer: processWebGameAnswer(questionSelector),
-      calculateGameResult: (session: WebGameSession) => calculateGameResult(session),
-      transformQuestionToDisplay: (
-        question: Question,
-        questionNumber: number,
-        totalQuestions: number
-      ) => transformQuestionToDisplay(question, questionNumber, totalQuestions),
-      generateSessionId: () => generateSessionId()
+      calculateGameResult,
+      transformQuestionToDisplay,
+      generateSessionId
     }
   }),
   dependencies: [QuestionDataService.Default, QuestionSelector.Default]
