@@ -1,11 +1,6 @@
 import { Effect, Layer } from 'effect'
-import { QuestionDisplay, WebsiteGameSettings as WebsiteGameSettings } from '@/types'
-import type {
-  WebGameSession,
-  GameResult,
-  UserAnswer,
-  GameSettings as QuestionnaireGameSettings
-} from 'questionnaire'
+import { QuestionDisplay, WebsiteGameSettings } from '@/types'
+import type { GameSession, GameResult, UserAnswer, GameSettings } from 'questionnaire'
 import { GameService, GameServiceDefault } from 'questionnaire'
 
 /**
@@ -13,7 +8,7 @@ import { GameService, GameServiceDefault } from 'questionnaire'
  */
 const convertWebsiteToQuestionnaireSettings = (
   websiteSettings: WebsiteGameSettings
-): QuestionnaireGameSettings => {
+): GameSettings => {
   const { darkMode: _darkMode, ...questionnaireSettings } = websiteSettings
   return questionnaireSettings
 }
@@ -21,13 +16,13 @@ const convertWebsiteToQuestionnaireSettings = (
 /**
  * Create a new web game session using questionnaire's GameService
  */
-const createNewSession = (gameService: GameService) =>
+export const createNewSession = (gameService: GameService) =>
   Effect.fn(function* (
     settings: WebsiteGameSettings,
     existingPairedAnswers?: import('questionnaire').PairedAnswers
   ) {
     const questionnaireSettings = convertWebsiteToQuestionnaireSettings(settings)
-    const { session } = yield* gameService.createWebGameSession(
+    const { session } = yield* gameService.createGameSession(
       questionnaireSettings,
       existingPairedAnswers
     )
@@ -39,8 +34,8 @@ const createNewSession = (gameService: GameService) =>
  */
 const processAnswer =
   (gameService: GameService) =>
-  (session: WebGameSession, answer: UserAnswer): WebGameSession => {
-    return gameService.processWebGameAnswer(session, answer)
+  (session: GameSession, answer: UserAnswer): GameSession => {
+    return gameService.processGameAnswer(session, answer)
   }
 
 /**
@@ -48,7 +43,7 @@ const processAnswer =
  */
 const calculateResult =
   (gameService: GameService) =>
-  (session: WebGameSession): GameResult => {
+  (session: GameSession): GameResult => {
     return gameService.calculateGameResult(session)
   }
 
@@ -56,7 +51,7 @@ const calculateResult =
  * Get current question from a list of questions
  */
 const getCurrentQuestion = (
-  session: WebGameSession,
+  session: GameSession,
   questions: QuestionDisplay[]
 ): QuestionDisplay | undefined => {
   return questions.find((q) => q.id === session.questions[session.currentQuestionIndex])
@@ -65,7 +60,7 @@ const getCurrentQuestion = (
 /**
  * Check if the session can continue
  */
-const canContinue = (session: WebGameSession): boolean => {
+const canContinue = (session: GameSession): boolean => {
   return (
     !session.isCompleted &&
     session.currentQuestionIndex < session.questions.length &&

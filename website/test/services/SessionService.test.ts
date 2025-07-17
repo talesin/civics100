@@ -2,13 +2,12 @@ import { describe, it, expect } from '@jest/globals'
 import { Effect, Layer } from 'effect'
 import { SessionService } from '@/services/SessionService'
 import { DEFAULT_GAME_SETTINGS } from '@/types'
-import { WebGameSession } from 'questionnaire'
-import { TestGameServiceLayer } from 'questionnaire'
+import { GameSession, TestGameServiceLayer } from 'questionnaire'
 
 describe('SessionService', () => {
-  const testLayer = SessionService.DefaultWithoutDependencies.pipe(
-    Layer.provide(TestGameServiceLayer())
-  )
+  const gameServiceLayer = TestGameServiceLayer()
+  const testLayer = SessionService.DefaultWithoutDependencies.pipe(Layer.provide(gameServiceLayer))
+
   it('should create a new session with correct structure', async () => {
     await Effect.gen(function* () {
       const sessionService = yield* SessionService
@@ -133,7 +132,7 @@ describe('SessionService', () => {
     await Effect.gen(function* () {
       const sessionService = yield* SessionService
 
-      const session: WebGameSession = {
+      const session: GameSession = {
         id: 'test-session',
         questions: ['q1', 'q2', 'q3', 'q4', 'q5'],
         currentQuestionIndex: 5,
@@ -167,7 +166,7 @@ describe('SessionService', () => {
     await Effect.gen(function* () {
       const sessionService = yield* SessionService
 
-      const activeSession: WebGameSession = {
+      const activeSession: GameSession = {
         id: 'test-session',
         questions: ['q1', 'q2', 'q3'],
         currentQuestionIndex: 1,
@@ -185,12 +184,12 @@ describe('SessionService', () => {
         }
       }
 
-      const completedSession: WebGameSession = {
+      const completedSession: GameSession = {
         ...activeSession,
         isCompleted: true
       }
 
-      const earlyWinSession: WebGameSession = {
+      const earlyWinSession: GameSession = {
         ...activeSession,
         correctAnswers: 6,
         isEarlyWin: true

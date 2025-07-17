@@ -1,16 +1,16 @@
+import { GameSettings } from 'questionnaire'
+
 // Re-export types from questionnaire package for consistency
 export type {
-  WebGameSession as GameSession,
+  GameSession,
   GameResult,
   UserAnswer as QuestionAnswer,
   QuestionDisplay,
-  GameSettings as QuestionnaireGameSettings
+  GameSettings
 } from 'questionnaire'
 
-import type { GameSettings as QuestionnaireGameSettings } from 'questionnaire'
-
 // Website-specific GameSettings that extends questionnaire GameSettings
-export interface WebsiteGameSettings extends QuestionnaireGameSettings {
+export interface WebsiteGameSettings extends GameSettings {
   darkMode: boolean
 }
 

@@ -58,6 +58,8 @@ export type Question = DeepReadonly<{
   answers: ReadonlyArray<string>
 }>
 
+export type QuestionArray = ReadonlyArray<Question>
+
 export type WeightedQuestion = {
   questionNumber: QuestionNumber
   weight: number
@@ -95,7 +97,7 @@ export type GameSettings = {
  * Web/GUI game session state
  * Tracks session-based game progress with session ID and completion status
  */
-export type WebGameSession = {
+export type GameSession = {
   id: string
   questions: ReadonlyArray<string> // Question IDs
   currentQuestionIndex: number

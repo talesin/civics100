@@ -1,5 +1,5 @@
 import { Effect, Layer } from 'effect'
-import { QuestionDisplay, QuestionnaireGameSettings } from '@/types'
+import { QuestionDisplay, GameSettings } from '@/types'
 import type { StateAbbreviation } from 'civics2json'
 import { GameService, GameServiceDefault, PairedAnswers } from 'questionnaire'
 
@@ -10,7 +10,7 @@ const convertToQuestionnaireSettings = (
   maxQuestions: number,
   userState: StateAbbreviation = 'CA',
   questionNumbers?: readonly number[] | undefined
-): QuestionnaireGameSettings => ({
+): GameSettings => ({
   maxQuestions,
   winThreshold: 6, // Default win threshold
   userState,
@@ -29,7 +29,7 @@ const generateGameQuestions = (gameService: GameService) =>
   ) {
     const settings = convertToQuestionnaireSettings(questionCount, userState)
 
-    const { questions } = yield* gameService.createWebGameSession(settings, pairedAnswers)
+    const { questions } = yield* gameService.createGameSession(settings, pairedAnswers)
 
     // Transform questions to UI format
     const questionDisplays: QuestionDisplay[] = questions.map((question, index) =>

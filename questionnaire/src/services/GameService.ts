@@ -4,26 +4,27 @@ import {
   PairedQuestionNumber,
   type PairedAnswers,
   type Question,
-  type WebGameSession,
+  type GameSession,
   type GameSettings,
   type UserAnswer,
   type GameResult,
-  type QuestionDisplay
+  type QuestionDisplay,
+  type QuestionArray
 } from '../types'
 import { QuestionSelector } from './QuestionSelector'
 import { QuestionDataService } from './QuestionDataService'
 
 /**
- * Generate a unique session ID for web games
+ * Generate a unique session ID for  games
  */
 const generateSessionId = (): string => {
   return `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
 }
 
 /**
- * Create a new web game session with selected questions
+ * Create a new  game session with selected questions
  */
-const createWebGameSession = (
+const createGameSession = (
   questionDataService: QuestionDataService,
   questionSelector: QuestionSelector
 ) =>
@@ -34,7 +35,7 @@ const createWebGameSession = (
       questionNumbers: settings.questionNumbers
     })
 
-    const selectedQuestions =
+    const selectedQuestions: QuestionArray =
       existingPairedAnswers && Object.keys(existingPairedAnswers).length > 0
         ? yield* selectAdaptiveQuestions(questionSelector)(
             questions,
@@ -43,7 +44,7 @@ const createWebGameSession = (
           )
         : selectRandomQuestions(questions, settings.maxQuestions)
 
-    const session: WebGameSession = {
+    const session: GameSession = {
       id: generateSessionId(),
       questions: selectedQuestions.map((q) => q.pairedQuestionNumber),
       currentQuestionIndex: 0,
@@ -64,7 +65,7 @@ const createWebGameSession = (
  */
 const selectAdaptiveQuestions = (questionSelector: QuestionSelector) =>
   Effect.fn(function* (
-    allQuestions: ReadonlyArray<Question>,
+    allQuestions: QuestionArray,
     questionCount: number,
     pairedAnswers: PairedAnswers
   ) {
@@ -114,9 +115,9 @@ const selectAdaptiveQuestions = (questionSelector: QuestionSelector) =>
  * Select random questions for games without answer history
  */
 const selectRandomQuestions = (
-  allQuestions: ReadonlyArray<Question>,
+  allQuestions: QuestionArray,
   questionCount: number
-): ReadonlyArray<Question> => {
+): QuestionArray => {
   const shuffled = [...allQuestions]
   // Simple Fisher-Yates shuffle
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -134,9 +135,9 @@ const selectRandomQuestions = (
 /**
  * Process a user's answer and update the session
  */
-const processWebGameAnswer =
+const processGameAnswer =
   (questionSelector: QuestionSelector) =>
-  (session: WebGameSession, answer: UserAnswer): WebGameSession => {
+  (session: GameSession, answer: UserAnswer): GameSession => {
     const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0)
     const newTotalAnswered = session.totalAnswered + 1
     const newCurrentIndex = session.currentQuestionIndex + 1
@@ -151,7 +152,7 @@ const processWebGameAnswer =
     const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold
     const isCompleted = isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
 
-    const updatedSession: WebGameSession = {
+    const updatedSession: GameSession = {
       ...session,
       currentQuestionIndex: newCurrentIndex,
       correctAnswers: newCorrectAnswers,
@@ -171,7 +172,7 @@ const processWebGameAnswer =
 /**
  * Calculate final game result
  */
-const calculateGameResult = (session: WebGameSession): GameResult => {
+const calculateGameResult = (session: GameSession): GameResult => {
   const percentage =
     session.totalAnswered > 0
       ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
@@ -215,10 +216,10 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
     const questionSelector = yield* QuestionSelector
 
     return {
-      // Web session management methods
-      createWebGameSession: createWebGameSession(questionDataService, questionSelector),
-      processWebGameAnswer: processWebGameAnswer(questionSelector),
-      calculateGameResult: (session: WebGameSession) => calculateGameResult(session),
+      //  session management methods
+      createGameSession: createGameSession(questionDataService, questionSelector),
+      processGameAnswer: processGameAnswer(questionSelector),
+      calculateGameResult: (session: GameSession) => calculateGameResult(session),
       transformQuestionToDisplay: (
         question: Question,
         questionNumber: number,
@@ -234,9 +235,9 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
  * Test layer for GameService with mockable functions
  */
 export const TestGameServiceLayer = (fn?: {
-  // Web session methods
-  createWebGameSession?: GameService['createWebGameSession']
-  processWebGameAnswer?: GameService['processWebGameAnswer']
+  //  session methods
+  createGameSession?: GameService['createGameSession']
+  processGameAnswer?: GameService['processGameAnswer']
   calculateGameResult?: GameService['calculateGameResult']
   transformQuestionToDisplay?: GameService['transformQuestionToDisplay']
   generateSessionId?: GameService['generateSessionId']
@@ -245,9 +246,9 @@ export const TestGameServiceLayer = (fn?: {
     GameService,
     GameService.of({
       _tag: 'GameService',
-      // Web session methods
-      createWebGameSession:
-        fn?.createWebGameSession ??
+      //  session methods
+      createGameSession:
+        fn?.createGameSession ??
         ((_settings, _pairedAnswers) =>
           Effect.succeed({
             session: {
@@ -268,7 +269,7 @@ export const TestGameServiceLayer = (fn?: {
             },
             questions: []
           })),
-      processWebGameAnswer: fn?.processWebGameAnswer ?? ((session) => session),
+      processGameAnswer: fn?.processGameAnswer ?? ((session) => session),
       calculateGameResult:
         fn?.calculateGameResult ??
         ((_session) => ({
