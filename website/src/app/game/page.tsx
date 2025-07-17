@@ -17,7 +17,8 @@ import {
   GameSession,
   QuestionAnswer,
   GameResult,
-  QuestionDisplay as GameQuestionType
+  QuestionDisplay as GameQuestionType,
+  WebsiteGameSettings
 } from '@/types'
 
 type GameState = 'loading' | 'playing' | 'answered' | 'transitioning' | 'completed'
@@ -30,6 +31,7 @@ export default function Game() {
   const [gameResult, setGameResult] = useState<GameResult | null>(null)
   const [showEarlyWinOption, setShowEarlyWinOption] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+  const [gameSettings, setGameSettings] = useState<WebsiteGameSettings>(DEFAULT_GAME_SETTINGS)
 
   const { playComplete, playEarlyWin } = useGameSounds()
 
@@ -41,9 +43,9 @@ export default function Game() {
         const sessionService = yield* SessionService
         const questionService = yield* QuestionDataService
 
-        const newSession = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
+        const newSession = yield* sessionService.createNewSession(gameSettings)
         const gameQuestions = yield* questionService.generateGameQuestions(
-          DEFAULT_GAME_SETTINGS.maxQuestions
+          gameSettings.maxQuestions
         )
 
         setSession(newSession)
@@ -54,7 +56,7 @@ export default function Game() {
       }),
       console.error
     )
-  }, [])
+  }, [gameSettings])
 
   const completeGame = useCallback(
     (finalSession: GameSession) => {
@@ -82,6 +84,19 @@ export default function Game() {
     [playComplete, playEarlyWin]
   )
 
+  // Load game settings from localStorage
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('civics-game-settings')
+      if (savedSettings !== null) {
+        const parsed = JSON.parse(savedSettings) as WebsiteGameSettings
+        setGameSettings(parsed)
+      }
+    } catch (error) {
+      console.error('Failed to load game settings:', error)
+    }
+  }, [])
+
   useEffect(() => {
     initializeGame()
   }, [initializeGame])
@@ -100,7 +115,7 @@ export default function Game() {
 
           // Check for early win condition
           if (
-            updatedSession.correctAnswers >= DEFAULT_GAME_SETTINGS.winThreshold &&
+            updatedSession.correctAnswers >= gameSettings.winThreshold &&
             !updatedSession.isCompleted
           ) {
             setShowEarlyWinOption(true)
@@ -114,7 +129,7 @@ export default function Game() {
         console.error
       )
     },
-    [session, gameState, completeGame]
+    [session, gameState, completeGame, gameSettings.winThreshold]
   )
 
   const handleNext = useCallback(() => {
@@ -321,7 +336,7 @@ export default function Game() {
                 🎉 Congratulations! You can pass now!
               </h3>
               <p className="text-green-700 dark:text-green-300 mb-4 text-sm">
-                You&apos;ve answered {session.correctAnswers} questions correctly. You can finish
+                You&apos;ve answered {session.correctAnswers} out of {gameSettings.winThreshold} questions correctly to pass. You can finish
                 now or continue to answer all {questions.length} questions.
               </p>
               <div className="flex space-x-3 justify-center">

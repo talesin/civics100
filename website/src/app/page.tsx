@@ -30,6 +30,10 @@ export default function Home() {
   }, [])
 
   const handleStartGame = () => {
+    window.location.href = '/settings'
+  }
+
+  const handleQuickStart = () => {
     window.location.href = '/game'
   }
 
@@ -115,12 +119,20 @@ export default function Home() {
                 </span>
               </div>
             </div>
-            <button
-              onClick={handleStartGame}
-              className="w-full btn-primary py-3 px-6 rounded-lg font-semibold text-base shadow-md hover:shadow-lg focus-ring"
-            >
-              Start New Test
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={handleStartGame}
+                className="w-full btn-primary py-3 px-6 rounded-lg font-semibold text-base shadow-md hover:shadow-lg focus-ring"
+              >
+                Customize & Start Test
+              </button>
+              <button
+                onClick={handleQuickStart}
+                className="w-full btn-secondary py-2 px-4 rounded-lg font-medium text-sm shadow-sm hover:shadow-md focus-ring"
+              >
+                Quick Start (Default Settings)
+              </button>
+            </div>
           </div>
 
           <div className="card card-interactive group">
