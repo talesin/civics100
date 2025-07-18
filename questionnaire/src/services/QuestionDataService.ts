@@ -10,6 +10,27 @@ export type QuestionDataSource = {
 }
 
 /**
+ * Fisher–Yates shuffle utility that returns a new shuffled copy of the input array.
+ * Uses `Effect.Random` so it can be composed inside other Effect pipelines.
+ */
+const shuffleArray = (
+  arr: ReadonlyArray<string>
+): Effect.Effect<ReadonlyArray<string>, never, never> =>
+  Effect.gen(function* () {
+    const mutable = [...arr]
+    for (let i = mutable.length - 1; i > 0; i--) {
+      const j = yield* Random.nextIntBetween(0, i + 1)
+      const temp = mutable[i]
+      const swap = mutable[j]
+      if (temp !== undefined && swap !== undefined) {
+        mutable[i] = swap
+        mutable[j] = temp
+      }
+    }
+    return mutable
+  })
+
+/**
  * Shuffles an array of answers using Fisher-Yates algorithm with Effect Random
  * Returns the shuffled answers array and the index of the correct answer
  * Uses a specific correct answer rather than always the first one
@@ -24,22 +45,10 @@ const shuffleAnswers = (
     }
 
     const allAnswers = [correctAnswer, ...distractors]
+    const shuffled = yield* shuffleArray(allAnswers)
+    const correctIndex = shuffled.indexOf(correctAnswer)
 
-    // Manual Fisher-Yates shuffle using Effect Random
-    const mutableAnswers = [...allAnswers]
-    for (let i = mutableAnswers.length - 1; i > 0; i--) {
-      const j = yield* Random.nextIntBetween(0, i + 1)
-      const temp = mutableAnswers[i]
-      const swapValue = mutableAnswers[j]
-      if (temp !== undefined && swapValue !== undefined) {
-        mutableAnswers[i] = swapValue
-        mutableAnswers[j] = temp
-      }
-    }
-
-    const correctIndex = mutableAnswers.indexOf(correctAnswer)
-
-    return { answers: mutableAnswers, correctIndex }
+    return { answers: shuffled, correctIndex }
   })
 }
 
@@ -82,27 +91,18 @@ const createUnifiedMultiAnswerQuestion = (
   return Effect.gen(function* () {
     // Combine correct answers with distractors
     const allAnswers = [...correctAnswers, ...distractors]
-    
+
     // Create a unified pairedQuestionNumber for multi-answer questions
     const pairedQuestionNumber = PairedQuestionNumber(`${questionNumber}-unified`)
-    
+
     // Shuffle all answers and track indices of correct answers
-    const shuffled = [...allAnswers]
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
-      const temp = shuffled[i]
-      const swapValue = shuffled[j]
-      if (temp !== undefined && swapValue !== undefined) {
-        shuffled[i] = swapValue
-        shuffled[j] = temp
-      }
-    }
-    
+    const shuffled = yield* shuffleArray(allAnswers)
+
     // Find indices of correct answers in shuffled array
-    const correctIndices = correctAnswers.map(correctAnswer => 
-      shuffled.findIndex(answer => answer === correctAnswer)
-    ).filter(index => index !== -1)
-    
+    const correctIndices = correctAnswers
+      .map((correctAnswer) => shuffled.findIndex((answer) => answer === correctAnswer))
+      .filter((index) => index !== -1)
+
     return {
       questionNumber,
       pairedQuestionNumber,

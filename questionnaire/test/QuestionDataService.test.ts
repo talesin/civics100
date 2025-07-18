@@ -62,13 +62,13 @@ describe('QuestionDataService', () => {
   }
 
   describe('loadQuestions', () => {
-    it('should load questions that have distractors, creating pairs for multi-answer questions', async () => {
+    it('should load questions that have distractors, creating unified questions for multi-answer questions', async () => {
       await Effect.gen(function* () {
         const questionDataService = yield* QuestionDataService
         const questions = yield* questionDataService.loadQuestions(dataSource)
 
-        // Expects 5 questions: 1 from Q1, 2 from Q2 (multiple answers), 2 from Q20 (senators)
-        expect(questions).toHaveLength(5)
+        // Expects 3 questions: 1 from Q1 (single), 1 from Q2 (unified multi-answer), 1 from Q20 (unified multi-answer)
+        expect(questions).toHaveLength(3)
         expect(questions[0]?.questionNumber).toBe('1')
         expect(questions[0]?.question).toBe('What is the supreme law of the land?')
         expect(questions[0]?.answers).toHaveLength(4) // 1 correct + 3 distractors
@@ -93,17 +93,19 @@ describe('QuestionDataService', () => {
         const questionDataService = yield* QuestionDataService
         const questions = yield* questionDataService.loadQuestions(dataSource)
 
-        // Check question 2 which has expectedAnswers: 2
+        // Check question 2 which has expectedAnswers: 2 (now unified)
         const question2Variants = questions.filter((q) => q.questionNumber === '2')
-        expect(question2Variants).toHaveLength(2) // Two paired questions
+        expect(question2Variants).toHaveLength(1) // One unified question
         expect(question2Variants[0]?.expectedAnswers).toBe(2)
-        expect(question2Variants[1]?.expectedAnswers).toBe(2)
+        expect(question2Variants[0]?.pairedQuestionNumber).toBe('2-unified')
+        expect(Array.isArray(question2Variants[0]?.correctAnswer)).toBe(true)
 
-        // Check question 20 (senators) which also has expectedAnswers: 2
+        // Check question 20 (senators) which also has expectedAnswers: 2 (now unified)
         const question20Variants = questions.filter((q) => q.questionNumber === '20')
-        expect(question20Variants).toHaveLength(2) // Two paired questions for CA senators
+        expect(question20Variants).toHaveLength(1) // One unified question for CA senators
         expect(question20Variants[0]?.expectedAnswers).toBe(2)
-        expect(question20Variants[1]?.expectedAnswers).toBe(2)
+        expect(question20Variants[0]?.pairedQuestionNumber).toBe('20-unified')
+        expect(Array.isArray(question20Variants[0]?.correctAnswer)).toBe(true)
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 
@@ -122,7 +124,7 @@ describe('QuestionDataService', () => {
           expect.arrayContaining(['Chuck Schumer', 'Kirsten Gillibrand'])
         )
         // Should have correct + distractors
-        expect(senatorQuestion?.answers).toHaveLength(4) // 2 CA senators + 3 distractors shuffled to 4
+        expect(senatorQuestion?.answers).toHaveLength(5) // 2 CA senators + 3 distractors = 5 total
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 
@@ -147,7 +149,7 @@ describe('QuestionDataService', () => {
         const questions = yield* questionDataService.loadQuestions(dataSource)
         const questionNumbers = questionDataService.getAvailableQuestionNumbers(questions)
 
-        expect(questionNumbers).toEqual(['1', '2', '2', '20', '20'])
+        expect(questionNumbers).toEqual(['1', '2', '20']) // Now unified, so no duplicates
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 
@@ -194,7 +196,7 @@ describe('QuestionDataService', () => {
         const questions = yield* questionDataService.loadQuestions(dataSource)
         const count = questionDataService.getQuestionCount(questions)
 
-        expect(count).toBe(5)
+        expect(count).toBe(3) // 3 unified questions instead of 5 paired
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
   })
@@ -207,7 +209,7 @@ describe('QuestionDataService', () => {
         const pairedQuestionNumbers =
           questionDataService.getAvailablePairedQuestionNumbers(questions)
 
-        expect(pairedQuestionNumbers).toEqual(['1-0', '2-0', '2-1', '20-0', '20-1'])
+        expect(pairedQuestionNumbers).toEqual(['1-0', '2-unified', '20-unified']) // Multi-answer questions now use unified IDs
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
   })
@@ -218,15 +220,15 @@ describe('QuestionDataService', () => {
         const questionDataService = yield* QuestionDataService
         const questions = yield* questionDataService.loadQuestions(dataSource)
         const question = questionDataService.findQuestionByPairedNumber(
-          PairedQuestionNumber('2-1'),
+          PairedQuestionNumber('2-unified'),
           questions
         )
 
         expect(Option.isSome(question)).toBe(true)
         if (Option.isSome(question)) {
           expect(question.value.questionNumber).toBe('2')
-          expect(question.value.pairedQuestionNumber).toBe('2-1')
-          expect(question.value.correctAnswerText).toBe('defines the government')
+          expect(question.value.pairedQuestionNumber).toBe('2-unified')
+          expect(question.value.correctAnswerText).toContain('sets up the government') // Unified question has multiple correct answers
         }
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })

@@ -40,7 +40,7 @@ describe('GameService', () => {
       expect(validateAnswerSelection([0, 1], [0, 2], 2)).toBe(false)
       expect(validateAnswerSelection([0], [0, 2], 2)).toBe(false) // Too few answers
       expect(validateAnswerSelection([0, 1, 2], [0, 2], 2)).toBe(false) // Too many answers
-      
+
       // Validate with multiple correct options (like Cabinet positions)
       expect(validateAnswerSelection([1, 3], [0, 1, 2, 3, 4], 2)).toBe(true) // Any 2 from many correct
       expect(validateAnswerSelection([0, 4], [0, 1, 2, 3, 4], 2)).toBe(true) // Any 2 from many correct

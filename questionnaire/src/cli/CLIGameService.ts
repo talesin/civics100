@@ -237,6 +237,34 @@ const parseAnswerInput = (userInput: string, maxAnswers: number): number[] | nul
 }
 
 /**
+ * Validate the user's selected answers against the correct answer indices.
+ *
+ * Handles both single-answer and multiple-answer questions.
+ *
+ * @param expectedCount - Number of answers expected for the question (defaults to 1)
+ * @param answerIndices - The indices chosen by the user, sorted ascending
+ * @param correctAnswerIndices - The indices that represent the correct answer(s)
+ * @returns `true` if the user's selection is correct, `false` otherwise
+ */
+const validateAnswers = (
+  expectedCount: number,
+  answerIndices: number[],
+  correctAnswerIndices: number[]
+): boolean => {
+  if (expectedCount === 1) {
+    // Single-answer flow: an exact index match is required.
+    return answerIndices[0] === correctAnswerIndices[0]
+  }
+
+  // Multi-answer flow: the user must provide the expected number of answers
+  // and every selected index must be included in the correct set.
+  return (
+    answerIndices.length === expectedCount &&
+    answerIndices.every((index) => correctAnswerIndices.includes(index))
+  )
+}
+
+/**
  * Process a user's answer input for CLI
  */
 const processAnswer = (
@@ -269,27 +297,25 @@ const processAnswer = (
     }
 
     // Handle both single and multiple answer questions
-    const correctAnswerIndices = Array.isArray(question.correctAnswer) 
-      ? question.correctAnswer 
+    const correctAnswerIndices: number[] = Array.isArray(question.correctAnswer)
+      ? question.correctAnswer
       : [question.correctAnswer]
-    
+
     // Validate user answers
-    const isCorrect = expectedCount === 1
-      ? answerIndices[0] === correctAnswerIndices[0] // Single answer: exact match
-      : answerIndices.length === expectedCount && 
-        answerIndices.every(index => correctAnswerIndices.includes(index)) // Multi-answer: all selected must be correct
-    
+    const isCorrect = validateAnswers(expectedCount, answerIndices, correctAnswerIndices)
+
     const selectedLetters = answerIndices.map((i) => String.fromCharCode(65 + i)).join(', ')
-    
+
     if (isCorrect) {
       yield* Console.log('✅ Correct!')
     } else {
       if (expectedCount === 1) {
-        const correctLetter = String.fromCharCode(65 + correctAnswerIndices[0]!)
+        const correctLetter = String.fromCharCode(65 + correctAnswerIndices[0])
         yield* Console.log(`❌ Incorrect. The correct answer was ${correctLetter}.`)
       } else {
-        const correctLetters = correctAnswerIndices.slice(0, expectedCount)
-          .map(i => String.fromCharCode(65 + i))
+        const correctLetters = correctAnswerIndices
+          .slice(0, expectedCount)
+          .map((i) => String.fromCharCode(65 + i))
           .join(', ')
         yield* Console.log(
           `❌ Incorrect. You selected: ${selectedLetters}. You need to select ${expectedCount} correct answers from: ${correctLetters}.`
