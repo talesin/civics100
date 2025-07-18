@@ -9,6 +9,35 @@ interface GameQuestionProps {
   disabled?: boolean
 }
 
+/**
+ * Validate user answer selection against question requirements
+ * Uses the same logic as GameService.validateAnswerSelection
+ */
+const validateAnswerSelection = (
+  selectedAnswers: number | ReadonlyArray<number>,
+  correctAnswer: number | ReadonlyArray<number>,
+  expectedAnswers?: number
+): boolean => {
+  // Handle legacy single answer format
+  if (typeof selectedAnswers === 'number' && typeof correctAnswer === 'number') {
+    return selectedAnswers === correctAnswer
+  }
+
+  // Handle multiple answer format
+  const selectedArray = Array.isArray(selectedAnswers) ? selectedAnswers : [selectedAnswers]
+  const correctArray = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
+
+  // Check if we have the expected number of answers
+  if (expectedAnswers !== undefined && selectedArray.length !== expectedAnswers) {
+    return false
+  }
+
+  // For multiple answers, check if all selected answers are correct
+  // Note: For questions with multiple correct options (like Cabinet positions),
+  // users only need to select the expected number of correct answers, not all correct answers
+  return selectedArray.every((answer) => correctArray.includes(answer))
+}
+
 export default function GameQuestion({ question, onAnswer, disabled = false }: GameQuestionProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([])
   const [hasAnswered, setHasAnswered] = useState(false)
@@ -44,13 +73,16 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
   const submitAnswer = (selectedIndices: number[]) => {
     setHasAnswered(true)
     
-    // Validate answer
+    // Validate answer using proper multi-answer validation logic
     const correctIndices = Array.isArray(question.correctAnswerIndex) 
       ? question.correctAnswerIndex 
       : [question.correctAnswerIndex]
     
-    const isCorrect = selectedIndices.length === correctIndices.length &&
-                     selectedIndices.every(index => correctIndices.includes(index))
+    const isCorrect = validateAnswerSelection(
+      selectedIndices,
+      correctIndices,
+      question.expectedAnswers
+    )
 
     // Play sound feedback
     if (isCorrect) {
@@ -222,8 +254,11 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
             const correctIndices = Array.isArray(question.correctAnswerIndex) 
               ? question.correctAnswerIndex 
               : [question.correctAnswerIndex]
-            const isCorrect = selectedAnswers.length === correctIndices.length &&
-                             selectedAnswers.every(index => correctIndices.includes(index))
+            const isCorrect = validateAnswerSelection(
+              selectedAnswers,
+              correctIndices,
+              question.expectedAnswers
+            )
             return isCorrect
           })() ? (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 rounded-lg">
