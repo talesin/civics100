@@ -73,6 +73,7 @@ describe('QuestionDataService', () => {
         expect(questions[0]?.question).toBe('What is the supreme law of the land?')
         expect(questions[0]?.answers).toHaveLength(4) // 1 correct + 3 distractors
         expect(questions[0]?.pairedQuestionNumber).toBe('1-0')
+        expect(questions[0]?.expectedAnswers).toBe(1)
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 
@@ -84,6 +85,25 @@ describe('QuestionDataService', () => {
         const question2 = questions.find((q) => q.questionNumber === '2')
         expect(question2).toBeDefined()
         expect(question2?.question).toBe('What does the Constitution do?')
+      }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
+    })
+
+    it('should preserve expectedAnswers field for multi-answer questions', async () => {
+      await Effect.gen(function* () {
+        const questionDataService = yield* QuestionDataService
+        const questions = yield* questionDataService.loadQuestions(dataSource)
+
+        // Check question 2 which has expectedAnswers: 2
+        const question2Variants = questions.filter((q) => q.questionNumber === '2')
+        expect(question2Variants).toHaveLength(2) // Two paired questions
+        expect(question2Variants[0]?.expectedAnswers).toBe(2)
+        expect(question2Variants[1]?.expectedAnswers).toBe(2)
+
+        // Check question 20 (senators) which also has expectedAnswers: 2
+        const question20Variants = questions.filter((q) => q.questionNumber === '20')
+        expect(question20Variants).toHaveLength(2) // Two paired questions for CA senators
+        expect(question20Variants[0]?.expectedAnswers).toBe(2)
+        expect(question20Variants[1]?.expectedAnswers).toBe(2)
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 

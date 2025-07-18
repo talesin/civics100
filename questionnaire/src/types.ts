@@ -53,9 +53,10 @@ export type Question = DeepReadonly<{
   questionNumber: QuestionNumber
   pairedQuestionNumber: PairedQuestionNumber
   question: string
-  correctAnswer: number
+  correctAnswer: number | ReadonlyArray<number>
   correctAnswerText: string
   answers: ReadonlyArray<string>
+  expectedAnswers?: number
 }>
 
 export type QuestionArray = ReadonlyArray<Question>
@@ -116,7 +117,7 @@ export type GameSession = {
  */
 export type UserAnswer = {
   questionId: string
-  selectedAnswerIndex: number
+  selectedAnswerIndex: number | ReadonlyArray<number>
   isCorrect: boolean
   answeredAt: Date
 }
@@ -141,7 +142,8 @@ export type QuestionDisplay = {
   id: string
   questionText: string
   answers: ReadonlyArray<string>
-  correctAnswerIndex: number
+  correctAnswerIndex: number | ReadonlyArray<number>
   questionNumber: number
   totalQuestions: number
+  expectedAnswers?: number | undefined
 }

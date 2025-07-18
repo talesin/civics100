@@ -51,7 +51,8 @@ const createQuestion = (
   pairedQuestionNumber: PairedQuestionNumber,
   questionText: string,
   correctAnswer: string,
-  distractors: ReadonlyArray<string>
+  distractors: ReadonlyArray<string>,
+  expectedAnswers?: number
 ): Effect.Effect<Question, never, never> => {
   return Effect.gen(function* () {
     const { answers, correctIndex } = yield* shuffleAnswers(correctAnswer, distractors)
@@ -62,7 +63,54 @@ const createQuestion = (
       question: questionText,
       correctAnswer: correctIndex,
       correctAnswerText: correctAnswer,
-      answers
+      answers,
+      ...(expectedAnswers !== undefined && { expectedAnswers })
+    }
+  })
+}
+
+/**
+ * Create a unified multi-answer question with multiple correct answers
+ */
+const createUnifiedMultiAnswerQuestion = (
+  questionNumber: QuestionNumber,
+  questionText: string,
+  correctAnswers: ReadonlyArray<string>,
+  distractors: ReadonlyArray<string>,
+  expectedAnswers: number
+): Effect.Effect<Question, never, never> => {
+  return Effect.gen(function* () {
+    // Combine correct answers with distractors
+    const allAnswers = [...correctAnswers, ...distractors]
+    
+    // Create a unified pairedQuestionNumber for multi-answer questions
+    const pairedQuestionNumber = PairedQuestionNumber(`${questionNumber}-unified`)
+    
+    // Shuffle all answers and track indices of correct answers
+    const shuffled = [...allAnswers]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      const temp = shuffled[i]
+      const swapValue = shuffled[j]
+      if (temp !== undefined && swapValue !== undefined) {
+        shuffled[i] = swapValue
+        shuffled[j] = temp
+      }
+    }
+    
+    // Find indices of correct answers in shuffled array
+    const correctIndices = correctAnswers.map(correctAnswer => 
+      shuffled.findIndex(answer => answer === correctAnswer)
+    ).filter(index => index !== -1)
+    
+    return {
+      questionNumber,
+      pairedQuestionNumber,
+      question: questionText,
+      correctAnswer: correctIndices, // Array of correct indices for multi-answer
+      correctAnswerText: correctAnswers.join(', '),
+      answers: shuffled,
+      expectedAnswers
     }
   })
 }
@@ -96,15 +144,14 @@ const extractCorrectAnswers = (
 }
 
 /**
- * Transforms a single question with multiple correct answers into paired questions
+ * Transforms a single question into either unified multi-answer or paired questions
  *
- * This implements the core paired question logic: for each correct answer in the original
- * question, creates a separate Question instance with its own pairedQuestionNumber.
- * This enables granular tracking of user performance on each specific answer choice.
+ * For questions with expectedAnswers > 1, creates a unified question with multiple correct answers.
+ * For questions with expectedAnswers = 1, uses the paired question system for granular tracking.
  *
- * Example transformation:
- * - Original: "Name one U.S. Senator" with answers ["Feinstein", "Padilla"]
- * - Result: 2 Questions with pairedQuestionNumbers "20-0" and "20-1"
+ * Example transformations:
+ * - Multi-answer: "What are two Cabinet positions?" → 1 unified Question with 2 correct indices
+ * - Single-answer: "Name one U.S. Senator" → 2 Questions with pairedQuestionNumbers "20-0" and "20-1"
  */
 const createQuestionsFromData = (
   questionWithDistractors: QuestionWithDistractors,
@@ -118,9 +165,21 @@ const createQuestionsFromData = (
       return []
     }
 
-    // Create a separate paired question for each correct answer
-    // This is the core of the paired question system: splitting one question
-    // into multiple trackable instances based on correct answers
+    const expectedAnswers = questionWithDistractors.expectedAnswers ?? 1
+
+    // For multi-answer questions, create a unified question
+    if (expectedAnswers > 1) {
+      const unifiedQuestion = yield* createUnifiedMultiAnswerQuestion(
+        questionNumber,
+        questionWithDistractors.question,
+        correctAnswers,
+        questionWithDistractors.distractors,
+        expectedAnswers
+      )
+      return [unifiedQuestion]
+    }
+
+    // For single-answer questions, use the paired question system
     const questionEffects = correctAnswers.map((correctAnswer, index) => {
       const pairedQuestionNumber = PairedQuestionNumber(
         `${questionWithDistractors.questionNumber}-${index}`
@@ -130,7 +189,8 @@ const createQuestionsFromData = (
         pairedQuestionNumber,
         questionWithDistractors.question,
         correctAnswer,
-        questionWithDistractors.distractors
+        questionWithDistractors.distractors,
+        questionWithDistractors.expectedAnswers
       )
     })
 

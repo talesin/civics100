@@ -17,9 +17,10 @@ export type Question = {
   questionNumber: QuestionNumber
   pairedQuestionNumber: PairedQuestionNumber
   question: string
-  correctAnswer: number
+  correctAnswer: number | ReadonlyArray<number>
   correctAnswerText: string
   answers: ReadonlyArray<string>
+  expectedAnswers?: number
 }
 
 export type GameSettings = {
@@ -45,7 +46,7 @@ export type GameSession = {
 
 export type UserAnswer = {
   questionId: string
-  selectedAnswerIndex: number
+  selectedAnswerIndex: number | ReadonlyArray<number>
   isCorrect: boolean
   answeredAt: Date
 }
@@ -128,8 +129,20 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
       answers: question.answers,
       correctAnswerIndex: question.correctAnswer,
       questionNumber,
-      totalQuestions
+      totalQuestions,
+      expectedAnswers: question.expectedAnswers
     }),
+    validateAnswerSelection: (selectedAnswers: number | ReadonlyArray<number>, correctAnswer: number | ReadonlyArray<number>, expectedAnswers?: number) => {
+      if (typeof selectedAnswers === 'number' && typeof correctAnswer === 'number') {
+        return selectedAnswers === correctAnswer
+      }
+      const selectedArray = Array.isArray(selectedAnswers) ? selectedAnswers : [selectedAnswers]
+      const correctArray = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
+      if (expectedAnswers && selectedArray.length !== expectedAnswers) {
+        return false
+      }
+      return selectedArray.every(answer => correctArray.includes(answer)) && selectedArray.length === correctArray.length
+    },
     generateSessionId: () => 'test-session-id'
   })
 }) {}
@@ -217,8 +230,22 @@ export const TestGameServiceLayer = (fn?: any) =>
           answers: question.answers,
           correctAnswerIndex: question.correctAnswer,
           questionNumber,
-          totalQuestions
+          totalQuestions,
+          expectedAnswers: question.expectedAnswers
         })),
+      validateAnswerSelection:
+        fn?.validateAnswerSelection ??
+        ((selectedAnswers: number | ReadonlyArray<number>, correctAnswer: number | ReadonlyArray<number>, expectedAnswers?: number) => {
+          if (typeof selectedAnswers === 'number' && typeof correctAnswer === 'number') {
+            return selectedAnswers === correctAnswer
+          }
+          const selectedArray = Array.isArray(selectedAnswers) ? selectedAnswers : [selectedAnswers]
+          const correctArray = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
+          if (expectedAnswers && selectedArray.length !== expectedAnswers) {
+            return false
+          }
+          return selectedArray.every(answer => correctArray.includes(answer)) && selectedArray.length === correctArray.length
+        }),
       generateSessionId: fn?.generateSessionId ?? (() => 'test-session-id')
     })
   )

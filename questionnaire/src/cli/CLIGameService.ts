@@ -100,6 +100,16 @@ const displayQuestion = (questionSelector: QuestionSelector) =>
     )
     yield* Console.log(question.question)
     yield* Console.log(`🎯 Expected answer: "${question.correctAnswerText}"`)
+
+    // Show expected answers requirement if it's multiple choice
+    if (question.expectedAnswers !== undefined && question.expectedAnswers > 1) {
+      yield* Console.log(
+        `📝 Select ${question.expectedAnswers} answers (separate with commas, e.g., A,C)`
+      )
+    } else {
+      yield* Console.log(`📝 Select one answer`)
+    }
+
     yield* Console.log(
       `⚖️ Selection weight: ${weight.toFixed(2)} | History: ${stats.totalAnswered} attempts, ${(stats.accuracy * 100).toFixed(1)}% accuracy`
     )
@@ -191,6 +201,42 @@ Accuracy: ${accuracy.toFixed(1)}%
   })
 
 /**
+ * Parse user input to extract answer indices
+ */
+const parseAnswerInput = (userInput: string, maxAnswers: number): number[] | null => {
+  const cleanInput = userInput.trim().toUpperCase()
+
+  // Handle single answer (e.g., "A")
+  if (cleanInput.length === 1) {
+    const answerIndex = cleanInput.charCodeAt(0) - 65 // A=0, B=1, etc.
+    if (answerIndex >= 0 && answerIndex < maxAnswers) {
+      return [answerIndex]
+    }
+    return null
+  }
+
+  // Handle multiple answers (e.g., "A,C" or "A, C")
+  const parts = cleanInput.split(',').map((part) => part.trim())
+  const indices: number[] = []
+
+  for (const part of parts) {
+    if (part.length !== 1) {
+      return null
+    }
+    const answerIndex = part.charCodeAt(0) - 65
+    if (answerIndex < 0 || answerIndex >= maxAnswers) {
+      return null
+    }
+    if (indices.includes(answerIndex)) {
+      return null // Duplicate answer
+    }
+    indices.push(answerIndex)
+  }
+
+  return indices.sort()
+}
+
+/**
  * Process a user's answer input for CLI
  */
 const processAnswer = (
@@ -199,20 +245,56 @@ const processAnswer = (
   state: GameState
 ): Effect.Effect<GameState, never, never> =>
   Effect.gen(function* () {
-    const answerIndex = userInput.toUpperCase().charCodeAt(0) - 65 // A=0, B=1, etc.
+    const answerIndices = parseAnswerInput(userInput, question.answers.length)
 
-    if (answerIndex < 0 || answerIndex >= question.answers.length) {
-      yield* Console.log('❌ Invalid answer. Please enter A, B, C, or D.')
+    if (!answerIndices) {
+      const expectedCount = question.expectedAnswers ?? 1
+      if (expectedCount === 1) {
+        yield* Console.log('❌ Invalid answer. Please enter A, B, C, or D.')
+      } else {
+        yield* Console.log(
+          `❌ Invalid answer. Please enter ${expectedCount} letters separated by commas (e.g., A,C).`
+        )
+      }
       return state
     }
 
-    const isCorrect = answerIndex === question.correctAnswer
-    const correctLetter = String.fromCharCode(65 + question.correctAnswer)
+    // Check if the number of answers matches expected
+    const expectedCount = question.expectedAnswers ?? 1
+    if (answerIndices.length !== expectedCount) {
+      yield* Console.log(
+        `❌ Please select exactly ${expectedCount} answer${expectedCount > 1 ? 's' : ''}.`
+      )
+      return state
+    }
 
+    // Handle both single and multiple answer questions
+    const correctAnswerIndices = Array.isArray(question.correctAnswer) 
+      ? question.correctAnswer 
+      : [question.correctAnswer]
+    
+    // Validate user answers
+    const isCorrect = expectedCount === 1
+      ? answerIndices[0] === correctAnswerIndices[0] // Single answer: exact match
+      : answerIndices.length === expectedCount && 
+        answerIndices.every(index => correctAnswerIndices.includes(index)) // Multi-answer: all selected must be correct
+    
+    const selectedLetters = answerIndices.map((i) => String.fromCharCode(65 + i)).join(', ')
+    
     if (isCorrect) {
       yield* Console.log('✅ Correct!')
     } else {
-      yield* Console.log(`❌ Incorrect. The correct answer was ${correctLetter}.`)
+      if (expectedCount === 1) {
+        const correctLetter = String.fromCharCode(65 + correctAnswerIndices[0]!)
+        yield* Console.log(`❌ Incorrect. The correct answer was ${correctLetter}.`)
+      } else {
+        const correctLetters = correctAnswerIndices.slice(0, expectedCount)
+          .map(i => String.fromCharCode(65 + i))
+          .join(', ')
+        yield* Console.log(
+          `❌ Incorrect. You selected: ${selectedLetters}. You need to select ${expectedCount} correct answers from: ${correctLetters}.`
+        )
+      }
     }
 
     const newAnswers = recordAnswer(question.pairedQuestionNumber, isCorrect, state.answers)

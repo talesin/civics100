@@ -10,17 +10,47 @@ interface GameQuestionProps {
 }
 
 export default function GameQuestion({ question, onAnswer, disabled = false }: GameQuestionProps) {
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
+  const [selectedAnswers, setSelectedAnswers] = useState<number[]>([])
   const [hasAnswered, setHasAnswered] = useState(false)
   const { playCorrect, playIncorrect } = useGameSounds()
+  
+  const isMultipleChoice = (question.expectedAnswers ?? 1) > 1
+  const expectedCount = question.expectedAnswers ?? 1
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (hasAnswered || disabled) return
 
-    setSelectedAnswer(answerIndex)
+    if (isMultipleChoice) {
+      // Handle multiple choice selection
+      const newSelection = selectedAnswers.includes(answerIndex)
+        ? selectedAnswers.filter(i => i !== answerIndex)
+        : [...selectedAnswers, answerIndex]
+      
+      setSelectedAnswers(newSelection)
+      
+      // Don't submit until we have the expected number of answers
+      if (newSelection.length !== expectedCount) {
+        return
+      }
+      
+      submitAnswer(newSelection)
+    } else {
+      // Handle single choice selection
+      setSelectedAnswers([answerIndex])
+      submitAnswer([answerIndex])
+    }
+  }
+  
+  const submitAnswer = (selectedIndices: number[]) => {
     setHasAnswered(true)
-
-    const isCorrect = answerIndex === question.correctAnswerIndex
+    
+    // Validate answer
+    const correctIndices = Array.isArray(question.correctAnswerIndex) 
+      ? question.correctAnswerIndex 
+      : [question.correctAnswerIndex]
+    
+    const isCorrect = selectedIndices.length === correctIndices.length &&
+                     selectedIndices.every(index => correctIndices.includes(index))
 
     // Play sound feedback
     if (isCorrect) {
@@ -31,7 +61,7 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
 
     const answer: QuestionAnswer = {
       questionId: question.id,
-      selectedAnswerIndex: answerIndex,
+      selectedAnswerIndex: isMultipleChoice ? selectedIndices : selectedIndices[0] ?? 0,
       isCorrect,
       answeredAt: new Date()
     }
@@ -41,7 +71,7 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
 
   // Reset state when question changes
   useEffect(() => {
-    setSelectedAnswer(null)
+    setSelectedAnswers([])
     setHasAnswered(false)
   }, [question.id])
 
@@ -58,8 +88,20 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
   const getAnswerButtonClass = (answerIndex: number) => {
     const baseClass =
       'answer-button w-full text-left p-4 rounded-lg border transition-all duration-200 '
+    
+    const isSelected = selectedAnswers.includes(answerIndex)
+    const correctIndices = Array.isArray(question.correctAnswerIndex) 
+      ? question.correctAnswerIndex 
+      : [question.correctAnswerIndex]
+    const isCorrectAnswer = correctIndices.includes(answerIndex)
 
     if (!hasAnswered && !disabled) {
+      if (isSelected && isMultipleChoice) {
+        return (
+          baseClass +
+          'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200'
+        )
+      }
       return (
         baseClass +
         'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:shadow-md'
@@ -67,12 +109,12 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
     }
 
     if (hasAnswered) {
-      if (answerIndex === question.correctAnswerIndex) {
+      if (isCorrectAnswer) {
         return (
           baseClass +
           'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 animate-pulse-success'
         )
-      } else if (answerIndex === selectedAnswer) {
+      } else if (isSelected) {
         return (
           baseClass +
           'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 animate-pulse-error'
@@ -114,15 +156,22 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
           </div>
         </div>
 
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-6 text-balance leading-tight">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 text-balance leading-tight">
           {question.questionText}
         </h2>
+        
+        {/* Multiple choice instruction */}
+        {isMultipleChoice && (
+          <p className="text-sm text-blue-600 dark:text-blue-400 mb-4 font-medium">
+            Select {expectedCount} answer{expectedCount > 1 ? 's' : ''} ({selectedAnswers.length}/{expectedCount} selected)
+          </p>
+        )}
       </div>
 
       {/* Answer Options */}
       <div
         className="space-y-3"
-        role="radiogroup"
+        role={isMultipleChoice ? "group" : "radiogroup"}
         aria-labelledby="question-text"
         aria-required="true"
       >
@@ -132,14 +181,14 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
             onClick={() => handleAnswerSelect(index)}
             disabled={hasAnswered || disabled}
             className={getAnswerButtonClass(index)}
-            role="radio"
-            aria-checked={selectedAnswer === index}
+            role={isMultipleChoice ? "checkbox" : "radio"}
+            aria-checked={selectedAnswers.includes(index)}
             aria-describedby={hasAnswered ? 'answer-feedback' : undefined}
             data-answer-index={index}
           >
             <div className="flex items-start sm:items-center gap-3">
-              <span className="flex-shrink-0 w-8 h-8 rounded-full border-2 border-current flex items-center justify-center text-sm font-bold transition-all duration-200">
-                {String.fromCharCode(65 + index)}
+              <span className={`flex-shrink-0 w-8 h-8 ${isMultipleChoice ? 'rounded-md' : 'rounded-full'} border-2 border-current flex items-center justify-center text-sm font-bold transition-all duration-200`}>
+                {isMultipleChoice && selectedAnswers.includes(index) ? '✓' : String.fromCharCode(65 + index)}
               </span>
               <span className="text-sm sm:text-base text-left leading-relaxed flex-1">
                 {answer}
@@ -155,8 +204,8 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
           <p className="text-xs text-blue-700 dark:text-blue-300 text-center">
             💡 Use keyboard:{' '}
             <kbd className="bg-white dark:bg-gray-700 px-1 rounded text-xs">1-4</kbd> or{' '}
-            <kbd className="bg-white dark:bg-gray-700 px-1 rounded text-xs">A-D</kbd> to select
-            answers
+            <kbd className="bg-white dark:bg-gray-700 px-1 rounded text-xs">A-D</kbd> to {isMultipleChoice ? 'toggle' : 'select'} answers
+            {isMultipleChoice && ` (need ${expectedCount - selectedAnswers.length} more)`}
           </p>
         </div>
       )}
@@ -169,7 +218,14 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
           role="status"
           aria-live="polite"
         >
-          {selectedAnswer === question.correctAnswerIndex ? (
+          {(() => {
+            const correctIndices = Array.isArray(question.correctAnswerIndex) 
+              ? question.correctAnswerIndex 
+              : [question.correctAnswerIndex]
+            const isCorrect = selectedAnswers.length === correctIndices.length &&
+                             selectedAnswers.every(index => correctIndices.includes(index))
+            return isCorrect
+          })() ? (
             <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 rounded-lg">
               <div className="flex items-center">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3">
@@ -215,7 +271,16 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
                     Incorrect
                   </span>
                   <span className="text-red-700 dark:text-red-300 text-sm">
-                    The correct answer is: {question.answers[question.correctAnswerIndex]}
+                    {(() => {
+                      const correctIndices = Array.isArray(question.correctAnswerIndex) 
+                        ? question.correctAnswerIndex 
+                        : [question.correctAnswerIndex]
+                      const correctAnswers = correctIndices.map(i => question.answers[i]).join(', ')
+                      return isMultipleChoice 
+                        ? `The correct answers are: ${correctAnswers}`
+                        : `The correct answer is: ${correctAnswers}`
+                    })()
+                    }
                   </span>
                 </div>
               </div>

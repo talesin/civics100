@@ -189,6 +189,34 @@ const calculateGameResult = (session: GameSession): GameResult => {
 }
 
 /**
+ * Validate user answer selection against question requirements
+ */
+const validateAnswerSelection = (
+  selectedAnswers: number | ReadonlyArray<number>,
+  correctAnswer: number | ReadonlyArray<number>,
+  expectedAnswers?: number
+): boolean => {
+  // Handle legacy single answer format
+  if (typeof selectedAnswers === 'number' && typeof correctAnswer === 'number') {
+    return selectedAnswers === correctAnswer
+  }
+
+  // Handle multiple answer format
+  const selectedArray = Array.isArray(selectedAnswers) ? selectedAnswers : [selectedAnswers]
+  const correctArray = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
+
+  // Check if we have the expected number of answers
+  if (expectedAnswers !== undefined && selectedArray.length !== expectedAnswers) {
+    return false
+  }
+
+  // For multiple answers, check if all selected answers are correct
+  // Note: For questions with multiple correct options (like Cabinet positions),
+  // users only need to select the expected number of correct answers, not all correct answers
+  return selectedArray.every((answer) => correctArray.includes(answer))
+}
+
+/**
  * Transform a Question into a QuestionDisplay for UI consumption
  */
 const transformQuestionToDisplay = (
@@ -202,7 +230,8 @@ const transformQuestionToDisplay = (
     answers: question.answers,
     correctAnswerIndex: question.correctAnswer,
     questionNumber,
-    totalQuestions
+    totalQuestions,
+    expectedAnswers: question.expectedAnswers
   }
 }
 
@@ -225,7 +254,12 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
         questionNumber: number,
         totalQuestions: number
       ) => transformQuestionToDisplay(question, questionNumber, totalQuestions),
-      generateSessionId: () => generateSessionId()
+      generateSessionId: () => generateSessionId(),
+      validateAnswerSelection: (
+        selectedAnswers: number | ReadonlyArray<number>,
+        correctAnswer: number | ReadonlyArray<number>,
+        expectedAnswers?: number
+      ) => validateAnswerSelection(selectedAnswers, correctAnswer, expectedAnswers)
     }
   }),
   dependencies: [QuestionDataService.Default, QuestionSelector.Default]
@@ -241,6 +275,7 @@ export const TestGameServiceLayer = (fn?: {
   calculateGameResult?: GameService['calculateGameResult']
   transformQuestionToDisplay?: GameService['transformQuestionToDisplay']
   generateSessionId?: GameService['generateSessionId']
+  validateAnswerSelection?: GameService['validateAnswerSelection']
 }) =>
   Layer.succeed(
     GameService,
@@ -290,6 +325,7 @@ export const TestGameServiceLayer = (fn?: {
           questionNumber,
           totalQuestions
         })),
-      generateSessionId: fn?.generateSessionId ?? (() => 'test-session-id')
+      generateSessionId: fn?.generateSessionId ?? (() => 'test-session-id'),
+      validateAnswerSelection: fn?.validateAnswerSelection ?? validateAnswerSelection
     })
   )
