@@ -7,6 +7,10 @@ const nextConfig: NextConfig = {
   distDir: 'dist',
   images: {
     unoptimized: true
+  },
+  transpilePackages: ['civics2json', 'questionnaire'],
+  experimental: {
+    externalDir: true
   }
 };
 

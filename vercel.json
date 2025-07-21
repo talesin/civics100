@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd website && npm run build",
+  "outputDirectory": "website/dist",
+  "installCommand": "npm install",
+  "framework": null,
+  "functions": {},
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/$1" }
+  ],
+  "cleanUrls": false,
+  "trailingSlash": true
+}
