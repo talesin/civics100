@@ -287,6 +287,8 @@ const processAnswer = (
       return state
     }
 
+    const istNonEmpty = <T>(arr: T[]): arr is [T, ...T[]] => arr.length > 0
+
     // Check if the number of answers matches expected
     const expectedCount = question.expectedAnswers ?? 1
     if (answerIndices.length !== expectedCount) {
@@ -309,7 +311,7 @@ const processAnswer = (
     if (isCorrect) {
       yield* Console.log('✅ Correct!')
     } else {
-      if (expectedCount === 1) {
+      if (expectedCount === 1 && istNonEmpty(correctAnswerIndices)) {
         const correctLetter = String.fromCharCode(65 + correctAnswerIndices[0])
         yield* Console.log(`❌ Incorrect. The correct answer was ${correctLetter}.`)
       } else {
