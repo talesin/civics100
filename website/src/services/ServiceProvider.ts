@@ -7,7 +7,7 @@ import { LocalStorageService } from './LocalStorageService'
 /**
  * Centralized service layer that provides all application services
  * This eliminates the need to manually provide layers in each component
- * 
+ *
  * We merge all the default layers - Effect will handle dependency resolution
  */
 export const AppServiceLayer = Layer.mergeAll(
@@ -25,7 +25,9 @@ export const runWithServices = <A, E = never, R = never>(
   effect: Effect.Effect<A, E, R>
 ): Promise<A> => {
   // Type assertion needed due to Effect-TS layer providing complexities
-  return Effect.runPromise(effect.pipe(Effect.provide(AppServiceLayer)) as Effect.Effect<A, E, never>)
+  return Effect.runPromise(
+    effect.pipe(Effect.provide(AppServiceLayer)) as Effect.Effect<A, E, never>
+  )
 }
 
 /**
@@ -41,7 +43,7 @@ export const runWithServicesAndErrorHandling = <A, E = never, R = never>(
     effect.pipe(
       Effect.provide(AppServiceLayer),
       Effect.catchAll((error: unknown) => {
-        if (onError) {
+        if (onError !== undefined) {
           onError(error)
         } else {
           console.error('Service error:', error)

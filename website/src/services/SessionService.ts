@@ -62,7 +62,7 @@ const getCurrentQuestion = (
  */
 const canContinue = (session: GameSession): boolean => {
   return (
-    !session.isCompleted &&
+    session.isCompleted === false &&
     session.currentQuestionIndex < session.questions.length &&
     session.correctAnswers < session.settings.winThreshold
   )

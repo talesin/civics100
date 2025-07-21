@@ -69,7 +69,7 @@ export default function Game() {
           yield* storageService.saveGameResult(result)
 
           // Play completion sound
-          if (finalSession.isEarlyWin) {
+          if (finalSession.isEarlyWin === true) {
             playEarlyWin()
           } else {
             playComplete()
@@ -103,7 +103,7 @@ export default function Game() {
 
   const handleAnswer = useCallback(
     (answer: QuestionAnswer) => {
-      if (!session || gameState !== 'playing') return
+      if (session == null || gameState !== 'playing') return
 
       runWithServicesAndErrorHandling(
         Effect.gen(function* () {
@@ -116,13 +116,13 @@ export default function Game() {
           // Check for early win condition
           if (
             updatedSession.correctAnswers >= gameSettings.winThreshold &&
-            !updatedSession.isCompleted
+            updatedSession.isCompleted === false
           ) {
             setShowEarlyWinOption(true)
           }
 
           // Auto-complete if all questions answered or early win achieved
-          if (updatedSession.isCompleted) {
+          if (updatedSession.isCompleted === true) {
             completeGame(updatedSession)
           }
         }),
@@ -133,7 +133,7 @@ export default function Game() {
   )
 
   const handleNext = useCallback(() => {
-    if (!session) return
+    if (session == null) return
 
     setGameState('transitioning')
 
@@ -158,7 +158,7 @@ export default function Game() {
   }, [session, currentQuestionIndex, questions.length, completeGame])
 
   const handleEarlyFinish = useCallback(() => {
-    if (!session) return
+    if (session == null) return
 
     const earlyFinishSession = {
       ...session,
@@ -258,7 +258,7 @@ export default function Game() {
   }
 
   // Completed state
-  if (gameState === 'completed' && gameResult) {
+  if (gameState === 'completed' && gameResult != null) {
     return (
       <Layout title="Test Complete">
         <GameResults

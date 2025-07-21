@@ -141,7 +141,7 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
     }
 
     if (hasAnswered) {
-      if (isCorrectAnswer) {
+      if (isCorrectAnswer === true) {
         return (
           baseClass +
           'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 animate-pulse-success'
