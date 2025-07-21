@@ -1162,7 +1162,8 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
       'because it represents 13 years of independence',
       'because there are 13 amendments'
     ],
-    rationale: 'Other numbers or concepts that could be confused with the number of original colonies'
+    rationale:
+      'Other numbers or concepts that could be confused with the number of original colonies'
   },
   '97': {
     question: 'Why does the flag have 50 stars?',
@@ -1196,12 +1197,7 @@ export const CuratedDistractorDatabase: CuratedDistractorDatabase = {
     question: 'When do we celebrate Independence Day?',
     answerType: 'date',
     correctAnswers: ['July 4'],
-    curatedDistractors: [
-      'July 3',
-      'July 5',
-      'December 25',
-      'January 1'
-    ],
+    curatedDistractors: ['July 3', 'July 5', 'December 25', 'January 1'],
     rationale: 'Other dates that could be confused with Independence Day'
   },
   '100': {

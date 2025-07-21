@@ -6,6 +6,7 @@
     "clean": "rm -rf dist/ node_modules/ build/ coverage/ .next/  package-lock.json",
     "dev": "next dev --turbopack",
     "build": "npm run lint && npm run test && NODE_ENV=production next build",
+    "package": "npm run build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -13,9 +14,7 @@
     "test": "npx jest",
     "test:watch": "npx jest --watch",
     "test:coverage": "npx jest --coverage",
-    "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;",
-    "vercel-build-local": "npm run clean && cd .. && npm install && cd website && npm run build",
-    "vercel-simulate": "npm run clean && cd .. && npm ci && cd website && npm run lint && npm run test && NODE_ENV=production next build"
+    "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
     "@effect/platform": "^0.88.0",
