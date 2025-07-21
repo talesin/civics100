@@ -79,23 +79,32 @@ Vercel provides excellent Next.js hosting with automatic deployments.
    vercel --prod
    ```
 
-3. **Configure vercel.json** (optional)
+3. **Configure Build Settings**
+   
+   **Option 1: Vercel Dashboard**
+   - Build Command: `cd website && npm run build`
+   - Output Directory: `website/dist`  
+   - Install Command: `npm install` (at root level)
+   
+   **Option 2: Configure vercel.json**
    ```json
    {
+     "buildCommand": "cd website && npm run build",
+     "outputDirectory": "website/dist",
+     "installCommand": "npm install",
      "github": {
        "enabled": false
-     },
-     "builds": [
-       {
-         "src": "package.json",
-         "use": "@vercel/static-build",
-         "config": {
-           "distDir": "dist"
-         }
-       }
-     ]
+     }
    }
    ```
+
+### Monorepo Considerations
+
+This project uses npm workspaces. The build script has been optimized to avoid dependency resolution issues:
+
+- **Fixed Issue**: Removed `npm run clean && npm install` from build script to prevent workspace structure disruption
+- **Working Build Script**: `"build": "npm run lint && npm run test && NODE_ENV=production next build"`
+- **Dependencies**: TypeScript dependencies (`@types/react`, `@types/node`) are properly managed in the workspace
 
 ### Environment Variables
 
@@ -379,6 +388,15 @@ npx playwright test
 - Check deployment logs in dashboard
 - Verify build settings match requirements
 - Test preview deployments first
+
+**TypeScript Dependencies Missing (Next.js)**
+```
+FatalError: It looks like you're trying to use TypeScript but do not have the required package(s) installed.
+Please install @types/react and @types/node
+```
+- **Cause**: Monorepo workspace dependency resolution issue
+- **Solution**: Ensure build command includes `cd website &&` to run from correct directory
+- **Fixed**: Build script no longer runs `npm run clean && npm install` which disrupted workspace structure
 
 **Netlify**
 - Check deploy logs for errors
