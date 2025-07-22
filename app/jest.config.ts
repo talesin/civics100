@@ -24,7 +24,7 @@ const config: Config = {
   },
   testTimeout: 10000,
   // Ensure consistent React resolution across monorepo
-  moduleDirectories: ['node_modules', '<rootDir>/../../node_modules']
+  moduleDirectories: ['node_modules', '<rootDir>/../node_modules']
 }
 
 export default config

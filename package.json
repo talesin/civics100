@@ -3,11 +3,11 @@
   "private": true,
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "app"
   ],
   "scripts": {
     "test": "npm run test --workspaces",
-    "clean": "rm -rf node_modules/ package-lock.json && npm run clean --workspaces",
+    "clean": "rm -rf node_modules/ package-lock.json .next/ && npm run clean --workspaces",
     "build": "npm run build --workspaces",
     "build:vercel": "npm run build:vercel --workspaces",
     "lint": "npm run lint --workspaces",
