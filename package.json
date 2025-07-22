@@ -12,7 +12,8 @@
     "build:vercel": "npm run build:vercel --workspaces",
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint:fix --workspaces",
-    "package": "npm run package --workspaces"
+    "package": "npm run package --workspaces",
+    "dev": "npm run dev --workspace=website"
   },
   "dependencies": {
     "entities": "^6.0.0"
