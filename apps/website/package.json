@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "clean": "rm -rf dist/ node_modules/ build/ coverage/ .next/  package-lock.json",
+    "clean": "rm -rf dist/ node_modules/ build/ coverage/ .next/",
     "dev": "next dev --turbopack",
     "build": "npm run lint && npm run test && NODE_ENV=production next build",
     "package": "npm run build",

@@ -5,7 +5,9 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -13,12 +15,12 @@
     }
   },
   "scripts": {
-    "clean": "rm -rf dist/ node_modules/ build/ coverage/ package-lock.json",
+    "clean": "rm -rf dist/ node_modules/ build/ coverage/",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "build": "tsup src/index.ts --dts --format esm --out-dir dist && npm run list-todos",
-    "package": "npm run clean && npm install && npm run lint && npm run start && npm run build",
-    "test": "jest",
+    "build": "npx tsup src/index.ts --dts --format esm --out-dir dist && npm run list-todos",
+    "package": "npm run clean && npm run lint && npm run start && npm run build",
+    "test": "npx jest",
     "start": "npx tsx src/cli/index.ts",
     "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },

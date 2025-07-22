@@ -2,10 +2,8 @@
   "name": "civics100",
   "private": true,
   "workspaces": [
-    "civics2json",
-    "distractions",
-    "questionnaire",
-    "website"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "test": "npm run test --workspaces",
@@ -14,5 +12,11 @@
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint:fix --workspaces",
     "package": "npm run package --workspaces"
+  },
+  "dependencies": {
+    "entities": "^6.0.0"
+  },
+  "overrides": {
+    "entities": "^6.0.0"
   }
 }

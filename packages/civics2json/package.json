@@ -19,12 +19,12 @@
     }
   },
   "scripts": {
-    "clean": "rm -rf dist/ node_modules/ build/ coverage/ package-lock.json data/*",
+    "clean": "rm -rf dist/ node_modules/ build/ coverage/ data/*",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "build": "tsup src/types.ts src/Questions.ts --dts --format esm --out-dir dist && npm run list-todos",
-    "package": "npm run clean && npm install && npm run lint && npx tsx src/index.ts questions construct && npm run build",
-    "test": "jest",
+    "build": "npx tsup src/types.ts src/Questions.ts --dts --format esm --out-dir dist && npm run list-todos",
+    "package": "npm run clean && npm run lint && npx tsx src/index.ts questions construct && npm run build",
+    "test": "npx jest",
     "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
@@ -49,6 +49,6 @@
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.31.1"
+    "typescript-eslint": "^8.38.0"
   }
 }
