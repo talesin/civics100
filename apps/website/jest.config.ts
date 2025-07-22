@@ -16,12 +16,15 @@ const config: Config = {
     ]
   },
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/index.ts'],
+  setupFiles: ['<rootDir>/test/react-patch.js'],
   setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^questionnaire$': '<rootDir>/test/mocks/questionnaire.ts'
   },
-  testTimeout: 10000
+  testTimeout: 10000,
+  // Ensure consistent React resolution across monorepo
+  moduleDirectories: ['node_modules', '<rootDir>/../../node_modules']
 }
 
 export default config
