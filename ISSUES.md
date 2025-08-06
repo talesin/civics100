@@ -2,7 +2,7 @@
 
 Issues and feature updates as of 2025-08-06
 
-## State Selection IN Web UI
+## State Selection in Web UI - ✅ 
 
 State selection in the web UI doesn't impact the questionnaire - it defaults to California. Make sure the state selection is reflected in the questionnaire and that it filters the questions accordingly. This will ensure that users see questions relevant to their selected state.
 

@@ -8,7 +8,7 @@ import { GameService, GameServiceDefault, PairedAnswers } from 'questionnaire'
  */
 const convertToQuestionnaireSettings = (
   maxQuestions: number,
-  userState: StateAbbreviation = 'CA',
+  userState: StateAbbreviation,
   questionNumbers?: readonly number[] | undefined
 ): GameSettings => ({
   maxQuestions,
@@ -24,7 +24,7 @@ const convertToQuestionnaireSettings = (
 const generateGameQuestions = (gameService: GameService) =>
   Effect.fn(function* (
     questionCount: number,
-    userState: StateAbbreviation = 'CA',
+    userState: StateAbbreviation,
     pairedAnswers: PairedAnswers = {}
   ) {
     const settings = convertToQuestionnaireSettings(questionCount, userState)
@@ -60,7 +60,7 @@ export class QuestionDataService extends Effect.Service<QuestionDataService>()(
 export const TestQuestionDataServiceLayer = (fn?: {
   generateGameQuestions?: (
     questionCount: number,
-    userState?: StateAbbreviation,
+    userState: StateAbbreviation,
     pairedAnswers?: PairedAnswers
   ) => Effect.Effect<QuestionDisplay[], never, never>
 }) =>
