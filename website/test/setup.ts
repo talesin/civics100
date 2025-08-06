@@ -3,6 +3,12 @@
 
 import { TextEncoder, TextDecoder } from 'util'
 import '@testing-library/jest-dom'
+import * as React from 'react'
+
+// React global setup for testing library compatibility with React 19
+// The React.act patching is now handled by react-patch.js setupFile
+// This ensures React is available globally for @testing-library/react
+global.React = React
 
 // Polyfill TextEncoder/TextDecoder for Effect-TS
 global.TextEncoder = TextEncoder as any

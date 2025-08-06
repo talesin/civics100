@@ -58,7 +58,7 @@ export default function Results() {
   }
 
   const getResultBadge = (result: GameResult) => {
-    if (result.isEarlyWin) {
+    if (result.isEarlyWin === true) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
           Early Win
@@ -183,7 +183,7 @@ export default function Results() {
                         <span className="text-gray-600 dark:text-gray-300">
                           {result.correctAnswers}/{result.totalQuestions} correct
                         </span>
-                        {result.isEarlyWin && (
+                        {result.isEarlyWin === true && (
                           <span className="text-yellow-600 dark:text-yellow-400 text-xs">
                             ⭐ Early completion
                           </span>

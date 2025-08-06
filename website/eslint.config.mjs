@@ -77,7 +77,17 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
       ],
       '@typescript-eslint/no-require-imports': 'error',
-      '@typescript-eslint/strict-boolean-expressions': 'error'
+      '@typescript-eslint/strict-boolean-expressions': [
+        "error",
+        {
+          "allowString": false,
+          "allowNumber": false,
+          "allowNullableObject": false,
+          "allowNullableBoolean": false,
+          "allowAny": false,
+          "allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing": false
+        }
+      ]
     }
   }
 )

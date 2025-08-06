@@ -2,16 +2,23 @@
   "name": "civics100",
   "private": true,
   "workspaces": [
-    "civics2json",
-    "distractions",
-    "questionnaire",
+    "packages/*",
     "website"
   ],
   "scripts": {
     "test": "npm run test --workspaces",
+    "clean": "rm -rf node_modules/ package-lock.json .next/ && npm run clean --workspaces",
     "build": "npm run build --workspaces",
+    "build:vercel": "npm run build:vercel --workspaces",
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint:fix --workspaces",
-    "package": "npm run package --workspaces"
+    "package": "npm run package --workspaces",
+    "dev": "npm run dev --workspace=website"
+  },
+  "dependencies": {
+    "entities": "^6.0.0"
+  },
+  "overrides": {
+    "entities": "^6.0.0"
   }
 }

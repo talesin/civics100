@@ -1,40 +1,40 @@
 {
-  "name": "questionnaire",
+  "name": "civics2json",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "dist/types.js",
+  "types": "dist/types.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/types.js",
+      "types": "./dist/types.d.ts"
     },
-    "./data": {
-      "import": "./dist/data/index.js",
-      "types": "./dist/data/index.d.ts"
+    "./Questions": {
+      "import": "./dist/Questions.js",
+      "types": "./dist/Questions.d.ts"
     }
   },
   "scripts": {
-    "clean": "rm -rf dist/ node_modules/ build/ coverage/ package-lock.json",
+    "clean": "rm -rf dist/ node_modules/ build/ coverage/ data/*",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "build": "tsup src/index.ts src/data/index.ts --dts --format esm --out-dir dist && npm run list-todos",
-    "package": "npm run clean && npm install && npm run lint && npm run build",
-    "test": "jest",
-    "start": "npx tsx src/cli/index.ts",
+    "build": "npx tsup src/types.ts src/Questions.ts --dts --format esm --out-dir dist && npm run list-todos",
+    "build:vercel": "npx tsx src/index.ts questions construct && npm run build",
+    "package": "npx tsx src/index.ts questions construct && npm run lint && npm run test && npm run build",
+    "test": "npx jest",
     "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
     "@effect/cli": "^0.63.4",
     "@effect/platform": "^0.84.3",
     "@effect/platform-node": "^0.83.3",
-    "civics2json": "*",
-    "distractions": "*",
     "effect": "^3.14.14",
+    "fast-xml-parser": "^5.2.5",
+    "linkedom": "^0.18.11",
     "ts-essentials": "^10.0.4"
   },
   "devDependencies": {
@@ -46,10 +46,10 @@
     "eslint-plugin-prettier": "^5.2.6",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
-    "ts-jest": "^29.3.4",
+    "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.31.1"
+    "typescript-eslint": "^8.38.0"
   }
 }

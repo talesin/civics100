@@ -636,7 +636,7 @@
     "party": "D",
     "officeRoom": "109 CHOB",
     "phone": "(202) 225-7924",
-    "committeeAssignment": "Oversight and Government Reform|Homeland Security|Transportation and Infrastructure",
+    "committeeAssignment": "Oversight and Government Reform|Transportation and Infrastructure",
     "website": "https://robertgarcia.house.gov"
   },
   {
@@ -3620,14 +3620,14 @@
     "website": "https://johnrose.house.gov/"
   },
   {
-    "name": "Green, Mark",
+    "name": "Green, Mark E.- Vacancy",
     "state": "TN",
     "district": "7th",
     "party": "R",
     "officeRoom": "2446 RHOB",
     "phone": "(202) 225-2811",
-    "committeeAssignment": "Foreign Affairs|Homeland Security",
-    "website": "https://markgreen.house.gov/"
+    "committeeAssignment": "",
+    "website": "https://clerk.house.gov/Members#Vacancies"
   },
   {
     "name": "Kustoff, David",
@@ -3646,7 +3646,7 @@
     "party": "D",
     "officeRoom": "2268 RHOB",
     "phone": "(202) 225-3265",
-    "committeeAssignment": "Judiciary|Transportation and Infrastructure",
+    "committeeAssignment": "Intelligence|Judiciary",
     "website": "https://cohen.house.gov/"
   },
   {

@@ -1,5 +1,3 @@
-import globals from 'globals'
-import pluginJs from '@eslint/js'
 import tseslint from 'typescript-eslint'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'

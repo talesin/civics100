@@ -2,6 +2,23 @@ import { Effect, Layer, Option, Schema } from 'effect'
 import { GameResult, WebsiteGameSettings, DEFAULT_GAME_SETTINGS } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 
+// Effect Schemas for runtime validation
+const GameResultSchema = Schema.Struct({
+  sessionId: Schema.NonEmptyString,
+  totalQuestions: Schema.Number,
+  correctAnswers: Schema.Number,
+  percentage: Schema.Number,
+  isEarlyWin: Schema.Boolean,
+  completedAt: Schema.DateFromString
+})
+
+const WebsiteGameSettingsSchema = Schema.Struct({
+  maxQuestions: Schema.Number,
+  winThreshold: Schema.Number, 
+  userState: Schema.String,
+  darkMode: Schema.Boolean
+})
+
 const STORAGE_KEYS = {
   GAME_RESULTS: 'civics100_game_results',
   GAME_SETTINGS: 'civics100_game_settings',
@@ -14,11 +31,11 @@ const STORAGE_VERSION = '1.0.0'
 const safeJsonParse = (json: string | null): Option.Option<unknown> =>
   Schema.decodeUnknownOption(Schema.parseJson())(json)
 
-const safeJsonStringify = <T>(value: T): Effect.Effect<string, never, never> => {
+const safeJsonStringify = <T>(value: T): Effect.Effect<string | undefined, never, never> => {
   return Effect.try({
     try: () => JSON.stringify(value),
-    catch: () => ''
-  }).pipe(Effect.catchAll(() => Effect.succeed('')))
+    catch: () => undefined
+  }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
 }
 
 const checkStorageAvailable = (): boolean => {
@@ -40,8 +57,8 @@ const migrateStorageIfNeeded = (): Effect.Effect<void, never, never> => {
 
     const currentVersion = yield* Effect.try({
       try: () => localStorage.getItem(STORAGE_KEYS.VERSION),
-      catch: () => null
-    }).pipe(Effect.catchAll(() => Effect.succeed(null)))
+      catch: () => undefined
+    }).pipe(Effect.catchAll(() => Effect.succeed(undefined)))
 
     if (currentVersion !== STORAGE_VERSION) {
       yield* Effect.try({
@@ -65,7 +82,7 @@ const saveGameResult = (result: GameResult): Effect.Effect<void, never, never> =
     const resultsToKeep = updatedResults.slice(-maxResults)
 
     const jsonString = yield* safeJsonStringify(resultsToKeep)
-    if (jsonString) {
+    if (jsonString !== undefined) {
       yield* Effect.try({
         try: () => localStorage.setItem(STORAGE_KEYS.GAME_RESULTS, jsonString),
         catch: () => void 0
@@ -84,28 +101,21 @@ const getGameResults = (): Effect.Effect<readonly GameResult[], never, never> =>
       try: () => localStorage.getItem(STORAGE_KEYS.GAME_RESULTS),
       catch: () => null
     }).pipe(Effect.catchAll(() => Effect.succeed(null)))
+    
     const parsed = safeJsonParse(json)
+    const rawResults = Option.getOrElse(parsed, () => [])
 
-    const results = Option.getOrElse(parsed, () => [])
-
-    if (!Array.isArray(results)) {
+    if (!Array.isArray(rawResults)) {
       return []
     }
 
-    return results.map((r: unknown) => {
-      const result = r as Record<string, unknown>
-      return {
-        sessionId: (result['sessionId'] as string) || '',
-        totalQuestions: (result['totalQuestions'] as number) || 0,
-        correctAnswers: (result['correctAnswers'] as number) || 0,
-        percentage: (result['percentage'] as number) || 0,
-        isEarlyWin: (result['isEarlyWin'] as boolean) || false,
-        completedAt:
-          result['completedAt'] !== undefined
-            ? new Date(result['completedAt'] as string)
-            : new Date()
-      }
-    })
+    // Use schema to validate and transform each result, filtering out invalid ones
+    const validResults = rawResults
+      .map((rawResult) => Schema.decodeUnknownOption(GameResultSchema)(rawResult))
+      .filter(Option.isSome)
+      .map((option) => option.value)
+
+    return validResults
   })
 }
 
@@ -116,7 +126,7 @@ const saveGameSettings = (settings: WebsiteGameSettings): Effect.Effect<void, ne
     yield* migrateStorageIfNeeded()
 
     const jsonString = yield* safeJsonStringify(settings)
-    if (jsonString) {
+    if (jsonString !== undefined) {
       yield* Effect.try({
         try: () => localStorage.setItem(STORAGE_KEYS.GAME_SETTINGS, jsonString),
         catch: () => void 0
@@ -135,21 +145,17 @@ const getGameSettings = (): Effect.Effect<WebsiteGameSettings, never, never> => 
       try: () => localStorage.getItem(STORAGE_KEYS.GAME_SETTINGS),
       catch: () => null
     }).pipe(Effect.catchAll(() => Effect.succeed(null)))
+    
     const parsed = safeJsonParse(json)
+    const rawSettings = Option.getOrElse(parsed, () => ({}))
 
-    const settings = Option.getOrElse(parsed, () => DEFAULT_GAME_SETTINGS)
-    const settingsRecord = settings as Record<string, unknown>
-
-    return {
-      maxQuestions:
-        (settingsRecord['maxQuestions'] as number) ?? DEFAULT_GAME_SETTINGS.maxQuestions,
-      winThreshold:
-        (settingsRecord['winThreshold'] as number) ?? DEFAULT_GAME_SETTINGS.winThreshold,
-      userState:
-        (settingsRecord['userState'] as import('civics2json').StateAbbreviation) ??
-        DEFAULT_GAME_SETTINGS.userState,
-      darkMode: (settingsRecord['darkMode'] as boolean) ?? DEFAULT_GAME_SETTINGS.darkMode
-    }
+    // Use schema to validate and decode settings, fallback to defaults if invalid
+    const settingsOption = Schema.decodeUnknownOption(WebsiteGameSettingsSchema)(rawSettings)
+    
+    const decodedSettings = Option.getOrElse(settingsOption, () => DEFAULT_GAME_SETTINGS)
+    
+    // Type assertion needed due to StateAbbreviation type mismatch
+    return decodedSettings as WebsiteGameSettings
   })
 }
 
@@ -200,7 +206,7 @@ const getGameStats = (): Effect.Effect<
     const totalGames = results.length
     const averageScore = Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / totalGames)
     const bestScore = Math.max(...results.map((r) => r.percentage))
-    const earlyWins = results.filter((r) => r.isEarlyWin).length
+    const earlyWins = results.filter((r) => r.isEarlyWin === true).length
 
     return {
       totalGames,
@@ -218,7 +224,7 @@ const savePairedAnswers = (pairedAnswers: PairedAnswers): Effect.Effect<void, ne
     yield* migrateStorageIfNeeded()
 
     const jsonString = yield* safeJsonStringify(pairedAnswers)
-    if (jsonString) {
+    if (jsonString !== undefined) {
       yield* Effect.try({
         try: () => localStorage.setItem(STORAGE_KEYS.PAIRED_ANSWERS, jsonString),
         catch: () => void 0
@@ -237,10 +243,12 @@ const getPairedAnswers = (): Effect.Effect<PairedAnswers, never, never> => {
       try: () => localStorage.getItem(STORAGE_KEYS.PAIRED_ANSWERS),
       catch: () => null
     }).pipe(Effect.catchAll(() => Effect.succeed(null)))
+    
     const parsed = safeJsonParse(json)
+    const rawAnswers = Option.getOrElse(parsed, () => ({}))
 
-    const pairedAnswers = Option.getOrElse(parsed, () => ({}))
-    return pairedAnswers as PairedAnswers
+    // For now, return the raw answers as typed - can be improved later with proper schema
+    return rawAnswers as PairedAnswers
   })
 }
 
