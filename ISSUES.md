@@ -11,7 +11,7 @@ State selection in the web UI doesn't impact the questionnaire - it defaults to 
 The answers for the state US representatives and senators show the state next to their name, making it obvious which state they represent. This is redundant since the state is already selected in the UI. We should remove the state abbreviation from the representative and senator names in the answers.
 
 
-## US Representatives by District
+## US Representatives by District - ✅
 
 We need to update the US Representatives data to include district information. This will allow users to select their district and see the representatives for that district. The data should be structured in a way that allows easy filtering by district.
 - Update the `data/civics-questions.json` to include the district information for each representative.
