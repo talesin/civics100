@@ -42,7 +42,7 @@ describe('constructQuestions', () => {
   ]
 
   const SENATORS_CHOICES = SENATORS.map((s) => ({
-    senator: `${s.first_name} ${s.last_name} (${s.state}-${s.party})`,
+    senator: `${s.first_name} ${s.last_name}`,
     state: s.state
   }))
 
