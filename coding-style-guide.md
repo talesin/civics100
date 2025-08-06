@@ -11,7 +11,7 @@ Use descriptive variable names—no abbreviations.
 Use descriptive function names—no abbreviations.
 Use descriptive class names—no abbreviations.
 Always check for existing code before writing new code.
-Do not drastically change existing patterns iterate on them first.
+Do not drastically change existing patterns; iterate on them first.
 Always prefer simple solutions.
 Avoid code duplication where possible—check for existing implementations before writing new code.
 Keep the codebase simple and easy to understand.
@@ -21,21 +21,19 @@ Write thorough tests for all code.
 
 # TypeScript
 
-Prefer pure functions and immutability in TypeScript.
-Avoid returning null prefer undefined and, where possible, use tagged union types.
-Avoid the use of the any type, prefer explicitly typed or unknown
-Avoid external state libraries (e.g., no Redux or Zustand).
-Use ?? instead of || when checking for null or undefined.
-Do not use implicit boolean expressions, always use explicit boolean comparisons for non-boolean values, e.g. `if (value1 === null || value1 === undefined)` instead of `if (value)`.
-Do not fix linting errors let me address them first.
-Prefer the use of types over interfaces unless there's precedence (ie. if there are specific examples or patterns to follow)
-Except at the edges, all effectful code (that is any non pure functions), will be written using Effect-TS.
 Use Effect schemas for all JSON validation.
+Prefer pure functions and immutability in TypeScript.
+Avoid returning null; prefer undefined and, where possible, use tagged union types.
+Avoid the use of the any type, prefer explicitly typed or unknown
 Wrap all non-local or unsafe code in Effect.try or Effect.tryPromise.
 Use Effect.try or Effect.tryPromise instead of try/catch
 Keep Effect.try and Effect.tryPromise to the specific line of code that may throw an error
 Do not throw errors use Effect patterns
-When testing prefer the use of expect(value).toMatchObject({...}) over multiple expect statements, unless there's no other way to test the code.
+Avoid external state libraries (e.g., no Redux or Zustand).
+Use ?? instead of || when checking for null or undefined.
+Do not use implicit boolean expressions
+Do not fix linting errors; let me address them first.
+Prefer the use of types over interfaces unless there's precedence (ie. if there are specific examples or patterns to follow)
 
 ## Effect Services
 
@@ -57,21 +55,15 @@ export class ExampleService extends Effect.Service<ExampleService>()(
 ) {}
 
 export const TestExampleServiceLayer = (fn?: {
-  executeSomething?: ExampleService["executeSomething"];
-  executeAnother?: ExampleService["executeAnother"];
+  executeSomething?: () => ExampleService["executeSomething"];
+  executeAnother?: () => ExampleService["executeAnother"];
 }) =>
   Layer.succeed(
     ExampleService,
     ExampleService.of({
       _tag: "ExampleService",
-      executeSomething:
-        fn?.executeSomething ??
-        ((() =>
-          Effect.succeed("")) as unknown as ExampleService["executeSomething"]),
-      executeAnother:
-        fn?.executeAnother ??
-        ((() =>
-          Effect.succeed([])) as unknown as ExampleService["executeAnother"]),
+      executeSomething: fn?.executeSomething ?? (() => Effect.succeed("")),
+      executeAnother: fn?.executeAnother ?? (() => Effect.succeed([])),
     })
   );
 ```
@@ -157,9 +149,7 @@ it('should do the thing', async () => {
 
 ## Dependency Injection
 
-A tenet of Effect-TS is that dependencies shouldn't be exposed by functions within a service. This is because it can lead to code that is hard to test and maintain. Services should be the only place that dependencies are exposed. Use function currying to pass dependencies to functions.
-
-The dependency injection pattern is used to provide dependencies to functions. The first function should contain the dependencies arguments and return an Effect.fn that contains the arguments for the actual function.
+The dependency injection pattern is used to provide dependencies to services. This allows for testing and dependency injection. This is using a currying pattern to provide the dependencies to the service. The first function should contain the dependencies arguments and return an Effect.fn that contains the arguments for the actual function.
 
 Keep the service class minimal with just the code to define and configure it. All exported or supporting functions should be declared out side the class.
 
@@ -196,3 +186,209 @@ type Person = {
 
 const Person = Data.tagged<Person>("Person");
 ```
+
+## Date and Time
+
+```typescript
+const currentTime = yield * Clock.currentTimeMillis;
+const date = new Date(currentTime);
+```
+
+## Random
+
+Prefer using Effect.random or Random over Math.random
+
+```typescript
+const n1 = yield * Random.nextIntBetween(1, 10);
+
+// or
+
+const random = yield * Effect.random;
+const n2 = yield * random.next;
+```
+
+## Schema
+
+Prefer using tagged schemas with derived types over interfaces, unless there is a specific need for an interface.
+Keep names the same unless there is a conflict.
+
+```typescript
+// define the schema
+export const SampleResponse = Schema.TaggedStruct("SampleResponse", {
+  message: Schema.String,
+  data: Schema.Array(Schema.String),
+});
+
+// define the type
+export type SampleResponse = typeof SampleResponse.Type;
+
+// decode the response from json
+const response = yield * Schema.decodeUnknown(SampleResponse)(json);
+
+// make the response
+const response = SampleResponse.make({
+  message: "Test message",
+  data: [],
+});
+```
+
+## Environment Variables
+
+Prefer using Config over process.env
+
+```typescript
+const myEnvVar =
+  yield * Config.string("MY_ENV_VAR").pipe(Config.withDefault("default value"));
+```
+
+## Logging
+
+Prefer using Effect.log over console.log
+
+```typescript
+Effect.log("Hello World");
+```
+
+# React
+
+A curated React style guide designed to help AI coding assistants like Claude, Copilot, and ChatGPT generate consistent, maintainable code.
+
+## Based On
+
+This guide is adapted from the [Airbnb React/JSX Style Guide](https://github.com/airbnb/javascript/tree/master/react), tailored for AI-first coding workflows.
+
+## 1. Component Structure
+
+- Always use **function components**.
+- Prefer **arrow functions** unless a named function is explicitly required.
+- Export only **one component per file**.
+- **Match the file and component name**.
+
+```tsx
+// Good
+export const Button = () => {
+  return <button>Click me</button>;
+};
+
+// Bad
+function Btn() {
+  return <button>Click me</button>;
+}
+```
+
+## 2. Props and Types
+
+- Always define a `Props` type or interface, even if it's empty.
+- Use `interface` unless you need unions or advanced types.
+
+```tsx
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+}
+
+export const Button: React.FC<ButtonProps> = ({ label, onClick }) => {
+  return <button onClick={onClick}>{label}</button>;
+};
+```
+
+## 3. Hooks
+
+- Never call hooks conditionally.
+- Extract complex `useEffect` logic into custom hooks.
+- Prefer `useReducer` over multiple `useState` calls for complex state.
+
+## 4. Styling
+
+- Prefer **Tailwind CSS** or **CSS Modules**.
+- Avoid inline styles unless dynamic and small.
+- Descriptive class names if not using Tailwind.
+
+## 5. Naming
+
+- Use **descriptive PascalCase** names: `UserCard`, `SignInForm`, `NavBar`.
+- Avoid vague or abbreviated names (`Uc`, `Sif`, `nb`).
+
+## 6. Folder Structure
+
+Organize components with their logic, styles, and tests.
+
+```text
+components/
+  Button/
+    Button.tsx
+    Button.test.tsx
+    Button.module.css
+  Header/
+    Header.tsx
+```
+
+## 7. Imports
+
+- Group by type: **built-in**, **third-party**, **internal**.
+- Alphabetize within groups.
+- Prefer **absolute imports** using `tsconfig` paths.
+
+```tsx
+import React from "react";
+import { useRouter } from "next/router";
+
+import { Button } from "@/components/ui";
+import { useAuth } from "@/hooks/useAuth";
+```
+
+## 8. File Conventions
+
+- Use `.tsx` for all React components.
+- Co-locate tests with components: `ComponentName.test.tsx`.
+
+## 9. Code Formatting
+
+- Use **Prettier** with standard configuration.
+- Use ESLint with:
+  - `eslint-plugin-react`
+  - `eslint-plugin-jsx-a11y`
+- Use no semicolons if following Prettier defaults.
+
+## 10. AI-Specific Additions
+
+- Add comments to **non-trivial** logic.
+- Use markers for protected code:
+  ```tsx
+  // AI: DO NOT MODIFY
+  ```
+- Add short summaries at top of files:
+  ```tsx
+  // Renders a button that triggers a parent callback when clicked.
+  // Used across the site for primary actions.
+  ```
+
+## Example Component
+
+```tsx
+// Renders a styled button with an onClick callback
+// Used in primary user actions
+interface ButtonProps {
+  label: string;
+  onClick: () => void;
+}
+
+export const Button: React.FC<ButtonProps> = ({ label, onClick }) => {
+  return (
+    <button
+      onClick={onClick}
+      className="rounded bg-blue-600 text-white px-4 py-2"
+    >
+      {label}
+    </button>
+  );
+};
+```
+
+## Optional Tools
+
+- Prettier: For consistent formatting.
+- ESLint: For syntax and logic rules.
+- TypeScript: Strongly recommended.
+- Tailwind CSS: Encouraged for styling clarity and reuse.
+- Testing Library + Jest: For unit and integration testing.
