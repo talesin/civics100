@@ -873,1768 +873,2209 @@
       "_type": "representative",
       "choices": [
         {
-          "representative": "Moore, Barry",
-          "state": "AL"
+          "representative": "Barry Moore",
+          "state": "AL",
+          "district": "1st"
         },
         {
-          "representative": "Figures, Shomari",
-          "state": "AL"
+          "representative": "Shomari Figures",
+          "state": "AL",
+          "district": "2nd"
         },
         {
-          "representative": "Rogers, Mike",
-          "state": "AL"
+          "representative": "Mike Rogers",
+          "state": "AL",
+          "district": "3rd"
         },
         {
-          "representative": "Aderholt, Robert",
-          "state": "AL"
+          "representative": "Robert Aderholt",
+          "state": "AL",
+          "district": "4th"
         },
         {
-          "representative": "Strong, Dale",
-          "state": "AL"
+          "representative": "Dale Strong",
+          "state": "AL",
+          "district": "5th"
         },
         {
-          "representative": "Palmer, Gary",
-          "state": "AL"
+          "representative": "Gary Palmer",
+          "state": "AL",
+          "district": "6th"
         },
         {
-          "representative": "Sewell, Terri",
-          "state": "AL"
+          "representative": "Terri Sewell",
+          "state": "AL",
+          "district": "7th"
         },
         {
-          "representative": "Begich, Nicholas",
-          "state": "AK"
+          "representative": "Nicholas Begich",
+          "state": "AK",
+          "district": "At Large"
         },
         {
-          "representative": "Radewagen, Aumua Amata",
-          "state": "AS"
+          "representative": "Aumua Amata Radewagen",
+          "state": "AS",
+          "district": "Delegate"
         },
         {
-          "representative": "Schweikert, David",
-          "state": "AZ"
+          "representative": "David Schweikert",
+          "state": "AZ",
+          "district": "1st"
         },
         {
-          "representative": "Crane, Elijah",
-          "state": "AZ"
+          "representative": "Elijah Crane",
+          "state": "AZ",
+          "district": "2nd"
         },
         {
-          "representative": "Ansari, Yassamin",
-          "state": "AZ"
+          "representative": "Yassamin Ansari",
+          "state": "AZ",
+          "district": "3rd"
         },
         {
-          "representative": "Stanton, Greg",
-          "state": "AZ"
+          "representative": "Greg Stanton",
+          "state": "AZ",
+          "district": "4th"
         },
         {
-          "representative": "Biggs, Andy",
-          "state": "AZ"
+          "representative": "Andy Biggs",
+          "state": "AZ",
+          "district": "5th"
         },
         {
-          "representative": "Ciscomani, Juan",
-          "state": "AZ"
+          "representative": "Juan Ciscomani",
+          "state": "AZ",
+          "district": "6th"
         },
         {
-          "representative": "Grijalva, Raúl M.- Vacancy",
-          "state": "AZ"
+          "representative": "Raúl M.- Vacancy Grijalva",
+          "state": "AZ",
+          "district": "7th"
         },
         {
-          "representative": "Hamadeh, Abraham",
-          "state": "AZ"
+          "representative": "Abraham Hamadeh",
+          "state": "AZ",
+          "district": "8th"
         },
         {
-          "representative": "Gosar, Paul",
-          "state": "AZ"
+          "representative": "Paul Gosar",
+          "state": "AZ",
+          "district": "9th"
         },
         {
-          "representative": "Crawford, Eric",
-          "state": "AR"
+          "representative": "Eric Crawford",
+          "state": "AR",
+          "district": "1st"
         },
         {
-          "representative": "Hill, J.",
-          "state": "AR"
+          "representative": "J. Hill",
+          "state": "AR",
+          "district": "2nd"
         },
         {
-          "representative": "Womack, Steve",
-          "state": "AR"
+          "representative": "Steve Womack",
+          "state": "AR",
+          "district": "3rd"
         },
         {
-          "representative": "Westerman, Bruce",
-          "state": "AR"
+          "representative": "Bruce Westerman",
+          "state": "AR",
+          "district": "4th"
         },
         {
-          "representative": "LaMalfa, Doug",
-          "state": "CA"
+          "representative": "Doug LaMalfa",
+          "state": "CA",
+          "district": "1st"
         },
         {
-          "representative": "Huffman, Jared",
-          "state": "CA"
+          "representative": "Jared Huffman",
+          "state": "CA",
+          "district": "2nd"
         },
         {
-          "representative": "Kiley, Kevin",
-          "state": "CA"
+          "representative": "Kevin Kiley",
+          "state": "CA",
+          "district": "3rd"
         },
         {
-          "representative": "Thompson, Mike",
-          "state": "CA"
+          "representative": "Mike Thompson",
+          "state": "CA",
+          "district": "4th"
         },
         {
-          "representative": "McClintock, Tom",
-          "state": "CA"
+          "representative": "Tom McClintock",
+          "state": "CA",
+          "district": "5th"
         },
         {
-          "representative": "Bera, Ami",
-          "state": "CA"
+          "representative": "Ami Bera",
+          "state": "CA",
+          "district": "6th"
         },
         {
-          "representative": "Matsui, Doris",
-          "state": "CA"
+          "representative": "Doris Matsui",
+          "state": "CA",
+          "district": "7th"
         },
         {
-          "representative": "Garamendi, John",
-          "state": "CA"
+          "representative": "John Garamendi",
+          "state": "CA",
+          "district": "8th"
         },
         {
-          "representative": "Harder, Josh",
-          "state": "CA"
+          "representative": "Josh Harder",
+          "state": "CA",
+          "district": "9th"
         },
         {
-          "representative": "DeSaulnier, Mark",
-          "state": "CA"
+          "representative": "Mark DeSaulnier",
+          "state": "CA",
+          "district": "10th"
         },
         {
-          "representative": "Pelosi, Nancy",
-          "state": "CA"
+          "representative": "Nancy Pelosi",
+          "state": "CA",
+          "district": "11th"
         },
         {
-          "representative": "Simon, Lateefah",
-          "state": "CA"
+          "representative": "Lateefah Simon",
+          "state": "CA",
+          "district": "12th"
         },
         {
-          "representative": "Gray, Adam",
-          "state": "CA"
+          "representative": "Adam Gray",
+          "state": "CA",
+          "district": "13th"
         },
         {
-          "representative": "Swalwell, Eric",
-          "state": "CA"
+          "representative": "Eric Swalwell",
+          "state": "CA",
+          "district": "14th"
         },
         {
-          "representative": "Mullin, Kevin",
-          "state": "CA"
+          "representative": "Kevin Mullin",
+          "state": "CA",
+          "district": "15th"
         },
         {
-          "representative": "Liccardo, Sam",
-          "state": "CA"
+          "representative": "Sam Liccardo",
+          "state": "CA",
+          "district": "16th"
         },
         {
-          "representative": "Khanna, Ro",
-          "state": "CA"
+          "representative": "Ro Khanna",
+          "state": "CA",
+          "district": "17th"
         },
         {
-          "representative": "Lofgren, Zoe",
-          "state": "CA"
+          "representative": "Zoe Lofgren",
+          "state": "CA",
+          "district": "18th"
         },
         {
-          "representative": "Panetta, Jimmy",
-          "state": "CA"
+          "representative": "Jimmy Panetta",
+          "state": "CA",
+          "district": "19th"
         },
         {
-          "representative": "Fong, Vince",
-          "state": "CA"
+          "representative": "Vince Fong",
+          "state": "CA",
+          "district": "20th"
         },
         {
-          "representative": "Costa, Jim",
-          "state": "CA"
+          "representative": "Jim Costa",
+          "state": "CA",
+          "district": "21st"
         },
         {
-          "representative": "Valadao, David",
-          "state": "CA"
+          "representative": "David Valadao",
+          "state": "CA",
+          "district": "22nd"
         },
         {
-          "representative": "Obernolte, Jay",
-          "state": "CA"
+          "representative": "Jay Obernolte",
+          "state": "CA",
+          "district": "23rd"
         },
         {
-          "representative": "Carbajal, Salud",
-          "state": "CA"
+          "representative": "Salud Carbajal",
+          "state": "CA",
+          "district": "24th"
         },
         {
-          "representative": "Ruiz, Raul",
-          "state": "CA"
+          "representative": "Raul Ruiz",
+          "state": "CA",
+          "district": "25th"
         },
         {
-          "representative": "Brownley, Julia",
-          "state": "CA"
+          "representative": "Julia Brownley",
+          "state": "CA",
+          "district": "26th"
         },
         {
-          "representative": "Whitesides, George",
-          "state": "CA"
+          "representative": "George Whitesides",
+          "state": "CA",
+          "district": "27th"
         },
         {
-          "representative": "Chu, Judy",
-          "state": "CA"
+          "representative": "Judy Chu",
+          "state": "CA",
+          "district": "28th"
         },
         {
-          "representative": "Rivas, Luz",
-          "state": "CA"
+          "representative": "Luz Rivas",
+          "state": "CA",
+          "district": "29th"
         },
         {
-          "representative": "Friedman, Laura",
-          "state": "CA"
+          "representative": "Laura Friedman",
+          "state": "CA",
+          "district": "30th"
         },
         {
-          "representative": "Cisneros, Gilbert",
-          "state": "CA"
+          "representative": "Gilbert Cisneros",
+          "state": "CA",
+          "district": "31st"
         },
         {
-          "representative": "Sherman, Brad",
-          "state": "CA"
+          "representative": "Brad Sherman",
+          "state": "CA",
+          "district": "32nd"
         },
         {
-          "representative": "Aguilar, Pete",
-          "state": "CA"
+          "representative": "Pete Aguilar",
+          "state": "CA",
+          "district": "33rd"
         },
         {
-          "representative": "Gomez, Jimmy",
-          "state": "CA"
+          "representative": "Jimmy Gomez",
+          "state": "CA",
+          "district": "34th"
         },
         {
-          "representative": "Torres, Norma",
-          "state": "CA"
+          "representative": "Norma Torres",
+          "state": "CA",
+          "district": "35th"
         },
         {
-          "representative": "Lieu, Ted",
-          "state": "CA"
+          "representative": "Ted Lieu",
+          "state": "CA",
+          "district": "36th"
         },
         {
-          "representative": "Kamlager-Dove, Sydney",
-          "state": "CA"
+          "representative": "Sydney Kamlager-Dove",
+          "state": "CA",
+          "district": "37th"
         },
         {
-          "representative": "Sanchez, Linda",
-          "state": "CA"
+          "representative": "Linda Sanchez",
+          "state": "CA",
+          "district": "38th"
         },
         {
-          "representative": "Takano, Mark",
-          "state": "CA"
+          "representative": "Mark Takano",
+          "state": "CA",
+          "district": "39th"
         },
         {
-          "representative": "Kim, Young",
-          "state": "CA"
+          "representative": "Young Kim",
+          "state": "CA",
+          "district": "40th"
         },
         {
-          "representative": "Calvert, Ken",
-          "state": "CA"
+          "representative": "Ken Calvert",
+          "state": "CA",
+          "district": "41st"
         },
         {
-          "representative": "Garcia, Robert",
-          "state": "CA"
+          "representative": "Robert Garcia",
+          "state": "CA",
+          "district": "42nd"
         },
         {
-          "representative": "Waters, Maxine",
-          "state": "CA"
+          "representative": "Maxine Waters",
+          "state": "CA",
+          "district": "43rd"
         },
         {
-          "representative": "Barragan, Nanette",
-          "state": "CA"
+          "representative": "Nanette Barragan",
+          "state": "CA",
+          "district": "44th"
         },
         {
-          "representative": "Tran, Derek",
-          "state": "CA"
+          "representative": "Derek Tran",
+          "state": "CA",
+          "district": "45th"
         },
         {
-          "representative": "Correa, J.",
-          "state": "CA"
+          "representative": "J. Correa",
+          "state": "CA",
+          "district": "46th"
         },
         {
-          "representative": "Min, Dave",
-          "state": "CA"
+          "representative": "Dave Min",
+          "state": "CA",
+          "district": "47th"
         },
         {
-          "representative": "Issa, Darrell",
-          "state": "CA"
+          "representative": "Darrell Issa",
+          "state": "CA",
+          "district": "48th"
         },
         {
-          "representative": "Levin, Mike",
-          "state": "CA"
+          "representative": "Mike Levin",
+          "state": "CA",
+          "district": "49th"
         },
         {
-          "representative": "Peters, Scott",
-          "state": "CA"
+          "representative": "Scott Peters",
+          "state": "CA",
+          "district": "50th"
         },
         {
-          "representative": "Jacobs, Sara",
-          "state": "CA"
+          "representative": "Sara Jacobs",
+          "state": "CA",
+          "district": "51st"
         },
         {
-          "representative": "Vargas, Juan",
-          "state": "CA"
+          "representative": "Juan Vargas",
+          "state": "CA",
+          "district": "52nd"
         },
         {
-          "representative": "DeGette, Diana",
-          "state": "CO"
+          "representative": "Diana DeGette",
+          "state": "CO",
+          "district": "1st"
         },
         {
-          "representative": "Neguse, Joe",
-          "state": "CO"
+          "representative": "Joe Neguse",
+          "state": "CO",
+          "district": "2nd"
         },
         {
-          "representative": "Hurd, Jeff",
-          "state": "CO"
+          "representative": "Jeff Hurd",
+          "state": "CO",
+          "district": "3rd"
         },
         {
-          "representative": "Boebert, Lauren",
-          "state": "CO"
+          "representative": "Lauren Boebert",
+          "state": "CO",
+          "district": "4th"
         },
         {
-          "representative": "Crank, Jeff",
-          "state": "CO"
+          "representative": "Jeff Crank",
+          "state": "CO",
+          "district": "5th"
         },
         {
-          "representative": "Crow, Jason",
-          "state": "CO"
+          "representative": "Jason Crow",
+          "state": "CO",
+          "district": "6th"
         },
         {
-          "representative": "Pettersen, Brittany",
-          "state": "CO"
+          "representative": "Brittany Pettersen",
+          "state": "CO",
+          "district": "7th"
         },
         {
-          "representative": "Evans, Gabe",
-          "state": "CO"
+          "representative": "Gabe Evans",
+          "state": "CO",
+          "district": "8th"
         },
         {
-          "representative": "Larson, John",
-          "state": "CT"
+          "representative": "John Larson",
+          "state": "CT",
+          "district": "1st"
         },
         {
-          "representative": "Courtney, Joe",
-          "state": "CT"
+          "representative": "Joe Courtney",
+          "state": "CT",
+          "district": "2nd"
         },
         {
-          "representative": "DeLauro, Rosa",
-          "state": "CT"
+          "representative": "Rosa DeLauro",
+          "state": "CT",
+          "district": "3rd"
         },
         {
-          "representative": "Himes, James",
-          "state": "CT"
+          "representative": "James Himes",
+          "state": "CT",
+          "district": "4th"
         },
         {
-          "representative": "Hayes, Jahana",
-          "state": "CT"
+          "representative": "Jahana Hayes",
+          "state": "CT",
+          "district": "5th"
         },
         {
-          "representative": "McBride, Sarah",
-          "state": "DE"
+          "representative": "Sarah McBride",
+          "state": "DE",
+          "district": "At Large"
         },
         {
-          "representative": "Norton, Eleanor",
-          "state": "DC"
+          "representative": "Eleanor Norton",
+          "state": "DC",
+          "district": "Delegate"
         },
         {
-          "representative": "Patronis, Jimmy",
-          "state": "FL"
+          "representative": "Jimmy Patronis",
+          "state": "FL",
+          "district": "1st"
         },
         {
-          "representative": "Dunn, Neal",
-          "state": "FL"
+          "representative": "Neal Dunn",
+          "state": "FL",
+          "district": "2nd"
         },
         {
-          "representative": "Cammack, Kat",
-          "state": "FL"
+          "representative": "Kat Cammack",
+          "state": "FL",
+          "district": "3rd"
         },
         {
-          "representative": "Bean, Aaron",
-          "state": "FL"
+          "representative": "Aaron Bean",
+          "state": "FL",
+          "district": "4th"
         },
         {
-          "representative": "Rutherford, John",
-          "state": "FL"
+          "representative": "John Rutherford",
+          "state": "FL",
+          "district": "5th"
         },
         {
-          "representative": "Fine, Randy",
-          "state": "FL"
+          "representative": "Randy Fine",
+          "state": "FL",
+          "district": "6th"
         },
         {
-          "representative": "Mills, Cory",
-          "state": "FL"
+          "representative": "Cory Mills",
+          "state": "FL",
+          "district": "7th"
         },
         {
-          "representative": "Haridopolos, Mike",
-          "state": "FL"
+          "representative": "Mike Haridopolos",
+          "state": "FL",
+          "district": "8th"
         },
         {
-          "representative": "Soto, Darren",
-          "state": "FL"
+          "representative": "Darren Soto",
+          "state": "FL",
+          "district": "9th"
         },
         {
-          "representative": "Frost, Maxwell",
-          "state": "FL"
+          "representative": "Maxwell Frost",
+          "state": "FL",
+          "district": "10th"
         },
         {
-          "representative": "Webster, Daniel",
-          "state": "FL"
+          "representative": "Daniel Webster",
+          "state": "FL",
+          "district": "11th"
         },
         {
-          "representative": "Bilirakis, Gus",
-          "state": "FL"
+          "representative": "Gus Bilirakis",
+          "state": "FL",
+          "district": "12th"
         },
         {
-          "representative": "Luna, Anna Paulina",
-          "state": "FL"
+          "representative": "Anna Paulina Luna",
+          "state": "FL",
+          "district": "13th"
         },
         {
-          "representative": "Castor, Kathy",
-          "state": "FL"
+          "representative": "Kathy Castor",
+          "state": "FL",
+          "district": "14th"
         },
         {
-          "representative": "Lee, Laurel",
-          "state": "FL"
+          "representative": "Laurel Lee",
+          "state": "FL",
+          "district": "15th"
         },
         {
-          "representative": "Buchanan, Vern",
-          "state": "FL"
+          "representative": "Vern Buchanan",
+          "state": "FL",
+          "district": "16th"
         },
         {
-          "representative": "Steube, W.",
-          "state": "FL"
+          "representative": "W. Steube",
+          "state": "FL",
+          "district": "17th"
         },
         {
-          "representative": "Franklin, Scott",
-          "state": "FL"
+          "representative": "Scott Franklin",
+          "state": "FL",
+          "district": "18th"
         },
         {
-          "representative": "Donalds, Byron",
-          "state": "FL"
+          "representative": "Byron Donalds",
+          "state": "FL",
+          "district": "19th"
         },
         {
-          "representative": "Cherfilus-McCormick, Sheila",
-          "state": "FL"
+          "representative": "Sheila Cherfilus-McCormick",
+          "state": "FL",
+          "district": "20th"
         },
         {
-          "representative": "Mast, Brian",
-          "state": "FL"
+          "representative": "Brian Mast",
+          "state": "FL",
+          "district": "21st"
         },
         {
-          "representative": "Frankel, Lois",
-          "state": "FL"
+          "representative": "Lois Frankel",
+          "state": "FL",
+          "district": "22nd"
         },
         {
-          "representative": "Moskowitz, Jared",
-          "state": "FL"
+          "representative": "Jared Moskowitz",
+          "state": "FL",
+          "district": "23rd"
         },
         {
-          "representative": "Wilson, Frederica",
-          "state": "FL"
+          "representative": "Frederica Wilson",
+          "state": "FL",
+          "district": "24th"
         },
         {
-          "representative": "Wasserman Schultz, Debbie",
-          "state": "FL"
+          "representative": "Debbie Wasserman Schultz",
+          "state": "FL",
+          "district": "25th"
         },
         {
-          "representative": "Diaz-Balart, Mario",
-          "state": "FL"
+          "representative": "Mario Diaz-Balart",
+          "state": "FL",
+          "district": "26th"
         },
         {
-          "representative": "Salazar, Maria",
-          "state": "FL"
+          "representative": "Maria Salazar",
+          "state": "FL",
+          "district": "27th"
         },
         {
-          "representative": "Gimenez, Carlos",
-          "state": "FL"
+          "representative": "Carlos Gimenez",
+          "state": "FL",
+          "district": "28th"
         },
         {
-          "representative": "Carter, Earl",
-          "state": "GA"
+          "representative": "Earl Carter",
+          "state": "GA",
+          "district": "1st"
         },
         {
-          "representative": "Bishop, Sanford",
-          "state": "GA"
+          "representative": "Sanford Bishop",
+          "state": "GA",
+          "district": "2nd"
         },
         {
-          "representative": "Jack, Brian",
-          "state": "GA"
+          "representative": "Brian Jack",
+          "state": "GA",
+          "district": "3rd"
         },
         {
-          "representative": "Johnson, Henry",
-          "state": "GA"
+          "representative": "Henry Johnson",
+          "state": "GA",
+          "district": "4th"
         },
         {
-          "representative": "Williams, Nikema",
-          "state": "GA"
+          "representative": "Nikema Williams",
+          "state": "GA",
+          "district": "5th"
         },
         {
-          "representative": "McBath, Lucy",
-          "state": "GA"
+          "representative": "Lucy McBath",
+          "state": "GA",
+          "district": "6th"
         },
         {
-          "representative": "McCormick, Richard",
-          "state": "GA"
+          "representative": "Richard McCormick",
+          "state": "GA",
+          "district": "7th"
         },
         {
-          "representative": "Scott, Austin",
-          "state": "GA"
+          "representative": "Austin Scott",
+          "state": "GA",
+          "district": "8th"
         },
         {
-          "representative": "Clyde, Andrew",
-          "state": "GA"
+          "representative": "Andrew Clyde",
+          "state": "GA",
+          "district": "9th"
         },
         {
-          "representative": "Collins, Mike",
-          "state": "GA"
+          "representative": "Mike Collins",
+          "state": "GA",
+          "district": "10th"
         },
         {
-          "representative": "Loudermilk, Barry",
-          "state": "GA"
+          "representative": "Barry Loudermilk",
+          "state": "GA",
+          "district": "11th"
         },
         {
-          "representative": "Allen, Rick",
-          "state": "GA"
+          "representative": "Rick Allen",
+          "state": "GA",
+          "district": "12th"
         },
         {
-          "representative": "Scott, David",
-          "state": "GA"
+          "representative": "David Scott",
+          "state": "GA",
+          "district": "13th"
         },
         {
-          "representative": "Greene, Marjorie",
-          "state": "GA"
+          "representative": "Marjorie Greene",
+          "state": "GA",
+          "district": "14th"
         },
         {
-          "representative": "Moylan, James",
-          "state": "GU"
+          "representative": "James Moylan",
+          "state": "GU",
+          "district": "Delegate"
         },
         {
-          "representative": "Case, Ed",
-          "state": "HI"
+          "representative": "Ed Case",
+          "state": "HI",
+          "district": "1st"
         },
         {
-          "representative": "Tokuda, Jill",
-          "state": "HI"
+          "representative": "Jill Tokuda",
+          "state": "HI",
+          "district": "2nd"
         },
         {
-          "representative": "Fulcher, Russ",
-          "state": "ID"
+          "representative": "Russ Fulcher",
+          "state": "ID",
+          "district": "1st"
         },
         {
-          "representative": "Simpson, Michael",
-          "state": "ID"
+          "representative": "Michael Simpson",
+          "state": "ID",
+          "district": "2nd"
         },
         {
-          "representative": "Jackson, Jonathan",
-          "state": "IL"
+          "representative": "Jonathan Jackson",
+          "state": "IL",
+          "district": "1st"
         },
         {
-          "representative": "Kelly, Robin",
-          "state": "IL"
+          "representative": "Robin Kelly",
+          "state": "IL",
+          "district": "2nd"
         },
         {
-          "representative": "Ramirez, Delia",
-          "state": "IL"
+          "representative": "Delia Ramirez",
+          "state": "IL",
+          "district": "3rd"
         },
         {
-          "representative": "Garcia, Jesus",
-          "state": "IL"
+          "representative": "Jesus Garcia",
+          "state": "IL",
+          "district": "4th"
         },
         {
-          "representative": "Quigley, Mike",
-          "state": "IL"
+          "representative": "Mike Quigley",
+          "state": "IL",
+          "district": "5th"
         },
         {
-          "representative": "Casten, Sean",
-          "state": "IL"
+          "representative": "Sean Casten",
+          "state": "IL",
+          "district": "6th"
         },
         {
-          "representative": "Davis, Danny",
-          "state": "IL"
+          "representative": "Danny Davis",
+          "state": "IL",
+          "district": "7th"
         },
         {
-          "representative": "Krishnamoorthi, Raja",
-          "state": "IL"
+          "representative": "Raja Krishnamoorthi",
+          "state": "IL",
+          "district": "8th"
         },
         {
-          "representative": "Schakowsky, Janice",
-          "state": "IL"
+          "representative": "Janice Schakowsky",
+          "state": "IL",
+          "district": "9th"
         },
         {
-          "representative": "Schneider, Bradley",
-          "state": "IL"
+          "representative": "Bradley Schneider",
+          "state": "IL",
+          "district": "10th"
         },
         {
-          "representative": "Foster, Bill",
-          "state": "IL"
+          "representative": "Bill Foster",
+          "state": "IL",
+          "district": "11th"
         },
         {
-          "representative": "Bost, Mike",
-          "state": "IL"
+          "representative": "Mike Bost",
+          "state": "IL",
+          "district": "12th"
         },
         {
-          "representative": "Budzinski, Nikki",
-          "state": "IL"
+          "representative": "Nikki Budzinski",
+          "state": "IL",
+          "district": "13th"
         },
         {
-          "representative": "Underwood, Lauren",
-          "state": "IL"
+          "representative": "Lauren Underwood",
+          "state": "IL",
+          "district": "14th"
         },
         {
-          "representative": "Miller, Mary",
-          "state": "IL"
+          "representative": "Mary Miller",
+          "state": "IL",
+          "district": "15th"
         },
         {
-          "representative": "LaHood, Darin",
-          "state": "IL"
+          "representative": "Darin LaHood",
+          "state": "IL",
+          "district": "16th"
         },
         {
-          "representative": "Sorensen, Eric",
-          "state": "IL"
+          "representative": "Eric Sorensen",
+          "state": "IL",
+          "district": "17th"
         },
         {
-          "representative": "Mrvan, Frank",
-          "state": "IN"
+          "representative": "Frank Mrvan",
+          "state": "IN",
+          "district": "1st"
         },
         {
-          "representative": "Yakym, Rudy",
-          "state": "IN"
+          "representative": "Rudy Yakym",
+          "state": "IN",
+          "district": "2nd"
         },
         {
-          "representative": "Stutzman, Marlin",
-          "state": "IN"
+          "representative": "Marlin Stutzman",
+          "state": "IN",
+          "district": "3rd"
         },
         {
-          "representative": "Baird, James",
-          "state": "IN"
+          "representative": "James Baird",
+          "state": "IN",
+          "district": "4th"
         },
         {
-          "representative": "Spartz, Victoria",
-          "state": "IN"
+          "representative": "Victoria Spartz",
+          "state": "IN",
+          "district": "5th"
         },
         {
-          "representative": "Shreve, Jefferson",
-          "state": "IN"
+          "representative": "Jefferson Shreve",
+          "state": "IN",
+          "district": "6th"
         },
         {
-          "representative": "Carson, Andre",
-          "state": "IN"
+          "representative": "Andre Carson",
+          "state": "IN",
+          "district": "7th"
         },
         {
-          "representative": "Messmer, Mark",
-          "state": "IN"
+          "representative": "Mark Messmer",
+          "state": "IN",
+          "district": "8th"
         },
         {
-          "representative": "Houchin, Erin",
-          "state": "IN"
+          "representative": "Erin Houchin",
+          "state": "IN",
+          "district": "9th"
         },
         {
-          "representative": "Miller-Meeks, Mariannette",
-          "state": "IA"
+          "representative": "Mariannette Miller-Meeks",
+          "state": "IA",
+          "district": "1st"
         },
         {
-          "representative": "Hinson, Ashley",
-          "state": "IA"
+          "representative": "Ashley Hinson",
+          "state": "IA",
+          "district": "2nd"
         },
         {
-          "representative": "Nunn, Zachary",
-          "state": "IA"
+          "representative": "Zachary Nunn",
+          "state": "IA",
+          "district": "3rd"
         },
         {
-          "representative": "Feenstra, Randy",
-          "state": "IA"
+          "representative": "Randy Feenstra",
+          "state": "IA",
+          "district": "4th"
         },
         {
-          "representative": "Mann, Tracey",
-          "state": "KS"
+          "representative": "Tracey Mann",
+          "state": "KS",
+          "district": "1st"
         },
         {
-          "representative": "Schmidt, Derek",
-          "state": "KS"
+          "representative": "Derek Schmidt",
+          "state": "KS",
+          "district": "2nd"
         },
         {
-          "representative": "Davids, Sharice",
-          "state": "KS"
+          "representative": "Sharice Davids",
+          "state": "KS",
+          "district": "3rd"
         },
         {
-          "representative": "Estes, Ron",
-          "state": "KS"
+          "representative": "Ron Estes",
+          "state": "KS",
+          "district": "4th"
         },
         {
-          "representative": "Comer, James",
-          "state": "KY"
+          "representative": "James Comer",
+          "state": "KY",
+          "district": "1st"
         },
         {
-          "representative": "Guthrie, Brett",
-          "state": "KY"
+          "representative": "Brett Guthrie",
+          "state": "KY",
+          "district": "2nd"
         },
         {
-          "representative": "McGarvey, Morgan",
-          "state": "KY"
+          "representative": "Morgan McGarvey",
+          "state": "KY",
+          "district": "3rd"
         },
         {
-          "representative": "Massie, Thomas",
-          "state": "KY"
+          "representative": "Thomas Massie",
+          "state": "KY",
+          "district": "4th"
         },
         {
-          "representative": "Rogers, Harold",
-          "state": "KY"
+          "representative": "Harold Rogers",
+          "state": "KY",
+          "district": "5th"
         },
         {
-          "representative": "Barr, Andy",
-          "state": "KY"
+          "representative": "Andy Barr",
+          "state": "KY",
+          "district": "6th"
         },
         {
-          "representative": "Scalise, Steve",
-          "state": "LA"
+          "representative": "Steve Scalise",
+          "state": "LA",
+          "district": "1st"
         },
         {
-          "representative": "Carter, Troy",
-          "state": "LA"
+          "representative": "Troy Carter",
+          "state": "LA",
+          "district": "2nd"
         },
         {
-          "representative": "Higgins, Clay",
-          "state": "LA"
+          "representative": "Clay Higgins",
+          "state": "LA",
+          "district": "3rd"
         },
         {
-          "representative": "Johnson, Mike",
-          "state": "LA"
+          "representative": "Mike Johnson",
+          "state": "LA",
+          "district": "4th"
         },
         {
-          "representative": "Letlow, Julia",
-          "state": "LA"
+          "representative": "Julia Letlow",
+          "state": "LA",
+          "district": "5th"
         },
         {
-          "representative": "Fields, Cleo",
-          "state": "LA"
+          "representative": "Cleo Fields",
+          "state": "LA",
+          "district": "6th"
         },
         {
-          "representative": "Pingree, Chellie",
-          "state": "ME"
+          "representative": "Chellie Pingree",
+          "state": "ME",
+          "district": "1st"
         },
         {
-          "representative": "Golden, Jared",
-          "state": "ME"
+          "representative": "Jared Golden",
+          "state": "ME",
+          "district": "2nd"
         },
         {
-          "representative": "Harris, Andy",
-          "state": "MD"
+          "representative": "Andy Harris",
+          "state": "MD",
+          "district": "1st"
         },
         {
-          "representative": "Olszewski, Johnny",
-          "state": "MD"
+          "representative": "Johnny Olszewski",
+          "state": "MD",
+          "district": "2nd"
         },
         {
-          "representative": "Elfreth, Sarah",
-          "state": "MD"
+          "representative": "Sarah Elfreth",
+          "state": "MD",
+          "district": "3rd"
         },
         {
-          "representative": "Ivey, Glenn",
-          "state": "MD"
+          "representative": "Glenn Ivey",
+          "state": "MD",
+          "district": "4th"
         },
         {
-          "representative": "Hoyer, Steny",
-          "state": "MD"
+          "representative": "Steny Hoyer",
+          "state": "MD",
+          "district": "5th"
         },
         {
-          "representative": "McClain Delaney, April",
-          "state": "MD"
+          "representative": "April McClain Delaney",
+          "state": "MD",
+          "district": "6th"
         },
         {
-          "representative": "Mfume, Kweisi",
-          "state": "MD"
+          "representative": "Kweisi Mfume",
+          "state": "MD",
+          "district": "7th"
         },
         {
-          "representative": "Raskin, Jamie",
-          "state": "MD"
+          "representative": "Jamie Raskin",
+          "state": "MD",
+          "district": "8th"
         },
         {
-          "representative": "Neal, Richard",
-          "state": "MA"
+          "representative": "Richard Neal",
+          "state": "MA",
+          "district": "1st"
         },
         {
-          "representative": "McGovern, James",
-          "state": "MA"
+          "representative": "James McGovern",
+          "state": "MA",
+          "district": "2nd"
         },
         {
-          "representative": "Trahan, Lori",
-          "state": "MA"
+          "representative": "Lori Trahan",
+          "state": "MA",
+          "district": "3rd"
         },
         {
-          "representative": "Auchincloss, Jake",
-          "state": "MA"
+          "representative": "Jake Auchincloss",
+          "state": "MA",
+          "district": "4th"
         },
         {
-          "representative": "Clark, Katherine",
-          "state": "MA"
+          "representative": "Katherine Clark",
+          "state": "MA",
+          "district": "5th"
         },
         {
-          "representative": "Moulton, Seth",
-          "state": "MA"
+          "representative": "Seth Moulton",
+          "state": "MA",
+          "district": "6th"
         },
         {
-          "representative": "Pressley, Ayanna",
-          "state": "MA"
+          "representative": "Ayanna Pressley",
+          "state": "MA",
+          "district": "7th"
         },
         {
-          "representative": "Lynch, Stephen",
-          "state": "MA"
+          "representative": "Stephen Lynch",
+          "state": "MA",
+          "district": "8th"
         },
         {
-          "representative": "Keating, William",
-          "state": "MA"
+          "representative": "William Keating",
+          "state": "MA",
+          "district": "9th"
         },
         {
-          "representative": "Bergman, Jack",
-          "state": "MI"
+          "representative": "Jack Bergman",
+          "state": "MI",
+          "district": "1st"
         },
         {
-          "representative": "Moolenaar, John",
-          "state": "MI"
+          "representative": "John Moolenaar",
+          "state": "MI",
+          "district": "2nd"
         },
         {
-          "representative": "Scholten, Hillary",
-          "state": "MI"
+          "representative": "Hillary Scholten",
+          "state": "MI",
+          "district": "3rd"
         },
         {
-          "representative": "Huizenga, Bill",
-          "state": "MI"
+          "representative": "Bill Huizenga",
+          "state": "MI",
+          "district": "4th"
         },
         {
-          "representative": "Walberg, Tim",
-          "state": "MI"
+          "representative": "Tim Walberg",
+          "state": "MI",
+          "district": "5th"
         },
         {
-          "representative": "Dingell, Debbie",
-          "state": "MI"
+          "representative": "Debbie Dingell",
+          "state": "MI",
+          "district": "6th"
         },
         {
-          "representative": "Barrett, Tom",
-          "state": "MI"
+          "representative": "Tom Barrett",
+          "state": "MI",
+          "district": "7th"
         },
         {
-          "representative": "McDonald Rivet, Kristen",
-          "state": "MI"
+          "representative": "Kristen McDonald Rivet",
+          "state": "MI",
+          "district": "8th"
         },
         {
-          "representative": "McClain, Lisa",
-          "state": "MI"
+          "representative": "Lisa McClain",
+          "state": "MI",
+          "district": "9th"
         },
         {
-          "representative": "James, John",
-          "state": "MI"
+          "representative": "John James",
+          "state": "MI",
+          "district": "10th"
         },
         {
-          "representative": "Stevens, Haley",
-          "state": "MI"
+          "representative": "Haley Stevens",
+          "state": "MI",
+          "district": "11th"
         },
         {
-          "representative": "Tlaib, Rashida",
-          "state": "MI"
+          "representative": "Rashida Tlaib",
+          "state": "MI",
+          "district": "12th"
         },
         {
-          "representative": "Thanedar, Shri",
-          "state": "MI"
+          "representative": "Shri Thanedar",
+          "state": "MI",
+          "district": "13th"
         },
         {
-          "representative": "Finstad, Brad",
-          "state": "MN"
+          "representative": "Brad Finstad",
+          "state": "MN",
+          "district": "1st"
         },
         {
-          "representative": "Craig, Angie",
-          "state": "MN"
+          "representative": "Angie Craig",
+          "state": "MN",
+          "district": "2nd"
         },
         {
-          "representative": "Morrison, Kelly",
-          "state": "MN"
+          "representative": "Kelly Morrison",
+          "state": "MN",
+          "district": "3rd"
         },
         {
-          "representative": "McCollum, Betty",
-          "state": "MN"
+          "representative": "Betty McCollum",
+          "state": "MN",
+          "district": "4th"
         },
         {
-          "representative": "Omar, Ilhan",
-          "state": "MN"
+          "representative": "Ilhan Omar",
+          "state": "MN",
+          "district": "5th"
         },
         {
-          "representative": "Emmer, Tom",
-          "state": "MN"
+          "representative": "Tom Emmer",
+          "state": "MN",
+          "district": "6th"
         },
         {
-          "representative": "Fischbach, Michelle",
-          "state": "MN"
+          "representative": "Michelle Fischbach",
+          "state": "MN",
+          "district": "7th"
         },
         {
-          "representative": "Stauber, Pete",
-          "state": "MN"
+          "representative": "Pete Stauber",
+          "state": "MN",
+          "district": "8th"
         },
         {
-          "representative": "Kelly, Trent",
-          "state": "MS"
+          "representative": "Trent Kelly",
+          "state": "MS",
+          "district": "1st"
         },
         {
-          "representative": "Thompson, Bennie",
-          "state": "MS"
+          "representative": "Bennie Thompson",
+          "state": "MS",
+          "district": "2nd"
         },
         {
-          "representative": "Guest, Michael",
-          "state": "MS"
+          "representative": "Michael Guest",
+          "state": "MS",
+          "district": "3rd"
         },
         {
-          "representative": "Ezell, Mike",
-          "state": "MS"
+          "representative": "Mike Ezell",
+          "state": "MS",
+          "district": "4th"
         },
         {
-          "representative": "Bell, Wesley",
-          "state": "MO"
+          "representative": "Wesley Bell",
+          "state": "MO",
+          "district": "1st"
         },
         {
-          "representative": "Wagner, Ann",
-          "state": "MO"
+          "representative": "Ann Wagner",
+          "state": "MO",
+          "district": "2nd"
         },
         {
-          "representative": "Onder, Robert",
-          "state": "MO"
+          "representative": "Robert Onder",
+          "state": "MO",
+          "district": "3rd"
         },
         {
-          "representative": "Alford, Mark",
-          "state": "MO"
+          "representative": "Mark Alford",
+          "state": "MO",
+          "district": "4th"
         },
         {
-          "representative": "Cleaver, Emanuel",
-          "state": "MO"
+          "representative": "Emanuel Cleaver",
+          "state": "MO",
+          "district": "5th"
         },
         {
-          "representative": "Graves, Sam",
-          "state": "MO"
+          "representative": "Sam Graves",
+          "state": "MO",
+          "district": "6th"
         },
         {
-          "representative": "Burlison, Eric",
-          "state": "MO"
+          "representative": "Eric Burlison",
+          "state": "MO",
+          "district": "7th"
         },
         {
-          "representative": "Smith, Jason",
-          "state": "MO"
+          "representative": "Jason Smith",
+          "state": "MO",
+          "district": "8th"
         },
         {
-          "representative": "Zinke, Ryan",
-          "state": "MT"
+          "representative": "Ryan Zinke",
+          "state": "MT",
+          "district": "1st"
         },
         {
-          "representative": "Downing, Troy",
-          "state": "MT"
+          "representative": "Troy Downing",
+          "state": "MT",
+          "district": "2nd"
         },
         {
-          "representative": "Flood, Mike",
-          "state": "NE"
+          "representative": "Mike Flood",
+          "state": "NE",
+          "district": "1st"
         },
         {
-          "representative": "Bacon, Don",
-          "state": "NE"
+          "representative": "Don Bacon",
+          "state": "NE",
+          "district": "2nd"
         },
         {
-          "representative": "Smith, Adrian",
-          "state": "NE"
+          "representative": "Adrian Smith",
+          "state": "NE",
+          "district": "3rd"
         },
         {
-          "representative": "Titus, Dina",
-          "state": "NV"
+          "representative": "Dina Titus",
+          "state": "NV",
+          "district": "1st"
         },
         {
-          "representative": "Amodei, Mark",
-          "state": "NV"
+          "representative": "Mark Amodei",
+          "state": "NV",
+          "district": "2nd"
         },
         {
-          "representative": "Lee, Susie",
-          "state": "NV"
+          "representative": "Susie Lee",
+          "state": "NV",
+          "district": "3rd"
         },
         {
-          "representative": "Horsford, Steven",
-          "state": "NV"
+          "representative": "Steven Horsford",
+          "state": "NV",
+          "district": "4th"
         },
         {
-          "representative": "Pappas, Chris",
-          "state": "NH"
+          "representative": "Chris Pappas",
+          "state": "NH",
+          "district": "1st"
         },
         {
-          "representative": "Goodlander, Maggie",
-          "state": "NH"
+          "representative": "Maggie Goodlander",
+          "state": "NH",
+          "district": "2nd"
         },
         {
-          "representative": "Norcross, Donald",
-          "state": "NJ"
+          "representative": "Donald Norcross",
+          "state": "NJ",
+          "district": "1st"
         },
         {
-          "representative": "Van Drew, Jefferson",
-          "state": "NJ"
+          "representative": "Jefferson Van Drew",
+          "state": "NJ",
+          "district": "2nd"
         },
         {
-          "representative": "Conaway, Herbert",
-          "state": "NJ"
+          "representative": "Herbert Conaway",
+          "state": "NJ",
+          "district": "3rd"
         },
         {
-          "representative": "Smith, Christopher",
-          "state": "NJ"
+          "representative": "Christopher Smith",
+          "state": "NJ",
+          "district": "4th"
         },
         {
-          "representative": "Gottheimer, Josh",
-          "state": "NJ"
+          "representative": "Josh Gottheimer",
+          "state": "NJ",
+          "district": "5th"
         },
         {
-          "representative": "Pallone, Frank",
-          "state": "NJ"
+          "representative": "Frank Pallone",
+          "state": "NJ",
+          "district": "6th"
         },
         {
-          "representative": "Kean, Thomas",
-          "state": "NJ"
+          "representative": "Thomas Kean",
+          "state": "NJ",
+          "district": "7th"
         },
         {
-          "representative": "Menendez, Robert",
-          "state": "NJ"
+          "representative": "Robert Menendez",
+          "state": "NJ",
+          "district": "8th"
         },
         {
-          "representative": "Pou, Nellie",
-          "state": "NJ"
+          "representative": "Nellie Pou",
+          "state": "NJ",
+          "district": "9th"
         },
         {
-          "representative": "McIver, LaMonica",
-          "state": "NJ"
+          "representative": "LaMonica McIver",
+          "state": "NJ",
+          "district": "10th"
         },
         {
-          "representative": "Sherrill, Mikie",
-          "state": "NJ"
+          "representative": "Mikie Sherrill",
+          "state": "NJ",
+          "district": "11th"
         },
         {
-          "representative": "Watson Coleman, Bonnie",
-          "state": "NJ"
+          "representative": "Bonnie Watson Coleman",
+          "state": "NJ",
+          "district": "12th"
         },
         {
-          "representative": "Stansbury, Melanie",
-          "state": "NM"
+          "representative": "Melanie Stansbury",
+          "state": "NM",
+          "district": "1st"
         },
         {
-          "representative": "Vasquez, Gabe",
-          "state": "NM"
+          "representative": "Gabe Vasquez",
+          "state": "NM",
+          "district": "2nd"
         },
         {
-          "representative": "Leger Fernandez, Teresa",
-          "state": "NM"
+          "representative": "Teresa Leger Fernandez",
+          "state": "NM",
+          "district": "3rd"
         },
         {
-          "representative": "LaLota, Nick",
-          "state": "NY"
+          "representative": "Nick LaLota",
+          "state": "NY",
+          "district": "1st"
         },
         {
-          "representative": "Garbarino, Andrew",
-          "state": "NY"
+          "representative": "Andrew Garbarino",
+          "state": "NY",
+          "district": "2nd"
         },
         {
-          "representative": "Suozzi, Thomas R.",
-          "state": "NY"
+          "representative": "Thomas R. Suozzi",
+          "state": "NY",
+          "district": "3rd"
         },
         {
-          "representative": "Gillen, Laura",
-          "state": "NY"
+          "representative": "Laura Gillen",
+          "state": "NY",
+          "district": "4th"
         },
         {
-          "representative": "Meeks, Gregory",
-          "state": "NY"
+          "representative": "Gregory Meeks",
+          "state": "NY",
+          "district": "5th"
         },
         {
-          "representative": "Meng, Grace",
-          "state": "NY"
+          "representative": "Grace Meng",
+          "state": "NY",
+          "district": "6th"
         },
         {
-          "representative": "Velazquez, Nydia",
-          "state": "NY"
+          "representative": "Nydia Velazquez",
+          "state": "NY",
+          "district": "7th"
         },
         {
-          "representative": "Jeffries, Hakeem",
-          "state": "NY"
+          "representative": "Hakeem Jeffries",
+          "state": "NY",
+          "district": "8th"
         },
         {
-          "representative": "Clarke, Yvette",
-          "state": "NY"
+          "representative": "Yvette Clarke",
+          "state": "NY",
+          "district": "9th"
         },
         {
-          "representative": "Goldman, Daniel",
-          "state": "NY"
+          "representative": "Daniel Goldman",
+          "state": "NY",
+          "district": "10th"
         },
         {
-          "representative": "Malliotakis, Nicole",
-          "state": "NY"
+          "representative": "Nicole Malliotakis",
+          "state": "NY",
+          "district": "11th"
         },
         {
-          "representative": "Nadler, Jerrold",
-          "state": "NY"
+          "representative": "Jerrold Nadler",
+          "state": "NY",
+          "district": "12th"
         },
         {
-          "representative": "Espaillat, Adriano",
-          "state": "NY"
+          "representative": "Adriano Espaillat",
+          "state": "NY",
+          "district": "13th"
         },
         {
-          "representative": "Ocasio-Cortez, Alexandria",
-          "state": "NY"
+          "representative": "Alexandria Ocasio-Cortez",
+          "state": "NY",
+          "district": "14th"
         },
         {
-          "representative": "Torres, Ritchie",
-          "state": "NY"
+          "representative": "Ritchie Torres",
+          "state": "NY",
+          "district": "15th"
         },
         {
-          "representative": "Latimer, George",
-          "state": "NY"
+          "representative": "George Latimer",
+          "state": "NY",
+          "district": "16th"
         },
         {
-          "representative": "Lawler, Michael",
-          "state": "NY"
+          "representative": "Michael Lawler",
+          "state": "NY",
+          "district": "17th"
         },
         {
-          "representative": "Ryan, Patrick",
-          "state": "NY"
+          "representative": "Patrick Ryan",
+          "state": "NY",
+          "district": "18th"
         },
         {
-          "representative": "Riley, Josh",
-          "state": "NY"
+          "representative": "Josh Riley",
+          "state": "NY",
+          "district": "19th"
         },
         {
-          "representative": "Tonko, Paul",
-          "state": "NY"
+          "representative": "Paul Tonko",
+          "state": "NY",
+          "district": "20th"
         },
         {
-          "representative": "Stefanik, Elise",
-          "state": "NY"
+          "representative": "Elise Stefanik",
+          "state": "NY",
+          "district": "21st"
         },
         {
-          "representative": "Mannion, John",
-          "state": "NY"
+          "representative": "John Mannion",
+          "state": "NY",
+          "district": "22nd"
         },
         {
-          "representative": "Langworthy, Nicholas",
-          "state": "NY"
+          "representative": "Nicholas Langworthy",
+          "state": "NY",
+          "district": "23rd"
         },
         {
-          "representative": "Tenney, Claudia",
-          "state": "NY"
+          "representative": "Claudia Tenney",
+          "state": "NY",
+          "district": "24th"
         },
         {
-          "representative": "Morelle, Joseph",
-          "state": "NY"
+          "representative": "Joseph Morelle",
+          "state": "NY",
+          "district": "25th"
         },
         {
-          "representative": "Kennedy, Timothy",
-          "state": "NY"
+          "representative": "Timothy Kennedy",
+          "state": "NY",
+          "district": "26th"
         },
         {
-          "representative": "Davis, Donald",
-          "state": "NC"
+          "representative": "Donald Davis",
+          "state": "NC",
+          "district": "1st"
         },
         {
-          "representative": "Ross, Deborah",
-          "state": "NC"
+          "representative": "Deborah Ross",
+          "state": "NC",
+          "district": "2nd"
         },
         {
-          "representative": "Murphy, Gregory",
-          "state": "NC"
+          "representative": "Gregory Murphy",
+          "state": "NC",
+          "district": "3rd"
         },
         {
-          "representative": "Foushee, Valerie",
-          "state": "NC"
+          "representative": "Valerie Foushee",
+          "state": "NC",
+          "district": "4th"
         },
         {
-          "representative": "Foxx, Virginia",
-          "state": "NC"
+          "representative": "Virginia Foxx",
+          "state": "NC",
+          "district": "5th"
         },
         {
-          "representative": "McDowell, Addison",
-          "state": "NC"
+          "representative": "Addison McDowell",
+          "state": "NC",
+          "district": "6th"
         },
         {
-          "representative": "Rouzer, David",
-          "state": "NC"
+          "representative": "David Rouzer",
+          "state": "NC",
+          "district": "7th"
         },
         {
-          "representative": "Harris, Mark",
-          "state": "NC"
+          "representative": "Mark Harris",
+          "state": "NC",
+          "district": "8th"
         },
         {
-          "representative": "Hudson, Richard",
-          "state": "NC"
+          "representative": "Richard Hudson",
+          "state": "NC",
+          "district": "9th"
         },
         {
-          "representative": "Harrigan, Pat",
-          "state": "NC"
+          "representative": "Pat Harrigan",
+          "state": "NC",
+          "district": "10th"
         },
         {
-          "representative": "Edwards, Chuck",
-          "state": "NC"
+          "representative": "Chuck Edwards",
+          "state": "NC",
+          "district": "11th"
         },
         {
-          "representative": "Adams, Alma",
-          "state": "NC"
+          "representative": "Alma Adams",
+          "state": "NC",
+          "district": "12th"
         },
         {
-          "representative": "Knott, Brad",
-          "state": "NC"
+          "representative": "Brad Knott",
+          "state": "NC",
+          "district": "13th"
         },
         {
-          "representative": "Moore, Tim",
-          "state": "NC"
+          "representative": "Tim Moore",
+          "state": "NC",
+          "district": "14th"
         },
         {
-          "representative": "Fedorchak, Julie",
-          "state": "ND"
+          "representative": "Julie Fedorchak",
+          "state": "ND",
+          "district": "At Large"
         },
         {
-          "representative": "King-Hinds, Kimberlyn",
-          "state": "MP"
+          "representative": "Kimberlyn King-Hinds",
+          "state": "MP",
+          "district": "Delegate"
         },
         {
-          "representative": "Landsman, Greg",
-          "state": "OH"
+          "representative": "Greg Landsman",
+          "state": "OH",
+          "district": "1st"
         },
         {
-          "representative": "Taylor, David",
-          "state": "OH"
+          "representative": "David Taylor",
+          "state": "OH",
+          "district": "2nd"
         },
         {
-          "representative": "Beatty, Joyce",
-          "state": "OH"
+          "representative": "Joyce Beatty",
+          "state": "OH",
+          "district": "3rd"
         },
         {
-          "representative": "Jordan, Jim",
-          "state": "OH"
+          "representative": "Jim Jordan",
+          "state": "OH",
+          "district": "4th"
         },
         {
-          "representative": "Latta, Robert",
-          "state": "OH"
+          "representative": "Robert Latta",
+          "state": "OH",
+          "district": "5th"
         },
         {
-          "representative": "Rulli, Michael A.",
-          "state": "OH"
+          "representative": "Michael A. Rulli",
+          "state": "OH",
+          "district": "6th"
         },
         {
-          "representative": "Miller, Max",
-          "state": "OH"
+          "representative": "Max Miller",
+          "state": "OH",
+          "district": "7th"
         },
         {
-          "representative": "Davidson, Warren",
-          "state": "OH"
+          "representative": "Warren Davidson",
+          "state": "OH",
+          "district": "8th"
         },
         {
-          "representative": "Kaptur, Marcy",
-          "state": "OH"
+          "representative": "Marcy Kaptur",
+          "state": "OH",
+          "district": "9th"
         },
         {
-          "representative": "Turner, Michael",
-          "state": "OH"
+          "representative": "Michael Turner",
+          "state": "OH",
+          "district": "10th"
         },
         {
-          "representative": "Brown, Shontel",
-          "state": "OH"
+          "representative": "Shontel Brown",
+          "state": "OH",
+          "district": "11th"
         },
         {
-          "representative": "Balderson, Troy",
-          "state": "OH"
+          "representative": "Troy Balderson",
+          "state": "OH",
+          "district": "12th"
         },
         {
-          "representative": "Sykes, Emilia",
-          "state": "OH"
+          "representative": "Emilia Sykes",
+          "state": "OH",
+          "district": "13th"
         },
         {
-          "representative": "Joyce, David",
-          "state": "OH"
+          "representative": "David Joyce",
+          "state": "OH",
+          "district": "14th"
         },
         {
-          "representative": "Carey, Mike",
-          "state": "OH"
+          "representative": "Mike Carey",
+          "state": "OH",
+          "district": "15th"
         },
         {
-          "representative": "Hern, Kevin",
-          "state": "OK"
+          "representative": "Kevin Hern",
+          "state": "OK",
+          "district": "1st"
         },
         {
-          "representative": "Brecheen, Josh",
-          "state": "OK"
+          "representative": "Josh Brecheen",
+          "state": "OK",
+          "district": "2nd"
         },
         {
-          "representative": "Lucas, Frank",
-          "state": "OK"
+          "representative": "Frank Lucas",
+          "state": "OK",
+          "district": "3rd"
         },
         {
-          "representative": "Cole, Tom",
-          "state": "OK"
+          "representative": "Tom Cole",
+          "state": "OK",
+          "district": "4th"
         },
         {
-          "representative": "Bice, Stephanie",
-          "state": "OK"
+          "representative": "Stephanie Bice",
+          "state": "OK",
+          "district": "5th"
         },
         {
-          "representative": "Bonamici, Suzanne",
-          "state": "OR"
+          "representative": "Suzanne Bonamici",
+          "state": "OR",
+          "district": "1st"
         },
         {
-          "representative": "Bentz, Cliff",
-          "state": "OR"
+          "representative": "Cliff Bentz",
+          "state": "OR",
+          "district": "2nd"
         },
         {
-          "representative": "Dexter, Maxine",
-          "state": "OR"
+          "representative": "Maxine Dexter",
+          "state": "OR",
+          "district": "3rd"
         },
         {
-          "representative": "Hoyle, Val",
-          "state": "OR"
+          "representative": "Val Hoyle",
+          "state": "OR",
+          "district": "4th"
         },
         {
-          "representative": "Bynum, Janelle",
-          "state": "OR"
+          "representative": "Janelle Bynum",
+          "state": "OR",
+          "district": "5th"
         },
         {
-          "representative": "Salinas, Andrea",
-          "state": "OR"
+          "representative": "Andrea Salinas",
+          "state": "OR",
+          "district": "6th"
         },
         {
-          "representative": "Fitzpatrick, Brian",
-          "state": "PA"
+          "representative": "Brian Fitzpatrick",
+          "state": "PA",
+          "district": "1st"
         },
         {
-          "representative": "Boyle, Brendan",
-          "state": "PA"
+          "representative": "Brendan Boyle",
+          "state": "PA",
+          "district": "2nd"
         },
         {
-          "representative": "Evans, Dwight",
-          "state": "PA"
+          "representative": "Dwight Evans",
+          "state": "PA",
+          "district": "3rd"
         },
         {
-          "representative": "Dean, Madeleine",
-          "state": "PA"
+          "representative": "Madeleine Dean",
+          "state": "PA",
+          "district": "4th"
         },
         {
-          "representative": "Scanlon, Mary Gay",
-          "state": "PA"
+          "representative": "Mary Gay Scanlon",
+          "state": "PA",
+          "district": "5th"
         },
         {
-          "representative": "Houlahan, Chrissy",
-          "state": "PA"
+          "representative": "Chrissy Houlahan",
+          "state": "PA",
+          "district": "6th"
         },
         {
-          "representative": "Mackenzie, Ryan",
-          "state": "PA"
+          "representative": "Ryan Mackenzie",
+          "state": "PA",
+          "district": "7th"
         },
         {
-          "representative": "Bresnahan, Robert",
-          "state": "PA"
+          "representative": "Robert Bresnahan",
+          "state": "PA",
+          "district": "8th"
         },
         {
-          "representative": "Meuser, Daniel",
-          "state": "PA"
+          "representative": "Daniel Meuser",
+          "state": "PA",
+          "district": "9th"
         },
         {
-          "representative": "Perry, Scott",
-          "state": "PA"
+          "representative": "Scott Perry",
+          "state": "PA",
+          "district": "10th"
         },
         {
-          "representative": "Smucker, Lloyd",
-          "state": "PA"
+          "representative": "Lloyd Smucker",
+          "state": "PA",
+          "district": "11th"
         },
         {
-          "representative": "Lee, Summer",
-          "state": "PA"
+          "representative": "Summer Lee",
+          "state": "PA",
+          "district": "12th"
         },
         {
-          "representative": "Joyce, John",
-          "state": "PA"
+          "representative": "John Joyce",
+          "state": "PA",
+          "district": "13th"
         },
         {
-          "representative": "Reschenthaler, Guy",
-          "state": "PA"
+          "representative": "Guy Reschenthaler",
+          "state": "PA",
+          "district": "14th"
         },
         {
-          "representative": "Thompson, Glenn",
-          "state": "PA"
+          "representative": "Glenn Thompson",
+          "state": "PA",
+          "district": "15th"
         },
         {
-          "representative": "Kelly, Mike",
-          "state": "PA"
+          "representative": "Mike Kelly",
+          "state": "PA",
+          "district": "16th"
         },
         {
-          "representative": "Deluzio, Christopher",
-          "state": "PA"
+          "representative": "Christopher Deluzio",
+          "state": "PA",
+          "district": "17th"
         },
         {
-          "representative": "Hernandez, Pablo",
-          "state": "PR"
+          "representative": "Pablo Hernandez",
+          "state": "PR",
+          "district": "Resident Commissioner"
         },
         {
-          "representative": "Amo, Gabe",
-          "state": "RI"
+          "representative": "Gabe Amo",
+          "state": "RI",
+          "district": "1st"
         },
         {
-          "representative": "Magaziner, Seth",
-          "state": "RI"
+          "representative": "Seth Magaziner",
+          "state": "RI",
+          "district": "2nd"
         },
         {
-          "representative": "Mace, Nancy",
-          "state": "SC"
+          "representative": "Nancy Mace",
+          "state": "SC",
+          "district": "1st"
         },
         {
-          "representative": "Wilson, Joe",
-          "state": "SC"
+          "representative": "Joe Wilson",
+          "state": "SC",
+          "district": "2nd"
         },
         {
-          "representative": "Biggs, Sheri",
-          "state": "SC"
+          "representative": "Sheri Biggs",
+          "state": "SC",
+          "district": "3rd"
         },
         {
-          "representative": "Timmons, William",
-          "state": "SC"
+          "representative": "William Timmons",
+          "state": "SC",
+          "district": "4th"
         },
         {
-          "representative": "Norman, Ralph",
-          "state": "SC"
+          "representative": "Ralph Norman",
+          "state": "SC",
+          "district": "5th"
         },
         {
-          "representative": "Clyburn, James",
-          "state": "SC"
+          "representative": "James Clyburn",
+          "state": "SC",
+          "district": "6th"
         },
         {
-          "representative": "Fry, Russell",
-          "state": "SC"
+          "representative": "Russell Fry",
+          "state": "SC",
+          "district": "7th"
         },
         {
-          "representative": "Johnson, Dusty",
-          "state": "SD"
+          "representative": "Dusty Johnson",
+          "state": "SD",
+          "district": "At Large"
         },
         {
-          "representative": "Harshbarger, Diana",
-          "state": "TN"
+          "representative": "Diana Harshbarger",
+          "state": "TN",
+          "district": "1st"
         },
         {
-          "representative": "Burchett, Tim",
-          "state": "TN"
+          "representative": "Tim Burchett",
+          "state": "TN",
+          "district": "2nd"
         },
         {
-          "representative": "Fleischmann, Charles",
-          "state": "TN"
+          "representative": "Charles Fleischmann",
+          "state": "TN",
+          "district": "3rd"
         },
         {
-          "representative": "DesJarlais, Scott",
-          "state": "TN"
+          "representative": "Scott DesJarlais",
+          "state": "TN",
+          "district": "4th"
         },
         {
-          "representative": "Ogles, Andrew",
-          "state": "TN"
+          "representative": "Andrew Ogles",
+          "state": "TN",
+          "district": "5th"
         },
         {
-          "representative": "Rose, John",
-          "state": "TN"
+          "representative": "John Rose",
+          "state": "TN",
+          "district": "6th"
         },
         {
-          "representative": "Green, Mark E.- Vacancy",
-          "state": "TN"
+          "representative": "Mark E.- Vacancy Green",
+          "state": "TN",
+          "district": "7th"
         },
         {
-          "representative": "Kustoff, David",
-          "state": "TN"
+          "representative": "David Kustoff",
+          "state": "TN",
+          "district": "8th"
         },
         {
-          "representative": "Cohen, Steve",
-          "state": "TN"
+          "representative": "Steve Cohen",
+          "state": "TN",
+          "district": "9th"
         },
         {
-          "representative": "Moran, Nathaniel",
-          "state": "TX"
+          "representative": "Nathaniel Moran",
+          "state": "TX",
+          "district": "1st"
         },
         {
-          "representative": "Crenshaw, Dan",
-          "state": "TX"
+          "representative": "Dan Crenshaw",
+          "state": "TX",
+          "district": "2nd"
         },
         {
-          "representative": "Self, Keith",
-          "state": "TX"
+          "representative": "Keith Self",
+          "state": "TX",
+          "district": "3rd"
         },
         {
-          "representative": "Fallon, Pat",
-          "state": "TX"
+          "representative": "Pat Fallon",
+          "state": "TX",
+          "district": "4th"
         },
         {
-          "representative": "Gooden, Lance",
-          "state": "TX"
+          "representative": "Lance Gooden",
+          "state": "TX",
+          "district": "5th"
         },
         {
-          "representative": "Ellzey, Jake",
-          "state": "TX"
+          "representative": "Jake Ellzey",
+          "state": "TX",
+          "district": "6th"
         },
         {
-          "representative": "Fletcher, Lizzie",
-          "state": "TX"
+          "representative": "Lizzie Fletcher",
+          "state": "TX",
+          "district": "7th"
         },
         {
-          "representative": "Luttrell, Morgan",
-          "state": "TX"
+          "representative": "Morgan Luttrell",
+          "state": "TX",
+          "district": "8th"
         },
         {
-          "representative": "Green, Al",
-          "state": "TX"
+          "representative": "Al Green",
+          "state": "TX",
+          "district": "9th"
         },
         {
-          "representative": "McCaul, Michael",
-          "state": "TX"
+          "representative": "Michael McCaul",
+          "state": "TX",
+          "district": "10th"
         },
         {
-          "representative": "Pfluger, August",
-          "state": "TX"
+          "representative": "August Pfluger",
+          "state": "TX",
+          "district": "11th"
         },
         {
-          "representative": "Goldman, Craig",
-          "state": "TX"
+          "representative": "Craig Goldman",
+          "state": "TX",
+          "district": "12th"
         },
         {
-          "representative": "Jackson, Ronny",
-          "state": "TX"
+          "representative": "Ronny Jackson",
+          "state": "TX",
+          "district": "13th"
         },
         {
-          "representative": "Weber, Randy",
-          "state": "TX"
+          "representative": "Randy Weber",
+          "state": "TX",
+          "district": "14th"
         },
         {
-          "representative": "De La Cruz, Monica",
-          "state": "TX"
+          "representative": "Monica De La Cruz",
+          "state": "TX",
+          "district": "15th"
         },
         {
-          "representative": "Escobar, Veronica",
-          "state": "TX"
+          "representative": "Veronica Escobar",
+          "state": "TX",
+          "district": "16th"
         },
         {
-          "representative": "Sessions, Pete",
-          "state": "TX"
+          "representative": "Pete Sessions",
+          "state": "TX",
+          "district": "17th"
         },
         {
-          "representative": "Turner, Sylvester- Vacancy",
-          "state": "TX"
+          "representative": "Sylvester- Vacancy Turner",
+          "state": "TX",
+          "district": "18th"
         },
         {
-          "representative": "Arrington, Jodey",
-          "state": "TX"
+          "representative": "Jodey Arrington",
+          "state": "TX",
+          "district": "19th"
         },
         {
-          "representative": "Castro, Joaquin",
-          "state": "TX"
+          "representative": "Joaquin Castro",
+          "state": "TX",
+          "district": "20th"
         },
         {
-          "representative": "Roy, Chip",
-          "state": "TX"
+          "representative": "Chip Roy",
+          "state": "TX",
+          "district": "21st"
         },
         {
-          "representative": "Nehls, Troy",
-          "state": "TX"
+          "representative": "Troy Nehls",
+          "state": "TX",
+          "district": "22nd"
         },
         {
-          "representative": "Gonzales, Tony",
-          "state": "TX"
+          "representative": "Tony Gonzales",
+          "state": "TX",
+          "district": "23rd"
         },
         {
-          "representative": "Van Duyne, Beth",
-          "state": "TX"
+          "representative": "Beth Van Duyne",
+          "state": "TX",
+          "district": "24th"
         },
         {
-          "representative": "Williams, Roger",
-          "state": "TX"
+          "representative": "Roger Williams",
+          "state": "TX",
+          "district": "25th"
         },
         {
-          "representative": "Gill, Brandon",
-          "state": "TX"
+          "representative": "Brandon Gill",
+          "state": "TX",
+          "district": "26th"
         },
         {
-          "representative": "Cloud, Michael",
-          "state": "TX"
+          "representative": "Michael Cloud",
+          "state": "TX",
+          "district": "27th"
         },
         {
-          "representative": "Cuellar, Henry",
-          "state": "TX"
+          "representative": "Henry Cuellar",
+          "state": "TX",
+          "district": "28th"
         },
         {
-          "representative": "Garcia, Sylvia",
-          "state": "TX"
+          "representative": "Sylvia Garcia",
+          "state": "TX",
+          "district": "29th"
         },
         {
-          "representative": "Crockett, Jasmine",
-          "state": "TX"
+          "representative": "Jasmine Crockett",
+          "state": "TX",
+          "district": "30th"
         },
         {
-          "representative": "Carter, John",
-          "state": "TX"
+          "representative": "John Carter",
+          "state": "TX",
+          "district": "31st"
         },
         {
-          "representative": "Johnson, Julie",
-          "state": "TX"
+          "representative": "Julie Johnson",
+          "state": "TX",
+          "district": "32nd"
         },
         {
-          "representative": "Veasey, Marc",
-          "state": "TX"
+          "representative": "Marc Veasey",
+          "state": "TX",
+          "district": "33rd"
         },
         {
-          "representative": "Gonzalez, Vicente",
-          "state": "TX"
+          "representative": "Vicente Gonzalez",
+          "state": "TX",
+          "district": "34th"
         },
         {
-          "representative": "Casar, Greg",
-          "state": "TX"
+          "representative": "Greg Casar",
+          "state": "TX",
+          "district": "35th"
         },
         {
-          "representative": "Babin, Brian",
-          "state": "TX"
+          "representative": "Brian Babin",
+          "state": "TX",
+          "district": "36th"
         },
         {
-          "representative": "Doggett, Lloyd",
-          "state": "TX"
+          "representative": "Lloyd Doggett",
+          "state": "TX",
+          "district": "37th"
         },
         {
-          "representative": "Hunt, Wesley",
-          "state": "TX"
+          "representative": "Wesley Hunt",
+          "state": "TX",
+          "district": "38th"
         },
         {
-          "representative": "Moore, Blake",
-          "state": "UT"
+          "representative": "Blake Moore",
+          "state": "UT",
+          "district": "1st"
         },
         {
-          "representative": "Maloy, Celeste",
-          "state": "UT"
+          "representative": "Celeste Maloy",
+          "state": "UT",
+          "district": "2nd"
         },
         {
-          "representative": "Kennedy, Mike",
-          "state": "UT"
+          "representative": "Mike Kennedy",
+          "state": "UT",
+          "district": "3rd"
         },
         {
-          "representative": "Owens, Burgess",
-          "state": "UT"
+          "representative": "Burgess Owens",
+          "state": "UT",
+          "district": "4th"
         },
         {
-          "representative": "Balint, Becca",
-          "state": "VT"
+          "representative": "Becca Balint",
+          "state": "VT",
+          "district": "At Large"
         },
         {
-          "representative": "Wittman, Robert",
-          "state": "VA"
+          "representative": "Robert Wittman",
+          "state": "VA",
+          "district": "1st"
         },
         {
-          "representative": "Kiggans, Jennifer",
-          "state": "VA"
+          "representative": "Jennifer Kiggans",
+          "state": "VA",
+          "district": "2nd"
         },
         {
-          "representative": "Scott, Robert",
-          "state": "VA"
+          "representative": "Robert Scott",
+          "state": "VA",
+          "district": "3rd"
         },
         {
-          "representative": "McClellan, Jennifer",
-          "state": "VA"
+          "representative": "Jennifer McClellan",
+          "state": "VA",
+          "district": "4th"
         },
         {
-          "representative": "McGuire, John",
-          "state": "VA"
+          "representative": "John McGuire",
+          "state": "VA",
+          "district": "5th"
         },
         {
-          "representative": "Cline, Ben",
-          "state": "VA"
+          "representative": "Ben Cline",
+          "state": "VA",
+          "district": "6th"
         },
         {
-          "representative": "Vindman, Eugene",
-          "state": "VA"
+          "representative": "Eugene Vindman",
+          "state": "VA",
+          "district": "7th"
         },
         {
-          "representative": "Beyer, Donald",
-          "state": "VA"
+          "representative": "Donald Beyer",
+          "state": "VA",
+          "district": "8th"
         },
         {
-          "representative": "Griffith, H.",
-          "state": "VA"
+          "representative": "H. Griffith",
+          "state": "VA",
+          "district": "9th"
         },
         {
-          "representative": "Subramanyam, Suhas",
-          "state": "VA"
+          "representative": "Suhas Subramanyam",
+          "state": "VA",
+          "district": "10th"
         },
         {
-          "representative": "Connolly, Gerald E.- Vacancy",
-          "state": "VA"
+          "representative": "Gerald E.- Vacancy Connolly",
+          "state": "VA",
+          "district": "11th"
         },
         {
-          "representative": "Plaskett, Stacey",
-          "state": "VI"
+          "representative": "Stacey Plaskett",
+          "state": "VI",
+          "district": "Delegate"
         },
         {
-          "representative": "DelBene, Suzan",
-          "state": "WA"
+          "representative": "Suzan DelBene",
+          "state": "WA",
+          "district": "1st"
         },
         {
-          "representative": "Larsen, Rick",
-          "state": "WA"
+          "representative": "Rick Larsen",
+          "state": "WA",
+          "district": "2nd"
         },
         {
-          "representative": "Perez, Marie",
-          "state": "WA"
+          "representative": "Marie Perez",
+          "state": "WA",
+          "district": "3rd"
         },
         {
-          "representative": "Newhouse, Dan",
-          "state": "WA"
+          "representative": "Dan Newhouse",
+          "state": "WA",
+          "district": "4th"
         },
         {
-          "representative": "Baumgartner, Michael",
-          "state": "WA"
+          "representative": "Michael Baumgartner",
+          "state": "WA",
+          "district": "5th"
         },
         {
-          "representative": "Randall, Emily",
-          "state": "WA"
+          "representative": "Emily Randall",
+          "state": "WA",
+          "district": "6th"
         },
         {
-          "representative": "Jayapal, Pramila",
-          "state": "WA"
+          "representative": "Pramila Jayapal",
+          "state": "WA",
+          "district": "7th"
         },
         {
-          "representative": "Schrier, Kim",
-          "state": "WA"
+          "representative": "Kim Schrier",
+          "state": "WA",
+          "district": "8th"
         },
         {
-          "representative": "Smith, Adam",
-          "state": "WA"
+          "representative": "Adam Smith",
+          "state": "WA",
+          "district": "9th"
         },
         {
-          "representative": "Strickland, Marilyn",
-          "state": "WA"
+          "representative": "Marilyn Strickland",
+          "state": "WA",
+          "district": "10th"
         },
         {
-          "representative": "Miller, Carol",
-          "state": "WV"
+          "representative": "Carol Miller",
+          "state": "WV",
+          "district": "1st"
         },
         {
-          "representative": "Moore, Riley",
-          "state": "WV"
+          "representative": "Riley Moore",
+          "state": "WV",
+          "district": "2nd"
         },
         {
-          "representative": "Steil, Bryan",
-          "state": "WI"
+          "representative": "Bryan Steil",
+          "state": "WI",
+          "district": "1st"
         },
         {
-          "representative": "Pocan, Mark",
-          "state": "WI"
+          "representative": "Mark Pocan",
+          "state": "WI",
+          "district": "2nd"
         },
         {
-          "representative": "Van Orden, Derrick",
-          "state": "WI"
+          "representative": "Derrick Van Orden",
+          "state": "WI",
+          "district": "3rd"
         },
         {
-          "representative": "Moore, Gwen",
-          "state": "WI"
+          "representative": "Gwen Moore",
+          "state": "WI",
+          "district": "4th"
         },
         {
-          "representative": "Fitzgerald, Scott",
-          "state": "WI"
+          "representative": "Scott Fitzgerald",
+          "state": "WI",
+          "district": "5th"
         },
         {
-          "representative": "Grothman, Glenn",
-          "state": "WI"
+          "representative": "Glenn Grothman",
+          "state": "WI",
+          "district": "6th"
         },
         {
-          "representative": "Tiffany, Thomas",
-          "state": "WI"
+          "representative": "Thomas Tiffany",
+          "state": "WI",
+          "district": "7th"
         },
         {
-          "representative": "Wied, Tony",
-          "state": "WI"
+          "representative": "Tony Wied",
+          "state": "WI",
+          "district": "8th"
         },
         {
-          "representative": "Hageman, Harriet",
-          "state": "WY"
+          "representative": "Harriet Hageman",
+          "state": "WY",
+          "district": "At Large"
         }
       ]
     },

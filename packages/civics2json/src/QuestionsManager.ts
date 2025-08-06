@@ -195,7 +195,8 @@ export const getRepresentativesQuestions = (
     }
     const representatives = (yield* fetchAndParseRepresentatives(fs, rc, c)()).map((r) => ({
       representative: `${r.name}`,
-      state: r.state
+      state: r.state,
+      district: r.district
     }))
 
     // update the representatives question

@@ -6,6 +6,7 @@ import { QuestionNumber, PairedQuestionNumber, type Question } from '../types'
 export type QuestionDataSource = {
   questions: ReadonlyArray<QuestionWithDistractors>
   userState: StateAbbreviation
+  userDistrict?: string | undefined
   questionNumbers?: ReadonlyArray<number> | undefined
 }
 
@@ -117,7 +118,8 @@ const createUnifiedMultiAnswerQuestion = (
 
 const extractCorrectAnswers = (
   question: QuestionWithDistractors,
-  userState: StateAbbreviation
+  userState: StateAbbreviation,
+  userDistrict?: string | undefined
 ): ReadonlyArray<string> => {
   switch (question.answers._type) {
     case 'text':
@@ -128,7 +130,10 @@ const extractCorrectAnswers = (
         .map((choice) => choice.senator)
     case 'representative':
       return question.answers.choices
-        .filter((choice) => choice.state === userState)
+        .filter(
+          (choice) =>
+            choice.state === userState && (userDistrict == null || choice.district === userDistrict)
+        )
         .map((choice) => choice.representative)
     case 'governor':
       return question.answers.choices
@@ -155,11 +160,12 @@ const extractCorrectAnswers = (
  */
 const createQuestionsFromData = (
   questionWithDistractors: QuestionWithDistractors,
-  userState: StateAbbreviation
+  userState: StateAbbreviation,
+  userDistrict?: string | undefined
 ): Effect.Effect<ReadonlyArray<Question>, never, never> => {
   return Effect.gen(function* () {
     const questionNumber = QuestionNumber(questionWithDistractors.questionNumber.toString())
-    const correctAnswers = extractCorrectAnswers(questionWithDistractors, userState)
+    const correctAnswers = extractCorrectAnswers(questionWithDistractors, userState, userDistrict)
 
     if (correctAnswers.length === 0) {
       return []
@@ -233,7 +239,7 @@ export const loadQuestions = (
     )
 
     const questionEffects = filteredQuestions.map((question) =>
-      createQuestionsFromData(question, dataSource.userState)
+      createQuestionsFromData(question, dataSource.userState, dataSource.userDistrict)
     )
 
     const questionArrays = yield* Effect.all(questionEffects)
