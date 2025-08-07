@@ -42,7 +42,3 @@ We need to update the US Representatives data to include district information. T
   }
 }
 ```
-
-## Distractor Generation
-
-Distractors for many questions are currently hardcoded. We should implement a system to generate distractors based on the question type and context. These can pre computed and stored in the `questions-with-distractors.json` file. Distractors should be relevant to the question and not just random names or facts. The should follow the same pattern as the answers. We should analyze the answers for each questions and produce a test to determine the best distractors. This can be done by looking at the most common answers for each question type and then generating distractors that are similar but not the same.
