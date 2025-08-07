@@ -125,6 +125,17 @@ export default function Settings() {
               Select your state and congressional district to get personalized questions about your 
               specific representative, senators, and governor.
             </p>
+            <div className="text-sm text-blue-600 dark:text-blue-400">
+              Don&apos;t know your congressional district?{' '}
+              <a
+                href="https://www.govtrack.us/congress/members/map"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
+              >
+                Find your district on GovTrack →
+              </a>
+            </div>
             <StateSelector
               selectedState={settings.userState}
               onStateChange={handleStateChange}
