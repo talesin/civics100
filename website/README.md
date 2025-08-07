@@ -172,7 +172,13 @@ The project is configured for automatic deployment to GitHub Pages via GitHub Ac
 
 See [DEPLOYMENT.md](DEPLOYMENT.md).
 
-### Configuration
+### Package Dependencies
+
+The website depends on other monorepo packages:
+- **civics2json** - Question data and type definitions
+- **questionnaire** - Game engine and session management
+
+### Deployment Configuration
 
 The project is pre-configured for static deployment:
 - **Static Export**: `output: 'export'` in `next.config.ts`
