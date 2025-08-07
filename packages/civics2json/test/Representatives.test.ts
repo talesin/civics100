@@ -35,7 +35,7 @@ describe('parseRepresentatives', () => {
     const result = await Effect.runPromise(parseRepresentatives(minimalHTML))
     expect(result).toHaveLength(2)
     expect(result[0]).toMatchObject({
-      name: 'LaMalfa, Doug',
+      name: 'Doug LaMalfa',
       state: 'CA',
       district: '1st',
       party: 'R',
@@ -45,7 +45,7 @@ describe('parseRepresentatives', () => {
       committeeAssignment: 'Committee Assignment'
     })
     expect(result[1]).toMatchObject({
-      name: 'Huffman, Jared',
+      name: 'Jared Huffman',
       state: 'CA',
       district: '2nd',
       party: 'D',
@@ -75,7 +75,7 @@ describe('parseRepresentatives', () => {
     const result = await Effect.runPromise(parseRepresentatives(html))
     expect(result).toHaveLength(1)
     expect(result[0]).toMatchObject({
-      name: 'Plaskett, Stacey',
+      name: 'Stacey Plaskett',
       state: 'VI',
       district: 'At-Large',
       party: 'D',
@@ -127,7 +127,7 @@ describe('parseRepresentatives', () => {
     `
     const result = await Effect.runPromise(parseRepresentatives(html))
     expect(result[0]).toMatchObject({
-      name: 'LaMalfa, Doug',
+      name: 'Doug LaMalfa',
       state: 'CA',
       district: '1st',
       party: 'R',
@@ -170,7 +170,7 @@ describe('parseRepresentatives', () => {
     const result = await Effect.runPromise(parseRepresentatives(html))
     expect(result).toMatchObject([
       {
-        name: 'LaMalfa, Doug',
+        name: 'Doug LaMalfa',
         state: 'CA',
         district: '1st',
         party: 'R',
@@ -180,7 +180,7 @@ describe('parseRepresentatives', () => {
         committeeAssignment: 'Committee Assignment'
       },
       {
-        name: 'Schweikert, David',
+        name: 'David Schweikert',
         state: 'AZ',
         district: '1st',
         party: 'R',

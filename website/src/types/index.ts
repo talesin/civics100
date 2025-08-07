@@ -25,5 +25,6 @@ export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
   maxQuestions: 10,
   winThreshold: 6,
   userState: 'CA' as import('civics2json').StateAbbreviation,
+  userDistrict: undefined,
   darkMode: false
 }

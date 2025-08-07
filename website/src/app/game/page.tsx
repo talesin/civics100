@@ -45,7 +45,8 @@ export default function Game() {
 
         const newSession = yield* sessionService.createNewSession(gameSettings)
         const gameQuestions = yield* questionService.generateGameQuestions(
-          gameSettings.maxQuestions
+          gameSettings.maxQuestions,
+          gameSettings.userState
         )
 
         setSession(newSession)

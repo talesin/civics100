@@ -8,12 +8,14 @@ import { GameService, GameServiceDefault, PairedAnswers } from 'questionnaire'
  */
 const convertToQuestionnaireSettings = (
   maxQuestions: number,
-  userState: StateAbbreviation = 'CA',
+  userState: StateAbbreviation,
+  userDistrict?: string | undefined,
   questionNumbers?: readonly number[] | undefined
 ): GameSettings => ({
   maxQuestions,
   winThreshold: 6, // Default win threshold
   userState,
+  userDistrict,
   questionNumbers
 })
 
@@ -24,10 +26,11 @@ const convertToQuestionnaireSettings = (
 const generateGameQuestions = (gameService: GameService) =>
   Effect.fn(function* (
     questionCount: number,
-    userState: StateAbbreviation = 'CA',
+    userState: StateAbbreviation,
+    userDistrict?: string | undefined,
     pairedAnswers: PairedAnswers = {}
   ) {
-    const settings = convertToQuestionnaireSettings(questionCount, userState)
+    const settings = convertToQuestionnaireSettings(questionCount, userState, userDistrict)
 
     const { questions } = yield* gameService.createGameSession(settings, pairedAnswers)
 
@@ -60,7 +63,8 @@ export class QuestionDataService extends Effect.Service<QuestionDataService>()(
 export const TestQuestionDataServiceLayer = (fn?: {
   generateGameQuestions?: (
     questionCount: number,
-    userState?: StateAbbreviation,
+    userState: StateAbbreviation,
+    userDistrict?: string | undefined,
     pairedAnswers?: PairedAnswers
   ) => Effect.Effect<QuestionDisplay[], never, never>
 }) =>

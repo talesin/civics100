@@ -28,6 +28,25 @@ export const fetchRepresentatives = (httpClient: HttpClient.HttpClient, config: 
   })
 
 /**
+ * Converts name from "last, first" format to "first last" format
+ * @param name Name in "last, first" format
+ * @returns Name in "first last" format
+ */
+const formatRepresentativeName = (name: string): string => {
+  // Check if name contains a comma (indicating "last, first" format)
+  if (name.includes(',')) {
+    const parts = name.split(',').map((part) => part.trim())
+    if (parts.length === 2) {
+      const [last, first] = parts
+      return `${first} ${last}`
+    }
+  }
+
+  // If no comma or unexpected format, return as-is
+  return name
+}
+
+/**
  * Parses the representatives data.
  * @returns Effect that resolves to an array of Representative objects
  */
@@ -39,8 +58,9 @@ export const parseRepresentatives = (
   const parseRow = (stateAbbr: StateAbbreviation) =>
     Effect.fn(function* (row: Element) {
       const tds = row.querySelectorAll('td')
+      const rawName = getCellText(tds[1])
       const json = {
-        name: getCellText(tds[1]),
+        name: formatRepresentativeName(rawName),
         website: tds[1]?.querySelector('a')?.getAttribute('href') ?? '',
         party: getCellText(tds[2]),
         officeRoom: getCellText(tds[3]),

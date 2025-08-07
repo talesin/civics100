@@ -170,7 +170,7 @@ export const getSenatorsQuestion = (
       return yield* Effect.fail(new Error('State senators question not found'))
     }
     const senators = (yield* fetchAndParseSenators(fs, sc, c)()).map((s) => ({
-      senator: `${s.first_name} ${s.last_name} (${s.state}-${s.party})`,
+      senator: `${s.first_name} ${s.last_name}`,
       state: s.state
     }))
 
@@ -194,8 +194,9 @@ export const getRepresentativesQuestions = (
       return yield* Effect.fail(new Error('State representatives question not found'))
     }
     const representatives = (yield* fetchAndParseRepresentatives(fs, rc, c)()).map((r) => ({
-      representative: `${r.name} (${r.state}-${r.party})`,
-      state: r.state
+      representative: `${r.name}`,
+      state: r.state,
+      district: r.district
     }))
 
     // update the representatives question

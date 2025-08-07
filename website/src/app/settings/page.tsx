@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { StateAbbreviation } from 'civics2json'
 import Layout from '@/components/Layout'
 import StateSelector from '@/components/StateSelector'
+import DistrictSelector from '@/components/DistrictSelector'
 import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings } from '@/types'
 
 export default function Settings() {
@@ -40,7 +41,12 @@ export default function Settings() {
   }
 
   const handleStateChange = (state: StateAbbreviation) => {
-    setSettings((prev) => ({ ...prev, userState: state }))
+    setSettings((prev) => ({ ...prev, userState: state, userDistrict: undefined }))
+    setHasChanges(true)
+  }
+
+  const handleDistrictChange = (district: string | undefined) => {
+    setSettings((prev) => ({ ...prev, userDistrict: district }))
     setHasChanges(true)
   }
 
@@ -116,12 +122,29 @@ export default function Settings() {
               Location Settings
             </h2>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              Select your state to get personalized questions about your representatives, senators,
-              and governor.
+              Select your state and congressional district to get personalized questions about your 
+              specific representative, senators, and governor.
             </p>
+            <div className="text-sm text-blue-600 dark:text-blue-400">
+              Don&apos;t know your congressional district?{' '}
+              <a
+                href="https://www.govtrack.us/congress/members/map"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
+              >
+                Find your district on GovTrack →
+              </a>
+            </div>
             <StateSelector
               selectedState={settings.userState}
               onStateChange={handleStateChange}
+              className="mt-4"
+            />
+            <DistrictSelector
+              selectedState={settings.userState}
+              selectedDistrict={settings.userDistrict}
+              onDistrictChange={handleDistrictChange}
               className="mt-4"
             />
           </div>

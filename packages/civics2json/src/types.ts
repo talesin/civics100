@@ -233,7 +233,10 @@ export type Question = DeepReadonly<{
   answers:
     | { _type: 'text'; choices: string[] }
     | { _type: 'senator'; choices: { senator: string; state: StateAbbreviation }[] }
-    | { _type: 'representative'; choices: { representative: string; state: StateAbbreviation }[] }
+    | {
+        _type: 'representative'
+        choices: { representative: string; state: StateAbbreviation; district: string }[]
+      }
     | { _type: 'governor'; choices: { governor: string; state: StateAbbreviation }[] }
     | { _type: 'capital'; choices: { capital: string; state: StateAbbreviation }[] }
 }>

@@ -11,7 +11,7 @@ describe('QuestionDataService', () => {
 
     await Effect.gen(function* () {
       const questionService = yield* QuestionDataService
-      const gameQuestions = yield* questionService.generateGameQuestions(5)
+      const gameQuestions = yield* questionService.generateGameQuestions(5, 'CA')
 
       expect(gameQuestions).toBeDefined()
       expect(Array.isArray(gameQuestions)).toBe(true)
@@ -37,8 +37,8 @@ describe('QuestionDataService', () => {
 
     await Effect.gen(function* () {
       const questionService = yield* QuestionDataService
-      const questions1 = yield* questionService.generateGameQuestions(3)
-      const questions2 = yield* questionService.generateGameQuestions(3)
+      const questions1 = yield* questionService.generateGameQuestions(3, 'CA')
+      const questions2 = yield* questionService.generateGameQuestions(3, 'CA')
 
       // Questions should potentially be in different order (though not guaranteed with small sample)
       expect(questions1.length).toBe(questions2.length)
@@ -54,7 +54,7 @@ describe('QuestionDataService', () => {
 
     await Effect.gen(function* () {
       const questionService = yield* QuestionDataService
-      const gameQuestions = yield* questionService.generateGameQuestions(0)
+      const gameQuestions = yield* questionService.generateGameQuestions(0, 'CA')
 
       expect(gameQuestions).toBeDefined()
       expect(Array.isArray(gameQuestions)).toBe(true)

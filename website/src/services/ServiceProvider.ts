@@ -36,18 +36,14 @@ export const runWithServices = <A, E = never, R = never>(
  */
 export const runWithServicesAndErrorHandling = <A, E = never, R = never>(
   effect: Effect.Effect<A, E, R>,
-  onError?: (error: unknown) => void
+  onError: (error: unknown) => void = (error) => console.error('Service error:', error)
 ): Promise<A | undefined> => {
   // Type assertion needed due to Effect-TS layer providing complexities
   return Effect.runPromise(
     effect.pipe(
       Effect.provide(AppServiceLayer),
       Effect.catchAll((error: unknown) => {
-        if (onError !== undefined) {
-          onError(error)
-        } else {
-          console.error('Service error:', error)
-        }
+        onError(error)
         return Effect.succeed(undefined)
       })
     ) as Effect.Effect<A | undefined, never, never>

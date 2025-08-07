@@ -91,6 +91,7 @@ export type GameSettings = {
   maxQuestions: number
   winThreshold: number
   userState: import('civics2json').StateAbbreviation
+  userDistrict?: string | undefined
   questionNumbers?: ReadonlyArray<number> | undefined
 }
 
