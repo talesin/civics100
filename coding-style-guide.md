@@ -222,6 +222,9 @@ export const SampleResponse = Schema.TaggedStruct("SampleResponse", {
 // define the type
 export type SampleResponse = typeof SampleResponse.Type;
 
+// decode the response
+const json = yield* Schema.decodeUnknown(Schema.parseJson())('{"message": "Test message", "data": []}');
+
 // decode the response from json
 const response = yield * Schema.decodeUnknown(SampleResponse)(json);
 

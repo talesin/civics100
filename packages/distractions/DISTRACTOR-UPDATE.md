@@ -4,6 +4,8 @@ Generate or augment **10–15 plausible distractors** per question in `civics-qu
 
 ## Implementation Task List
 
+- Refer to [coding-style-guide.md](../../coding-style-guide.md) for coding style and best practices
+
 ### Phase 1: Architecture Setup
 
 - [ ] **Review current service architecture** - Understand existing DistractorManager, StaticGenerator, CuratedDistractorService, and QuestionsDataService
