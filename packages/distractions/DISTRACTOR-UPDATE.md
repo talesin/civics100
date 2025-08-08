@@ -1,6 +1,6 @@
 # Task
 
-Generate or augment **10–15 plausible distractors** per question in `questions-with-distractors.json` using OpenAI APIs, structured templates, or heuristics depending on the answer `_type`.
+Generate or augment **10–15 plausible distractors** per question in `civics-questions.json` using OpenAI APIs, structured templates, or heuristics depending on the answer `_type`.
 
 ## Context
 
@@ -23,7 +23,7 @@ We want to populate or expand the `distractors` field to include 10–15 high-qu
 
 # Goals
 
-1. Parse the input file `questions-with-distractors.json`
+1. Get the `Questions` using `getAllQuestions`from the `QuestionsDataService` service class
 2. For each question:
    - Determine the answer `_type`
    - Choose the correct distractor generation strategy:
@@ -35,14 +35,14 @@ We want to populate or expand the `distractors` field to include 10–15 high-qu
      - Avoid correct answers (globally)
      - Ensure structural consistency
    - Replace the existing `distractors` field with the cleaned final list
-3. Write output to `questions-with-distractors.generated.json`
+3. Write output to `questions-with-distractors.json`
 
 ---
 
 # Inputs
 
-- `questions-with-distractors.json`
-- OpenAI API key (via `.env` or process env)
+- `Questions` using `getAllQuestions`from the `QuestionsDataService` service class
+- OpenAI API key (via `.envrc` or process env)
 - Optional CLI flags:
   - `--regen-all`: ignore existing distractors
   - `--regen-incomplete`: only regenerate if `distractors.length < 10`
@@ -54,9 +54,10 @@ We want to populate or expand the `distractors` field to include 10–15 high-qu
 
 # Distractor Strategies by `_type`
 
-### _type: `text`
+### \_type: `text`
 
 Use OpenAI prompt generation **unless** a pattern is detected:
+
 - If answer matches:
   - U.S. states → pull random other states
   - Presidents → pull real but wrong presidents
@@ -65,7 +66,7 @@ Use OpenAI prompt generation **unless** a pattern is detected:
 
 Use this prompt:
 
-````
+```
 You are an expert in U.S. civics education.
 
 Write 10–15 plausible but incorrect answers for the question below.
@@ -87,13 +88,14 @@ Write 10–15 plausible but incorrect answers for the question below.
 
 ### Output:
 JSON array only
-````
+```
 
 ---
 
-### _type: `senator`, `representative`, `governor`
+### \_type: `senator`, `representative`, `governor`
 
 Generate distractors by:
+
 - Selecting people from other states
 - Filtering out names from the correct state or territory
 - Formatting consistently:
@@ -102,9 +104,10 @@ Generate distractors by:
 
 ---
 
-### _type: `capital`
+### \_type: `capital`
 
 Generate distractors by:
+
 - Selecting capitals of **other** states or territories
 - Avoiding:
   - Capitals of the correct state
@@ -136,4 +139,13 @@ Generate distractors by:
 - All distractors are **plausible but wrong**
 - No distractor duplicates any correct answer
 - Structure and content are consistent
-- Final output written to `questions-with-distractors.generated.json`
+- Final output written to existing output file: `questions-with-distractors.json`
+
+# Implmentation Hints
+
+- Use the `StaticGenerator` service class to generate distractors
+- Use the `CuratedDistractorService` service class to get curated distractors
+- Review https://github.com/openai/openai-node for OpenAI API usage
+- Review https://github.com/Effect-TS/platform-node for FileSystem API usage
+- Review https://github.com/Effect-TS/platform for Path API usage
+- Review https://github.com/Effect-TS/cli for Console API usage
