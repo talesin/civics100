@@ -5,10 +5,8 @@ export class DistractorQualityError extends Data.TaggedError('DistractorQualityE
   readonly message: string
 }> {}
 
-export const filterQualityDistractors =
-  (similarityService: SimilarityService) =>
-  (candidates: readonly string[], correctAnswers: readonly string[]) =>
-    Effect.gen(function* () {
+export const filterQualityDistractors = (similarityService: SimilarityService) =>
+  Effect.fn(function* (candidates: readonly string[], correctAnswers: readonly string[]) {
       // Step 1: Remove exact matches (case-insensitive)
       const noExactMatches = candidates.filter(
         (candidate) =>
@@ -52,7 +50,7 @@ export const filterQualityDistractors =
       const noEmptyStrings = uniqueDistractors.filter((candidate) => candidate.trim().length > 0)
 
       return noEmptyStrings
-    })
+  })
 
 export const validateDistractorCompleteness = (distractor: string): boolean => {
   const trimmed = distractor.trim()
@@ -186,14 +184,12 @@ export const semanticValidation = (distractor: string, questionType: string): bo
   }
 }
 
-export const applyEnhancedQualityFilters =
-  (similarityService: SimilarityService) =>
-  (
+export const applyEnhancedQualityFilters = (similarityService: SimilarityService) =>
+  Effect.fn(function* (
     candidates: readonly string[],
     correctAnswers: readonly string[],
     questionType: string = 'unknown'
-  ) =>
-    Effect.gen(function* () {
+  ) {
       // Apply basic quality filters first
       const basicFiltered = yield* filterQualityDistractors(similarityService)(
         candidates,
@@ -214,7 +210,7 @@ export const applyEnhancedQualityFilters =
       )
 
       return formatStandardized
-    })
+  })
 
 export class DistractorQualityService extends Effect.Service<DistractorQualityService>()(
   'DistractorQualityService',
