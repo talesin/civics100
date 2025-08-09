@@ -18,7 +18,7 @@
     "clean": "rm -rf dist/ node_modules/ build/ coverage/",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "build": "npx tsup src/index.ts --dts --format esm --out-dir dist && npm run list-todos",
+    "build": "npx tsc --noEmit && npx tsup src/index.ts --dts --format esm --out-dir dist && npm run list-todos",
     "build:vercel": "npm run build",
     "package": "npm install && npx tsx src/cli/index.ts && npm run lint && npm run test && npm run build",
     "test": "npx jest",
@@ -30,7 +30,7 @@
     "@effect/platform-node": "^0.83.3",
     "civics2json": "*",
     "effect": "^3.14.14",
-    "openai": "^5.12.1",
+    "openai": "^5.12.2",
     "sentence-similarity": "^3.0.0",
     "similarity-score": "^1.0.0",
     "ts-essentials": "^10.0.4"

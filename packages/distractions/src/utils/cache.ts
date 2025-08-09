@@ -12,45 +12,41 @@ export const generateOpenAICacheKey = (request: OpenAIRequest): string =>
   `openai-${request.answerType}-${request.question.slice(0, 30).replace(/\s+/g, '-')}-${request.targetCount}`
 
 // Create cache for OpenAI responses
-export const createOpenAIResponseCache = (
-  maxSize: number = 1000,
-  ttlHours: number = 24
-) =>
+export const createOpenAIResponseCache = (maxSize: number = 1000, ttlHours: number = 24) =>
   Cache.make({
     capacity: maxSize,
     timeToLive: Duration.hours(ttlHours),
-    lookup: (key: string) => Effect.succeed(`cache-miss-${key}`)
+    lookup: (key: string) => Effect.succeed({
+      distractors: [`Cache miss for ${key}`],
+      confidence: 0.0,
+      tokensUsed: 0
+    } as OpenAIResponse)
   })
 
 // Create cache for distractor validation results
-export const createValidationCache = (
-  maxSize: number = 500,
-  ttlMinutes: number = 30
-) =>
+export const createValidationCache = (maxSize: number = 500, ttlMinutes: number = 30) =>
   Cache.make({
     capacity: maxSize,
     timeToLive: Duration.minutes(ttlMinutes),
-    lookup: (key: string) => Effect.succeed(false)
+    lookup: (_key: string) => Effect.succeed(false)
   })
 
 // Wrapper for cached operations
-export const withCache = <K, A>(
-  cache: Cache.Cache<K, A>,
-  key: K,
-  operation: Effect.Effect<A, never>
-): Effect.Effect<A, never> => 
-  Cache.get(cache, key, () => operation)
+export const withCache = <K, A, E>(
+  cache: Cache.Cache<K, A, E>,
+  key: K
+): Effect.Effect<A, E> => cache.get(key)
 
 // Cache management helpers
-export const clearCache = <K, A>(cache: Cache.Cache<K, A>) =>
-  Cache.refresh(cache)
+export const clearCache = <K, A>(cache: Cache.Cache<K, A>, key: K) => cache.refresh(key)
 
-export const getCacheStats = <K, A>(cache: Cache.Cache<K, A>) =>
+export const getCacheStats = <K, A, E>(cache: Cache.Cache<K, A, E>) =>
   Effect.gen(function* () {
-    const size = yield* Cache.size(cache)
+    const stats = yield* cache.cacheStats
     return {
-      size,
-      capacity: cache.capacity
+      hits: stats.hits,
+      misses: stats.misses,
+      size: (stats.hits + stats.misses) // CacheStats doesn't have entryCount property
     }
   })
 
@@ -58,18 +54,18 @@ export const getCacheStats = <K, A>(cache: Cache.Cache<K, A>) =>
 export const cacheOpenAIResponse = <E>(
   cache: Cache.Cache<string, OpenAIResponse>,
   request: OpenAIRequest,
-  operation: Effect.Effect<OpenAIResponse, E>
+  _operation: Effect.Effect<OpenAIResponse, E>
 ): Effect.Effect<OpenAIResponse, E> => {
   const key = generateOpenAICacheKey(request)
-  return Cache.get(cache, key, () => operation)
+  return cache.get(key)
 }
 
 export const cacheValidationResult = <E>(
   cache: Cache.Cache<string, boolean>,
   distractor: string,
   question: Question,
-  operation: Effect.Effect<boolean, E>
+  _operation: Effect.Effect<boolean, E>
 ): Effect.Effect<boolean, E> => {
   const key = `${question.questionNumber}-${distractor.slice(0, 20).replace(/\s+/g, '-')}`
-  return Cache.get(cache, key, () => operation)
+  return cache.get(key)
 }

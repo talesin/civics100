@@ -24,8 +24,8 @@ export const DEFAULT_SIMILARITY_THRESHOLDS: SimilarityThresholds = {
 
 // Core function with dependency injection via currying (following coding guide)
 export const calculateSimilarityScore = () =>
-  Effect.fn(function* (text1: string, text2: string): Effect.Effect<number, SimilarityError> {
-    return yield* Effect.try({
+  (text1: string, text2: string): Effect.Effect<number, SimilarityError> =>
+    Effect.try({
       try: () => {
         const s1 = text1.split(' ')
         const s2 = text2.split(' ')
@@ -45,18 +45,19 @@ export const calculateSimilarityScore = () =>
           }`
         })
     })
-  })
 
 export const isSimilar = (threshold: number = 0.4) =>
-  Effect.fn(function* (answer: string, distractor: string): Effect.Effect<boolean, SimilarityError> {
-    const score = yield* calculateSimilarityScore()(answer, distractor)
-    return score > threshold
-  })
+  (answer: string, distractor: string): Effect.Effect<boolean, SimilarityError> =>
+    Effect.gen(function* () {
+      const score = yield* calculateSimilarityScore()(answer, distractor)
+      return score > threshold
+    })
 
 export const removeSimilarDistractors = (
   thresholds: SimilarityThresholds = DEFAULT_SIMILARITY_THRESHOLDS
 ) =>
-  Effect.fn(function* (distractors: string[], correctAnswers: string[]): Effect.Effect<string[], SimilarityError> {
+  (distractors: string[], correctAnswers: string[]): Effect.Effect<string[], SimilarityError> =>
+    Effect.gen(function* () {
     const filtered: string[] = []
 
     for (const distractor of distractors) {
@@ -93,7 +94,8 @@ export const removeSimilarDistractors = (
 export const deduplicateDistractors = (
   thresholds: SimilarityThresholds = DEFAULT_SIMILARITY_THRESHOLDS
 ) =>
-  Effect.fn(function* (distractors: string[]): Effect.Effect<string[], SimilarityError> {
+  (distractors: string[]): Effect.Effect<string[], SimilarityError> =>
+    Effect.gen(function* () {
     const unique: string[] = []
 
     for (const distractor of distractors) {
@@ -120,25 +122,25 @@ export class SimilarityService extends Effect.Service<SimilarityService>()('Simi
   effect: Effect.succeed({
     calculateSimilarity: calculateSimilarityScore(),
     isSimilar: isSimilar(),
-    removeSimilar: removeSimilarDistractors(DEFAULT_SIMILARITY_THRESHOLDS),
-    deduplicate: deduplicateDistractors(DEFAULT_SIMILARITY_THRESHOLDS)
+    removeSimilar: removeSimilarDistractors(),
+    deduplicate: deduplicateDistractors()
   })
 }) {}
 
 // Test layer following coding guide pattern
 export const TestSimilarityServiceLayer = (fn?: {
-  calculateSimilarity?: typeof calculateSimilarityScore
-  isSimilar?: typeof isSimilar
-  removeSimilar?: typeof removeSimilarDistractors
-  deduplicate?: typeof deduplicateDistractors
+  calculateSimilarity?: (text1: string, text2: string) => Effect.Effect<number, SimilarityError>
+  isSimilar?: (answer: string, distractor: string) => Effect.Effect<boolean, SimilarityError>
+  removeSimilar?: (distractors: string[], correctAnswers: string[]) => Effect.Effect<string[], SimilarityError>
+  deduplicate?: (distractors: string[]) => Effect.Effect<string[], SimilarityError>
 }) =>
   Layer.succeed(
     SimilarityService,
     SimilarityService.of({
       _tag: 'SimilarityService',
-      calculateSimilarity: fn?.calculateSimilarity ?? (() => Effect.succeed(0.5)),
-      isSimilar: fn?.isSimilar ?? (() => Effect.succeed(false)),
-      removeSimilar: fn?.removeSimilar ?? (() => Effect.succeed(['mock filtered distractor'])),
-      deduplicate: fn?.deduplicate ?? (() => Effect.succeed(['mock unique distractor']))
+      calculateSimilarity: fn?.calculateSimilarity ?? ((_text1: string, _text2: string) => Effect.succeed(0.5)),
+      isSimilar: fn?.isSimilar ?? ((_answer: string, _distractor: string) => Effect.succeed(false)),
+      removeSimilar: fn?.removeSimilar ?? ((_distractors: string[], _correctAnswers: string[]) => Effect.succeed(['mock filtered distractor'])),
+      deduplicate: fn?.deduplicate ?? ((_distractors: string[]) => Effect.succeed(['mock unique distractor']))
     })
   )

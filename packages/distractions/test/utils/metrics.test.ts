@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 import * as Metric from 'effect/Metric'
-import { DistractorMetrics, measureDuration, trackOperation, measureAndTrack } from '../../src/utils/metrics'
+import { DistractorMetrics, trackOperation } from '../../src/utils/metrics'
 
 describe('Metrics Utilities', () => {
   describe('DistractorMetrics', () => {

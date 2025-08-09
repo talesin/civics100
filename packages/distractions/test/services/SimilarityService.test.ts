@@ -9,7 +9,7 @@ import {
 describe('SimilarityService', () => {
   it('should return true for similar strings', async () => {
     const testLayer = TestSimilarityServiceLayer({
-      isSimilar: (s1: string, s2: string) => Effect.succeed(s1 === s2)
+      isSimilar: (answer: string, distractor: string) => Effect.succeed(answer === distractor)
     })
 
     await Effect.gen(function* () {
@@ -21,7 +21,7 @@ describe('SimilarityService', () => {
 
   it('should return false for different strings', async () => {
     const testLayer = TestSimilarityServiceLayer({
-      isSimilar: (s1: string, s2: string) => Effect.succeed(s1 === s2)
+      isSimilar: (answer: string, distractor: string) => Effect.succeed(answer === distractor)
     })
 
     await Effect.gen(function* () {
@@ -33,7 +33,7 @@ describe('SimilarityService', () => {
 
   it('should return a SimilarityError on failure', async () => {
     const testLayer = TestSimilarityServiceLayer({
-      isSimilar: () => Effect.fail(new SimilarityError({ message: 'API error' }))
+      isSimilar: (_answer: string, _distractor: string) => Effect.fail(new SimilarityError({ message: 'API error' }))
     })
 
     await Effect.gen(function* () {

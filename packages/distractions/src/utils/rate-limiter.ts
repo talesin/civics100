@@ -5,30 +5,30 @@ import * as Effect from 'effect/Effect'
 // Create rate limiter for OpenAI API
 export const createOpenAIRateLimiter = (requestsPerMinute: number = 60) =>
   RateLimiter.make({
-    interval: Duration.seconds(60 / requestsPerMinute),
-    burst: 1 // Only 1 request allowed per interval
+    limit: requestsPerMinute,
+    interval: Duration.minutes(1)
   })
 
 // Create rate limiter with more permissive settings for development
 export const createDevelopmentRateLimiter = () =>
   RateLimiter.make({
-    interval: Duration.millis(100), // 10 requests per second
-    burst: 5 // Allow bursts of 5 requests
+    limit: 600, // 10 requests per second * 60 seconds
+    interval: Duration.minutes(1)
   })
 
 // Create strict rate limiter for production
 export const createProductionRateLimiter = () =>
   RateLimiter.make({
-    interval: Duration.seconds(1), // 1 request per second
-    burst: 1 // No bursting
+    limit: 60, // 1 request per second * 60 seconds
+    interval: Duration.minutes(1)
   })
 
 // Wrapper for rate-limited operations
-export const withRateLimit = <A, E>(
+export const withRateLimit = <A, E, R>(
   limiter: RateLimiter.RateLimiter,
-  operation: Effect.Effect<A, E>
-): Effect.Effect<A, E> => 
-  RateLimiter.withPermit(limiter)(operation)
+  operation: Effect.Effect<A, E, R>
+): Effect.Effect<A, E, R> => 
+  limiter(operation)
 
 // Helper to create environment-appropriate rate limiter
 export const createEnvironmentRateLimiter = (nodeEnv: string = 'development') =>

@@ -26,10 +26,10 @@ export const withRequestContext = <A, E>(
   context: Partial<RequestContext>,
   operation: Effect.Effect<A, E>
 ): Effect.Effect<A, E> => 
-  FiberRef.locallyWith(RequestContextRef, (current) => ({
+  Effect.locallyWith(operation, RequestContextRef, (current: RequestContext) => ({
     ...current,
     ...context
-  }))(operation)
+  }))
 
 // Helper to get current context
 export const getCurrentContext = Effect.flatMap(

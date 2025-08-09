@@ -1,4 +1,5 @@
-import { Data, Effect, Layer } from 'effect'
+import { Effect, Layer, Schedule } from 'effect'
+import * as Metric from 'effect/Metric'
 import type { Question } from 'civics2json'
 import { QuestionsDataService } from '../data/QuestionsDataService'
 import { CuratedDistractorService } from '../services/CuratedDistractorService'
@@ -8,6 +9,16 @@ import { SimilarityService } from '../services/SimilarityService'
 import type { DistractorStrategy, DistractorGenerationResult } from '../types/index'
 import type { DistractorGenerationOptions } from '../types/config'
 import { QuestionWithDistractors } from './StaticGenerator'
+import {
+  OpenAIError,
+  OpenAIRateLimitError,
+  OpenAIAuthError,
+  OpenAITimeoutError
+} from '../types/errors'
+import {
+  DistractorMetrics,
+  measureDuration
+} from '../utils/metrics'
 
 // Static pools imports
 import { usSenators } from '../data/pools/senators'
@@ -38,8 +49,7 @@ const getAnswerText = (choice: Question['answers']['choices'][number]): string =
 }
 
 // Strategy selection based on question type (following coding guide)
-export const selectDistractorStrategy = () =>
-  Effect.fn(function* (question: Question, options: DistractorGenerationOptions): Effect.Effect<DistractorStrategy, never> {
+export const selectDistractorStrategy = (question: Question, options: DistractorGenerationOptions): Effect.Effect<DistractorStrategy, never> => {
     const answerType = question.answers._type
     
     // TODO: Phase 2 Enhancement - Implement intelligent strategy selection based on:
@@ -50,30 +60,29 @@ export const selectDistractorStrategy = () =>
     // 5. Fallback chains with quality thresholds (try OpenAI, fallback to static if poor quality)
     
     // If OpenAI is disabled, use static strategies only
-    if (!options.useOpenAI) {
-      return yield* Effect.succeed(answerType === 'text' ? 'section-based' : 'static-pool')
+    if (options.useOpenAI === false) {
+      return Effect.succeed(answerType === 'text' ? 'section-based' : 'static-pool')
     }
     
     // Basic strategy selection logic (will be enhanced with AI-driven selection in Phase 2)
     switch (answerType) {
       case 'text':
         // For text questions, prefer OpenAI for better quality and contextual understanding
-        return yield* Effect.succeed('openai-text')
+        return Effect.succeed('openai-text')
       case 'senator':
       case 'representative':
       case 'governor':
       case 'capital':
         // For structured data, use static pools (high quality, cost-effective)
-        return yield* Effect.succeed('static-pool')
+        return Effect.succeed('static-pool')
       default:
         // For unknown types, use hybrid approach for maximum coverage
-        return yield* Effect.succeed('hybrid')
+        return Effect.succeed('hybrid')
     }
-  })
+}
 
 // Static pool generation by type (following coding guide)
-export const generateFromStaticPools = () =>
-  Effect.fn(function* (question: Question, targetCount: number): Effect.Effect<string[], never> {
+export const generateFromStaticPools = (question: Question, targetCount: number): Effect.Effect<string[], never> => {
     const answerType = question.answers._type
     const correctAnswers = question.answers.choices.map(getAnswerText)
     
@@ -121,12 +130,11 @@ export const generateFromStaticPools = () =>
     
     // Simple random shuffle (will be replaced with weighted selection in Phase 2)
     const shuffled = candidates.sort(() => Math.random() - 0.5)
-    return yield* Effect.succeed(shuffled.slice(0, targetCount))
-  })
+    return Effect.succeed(shuffled.slice(0, targetCount))
+}
 
 // Section-based fallback generation (following coding guide)
-export const generateFromSection = (questionsDataService: QuestionsDataService) =>
-  Effect.fn(function* (question: Question, allQuestions: Question[], targetCount: number): Effect.Effect<string[], never> {
+export const generateFromSection = (question: Question, allQuestions: Question[], targetCount: number): Effect.Effect<string[], never> => {
     const correctAnswers = question.answers.choices.map(getAnswerText)
     
     const sectionQuestions = allQuestions.filter(
@@ -139,22 +147,24 @@ export const generateFromSection = (questionsDataService: QuestionsDataService) 
     
     // Remove duplicates and take target count
     const uniqueDistractors = [...new Set(potentialDistractors)]
-    return yield* Effect.succeed(uniqueDistractors.slice(0, targetCount))
-  })
+    return Effect.succeed(uniqueDistractors.slice(0, targetCount))
+}
 
 // Enhanced generation with multiple strategies (following coding guide)
 export const generateEnhancedDistractors = (
-  questionsDataService: QuestionsDataService,
   curatedDistractorService: CuratedDistractorService,
   openaiService: OpenAIDistractorService,
   qualityService: DistractorQualityService,
   similarityService: SimilarityService
-) =>
-  Effect.fn(function* (
-    question: Question, 
-    allQuestions: Question[], 
-    options: DistractorGenerationOptions
-  ): Effect.Effect<DistractorGenerationResult, never> {
+) => (
+  question: Question, 
+  allQuestions: Question[], 
+  options: DistractorGenerationOptions
+): Effect.Effect<DistractorGenerationResult, never> => {
+  // Wrap the entire generation process with metrics
+  return measureDuration(
+    DistractorMetrics.questionProcessingTime,
+    Effect.gen(function* () {
     const correctAnswers = question.answers.choices.map(getAnswerText)
     let rawDistractors: string[] = []
     let strategy: DistractorStrategy = 'curated'
@@ -167,7 +177,7 @@ export const generateEnhancedDistractors = (
       yield* Effect.log(`Using curated distractors for question ${question.questionNumber}`)
     } else {
       // Step 2: Select strategy based on question type
-      const selectedStrategy = yield* selectDistractorStrategy()(question, options)
+      const selectedStrategy = yield* selectDistractorStrategy(question, options)
       strategy = selectedStrategy
       
       switch (selectedStrategy) {
@@ -180,40 +190,74 @@ export const generateEnhancedDistractors = (
           // 5. Metrics tracking for success rates, response times, and costs
           // 6. Smart fallback triggers (quality too low, API errors, budget limits)
           
-          // Try OpenAI generation for text questions
-          try {
+          // Create retry schedule with intelligent error handling
+          const retrySchedule = Schedule.exponential('100 millis').pipe(
+            Schedule.intersect(Schedule.recurs(3)), // Max 3 retries
+            Schedule.whileInput((error: unknown) => {
+              // Don't retry on auth errors - fail fast
+              if (error instanceof OpenAIAuthError) return false
+              // Don't retry indefinitely on rate limits - only a few times
+              if (error instanceof OpenAIRateLimitError) return true
+              // Retry on network/timeout errors
+              if (error instanceof OpenAITimeoutError) return true
+              // Retry on general OpenAI errors
+              if (error instanceof OpenAIError) return true
+              return false
+            })
+          )
+
+          // Try OpenAI generation with intelligent retry logic
+          const openaiAttempt = Effect.gen(function* () {
             const request = yield* openaiService.createRequest(question, options.targetCount)
             const response = yield* openaiService.generateDistractors(request)
-            rawDistractors = [...response.distractors]
+            return response
+          })
+
+          const openaiResult = yield* openaiAttempt.pipe(
+            Effect.retry(retrySchedule),
+            Effect.tapError((error) => 
+              Effect.log(`OpenAI attempt failed for question ${question.questionNumber}: ${error instanceof Error ? error.message : String(error)}`)
+            ),
+            Effect.either
+          )
+
+          if (openaiResult._tag === 'Right') {
+            rawDistractors = [...openaiResult.right.distractors]
             yield* Effect.log(`Generated ${rawDistractors.length} distractors via OpenAI for question ${question.questionNumber}`)
-          } catch {
-            // TODO: Phase 2 - Enhance fallback with error-specific handling:
-            // - Rate limit errors: wait and retry with exponential backoff
-            // - Auth errors: fail fast and switch to static mode
-            // - Quality errors: try different prompt strategies
-            // - Network errors: retry with timeout adjustment
+          } else {
+            // Enhanced fallback with error-specific handling
+            const error = openaiResult.left
+            let fallbackReason = 'OpenAI failed'
             
-            // Fallback to section-based if OpenAI fails
-            rawDistractors = yield* generateFromSection(questionsDataService)(question, allQuestions, options.targetCount)
+            if (error instanceof OpenAIAuthError) {
+              fallbackReason = 'OpenAI authentication failed'
+            } else if (error instanceof OpenAIRateLimitError) {
+              fallbackReason = 'OpenAI rate limit exceeded'  
+            } else if (error instanceof OpenAITimeoutError) {
+              fallbackReason = 'OpenAI request timed out'
+            }
+            
+            // Fallback to section-based generation
+            rawDistractors = yield* generateFromSection(question, allQuestions, options.targetCount)
             strategy = 'section-based'
-            yield* Effect.log(`OpenAI failed, using section-based fallback for question ${question.questionNumber}`)
+            yield* Effect.log(`${fallbackReason}, using section-based fallback for question ${question.questionNumber}`)
           }
           break
           
         case 'static-pool':
-          rawDistractors = yield* generateFromStaticPools()(question, options.targetCount)
+          rawDistractors = yield* generateFromStaticPools(question, options.targetCount)
           yield* Effect.log(`Generated ${rawDistractors.length} distractors from static pools for question ${question.questionNumber}`)
           break
           
         case 'section-based':
-          rawDistractors = yield* generateFromSection(questionsDataService)(question, allQuestions, options.targetCount)
+          rawDistractors = yield* generateFromSection(question, allQuestions, options.targetCount)
           yield* Effect.log(`Generated ${rawDistractors.length} distractors from section for question ${question.questionNumber}`)
           break
           
         case 'hybrid':
           // Combine multiple sources
-          const staticDistractors = yield* generateFromStaticPools()(question, Math.ceil(options.targetCount / 2))
-          const sectionDistractors = yield* generateFromSection(questionsDataService)(question, allQuestions, Math.ceil(options.targetCount / 2))
+          const staticDistractors = yield* generateFromStaticPools(question, Math.ceil(options.targetCount / 2))
+          const sectionDistractors = yield* generateFromSection(question, allQuestions, Math.ceil(options.targetCount / 2))
           rawDistractors = [...staticDistractors, ...sectionDistractors]
           yield* Effect.log(`Generated ${rawDistractors.length} distractors via hybrid approach for question ${question.questionNumber}`)
           break
@@ -234,37 +278,60 @@ export const generateEnhancedDistractors = (
     
     // Step 4: Apply similarity filtering if enabled
     const finalDistractors = options.filterSimilar
-      ? yield* similarityService.removeSimilar(qualityFiltered, correctAnswers)
+      ? yield* similarityService.removeSimilar(qualityFiltered, correctAnswers).pipe(
+          Effect.catchAll(() => Effect.succeed(qualityFiltered)) // Fallback on similarity error
+        )
       : qualityFiltered
     
     // Step 5: Ensure we have enough distractors, pad with section-based if needed
     let paddedDistractors = finalDistractors
     if (paddedDistractors.length < options.targetCount) {
       const needed = options.targetCount - paddedDistractors.length
-      const sectionPadding = yield* generateFromSection(questionsDataService)(question, allQuestions, needed)
+      const sectionPadding = yield* generateFromSection(question, allQuestions, needed)
       const filteredPadding = yield* qualityService.filterQualityDistractors(sectionPadding, correctAnswers)
       paddedDistractors = [...paddedDistractors, ...filteredPadding].slice(0, options.targetCount)
     }
     
-    return yield* Effect.succeed({
-      question,
-      distractors: paddedDistractors.slice(0, options.targetCount),
-      strategy,
-      quality: {
-        // TODO: Phase 2 - Calculate actual quality metrics based on:
-        // 1. Semantic similarity scores between distractors and correct answers
-        // 2. Difficulty assessment using readability metrics and concept complexity
-        // 3. Educational value scoring based on common misconceptions and learning objectives
-        // 4. Plausibility scoring using context similarity and domain knowledge
-        // 5. Distractor effectiveness metrics from psychometric analysis
-        relevanceScore: 0.8,     // Will be calculated from semantic analysis
-        plausibilityScore: 0.7,  // Will be derived from context matching
-        educationalValue: 0.8,   // Will be based on learning objective alignment
-        duplicatesRemoved: rawDistractors.length - paddedDistractors.length,
-        totalGenerated: rawDistractors.length
-      }
-    })
-  })
+        // Track final metrics
+        yield* Metric.increment(DistractorMetrics.questionsProcessed)
+        if (rawDistractors.length - paddedDistractors.length > 0) {
+          yield* Metric.incrementBy(DistractorMetrics.distractorsFiltered, rawDistractors.length - paddedDistractors.length)
+        }
+
+        return {
+          question,
+          distractors: paddedDistractors.slice(0, options.targetCount) as readonly string[],
+          strategy,
+          quality: {
+            // TODO: Phase 2 - Calculate actual quality metrics based on:
+            // 1. Semantic similarity scores between distractors and correct answers
+            // 2. Difficulty assessment using readability metrics and concept complexity
+            // 3. Educational value scoring based on common misconceptions and learning objectives
+            // 4. Plausibility scoring using context similarity and domain knowledge
+            // 5. Distractor effectiveness metrics from psychometric analysis
+            relevanceScore: 0.8,     // Will be calculated from semantic analysis
+            plausibilityScore: 0.7,  // Will be derived from context matching
+            educationalValue: 0.8,   // Will be based on learning objective alignment
+            duplicatesRemoved: rawDistractors.length - paddedDistractors.length,
+            totalGenerated: rawDistractors.length
+          }
+        }
+      })
+    ).pipe(
+      Effect.catchAll(() => Effect.succeed({
+        question,
+        distractors: [] as readonly string[],
+        strategy: 'section-based' as DistractorStrategy,
+        quality: {
+          relevanceScore: 0.5,
+          plausibilityScore: 0.5,
+          educationalValue: 0.5,
+          duplicatesRemoved: 0,
+          totalGenerated: 0
+        }
+      }))
+    )
+  }
 
 // Main generation function (following coding guide)
 export const generateEnhanced = (
@@ -273,28 +340,30 @@ export const generateEnhanced = (
   openaiService: OpenAIDistractorService,
   qualityService: DistractorQualityService,
   similarityService: SimilarityService
-) =>
-  Effect.fn(function* (options: DistractorGenerationOptions): Effect.Effect<QuestionWithDistractors[], never> {
+) => (
+  options: DistractorGenerationOptions
+): Effect.Effect<QuestionWithDistractors[], never> =>
+  Effect.gen(function* () {
     const allQuestions = yield* questionsDataService.getAllQuestions()
     
     const results = yield* Effect.all(
       allQuestions.map((question) =>
         generateEnhancedDistractors(
-          questionsDataService,
           curatedDistractorService,
           openaiService,
           qualityService,
           similarityService
-        )(question, allQuestions, options)
-      )
+        )(question, [...allQuestions], options)
+      ),
+      { concurrency: "unbounded" }
     )
     
-    return yield* Effect.succeed(results.map((result) =>
+    return results.map((result) =>
       QuestionWithDistractors({
         ...result.question,
         distractors: result.distractors
       })
-    ))
+    )
   })
 
 // Service class - minimal configuration (following coding guide)
@@ -308,17 +377,19 @@ export class EnhancedStaticGenerator extends Effect.Service<EnhancedStaticGenera
       const qualityService = yield* DistractorQualityService
       const similarityService = yield* SimilarityService
 
+      const generateEnhancedFn = generateEnhanced(
+        questionsDataService,
+        curatedDistractorService,
+        openaiService,
+        qualityService,
+        similarityService
+      )
+
       return {
-        generateEnhanced: generateEnhanced(
-          questionsDataService,
-          curatedDistractorService,
-          openaiService,
-          qualityService,
-          similarityService
-        ),
-        selectStrategy: selectDistractorStrategy(),
-        generateFromPools: generateFromStaticPools(),
-        generateFromSection: generateFromSection(questionsDataService)
+        generateEnhanced: generateEnhancedFn,
+        selectStrategy: selectDistractorStrategy,
+        generateFromPools: generateFromStaticPools,
+        generateFromSection: generateFromSection
       }
     }),
     dependencies: [
@@ -333,7 +404,7 @@ export class EnhancedStaticGenerator extends Effect.Service<EnhancedStaticGenera
 
 // Test layer following coding guide pattern
 export const TestEnhancedStaticGeneratorLayer = (fn?: {
-  generateEnhanced?: typeof generateEnhanced
+  generateEnhanced?: (options: DistractorGenerationOptions) => Effect.Effect<QuestionWithDistractors[], never>
   selectStrategy?: typeof selectDistractorStrategy
   generateFromPools?: typeof generateFromStaticPools
   generateFromSection?: typeof generateFromSection

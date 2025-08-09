@@ -17,6 +17,7 @@ describe('DistractorManager', () => {
       theme: 'theme',
       section: 'section',
       question: 'question',
+      expectedAnswers: 1,
       answers: {
         _type: 'text',
         choices: ['a', 'b', 'c', 'd']

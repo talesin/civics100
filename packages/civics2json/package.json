@@ -22,7 +22,7 @@
     "clean": "rm -rf dist/ node_modules/ build/ coverage/ data/*",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "build": "npx tsup src/types.ts src/Questions.ts --dts --format esm --out-dir dist && npm run list-todos",
+    "build": "npx tsc && npx tsup src/types.ts src/Questions.ts --dts --format esm --out-dir dist && npm run list-todos",
     "build:vercel": "npx tsx src/index.ts questions construct && npm run build",
     "package": "npm install && npx tsx src/index.ts questions construct && npm run lint && npm run test && npm run build",
     "test": "npx jest",

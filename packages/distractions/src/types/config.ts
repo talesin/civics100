@@ -110,12 +110,12 @@ export const DEFAULT_CACHE_CONFIG: CacheConfiguration = {
 // Environment validation helper  
 export const validateEnvironmentConfig = (env: NodeJS.ProcessEnv) => {
   const config = {
-    OPENAI_API_KEY: env.OPENAI_API_KEY || '',
-    NODE_ENV: env.NODE_ENV || 'development',
-    LOG_LEVEL: env.LOG_LEVEL || 'info',
-    DISTRACTOR_TARGET_COUNT: parseInt(env.DISTRACTOR_TARGET_COUNT || '15'),
-    ENABLE_METRICS: env.ENABLE_METRICS !== 'false',
-    CACHE_ENABLED: env.CACHE_ENABLED !== 'false'
+    OPENAI_API_KEY: env['OPENAI_API_KEY'] ?? '',
+    NODE_ENV: env['NODE_ENV'] ?? 'development',
+    LOG_LEVEL: env['LOG_LEVEL'] ?? 'info',
+    DISTRACTOR_TARGET_COUNT: parseInt(env['DISTRACTOR_TARGET_COUNT'] ?? '15'),
+    ENABLE_METRICS: env['ENABLE_METRICS'] !== 'false',
+    CACHE_ENABLED: env['CACHE_ENABLED'] !== 'false'
   }
   
   return config
@@ -138,7 +138,7 @@ export const createSystemConfiguration = (
   quality: { ...DEFAULT_QUALITY_THRESHOLDS, ...overrides?.quality },
   openai: {
     ...DEFAULT_OPENAI_CONFIG,
-    apiKey: process.env.OPENAI_API_KEY || '',
+    apiKey: process.env['OPENAI_API_KEY'] ?? '',
     ...overrides?.openai
   },
   metrics: { ...DEFAULT_METRICS_CONFIG, ...overrides?.metrics },

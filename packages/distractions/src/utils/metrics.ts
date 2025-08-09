@@ -1,4 +1,5 @@
 import * as Metric from 'effect/Metric'
+import * as MetricBoundaries from 'effect/MetricBoundaries'
 import * as Effect from 'effect/Effect'
 import * as Clock from 'effect/Clock'
 
@@ -26,17 +27,17 @@ export const DistractorMetrics = {
   }),
 
   // Histogram metrics (using simple boundaries for now)
-  openaiResponseTime: Metric.histogram('openai_response_time_ms', {
-    description: 'OpenAI API response time in milliseconds'
-  }),
+  openaiResponseTime: Metric.histogram('openai_response_time_ms', 
+    MetricBoundaries.exponential({ start: 1, factor: 2, count: 10 })
+  ),
 
-  distractorQualityScore: Metric.histogram('distractor_quality_score', {
-    description: 'Quality scores of generated distractors'
-  }),
+  distractorQualityScore: Metric.histogram('distractor_quality_score', 
+    MetricBoundaries.linear({ start: 0, width: 0.1, count: 10 })
+  ),
 
-  questionProcessingTime: Metric.histogram('question_processing_time_ms', {
-    description: 'Time taken to process a single question in milliseconds'
-  }),
+  questionProcessingTime: Metric.histogram('question_processing_time_ms', 
+    MetricBoundaries.exponential({ start: 10, factor: 2, count: 12 })
+  ),
 
   // Gauge metrics
   questionsProcessed: Metric.gauge('questions_processed', {
@@ -57,7 +58,7 @@ export const measureDuration = <A, E>(
     const start = yield* Clock.currentTimeMillis
     const result = yield* operation
     const end = yield* Clock.currentTimeMillis
-    yield* Metric.increment(metric, end - start)
+    yield* Metric.update(metric, end - start)
     return result
   })
 

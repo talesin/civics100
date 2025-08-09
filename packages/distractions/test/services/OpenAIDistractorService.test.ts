@@ -2,7 +2,6 @@ import { Effect } from 'effect'
 import {
   OpenAIDistractorService,
   TestOpenAIDistractorServiceLayer,
-  generateDistractorsWithOpenAI,
   createOpenAIRequest
 } from '@src/services/OpenAIDistractorService'
 import type { Question } from 'civics2json'
@@ -29,8 +28,10 @@ describe('OpenAIDistractorService', () => {
         expect(request.question).toBe(mockQuestion.question)
         expect(request.answerType).toBe('text')
         expect(request.targetCount).toBe(10)
-        expect(request.context).toContain('Question type: text')
+        expect(request.context).toContain('Question Type: text')
         expect(request.context).toContain('Theme: AMERICAN GOVERNMENT')
+        expect(request.context).toContain('EDUCATIONAL CONTEXT')
+        expect(request.context).toContain('FORMAT REQUIREMENTS')
       }).pipe(Effect.runPromise)
     })
 
@@ -48,13 +49,15 @@ describe('OpenAIDistractorService', () => {
 
         expect(request.answerType).toBe('senator')
         expect(request.targetCount).toBe(5)
-        expect(request.context).toContain('senator type answers')
+        expect(request.context).toContain('Question Type: senator')
+        expect(request.context).toContain('Full Name (STATE-Party)')
+        expect(request.context).toContain('EDUCATIONAL CONTEXT')
       }).pipe(Effect.runPromise)
     })
   })
 
   describe('generateDistractorsWithOpenAI', () => {
-    it('should return mock response structure', async () => {
+    it('should return response structure from test layer', async () => {
       const mockRequest: OpenAIRequest = {
         question: 'Test question',
         answerType: 'text',
@@ -62,14 +65,24 @@ describe('OpenAIDistractorService', () => {
         targetCount: 5
       }
 
+      const testLayer = TestOpenAIDistractorServiceLayer({
+        generateDistractors: () =>
+          Effect.succeed({
+            distractors: ['Test distractor A', 'Test distractor B', 'Test distractor C'],
+            confidence: 0.85,
+            tokensUsed: 200
+          })
+      })
+
       await Effect.gen(function* () {
-        const response = yield* generateDistractorsWithOpenAI()(mockRequest)
+        const service = yield* OpenAIDistractorService
+        const response = yield* service.generateDistractors(mockRequest)
 
         expect(response.distractors).toHaveLength(3)
-        expect(response.confidence).toBe(0.8)
-        expect(response.tokensUsed).toBe(150)
-        expect(response.distractors[0]).toBe('Mock distractor 1')
-      }).pipe(Effect.runPromise)
+        expect(response.confidence).toBe(0.85)
+        expect(response.tokensUsed).toBe(200)
+        expect(response.distractors[0]).toBe('Test distractor A')
+      }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
   })
 

@@ -77,7 +77,6 @@ export const validateSemanticRelevance = (
   const distractorLower = distractor.toLowerCase()
   const questionLower = question.question.toLowerCase()
   const theme = question.theme.toLowerCase()
-  const section = question.section.toLowerCase()
   
   const reasons: string[] = []
   let relevanceScore = 0.5 // Base score
@@ -148,9 +147,6 @@ export const validateDistractorFormat = (
   let formatScore = 1.0
   
   // Analyze format patterns in correct answers
-  const hasParentheses = correctAnswers.some(answer => 
-    answer.includes('(') && answer.includes(')')
-  )
   const avgWordCount = correctAnswers.reduce((sum, answer) => 
     sum + answer.split(' ').length, 0
   ) / correctAnswers.length

@@ -13,7 +13,8 @@ const mockQuestion = (questionNumber: number): Question => ({
   question: `Question ${questionNumber}`,
   answers: { _type: 'text', choices: ['Answer'] },
   theme: 'Test Theme',
-  section: 'Test Section'
+  section: 'Test Section',
+  expectedAnswers: 1
 })
 
 const mockDatabase: CuratedDistractorDatabase = {

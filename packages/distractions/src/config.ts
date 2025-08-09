@@ -1,21 +1,10 @@
-import { Effect, Config } from 'effect'
-import type { 
-  SystemConfiguration, 
-  DistractorGenerationOptions,
-  QualityThresholds,
-  OpenAIConfiguration,
-  MetricsConfiguration,
-  CacheConfiguration
-} from './types/config'
+import { Config, Effect } from 'effect'
 import { 
   DEFAULT_GENERATION_OPTIONS,
   DEFAULT_QUALITY_THRESHOLDS,
-  DEFAULT_OPENAI_CONFIG,
   DEFAULT_METRICS_CONFIG,
-  DEFAULT_CACHE_CONFIG,
-  validateEnvironmentConfig
+  DEFAULT_CACHE_CONFIG
 } from './types/config'
-import type { ConfigurationError } from './types/errors'
 
 // Environment variable configuration with Effect Config
 const OpenAIApiKey = Config.string('OPENAI_API_KEY')
@@ -34,7 +23,7 @@ const OpenAITimeoutMs = Config.integer('OPENAI_TIMEOUT_MS').pipe(Config.withDefa
 
 // Load OpenAI configuration from environment (following coding guide)
 export const loadOpenAIConfig = () =>
-  Effect.gen(function* (): Effect.Effect<OpenAIConfiguration, ConfigurationError> {
+  Effect.gen(function* () {
     const apiKey = yield* OpenAIApiKey
     const model = yield* OpenAIModel
     const temperature = yield* OpenAITemperature
@@ -43,7 +32,7 @@ export const loadOpenAIConfig = () =>
     const timeoutMs = yield* OpenAITimeoutMs
     
     // Validate API key
-    if (!apiKey || apiKey.trim().length === 0) {
+    if (apiKey === undefined || apiKey === null || apiKey.trim().length === 0) {
       return yield* Effect.fail(new (require('./types/errors').ConfigurationError)({
         cause: new Error('Missing API key'),
         setting: 'OPENAI_API_KEY',
@@ -64,7 +53,7 @@ export const loadOpenAIConfig = () =>
 
 // Load generation options from environment (following coding guide)
 export const loadGenerationOptions = () =>
-  Effect.gen(function* (): Effect.Effect<DistractorGenerationOptions, never> {
+  Effect.gen(function* () {
     const targetCount = yield* DistractorTargetCount
     const nodeEnv = yield* NodeEnv
     
@@ -78,7 +67,7 @@ export const loadGenerationOptions = () =>
 
 // Load quality thresholds from environment (following coding guide)
 export const loadQualityThresholds = () =>
-  Effect.gen(function* (): Effect.Effect<QualityThresholds, never> {
+  Effect.gen(function* () {
     const nodeEnv = yield* NodeEnv
     
     // Adjust thresholds based on environment
@@ -96,7 +85,7 @@ export const loadQualityThresholds = () =>
 
 // Load metrics configuration from environment (following coding guide)  
 export const loadMetricsConfig = () =>
-  Effect.gen(function* (): Effect.Effect<MetricsConfiguration, never> {
+  Effect.gen(function* () {
     const enableMetrics = yield* EnableMetrics
     const logLevel = yield* LogLevel
     const nodeEnv = yield* NodeEnv
@@ -104,7 +93,7 @@ export const loadMetricsConfig = () =>
     return {
       ...DEFAULT_METRICS_CONFIG,
       enableMetrics,
-      enableTracing: enableMetrics && nodeEnv !== 'production',
+      enableTracing: enableMetrics === true && nodeEnv !== 'production',
       logLevel: logLevel as 'debug' | 'info' | 'warn' | 'error',
       metricsInterval: nodeEnv === 'development' ? 10000 : 5000
     }
@@ -112,7 +101,7 @@ export const loadMetricsConfig = () =>
 
 // Load cache configuration from environment (following coding guide)
 export const loadCacheConfig = () =>
-  Effect.gen(function* (): Effect.Effect<CacheConfiguration, never> {
+  Effect.gen(function* () {
     const cacheEnabled = yield* CacheEnabled
     const nodeEnv = yield* NodeEnv
     
@@ -129,7 +118,7 @@ export const loadCacheConfig = () =>
 
 // Load complete system configuration (following coding guide)
 export const loadSystemConfiguration = () =>
-  Effect.gen(function* (): Effect.Effect<SystemConfiguration, ConfigurationError> {
+  Effect.gen(function* () {
     const generation = yield* loadGenerationOptions()
     const quality = yield* loadQualityThresholds()
     const openai = yield* loadOpenAIConfig()
@@ -149,13 +138,13 @@ export const loadSystemConfiguration = () =>
 
 // Validate environment variables (following coding guide)
 export const validateEnvironment = () =>
-  Effect.gen(function* (): Effect.Effect<void, ConfigurationError> {
+  Effect.gen(function* () {
     // Validate required environment variables
     const requiredVars = ['OPENAI_API_KEY']
     
     for (const varName of requiredVars) {
       const value = process.env[varName]
-      if (!value || value.trim().length === 0) {
+      if (value === undefined || value === null || value.trim().length === 0) {
         return yield* Effect.fail(new (require('./types/errors').MissingEnvironmentVariableError)({
           variable: varName,
           required: true
@@ -164,8 +153,8 @@ export const validateEnvironment = () =>
     }
     
     // Validate optional but important variables
-    const nodeEnv = process.env.NODE_ENV
-    if (nodeEnv && !['development', 'production', 'test'].includes(nodeEnv)) {
+    const nodeEnv = process.env['NODE_ENV']
+    if (nodeEnv !== undefined && ['development', 'production', 'test'].includes(nodeEnv) === false) {
       yield* Effect.log(`Warning: Unexpected NODE_ENV value: ${nodeEnv}`)
     }
     
@@ -174,7 +163,7 @@ export const validateEnvironment = () =>
 
 // Create configuration with validation (following coding guide)
 export const createValidatedConfiguration = () =>
-  Effect.gen(function* (): Effect.Effect<SystemConfiguration, ConfigurationError> {
+  Effect.gen(function* () {
     // First validate environment
     yield* validateEnvironment()
     
