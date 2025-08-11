@@ -1,4 +1,4 @@
-import * as Effect from 'effect/Effect'
+// Removed unused Effect import
 import type { Question } from 'civics2json'
 
 // Validation result types
@@ -16,7 +16,7 @@ export const validateDistractorLength = (
 ): ValidationResult => {
   const trimmed = distractor.trim()
   const length = trimmed.length
-  
+
   if (length < minLength) {
     return {
       isValid: false,
@@ -24,7 +24,7 @@ export const validateDistractorLength = (
       reasons: [`Too short: ${length} characters (minimum ${minLength})`]
     }
   }
-  
+
   if (length > maxLength) {
     return {
       isValid: false,
@@ -32,7 +32,7 @@ export const validateDistractorLength = (
       reasons: [`Too long: ${length} characters (maximum ${maxLength})`]
     }
   }
-  
+
   return {
     isValid: true,
     score: 1.0,
@@ -43,7 +43,7 @@ export const validateDistractorLength = (
 export const validateDistractorCompleteness = (distractor: string): ValidationResult => {
   const trimmed = distractor.trim()
   const reasons: string[] = []
-  
+
   // Check for common fragment patterns
   const fragmentPatterns = [
     { pattern: /^[a-z]/, reason: 'Starts with lowercase (likely a fragment)' },
@@ -53,16 +53,16 @@ export const validateDistractorCompleteness = (distractor: string): ValidationRe
     { pattern: /^\s*[,;]/, reason: 'Starts with comma or semicolon' },
     { pattern: /\s{2,}/, reason: 'Contains multiple consecutive spaces' }
   ]
-  
+
   for (const { pattern, reason } of fragmentPatterns) {
     if (pattern.test(trimmed)) {
       reasons.push(reason)
     }
   }
-  
+
   const isValid = reasons.length === 0
-  const score = isValid ? 1.0 : Math.max(0, 1.0 - (reasons.length * 0.2))
-  
+  const score = isValid ? 1.0 : Math.max(0, 1.0 - reasons.length * 0.2)
+
   return {
     isValid,
     score,
@@ -77,29 +77,33 @@ export const validateSemanticRelevance = (
   const distractorLower = distractor.toLowerCase()
   const questionLower = question.question.toLowerCase()
   const theme = question.theme.toLowerCase()
-  
+
   const reasons: string[] = []
   let relevanceScore = 0.5 // Base score
-  
+
   // Check for question type specific patterns
   const answerType = question.answers._type
-  
+
   switch (answerType) {
     case 'text':
       // For text answers, check thematic relevance
-      if (theme.includes('constitution') && 
-          (distractorLower.includes('constitution') || 
-           distractorLower.includes('amendment') ||
-           distractorLower.includes('right'))) {
+      if (
+        theme.includes('constitution') &&
+        (distractorLower.includes('constitution') ||
+          distractorLower.includes('amendment') ||
+          distractorLower.includes('right'))
+      ) {
         relevanceScore += 0.3
-      } else if (theme.includes('history') &&
-                 (distractorLower.includes('war') ||
-                  distractorLower.includes('president') ||
-                  distractorLower.includes('year'))) {
+      } else if (
+        theme.includes('history') &&
+        (distractorLower.includes('war') ||
+          distractorLower.includes('president') ||
+          distractorLower.includes('year'))
+      ) {
         relevanceScore += 0.3
       }
       break
-      
+
     case 'senator':
     case 'representative':
     case 'governor':
@@ -111,7 +115,7 @@ export const validateSemanticRelevance = (
         relevanceScore -= 0.2
       }
       break
-      
+
     case 'capital':
       // Capitals should look like proper place names
       if (/^[A-Z]/.test(distractor) && !distractorLower.includes('the ')) {
@@ -122,16 +126,16 @@ export const validateSemanticRelevance = (
       }
       break
   }
-  
+
   // Penalize if distractor is too similar to question
   if (questionLower.includes(distractorLower) || distractorLower.includes(questionLower)) {
     reasons.push('Too similar to question text')
     relevanceScore -= 0.5
   }
-  
+
   const finalScore = Math.max(0, Math.min(1, relevanceScore))
   const isValid = finalScore >= 0.3 && reasons.length === 0
-  
+
   return {
     isValid,
     score: finalScore,
@@ -145,24 +149,24 @@ export const validateDistractorFormat = (
 ): ValidationResult => {
   const reasons: string[] = []
   let formatScore = 1.0
-  
+
   // Analyze format patterns in correct answers
-  const avgWordCount = correctAnswers.reduce((sum, answer) => 
-    sum + answer.split(' ').length, 0
-  ) / correctAnswers.length
-  const hasArticles = correctAnswers.some(answer => 
-    /^(the|a|an)\s/i.test(answer)
-  )
-  
+  const avgWordCount =
+    correctAnswers.reduce((sum, answer) => sum + answer.split(' ').length, 0) /
+    correctAnswers.length
+  const hasArticles = correctAnswers.some((answer) => /^(the|a|an)\s/i.test(answer))
+
   const distractorWordCount = distractor.split(' ').length
   const hasDistractorArticle = /^(the|a|an)\s/i.test(distractor)
-  
+
   // Check word count similarity - more lenient for testing
   if (Math.abs(distractorWordCount - avgWordCount) > avgWordCount) {
-    reasons.push(`Word count mismatch: ${distractorWordCount} vs average ${avgWordCount.toFixed(1)}`)
+    reasons.push(
+      `Word count mismatch: ${distractorWordCount} vs average ${avgWordCount.toFixed(1)}`
+    )
     formatScore -= 0.2
   }
-  
+
   // Check article consistency
   if (hasArticles && !hasDistractorArticle) {
     reasons.push('Missing article (the, a, an) when correct answers have them')
@@ -171,10 +175,10 @@ export const validateDistractorFormat = (
     reasons.push('Has article when correct answers do not')
     formatScore -= 0.1
   }
-  
+
   const finalScore = Math.max(0, formatScore)
   const isValid = finalScore >= 0.7
-  
+
   return {
     isValid,
     score: finalScore,
@@ -194,7 +198,7 @@ export const validateDistractor = (
     requireSemanticRelevance?: boolean
     requireFormatMatch?: boolean
   } = {}
-) => Effect.gen(function* () {
+): ValidationResult => {
   const {
     minLength = 3,
     maxLength = 200,
@@ -202,35 +206,35 @@ export const validateDistractor = (
     requireSemanticRelevance = true,
     requireFormatMatch = true
   } = options
-  
+
   const results: ValidationResult[] = []
-  
+
   // Length validation
   results.push(validateDistractorLength(distractor, minLength, maxLength))
-  
+
   // Completeness validation
   if (requireCompleteness) {
     results.push(validateDistractorCompleteness(distractor))
   }
-  
+
   // Semantic relevance validation
   if (requireSemanticRelevance) {
     results.push(validateSemanticRelevance(distractor, question))
   }
-  
+
   // Format validation
   if (requireFormatMatch) {
     results.push(validateDistractorFormat(distractor, correctAnswers))
   }
-  
+
   // Combine results
-  const allValid = results.every(result => result.isValid)
+  const allValid = results.every((result) => result.isValid)
   const avgScore = results.reduce((sum, result) => sum + result.score, 0) / results.length
-  const allReasons = results.flatMap(result => result.reasons)
-  
+  const allReasons = results.flatMap((result) => result.reasons)
+
   return {
     isValid: allValid,
     score: avgScore,
     reasons: allReasons
   }
-})
+}

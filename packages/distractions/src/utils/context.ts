@@ -25,23 +25,24 @@ export const RequestContextRef = FiberRef.unsafeMake<RequestContext>(DEFAULT_REQ
 export const withRequestContext = <A, E>(
   context: Partial<RequestContext>,
   operation: Effect.Effect<A, E>
-): Effect.Effect<A, E> => 
+): Effect.Effect<A, E> =>
   Effect.locallyWith(operation, RequestContextRef, (current: RequestContext) => ({
     ...current,
     ...context
   }))
 
 // Helper to get current context
-export const getCurrentContext = Effect.flatMap(
-  FiberRef.get(RequestContextRef),
-  (context) => Effect.succeed(context)
+export const getCurrentContext = Effect.flatMap(FiberRef.get(RequestContextRef), (context) =>
+  Effect.succeed(context)
 )
 
 // Enhanced logging with context
 export const logWithContext = (message: string) =>
   Effect.gen(function* () {
     const context = yield* FiberRef.get(RequestContextRef)
-    yield* Effect.log(`[Q${context.questionId}:${context.questionType}:${context.attemptNumber}] ${message}`)
+    yield* Effect.log(
+      `[Q${context.questionId}:${context.questionType}:${context.attemptNumber}] ${message}`
+    )
   })
 
 // Helper to update context within an effect

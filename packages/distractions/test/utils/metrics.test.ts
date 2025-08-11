@@ -38,7 +38,7 @@ describe('Metrics Utilities', () => {
     it('should increment success metric on success', async () => {
       const successMetric = Metric.counter('test_success', { description: 'Test success counter' })
       const failureMetric = Metric.counter('test_failure', { description: 'Test failure counter' })
-      
+
       const successfulOperation = Effect.succeed('success')
 
       await Effect.gen(function* () {
@@ -48,13 +48,19 @@ describe('Metrics Utilities', () => {
     })
 
     it('should increment failure metric on failure', async () => {
-      const successMetric = Metric.counter('test_success_2', { description: 'Test success counter' })
-      const failureMetric = Metric.counter('test_failure_2', { description: 'Test failure counter' })
-      
+      const successMetric = Metric.counter('test_success_2', {
+        description: 'Test success counter'
+      })
+      const failureMetric = Metric.counter('test_failure_2', {
+        description: 'Test failure counter'
+      })
+
       const failingOperation = Effect.fail(new Error('test error'))
 
       await Effect.gen(function* () {
-        const result = yield* Effect.either(trackOperation(successMetric, failureMetric, failingOperation))
+        const result = yield* Effect.either(
+          trackOperation(successMetric, failureMetric, failingOperation)
+        )
         expect(result._tag).toBe('Left')
       }).pipe(Effect.runPromise)
     })

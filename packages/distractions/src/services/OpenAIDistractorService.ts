@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Effect, Layer, Config } from 'effect'
 import * as Metric from 'effect/Metric'
 import * as Cache from 'effect/Cache'
@@ -113,9 +112,7 @@ For capital city questions:
 }
 
 // Core function for generating distractors via OpenAI (following coding guide)
-export const generateDistractorsWithOpenAI = (
-  cache?: Cache.Cache<string, OpenAIResponse>
-) =>
+export const generateDistractorsWithOpenAI = (cache?: Cache.Cache<string, OpenAIResponse>) =>
   Effect.fn(function* (request: OpenAIRequest) {
     // Track total OpenAI requests
     yield* Metric.increment(DistractorMetrics.openaiRequestsTotal)
@@ -146,154 +143,159 @@ const generateDistractorsUncachedWithMetrics = (request: OpenAIRequest) =>
 
 // Uncached generation function (separated for caching)
 const generateDistractorsUncached = (request: OpenAIRequest) =>
-  Effect.scoped(Effect.gen(function* () {
-    const client = yield* createOpenAIClient()()
-    const model = yield* OpenAIModel
-    const temperature = yield* OpenAITemperature
-    const maxTokens = yield* OpenAIMaxTokens
-    const requestsPerMinute = yield* OpenAIRequestsPerMinute
+  Effect.scoped(
+    Effect.gen(function* () {
+      const client = yield* createOpenAIClient()()
+      const model = yield* OpenAIModel
+      const temperature = yield* OpenAITemperature
+      const maxTokens = yield* OpenAIMaxTokens
+      const requestsPerMinute = yield* OpenAIRequestsPerMinute
 
-    // Create rate limiter for this service instance
-    const rateLimiter = yield* createOpenAIRateLimiter(requestsPerMinute)
+      // Create rate limiter for this service instance
+      const rateLimiter = yield* createOpenAIRateLimiter(requestsPerMinute)
 
-    yield* Effect.log(
-      `Generating ${request.targetCount} distractors for question: ${request.question.slice(0, 50)}... (rate limited to ${requestsPerMinute}/min)`
-    )
+      yield* Effect.log(
+        `Generating ${request.targetCount} distractors for question: ${request.question.slice(0, 50)}... (rate limited to ${requestsPerMinute}/min)`
+      )
 
-    const prompt = buildPrompt(request)
+      const prompt = buildPrompt(request)
 
-    // Wrap the API call with rate limiting
-    const rateLimitedAPICall = withRateLimit(
-      rateLimiter,
-      Effect.gen(function* () {
-        const startTime = Date.now()
+      // Wrap the API call with rate limiting
+      const rateLimitedAPICall = withRateLimit(
+        rateLimiter,
+        Effect.gen(function* () {
+          const startTime = Date.now()
 
-        const completion = yield* Effect.tryPromise({
-          try: () =>
-            client.chat.completions.create({
-              model,
-              messages: [
-                {
-                  role: 'system',
-                  content:
-                    'You are an expert educational content creator specializing in U.S. Civics assessments. Always respond with valid JSON arrays only.'
-                },
-                {
-                  role: 'user',
-                  content: prompt
+          const completion = yield* Effect.tryPromise({
+            try: () =>
+              client.chat.completions.create({
+                model,
+                messages: [
+                  {
+                    role: 'system',
+                    content:
+                      'You are an expert educational content creator specializing in U.S. Civics assessments. Always respond with valid JSON arrays only.'
+                  },
+                  {
+                    role: 'user',
+                    content: prompt
+                  }
+                ],
+                temperature,
+                max_tokens: maxTokens,
+                response_format: { type: 'json_object' }
+              }),
+            catch: (error) => {
+              if (error instanceof Error) {
+                // Handle specific OpenAI API errors
+                if (error.message.includes('rate limit')) {
+                  return new OpenAIRateLimitError({ cause: error })
                 }
-              ],
-              temperature,
-              max_tokens: maxTokens,
-              response_format: { type: 'json_object' }
-            }),
-          catch: (error) => {
-            if (error instanceof Error) {
-              // Handle specific OpenAI API errors
-              if (error.message.includes('rate limit')) {
-                return new OpenAIRateLimitError({ cause: error })
+                if (
+                  error.message.includes('authentication') ||
+                  error.message.includes('invalid_api_key')
+                ) {
+                  return new OpenAIAuthError({
+                    cause: error,
+                    message: error.message ?? 'OpenAI authentication failed'
+                  })
+                }
+                if (error.message.includes('timeout')) {
+                  return new OpenAITimeoutError({ cause: error, timeoutMs: 30000 })
+                }
               }
-              if (
-                error.message.includes('authentication') ||
-                error.message.includes('invalid_api_key')
-              ) {
-                return new OpenAIAuthError({ cause: error, message: error.message ?? 'OpenAI authentication failed' })
-              }
-              if (error.message.includes('timeout')) {
-                return new OpenAITimeoutError({ cause: error, timeoutMs: 30000 })
-              }
+              return new OpenAIError({
+                cause: error instanceof Error ? error : new Error(String(error))
+              })
             }
-            return new OpenAIError({
-              cause: error instanceof Error ? error : new Error(String(error))
-            })
+          })
+
+          const responseTime = Date.now() - startTime
+          const tokensUsed = completion.usage?.total_tokens ?? 0
+
+          // Parse the response content
+          const content = completion.choices[0]?.message?.content
+          if (content === undefined || content === null || content === '') {
+            return yield* Effect.fail(
+              new OpenAIError({ cause: new Error('Empty response from OpenAI') })
+            )
           }
+
+          const parsedResponse = yield* Effect.tryPromise({
+            try: () => Promise.resolve(JSON.parse(content)),
+            catch: () => new OpenAIError({ cause: new Error('Invalid JSON response from OpenAI') })
+          })
+
+          // Extract distractors array - handle different possible response formats
+          let distractors: string[]
+          if (Array.isArray(parsedResponse) === true) {
+            distractors = parsedResponse
+          } else if (
+            parsedResponse.distractors !== undefined &&
+            Array.isArray(parsedResponse.distractors) === true
+          ) {
+            distractors = parsedResponse.distractors
+          } else if (
+            parsedResponse.answers !== undefined &&
+            Array.isArray(parsedResponse.answers) === true
+          ) {
+            distractors = parsedResponse.answers
+          } else {
+            return yield* Effect.fail(
+              new OpenAIError({
+                cause: new Error('Response does not contain a valid distractors array')
+              })
+            )
+          }
+
+          // Validate distractors
+          if (Array.isArray(distractors) === false || distractors.length === 0) {
+            return yield* Effect.fail(
+              new OpenAIError({
+                cause: new Error('No valid distractors found in response')
+              })
+            )
+          }
+
+          // Filter to strings only and trim whitespace
+          const validDistractors = distractors
+            .filter((d): d is string => typeof d === 'string')
+            .map((d) => d.trim())
+            .filter((d) => d.length > 0)
+
+          if (validDistractors.length === 0) {
+            return yield* Effect.fail(
+              new OpenAIError({
+                cause: new Error('No valid string distractors found in response')
+              })
+            )
+          }
+
+          // Calculate confidence based on response quality indicators
+          const confidence = Math.min(
+            0.95,
+            Math.max(0.5, (validDistractors.length / request.targetCount) * 0.9)
+          )
+
+          // Track metrics for generated distractors
+          yield* Metric.incrementBy(DistractorMetrics.distractorsGenerated, validDistractors.length)
+          yield* Metric.update(DistractorMetrics.distractorQualityScore, confidence)
+
+          yield* Effect.log(
+            `Generated ${validDistractors.length} distractors in ${responseTime}ms using ${tokensUsed} tokens (confidence: ${confidence})`
+          )
+
+          return yield* Effect.succeed({
+            distractors: validDistractors.slice(0, request.targetCount),
+            confidence,
+            tokensUsed
+          })
         })
+      )
 
-        const responseTime = Date.now() - startTime
-        const tokensUsed = completion.usage?.total_tokens ?? 0
-
-        // Parse the response content
-        const content = completion.choices[0]?.message?.content
-        if (content === undefined || content === null || content === '') {
-          return yield* Effect.fail(
-            new OpenAIError({ cause: new Error('Empty response from OpenAI') })
-          )
-        }
-
-        const parsedResponse = yield* Effect.tryPromise({
-          try: () => Promise.resolve(JSON.parse(content)),
-          catch: () => new OpenAIError({ cause: new Error('Invalid JSON response from OpenAI') })
-        })
-
-        // Extract distractors array - handle different possible response formats
-        let distractors: string[]
-        if (Array.isArray(parsedResponse) === true) {
-          distractors = parsedResponse
-        } else if (
-          parsedResponse.distractors !== undefined &&
-          Array.isArray(parsedResponse.distractors) === true
-        ) {
-          distractors = parsedResponse.distractors
-        } else if (
-          parsedResponse.answers !== undefined &&
-          Array.isArray(parsedResponse.answers) === true
-        ) {
-          distractors = parsedResponse.answers
-        } else {
-          return yield* Effect.fail(
-            new OpenAIError({
-              cause: new Error('Response does not contain a valid distractors array')
-            })
-          )
-        }
-
-        // Validate distractors
-        if (Array.isArray(distractors) === false || distractors.length === 0) {
-          return yield* Effect.fail(
-            new OpenAIError({
-              cause: new Error('No valid distractors found in response')
-            })
-          )
-        }
-
-        // Filter to strings only and trim whitespace
-        const validDistractors = distractors
-          .filter((d): d is string => typeof d === 'string')
-          .map((d) => d.trim())
-          .filter((d) => d.length > 0)
-
-        if (validDistractors.length === 0) {
-          return yield* Effect.fail(
-            new OpenAIError({
-              cause: new Error('No valid string distractors found in response')
-            })
-          )
-        }
-
-        // Calculate confidence based on response quality indicators
-        const confidence = Math.min(
-          0.95,
-          Math.max(0.5, (validDistractors.length / request.targetCount) * 0.9)
-        )
-
-        // Track metrics for generated distractors
-        yield* Metric.incrementBy(DistractorMetrics.distractorsGenerated, validDistractors.length)
-        yield* Metric.update(DistractorMetrics.distractorQualityScore, confidence)
-
-        yield* Effect.log(
-          `Generated ${validDistractors.length} distractors in ${responseTime}ms using ${tokensUsed} tokens (confidence: ${confidence})`
-        )
-
-        return yield* Effect.succeed({
-          distractors: validDistractors.slice(0, request.targetCount),
-          confidence,
-          tokensUsed
-        })
-      })
-    )
-
-    return yield* rateLimitedAPICall
-  }))
+      return yield* rateLimitedAPICall
+    })
+  )
 
 // Function to create OpenAI request from question (following coding guide)
 // Helper function to extract answer text from complex answer choices

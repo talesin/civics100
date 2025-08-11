@@ -38,7 +38,7 @@ describe('QuestionClassifierService', () => {
         section: 'System of Government',
         questionNumber: 4,
         expectedAnswers: 1,
-        question: 'Who is one of your state\'s U.S. Senators now?',
+        question: "Who is one of your state's U.S. Senators now?",
         answers: { _type: 'senator', choices: [{ senator: 'Alex Padilla', state: 'CA' }] }
       }
     }
@@ -56,10 +56,15 @@ describe('QuestionClassifierService', () => {
     await Effect.gen(function* () {
       const service = yield* QuestionClassifierService
 
-      expect(service.classifyQuestion(questions['president']!)).toBe('president')
-      expect(service.classifyQuestion(questions['war']!)).toBe('war')
-      expect(service.classifyQuestion(questions['document']!)).toBe('document')
-      expect(service.classifyQuestion(questions['senator']!)).toBe('senator')
+      const presidentQ = questions['president']
+      const warQ = questions['war']
+      const documentQ = questions['document']
+      const senatorQ = questions['senator']
+
+      if (presidentQ) expect(service.classifyQuestion(presidentQ)).toBe('president')
+      if (warQ) expect(service.classifyQuestion(warQ)).toBe('war')
+      if (documentQ) expect(service.classifyQuestion(documentQ)).toBe('document')
+      if (senatorQ) expect(service.classifyQuestion(senatorQ)).toBe('senator')
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 })

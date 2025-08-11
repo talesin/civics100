@@ -25,16 +25,24 @@ export const DEFAULT_GENERATION_OPTIONS: DistractorGenerationOptions = {
 } as const
 
 // Basic validation helpers (replace with @effect/schema when available)
-export const validateGenerationOptions = (options: Partial<DistractorGenerationOptions>): DistractorGenerationOptions => {
+export const validateGenerationOptions = (
+  options: Partial<DistractorGenerationOptions>
+): DistractorGenerationOptions => {
   return {
     regenAll: options.regenAll ?? DEFAULT_GENERATION_OPTIONS.regenAll,
     regenIncomplete: options.regenIncomplete ?? DEFAULT_GENERATION_OPTIONS.regenIncomplete,
-    targetCount: Math.max(5, Math.min(20, options.targetCount ?? DEFAULT_GENERATION_OPTIONS.targetCount)),
+    targetCount: Math.max(
+      5,
+      Math.min(20, options.targetCount ?? DEFAULT_GENERATION_OPTIONS.targetCount)
+    ),
     filterSimilar: options.filterSimilar ?? DEFAULT_GENERATION_OPTIONS.filterSimilar,
     checkAnswers: options.checkAnswers ?? DEFAULT_GENERATION_OPTIONS.checkAnswers,
     useOpenAI: options.useOpenAI ?? DEFAULT_GENERATION_OPTIONS.useOpenAI,
     batchSize: Math.max(1, Math.min(50, options.batchSize ?? DEFAULT_GENERATION_OPTIONS.batchSize)),
-    maxRetries: Math.max(1, Math.min(10, options.maxRetries ?? DEFAULT_GENERATION_OPTIONS.maxRetries))
+    maxRetries: Math.max(
+      1,
+      Math.min(10, options.maxRetries ?? DEFAULT_GENERATION_OPTIONS.maxRetries)
+    )
   }
 }
 
@@ -107,7 +115,7 @@ export const DEFAULT_CACHE_CONFIG: CacheConfiguration = {
   cacheDirectory: '.cache/openai'
 } as const
 
-// Environment validation helper  
+// Environment validation helper
 export const validateEnvironmentConfig = (env: NodeJS.ProcessEnv) => {
   const config = {
     OPENAI_API_KEY: env['OPENAI_API_KEY'] ?? '',
@@ -117,7 +125,7 @@ export const validateEnvironmentConfig = (env: NodeJS.ProcessEnv) => {
     ENABLE_METRICS: env['ENABLE_METRICS'] !== 'false',
     CACHE_ENABLED: env['CACHE_ENABLED'] !== 'false'
   }
-  
+
   return config
 }
 

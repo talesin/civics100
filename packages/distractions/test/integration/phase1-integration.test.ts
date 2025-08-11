@@ -1,15 +1,12 @@
 import { Effect } from 'effect'
-import { 
+import {
   OpenAIDistractorService,
-  TestOpenAIDistractorServiceLayer 
+  TestOpenAIDistractorServiceLayer
 } from '../../src/services/OpenAIDistractorService'
-import { 
-  SimilarityService,
-  TestSimilarityServiceLayer 
-} from '../../src/services/SimilarityService'
-import { 
+import { SimilarityService, TestSimilarityServiceLayer } from '../../src/services/SimilarityService'
+import {
   DistractorQualityService,
-  TestDistractorQualityServiceLayer 
+  TestDistractorQualityServiceLayer
 } from '../../src/services/DistractorQualityService'
 import { loadSystemConfiguration } from '../../src/config'
 import type { Question } from 'civics2json'
@@ -30,11 +27,12 @@ describe('Phase 1 Integration Tests', () => {
   describe('Service Integration', () => {
     it('should integrate OpenAI and Quality services', async () => {
       const openaiLayer = TestOpenAIDistractorServiceLayer({
-        generateDistractors: () => Effect.succeed({
-          distractors: ['Bill of Rights', 'Declaration of Independence', 'Magna Carta'],
-          confidence: 0.8,
-          tokensUsed: 100
-        })
+        generateDistractors: () =>
+          Effect.succeed({
+            distractors: ['Bill of Rights', 'Declaration of Independence', 'Magna Carta'],
+            confidence: 0.8,
+            tokensUsed: 100
+          })
       })
 
       const similarityLayer = TestSimilarityServiceLayer({
@@ -42,7 +40,8 @@ describe('Phase 1 Integration Tests', () => {
       })
 
       const qualityLayer = TestDistractorQualityServiceLayer({
-        applyEnhancedQualityFilters: () => Effect.succeed(['Bill of Rights', 'Declaration of Independence'])
+        applyEnhancedQualityFilters: () =>
+          Effect.succeed(['Bill of Rights', 'Declaration of Independence'])
       })
 
       await Effect.gen(function* () {
@@ -68,10 +67,7 @@ describe('Phase 1 Integration Tests', () => {
         expect(filtered).toHaveLength(2)
 
         // Test similarity filtering
-        const deduplicated = yield* similarityService.removeSimilar(
-          filtered,
-          ['the Constitution']
-        )
+        const deduplicated = yield* similarityService.removeSimilar(filtered, ['the Constitution'])
         expect(deduplicated).toHaveLength(2)
       }).pipe(
         Effect.provide(openaiLayer),
@@ -86,7 +82,7 @@ describe('Phase 1 Integration Tests', () => {
     it('should load configuration with defaults when env vars missing', async () => {
       // This test requires careful setup of environment variables
       // For Phase 1, we test the structure exists
-      
+
       const mockEnv = {
         OPENAI_API_KEY: 'sk-test-key-12345',
         NODE_ENV: 'test',
@@ -100,13 +96,13 @@ describe('Phase 1 Integration Tests', () => {
       try {
         await Effect.gen(function* () {
           const config = yield* loadSystemConfiguration()
-          
+
           expect(config.generation).toBeDefined()
-          expect(config.quality).toBeDefined()  
+          expect(config.quality).toBeDefined()
           expect(config.openai).toBeDefined()
           expect(config.metrics).toBeDefined()
           expect(config.cache).toBeDefined()
-          
+
           expect(config.openai.apiKey).toBe('sk-test-key-12345')
           expect(config.generation.targetCount).toBe(15)
           expect(config.metrics.logLevel).toBe('info')
@@ -129,19 +125,19 @@ describe('Phase 1 Integration Tests', () => {
 
       expect(senators.usSenators).toBeDefined()
       expect(senators.usSenators.length).toBeGreaterThan(50)
-      
+
       expect(representatives.usRepresentatives).toBeDefined()
       expect(representatives.usRepresentatives.length).toBeGreaterThan(100)
-      
+
       expect(governors.usGovernors).toBeDefined()
       expect(governors.usGovernors.length).toBeGreaterThan(40)
-      
+
       expect(capitals.usCapitals).toBeDefined()
       expect(capitals.usCapitals.length).toBeGreaterThan(45) // Allow for variation
-      
+
       expect(presidents.usPresidents).toBeDefined()
       expect(presidents.usPresidents.length).toBeGreaterThan(40)
-      
+
       expect(states.usStates).toBeDefined()
       expect(states.usStates.length).toBe(50)
       expect(states.usStateAbbreviations).toBeDefined()
@@ -151,11 +147,11 @@ describe('Phase 1 Integration Tests', () => {
     it('should have properly formatted data', async () => {
       const senators = await import('../../src/data/pools/senators')
       const representatives = await import('../../src/data/pools/representatives')
-      
+
       // Check senator format: "Name (ST-Party)"
       const firstSenator = senators.usSenators[0]
       expect(firstSenator).toMatch(/^[\w\s.']+\s\([A-Z]{2}-[A-Z]\)$/)
-      
+
       // Check representative format: "Name (ST-District)"
       const firstRep = representatives.usRepresentatives[0]
       expect(firstRep).toMatch(/^[\w\s.']+\s\([A-Z]{2}-.+\)$/)

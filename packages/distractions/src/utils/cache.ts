@@ -16,11 +16,12 @@ export const createOpenAIResponseCache = (maxSize: number = 1000, ttlHours: numb
   Cache.make({
     capacity: maxSize,
     timeToLive: Duration.hours(ttlHours),
-    lookup: (key: string) => Effect.succeed({
-      distractors: [`Cache miss for ${key}`],
-      confidence: 0.0,
-      tokensUsed: 0
-    } as OpenAIResponse)
+    lookup: (key: string) =>
+      Effect.succeed({
+        distractors: [`Cache miss for ${key}`],
+        confidence: 0.0,
+        tokensUsed: 0
+      } as OpenAIResponse)
   })
 
 // Create cache for distractor validation results
@@ -32,10 +33,8 @@ export const createValidationCache = (maxSize: number = 500, ttlMinutes: number 
   })
 
 // Wrapper for cached operations
-export const withCache = <K, A, E>(
-  cache: Cache.Cache<K, A, E>,
-  key: K
-): Effect.Effect<A, E> => cache.get(key)
+export const withCache = <K, A, E>(cache: Cache.Cache<K, A, E>, key: K): Effect.Effect<A, E> =>
+  cache.get(key)
 
 // Cache management helpers
 export const clearCache = <K, A>(cache: Cache.Cache<K, A>, key: K) => cache.refresh(key)
@@ -46,7 +45,7 @@ export const getCacheStats = <K, A, E>(cache: Cache.Cache<K, A, E>) =>
     return {
       hits: stats.hits,
       misses: stats.misses,
-      size: (stats.hits + stats.misses) // CacheStats doesn't have entryCount property
+      size: stats.hits + stats.misses // CacheStats doesn't have entryCount property
     }
   })
 

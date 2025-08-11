@@ -23,7 +23,8 @@ export const DEFAULT_SIMILARITY_THRESHOLDS: SimilarityThresholds = {
 }
 
 // Core function with dependency injection via currying (following coding guide)
-export const calculateSimilarityScore = () =>
+export const calculateSimilarityScore =
+  () =>
   (text1: string, text2: string): Effect.Effect<number, SimilarityError> =>
     Effect.try({
       try: () => {
@@ -46,76 +47,84 @@ export const calculateSimilarityScore = () =>
         })
     })
 
-export const isSimilar = (threshold: number = 0.4) =>
+export const isSimilar =
+  (threshold: number = 0.4) =>
   (answer: string, distractor: string): Effect.Effect<boolean, SimilarityError> =>
     Effect.gen(function* () {
       const score = yield* calculateSimilarityScore()(answer, distractor)
       return score > threshold
     })
 
-export const removeSimilarDistractors = (
-  thresholds: SimilarityThresholds = DEFAULT_SIMILARITY_THRESHOLDS
-) =>
+export const removeSimilarDistractors =
+  (thresholds: SimilarityThresholds = DEFAULT_SIMILARITY_THRESHOLDS) =>
   (distractors: string[], correctAnswers: string[]): Effect.Effect<string[], SimilarityError> =>
     Effect.gen(function* () {
-    const filtered: string[] = []
+      const filtered: string[] = []
 
-    for (const distractor of distractors) {
-      let isTooSimilar = false
+      for (const distractor of distractors) {
+        let isTooSimilar = false
 
-      // Check similarity against correct answers
-      for (const correctAnswer of correctAnswers) {
-        const score = yield* calculateSimilarityScore()(distractor.toLowerCase(), correctAnswer.toLowerCase())
-        if (score > thresholds.correctAnswerSimilarity) {
-          isTooSimilar = true
-          break
-        }
-      }
-
-      // Check similarity against already accepted distractors
-      if (!isTooSimilar) {
-        for (const existing of filtered) {
-          const score = yield* calculateSimilarityScore()(distractor.toLowerCase(), existing.toLowerCase())
-          if (score > thresholds.distractorSimilarity) {
+        // Check similarity against correct answers
+        for (const correctAnswer of correctAnswers) {
+          const score = yield* calculateSimilarityScore()(
+            distractor.toLowerCase(),
+            correctAnswer.toLowerCase()
+          )
+          if (score > thresholds.correctAnswerSimilarity) {
             isTooSimilar = true
             break
           }
         }
-      }
 
-      if (!isTooSimilar) {
-        filtered.push(distractor)
-      }
-    }
+        // Check similarity against already accepted distractors
+        if (!isTooSimilar) {
+          for (const existing of filtered) {
+            const score = yield* calculateSimilarityScore()(
+              distractor.toLowerCase(),
+              existing.toLowerCase()
+            )
+            if (score > thresholds.distractorSimilarity) {
+              isTooSimilar = true
+              break
+            }
+          }
+        }
 
-    return filtered
-  })
-
-export const deduplicateDistractors = (
-  thresholds: SimilarityThresholds = DEFAULT_SIMILARITY_THRESHOLDS
-) =>
-  (distractors: string[]): Effect.Effect<string[], SimilarityError> =>
-    Effect.gen(function* () {
-    const unique: string[] = []
-
-    for (const distractor of distractors) {
-      let isDuplicate = false
-
-      for (const existing of unique) {
-        const score = yield* calculateSimilarityScore()(distractor.toLowerCase(), existing.toLowerCase())
-        if (score > thresholds.distractorSimilarity) {
-          isDuplicate = true
-          break
+        if (!isTooSimilar) {
+          filtered.push(distractor)
         }
       }
 
-      if (!isDuplicate) {
-        unique.push(distractor)
-      }
-    }
+      return filtered
+    })
 
-    return unique
-  })
+export const deduplicateDistractors =
+  (thresholds: SimilarityThresholds = DEFAULT_SIMILARITY_THRESHOLDS) =>
+  (distractors: string[]): Effect.Effect<string[], SimilarityError> =>
+    Effect.gen(function* () {
+      const unique: string[] = []
+
+      for (const distractor of distractors) {
+        let isDuplicate = false
+
+        for (const existing of unique) {
+          const score = yield* calculateSimilarityScore()(
+            distractor.toLowerCase(),
+            existing.toLowerCase()
+          )
+          if (score > thresholds.distractorSimilarity) {
+            isDuplicate = true
+            break
+          }
+        }
+
+        if (!isDuplicate) {
+          unique.push(distractor)
+        }
+      }
+
+      return unique
+    })
 
 // Service class - minimal configuration (following coding guide)
 export class SimilarityService extends Effect.Service<SimilarityService>()('SimilarityService', {
@@ -131,16 +140,24 @@ export class SimilarityService extends Effect.Service<SimilarityService>()('Simi
 export const TestSimilarityServiceLayer = (fn?: {
   calculateSimilarity?: (text1: string, text2: string) => Effect.Effect<number, SimilarityError>
   isSimilar?: (answer: string, distractor: string) => Effect.Effect<boolean, SimilarityError>
-  removeSimilar?: (distractors: string[], correctAnswers: string[]) => Effect.Effect<string[], SimilarityError>
+  removeSimilar?: (
+    distractors: string[],
+    correctAnswers: string[]
+  ) => Effect.Effect<string[], SimilarityError>
   deduplicate?: (distractors: string[]) => Effect.Effect<string[], SimilarityError>
 }) =>
   Layer.succeed(
     SimilarityService,
     SimilarityService.of({
       _tag: 'SimilarityService',
-      calculateSimilarity: fn?.calculateSimilarity ?? ((_text1: string, _text2: string) => Effect.succeed(0.5)),
+      calculateSimilarity:
+        fn?.calculateSimilarity ?? ((_text1: string, _text2: string) => Effect.succeed(0.5)),
       isSimilar: fn?.isSimilar ?? ((_answer: string, _distractor: string) => Effect.succeed(false)),
-      removeSimilar: fn?.removeSimilar ?? ((_distractors: string[], _correctAnswers: string[]) => Effect.succeed(['mock filtered distractor'])),
-      deduplicate: fn?.deduplicate ?? ((_distractors: string[]) => Effect.succeed(['mock unique distractor']))
+      removeSimilar:
+        fn?.removeSimilar ??
+        ((_distractors: string[], _correctAnswers: string[]) =>
+          Effect.succeed(['mock filtered distractor'])),
+      deduplicate:
+        fn?.deduplicate ?? ((_distractors: string[]) => Effect.succeed(['mock unique distractor']))
     })
   )

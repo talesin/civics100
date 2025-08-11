@@ -1,10 +1,11 @@
 import { Config, Effect } from 'effect'
-import { 
+import {
   DEFAULT_GENERATION_OPTIONS,
   DEFAULT_QUALITY_THRESHOLDS,
   DEFAULT_METRICS_CONFIG,
   DEFAULT_CACHE_CONFIG
 } from './types/config'
+import { ConfigurationError, MissingEnvironmentVariableError } from './types/errors'
 
 // Environment variable configuration with Effect Config
 const OpenAIApiKey = Config.string('OPENAI_API_KEY')
@@ -18,7 +19,9 @@ const CacheEnabled = Config.boolean('CACHE_ENABLED').pipe(Config.withDefault(tru
 const OpenAIModel = Config.string('OPENAI_MODEL').pipe(Config.withDefault('gpt-4o-mini'))
 const OpenAITemperature = Config.number('OPENAI_TEMPERATURE').pipe(Config.withDefault(0.7))
 const OpenAIMaxTokens = Config.integer('OPENAI_MAX_TOKENS').pipe(Config.withDefault(1000))
-const OpenAIRequestsPerMinute = Config.integer('OPENAI_REQUESTS_PER_MINUTE').pipe(Config.withDefault(60))
+const OpenAIRequestsPerMinute = Config.integer('OPENAI_REQUESTS_PER_MINUTE').pipe(
+  Config.withDefault(60)
+)
 const OpenAITimeoutMs = Config.integer('OPENAI_TIMEOUT_MS').pipe(Config.withDefault(30000))
 
 // Load OpenAI configuration from environment (following coding guide)
@@ -30,17 +33,19 @@ export const loadOpenAIConfig = () =>
     const maxTokens = yield* OpenAIMaxTokens
     const requestsPerMinute = yield* OpenAIRequestsPerMinute
     const timeoutMs = yield* OpenAITimeoutMs
-    
+
     // Validate API key
     if (apiKey === undefined || apiKey === null || apiKey.trim().length === 0) {
-      return yield* Effect.fail(new (require('./types/errors').ConfigurationError)({
-        cause: new Error('Missing API key'),
-        setting: 'OPENAI_API_KEY',
-        value: apiKey,
-        reason: 'API key is required for OpenAI integration'
-      }))
+      return yield* Effect.fail(
+        new ConfigurationError({
+          cause: new Error('Missing API key'),
+          setting: 'OPENAI_API_KEY',
+          value: apiKey,
+          reason: 'API key is required for OpenAI integration'
+        })
+      )
     }
-    
+
     return {
       apiKey,
       model,
@@ -56,7 +61,7 @@ export const loadGenerationOptions = () =>
   Effect.gen(function* () {
     const targetCount = yield* DistractorTargetCount
     const nodeEnv = yield* NodeEnv
-    
+
     return {
       ...DEFAULT_GENERATION_OPTIONS,
       targetCount: Math.max(5, Math.min(20, targetCount)), // Clamp to 5-20
@@ -69,7 +74,7 @@ export const loadGenerationOptions = () =>
 export const loadQualityThresholds = () =>
   Effect.gen(function* () {
     const nodeEnv = yield* NodeEnv
-    
+
     // Adjust thresholds based on environment
     const baseThresholds = DEFAULT_QUALITY_THRESHOLDS
     if (nodeEnv === 'development') {
@@ -79,17 +84,17 @@ export const loadQualityThresholds = () =>
         plausibility: baseThresholds.plausibility * 0.8
       }
     }
-    
+
     return baseThresholds
   })
 
-// Load metrics configuration from environment (following coding guide)  
+// Load metrics configuration from environment (following coding guide)
 export const loadMetricsConfig = () =>
   Effect.gen(function* () {
     const enableMetrics = yield* EnableMetrics
     const logLevel = yield* LogLevel
     const nodeEnv = yield* NodeEnv
-    
+
     return {
       ...DEFAULT_METRICS_CONFIG,
       enableMetrics,
@@ -104,14 +109,15 @@ export const loadCacheConfig = () =>
   Effect.gen(function* () {
     const cacheEnabled = yield* CacheEnabled
     const nodeEnv = yield* NodeEnv
-    
+
     return {
       ...DEFAULT_CACHE_CONFIG,
       enabled: cacheEnabled,
       maxSize: nodeEnv === 'development' ? 500 : 1000,
-      ttlMs: nodeEnv === 'development' 
-        ? 5 * 60 * 1000  // 5 minutes in development
-        : DEFAULT_CACHE_CONFIG.ttlMs, // 24 hours in production
+      ttlMs:
+        nodeEnv === 'development'
+          ? 5 * 60 * 1000 // 5 minutes in development
+          : DEFAULT_CACHE_CONFIG.ttlMs, // 24 hours in production
       persistToDisk: nodeEnv !== 'test'
     }
   })
@@ -124,9 +130,9 @@ export const loadSystemConfiguration = () =>
     const openai = yield* loadOpenAIConfig()
     const metrics = yield* loadMetricsConfig()
     const cache = yield* loadCacheConfig()
-    
+
     yield* Effect.log('System configuration loaded successfully')
-    
+
     return {
       generation,
       quality,
@@ -141,23 +147,28 @@ export const validateEnvironment = () =>
   Effect.gen(function* () {
     // Validate required environment variables
     const requiredVars = ['OPENAI_API_KEY']
-    
+
     for (const varName of requiredVars) {
       const value = process.env[varName]
       if (value === undefined || value === null || value.trim().length === 0) {
-        return yield* Effect.fail(new (require('./types/errors').MissingEnvironmentVariableError)({
-          variable: varName,
-          required: true
-        }))
+        return yield* Effect.fail(
+          new MissingEnvironmentVariableError({
+            variable: varName,
+            required: true
+          })
+        )
       }
     }
-    
+
     // Validate optional but important variables
     const nodeEnv = process.env['NODE_ENV']
-    if (nodeEnv !== undefined && ['development', 'production', 'test'].includes(nodeEnv) === false) {
+    if (
+      nodeEnv !== undefined &&
+      ['development', 'production', 'test'].includes(nodeEnv) === false
+    ) {
       yield* Effect.log(`Warning: Unexpected NODE_ENV value: ${nodeEnv}`)
     }
-    
+
     yield* Effect.log('Environment validation completed')
   })
 
@@ -166,12 +177,14 @@ export const createValidatedConfiguration = () =>
   Effect.gen(function* () {
     // First validate environment
     yield* validateEnvironment()
-    
+
     // Then load configuration
     const config = yield* loadSystemConfiguration()
-    
+
     // Log configuration summary (without sensitive data)
-    yield* Effect.log(`Configuration loaded: OpenAI model=${config.openai.model}, target count=${config.generation.targetCount}`)
-    
+    yield* Effect.log(
+      `Configuration loaded: OpenAI model=${config.openai.model}, target count=${config.generation.targetCount}`
+    )
+
     return config
   })

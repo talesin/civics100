@@ -27,14 +27,11 @@ export const createProductionRateLimiter = () =>
 export const withRateLimit = <A, E, R>(
   limiter: RateLimiter.RateLimiter,
   operation: Effect.Effect<A, E, R>
-): Effect.Effect<A, E, R> => 
-  limiter(operation)
+): Effect.Effect<A, E, R> => limiter(operation)
 
 // Helper to create environment-appropriate rate limiter
 export const createEnvironmentRateLimiter = (nodeEnv: string = 'development') =>
-  nodeEnv === 'production' 
-    ? createProductionRateLimiter()
-    : createDevelopmentRateLimiter()
+  nodeEnv === 'production' ? createProductionRateLimiter() : createDevelopmentRateLimiter()
 
 // Batch processing with rate limiting
 export const rateLimitedBatch = <A, B, E>(

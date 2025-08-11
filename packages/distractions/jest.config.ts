@@ -3,6 +3,16 @@ export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
+  
+  // Only run tests from source files, exclude dist
+  testMatch: [
+    '<rootDir>/test/**/*.test.ts'
+  ],
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/'
+  ],
+  
   moduleNameMapper: {
     '^civics2json/Questions$': '<rootDir>/../civics2json/src/Questions.ts',
     '^civics2json$': '<rootDir>/../civics2json/src/types.ts',

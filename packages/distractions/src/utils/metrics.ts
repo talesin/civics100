@@ -27,15 +27,18 @@ export const DistractorMetrics = {
   }),
 
   // Histogram metrics (using simple boundaries for now)
-  openaiResponseTime: Metric.histogram('openai_response_time_ms', 
+  openaiResponseTime: Metric.histogram(
+    'openai_response_time_ms',
     MetricBoundaries.exponential({ start: 1, factor: 2, count: 10 })
   ),
 
-  distractorQualityScore: Metric.histogram('distractor_quality_score', 
+  distractorQualityScore: Metric.histogram(
+    'distractor_quality_score',
     MetricBoundaries.linear({ start: 0, width: 0.1, count: 10 })
   ),
 
-  questionProcessingTime: Metric.histogram('question_processing_time_ms', 
+  questionProcessingTime: Metric.histogram(
+    'question_processing_time_ms',
     MetricBoundaries.exponential({ start: 10, factor: 2, count: 12 })
   ),
 
@@ -70,7 +73,7 @@ export const trackOperation = <A, E>(
 ): Effect.Effect<A, E> =>
   Effect.gen(function* () {
     const result = yield* Effect.either(operation)
-    
+
     if (result._tag === 'Right') {
       yield* Metric.increment(successMetric)
       return result.right
@@ -87,7 +90,4 @@ export const measureAndTrack = <A, E>(
   durationMetric: Metric.Metric.Histogram<number>,
   operation: Effect.Effect<A, E>
 ): Effect.Effect<A, E> =>
-  measureDuration(
-    durationMetric,
-    trackOperation(successMetric, failureMetric, operation)
-  )
+  measureDuration(durationMetric, trackOperation(successMetric, failureMetric, operation))

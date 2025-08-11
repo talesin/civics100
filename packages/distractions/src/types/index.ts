@@ -10,13 +10,13 @@ export interface DistractorGenerationResult {
 
 export interface QualityMetrics {
   readonly relevanceScore: number
-  readonly plausibilityScore: number  
+  readonly plausibilityScore: number
   readonly educationalValue: number
   readonly duplicatesRemoved: number
   readonly totalGenerated: number
 }
 
-export type DistractorStrategy = 
+export type DistractorStrategy =
   | 'curated'
   | 'section-based'
   | 'openai-text'

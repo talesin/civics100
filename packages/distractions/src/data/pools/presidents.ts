@@ -1,6 +1,6 @@
 export const usPresidents: string[] = [
   'George Washington',
-  'John Adams', 
+  'John Adams',
   'Thomas Jefferson',
   'James Madison',
   'James Monroe',

@@ -33,7 +33,8 @@ describe('SimilarityService', () => {
 
   it('should return a SimilarityError on failure', async () => {
     const testLayer = TestSimilarityServiceLayer({
-      isSimilar: (_answer: string, _distractor: string) => Effect.fail(new SimilarityError({ message: 'API error' }))
+      isSimilar: (_answer: string, _distractor: string) =>
+        Effect.fail(new SimilarityError({ message: 'API error' }))
     })
 
     await Effect.gen(function* () {
