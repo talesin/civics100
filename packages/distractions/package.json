@@ -22,6 +22,8 @@
     "build:vercel": "npm run build",
     "package": "npm install && npx tsx src/cli/index.ts && npm run lint && npm run test && npm run build",
     "test": "npx jest",
+    "test:openai": "npx tsx scripts/test-openai-integration.ts",
+    "generate": "npx tsx src/cli/index.ts",
     "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
