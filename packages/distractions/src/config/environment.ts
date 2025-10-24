@@ -16,25 +16,34 @@ export const logLevelConfig = Config.string('LOG_LEVEL').pipe(Config.withDefault
 export const openaiModelConfig = Config.string('OPENAI_MODEL').pipe(
   Config.withDefault('gpt-5-mini')
 )
-export const openaiTimeoutConfig = Config.string('OPENAI_TIMEOUT_MS').pipe(
-  Config.withDefault('30000'),
-  Config.map(Number)
+export const openaiTemperatureConfig = Config.number('OPENAI_TEMPERATURE').pipe(
+  Config.withDefault(0.7)
 )
-export const openaiMaxRetriesConfig = Config.string('OPENAI_MAX_RETRIES').pipe(
-  Config.withDefault('3'),
-  Config.map(Number)
+export const openaiMaxTokensConfig = Config.integer('OPENAI_MAX_TOKENS').pipe(
+  Config.withDefault(1000)
+)
+export const openaiTimeoutConfig = Config.number('OPENAI_TIMEOUT_MS').pipe(
+  Config.withDefault(30000)
+)
+export const openaiMaxRetriesConfig = Config.integer('OPENAI_MAX_RETRIES').pipe(
+  Config.withDefault(3)
 )
 
 // Rate limiting configuration
-export const openaiRateLimitRpmConfig = Config.string('OPENAI_RATE_LIMIT_RPM').pipe(
-  Config.withDefault('60'),
-  Config.map(Number)
+export const openaiRateLimitRpmConfig = Config.number('OPENAI_RATE_LIMIT_RPM').pipe(
+  Config.withDefault(60)
 )
+export const openaiRequestsPerMinuteConfig = openaiRateLimitRpmConfig // Alias for consistency
 
 // Cache configuration
-export const cacheTtlSecondsConfig = Config.string('CACHE_TTL_SECONDS').pipe(
-  Config.withDefault('3600'),
-  Config.map(Number)
+export const openaiCacheSizeConfig = Config.integer('OPENAI_CACHE_SIZE').pipe(
+  Config.withDefault(1000)
+)
+export const openaiCacheTTLHoursConfig = Config.number('OPENAI_CACHE_TTL_HOURS').pipe(
+  Config.withDefault(24)
+)
+export const cacheTtlSecondsConfig = Config.integer('CACHE_TTL_SECONDS').pipe(
+  Config.withDefault(3600)
 )
 
 // Test environment detection
@@ -50,9 +59,13 @@ export const environmentConfig = Config.all({
   nodeEnv: nodeEnvConfig,
   logLevel: logLevelConfig,
   openaiModel: openaiModelConfig,
+  openaiTemperature: openaiTemperatureConfig,
+  openaiMaxTokens: openaiMaxTokensConfig,
   openaiTimeoutMs: openaiTimeoutConfig,
   openaiMaxRetries: openaiMaxRetriesConfig,
   openaiRateLimitRpm: openaiRateLimitRpmConfig,
+  openaiCacheSize: openaiCacheSizeConfig,
+  openaiCacheTTLHours: openaiCacheTTLHoursConfig,
   cacheTtlSeconds: cacheTtlSecondsConfig
 })
 

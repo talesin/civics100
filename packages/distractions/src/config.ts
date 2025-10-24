@@ -11,6 +11,8 @@ import {
   nodeEnvConfig,
   logLevelConfig,
   openaiModelConfig,
+  openaiTemperatureConfig,
+  openaiMaxTokensConfig,
   openaiTimeoutConfig,
   openaiRateLimitRpmConfig
 } from './config/environment'
@@ -21,10 +23,6 @@ const distractorTargetCountConfig = Config.integer('DISTRACTOR_TARGET_COUNT').pi
 )
 const enableMetricsConfig = Config.boolean('ENABLE_METRICS').pipe(Config.withDefault(true))
 const cacheEnabledConfig = Config.boolean('CACHE_ENABLED').pipe(Config.withDefault(true))
-
-// OpenAI specific configuration
-const openaiTemperatureConfig = Config.number('OPENAI_TEMPERATURE').pipe(Config.withDefault(0.7))
-const openaiMaxTokensConfig = Config.integer('OPENAI_MAX_TOKENS').pipe(Config.withDefault(1000))
 
 // Load OpenAI configuration from environment (following coding guide)
 export const loadOpenAIConfig = () =>
