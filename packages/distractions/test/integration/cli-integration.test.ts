@@ -1,6 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
-import { Effect, ConfigProvider, Layer } from 'effect'
-import { Command } from '@effect/cli'
+import { Effect, ConfigProvider, Layer, Either } from 'effect'
 import { DEFAULT_GENERATION_OPTIONS } from '../../src/types/config'
 
 describe('CLI Integration Tests', () => {
@@ -66,7 +65,7 @@ describe('CLI Integration Tests', () => {
         ])
       )
 
-      await Effect.gen(function* () {
+      const program = Effect.gen(function* () {
         const config = yield* createValidatedConfiguration()
 
         // Validate structure
@@ -81,7 +80,9 @@ describe('CLI Integration Tests', () => {
         expect(config.openai.model).toBe('gpt-5-mini')
         expect(config.generation.targetCount).toBe(10)
         expect(config.generation.useOpenAI).toBe(false) // Disabled in test mode
-      }).pipe(Effect.provide(Layer.setConfigProvider(configProvider)), Effect.runPromise)
+      }).pipe(Effect.provide(Layer.setConfigProvider(configProvider)))
+
+      await Effect.runPromise(program as any)
     })
 
     it('should accept valid API key format', async () => {
@@ -94,17 +95,14 @@ describe('CLI Integration Tests', () => {
         ])
       )
 
-      const result = await Effect.gen(function* () {
+      const program = Effect.gen(function* () {
         return yield* createValidatedConfiguration()
-      })
-        .pipe(
-          Effect.provide(Layer.setConfigProvider(configProvider)),
-          Effect.either,
-          Effect.runPromise
-        )
+      }).pipe(Effect.provide(Layer.setConfigProvider(configProvider)), Effect.either)
+
+      const result: Either.Either<any, any> = await Effect.runPromise(program as any)
 
       expect(result._tag).toBe('Right')
-      if (result._tag === 'Right') {
+      if (Either.isRight(result)) {
         expect(result.right.openai.apiKey).toBe('sk-valid-key-format-12345')
       }
     })
@@ -119,17 +117,14 @@ describe('CLI Integration Tests', () => {
         ])
       )
 
-      const result = await Effect.gen(function* () {
+      const program = Effect.gen(function* () {
         return yield* createValidatedConfiguration()
-      })
-        .pipe(
-          Effect.provide(Layer.setConfigProvider(configProvider)),
-          Effect.either,
-          Effect.runPromise
-        )
+      }).pipe(Effect.provide(Layer.setConfigProvider(configProvider)), Effect.either)
+
+      const result: Either.Either<any, any> = await Effect.runPromise(program as any)
 
       expect(result._tag).toBe('Left')
-      if (result._tag === 'Left') {
+      if (Either.isLeft(result)) {
         expect(result.left).toBeDefined()
       }
     })

@@ -1,10 +1,7 @@
 import { describe, it, expect } from '@jest/globals'
-import { Effect, Layer } from 'effect'
+import { Effect } from 'effect'
 import { EnhancedStaticGenerator } from '../../src/generators/EnhancedStaticGenerator'
-import {
-  TestQuestionsDataServiceLayer,
-  QuestionsDataService
-} from '../../src/data/QuestionsDataService'
+import { TestQuestionsDataServiceLayer } from '../../src/data/QuestionsDataService'
 import { TestCuratedDistractorServiceLayer } from '../../src/services/CuratedDistractorService'
 import { TestOpenAIDistractorServiceLayer } from '../../src/services/OpenAIDistractorService'
 import { TestDistractorQualityServiceLayer } from '../../src/services/DistractorQualityService'
