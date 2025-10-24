@@ -1,4 +1,4 @@
-import { Effect } from 'effect'
+import { Effect, ConfigProvider, Layer } from 'effect'
 import {
   OpenAIDistractorService,
   TestOpenAIDistractorServiceLayer
@@ -89,27 +89,28 @@ describe('Phase 1 Integration Tests', () => {
         LOG_LEVEL: 'info'
       }
 
-      // Mock process.env for this test
-      const originalEnv = process.env
-      process.env = { ...originalEnv, ...mockEnv }
+      // Use ConfigProvider instead of process.env manipulation
+      const configProvider = ConfigProvider.fromMap(
+        new Map([
+          ['OPENAI_API_KEY', mockEnv.OPENAI_API_KEY],
+          ['NODE_ENV', mockEnv.NODE_ENV],
+          ['LOG_LEVEL', mockEnv.LOG_LEVEL]
+        ])
+      )
 
-      try {
-        await Effect.gen(function* () {
-          const config = yield* loadSystemConfiguration()
+      await Effect.gen(function* () {
+        const config = yield* loadSystemConfiguration()
 
-          expect(config.generation).toBeDefined()
-          expect(config.quality).toBeDefined()
-          expect(config.openai).toBeDefined()
-          expect(config.metrics).toBeDefined()
-          expect(config.cache).toBeDefined()
+        expect(config.generation).toBeDefined()
+        expect(config.quality).toBeDefined()
+        expect(config.openai).toBeDefined()
+        expect(config.metrics).toBeDefined()
+        expect(config.cache).toBeDefined()
 
-          expect(config.openai.apiKey).toBe('sk-test-key-12345')
-          expect(config.generation.targetCount).toBe(15)
-          expect(config.metrics.logLevel).toBe('info')
-        }).pipe(Effect.runPromise)
-      } finally {
-        process.env = originalEnv
-      }
+        expect(config.openai.apiKey).toBe('sk-test-key-12345')
+        expect(config.generation.targetCount).toBe(15)
+        expect(config.metrics.logLevel).toBe('info')
+      }).pipe(Effect.provide(Layer.setConfigProvider(configProvider)), Effect.runPromise)
     })
   })
 

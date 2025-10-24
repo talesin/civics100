@@ -115,7 +115,7 @@ export const DEFAULT_CACHE_CONFIG: CacheConfiguration = {
   cacheDirectory: '.cache/openai'
 } as const
 
-// Environment validation helper
+// Environment validation helper using Config patterns
 export const validateEnvironmentConfig = (env: NodeJS.ProcessEnv) => {
   const config = {
     OPENAI_API_KEY: env['OPENAI_API_KEY'] ?? '',
@@ -138,15 +138,16 @@ export interface SystemConfiguration {
   readonly cache: CacheConfiguration
 }
 
-// Configuration factory with environment overrides
+// Configuration factory with Effect Config - no longer uses process.env directly
+// Note: This function now returns a partial config that needs to be completed
+// with Config values from the environment module
 export const createSystemConfiguration = (
   overrides?: Partial<SystemConfiguration>
-): SystemConfiguration => ({
+): Omit<SystemConfiguration, 'openai'> & { openai: Omit<OpenAIConfiguration, 'apiKey'> } => ({
   generation: { ...DEFAULT_GENERATION_OPTIONS, ...overrides?.generation },
   quality: { ...DEFAULT_QUALITY_THRESHOLDS, ...overrides?.quality },
   openai: {
     ...DEFAULT_OPENAI_CONFIG,
-    apiKey: process.env['OPENAI_API_KEY'] ?? '',
     ...overrides?.openai
   },
   metrics: { ...DEFAULT_METRICS_CONFIG, ...overrides?.metrics },
