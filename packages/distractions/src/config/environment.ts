@@ -14,7 +14,7 @@ export const logLevelConfig = Config.string('LOG_LEVEL').pipe(Config.withDefault
 
 // OpenAI-specific configuration
 export const openaiModelConfig = Config.string('OPENAI_MODEL').pipe(
-  Config.withDefault('gpt-3.5-turbo')
+  Config.withDefault('gpt-5-mini')
 )
 export const openaiTimeoutConfig = Config.string('OPENAI_TIMEOUT_MS').pipe(
   Config.withDefault('30000'),

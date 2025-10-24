@@ -21,7 +21,7 @@ import { DistractorMetrics, measureAndTrack, measureDuration } from '@src/utils/
 
 // OpenAI configuration with Effect Config
 const OpenAIApiKey = Config.string('OPENAI_API_KEY')
-const OpenAIModel = Config.string('OPENAI_MODEL').pipe(Config.withDefault('gpt-4o-mini'))
+const OpenAIModel = Config.string('OPENAI_MODEL').pipe(Config.withDefault('gpt-5-mini'))
 const OpenAITemperature = Config.number('OPENAI_TEMPERATURE').pipe(Config.withDefault(0.7))
 const OpenAIMaxTokens = Config.number('OPENAI_MAX_TOKENS').pipe(Config.withDefault(1000))
 const OpenAITimeout = Config.number('OPENAI_TIMEOUT_MS').pipe(Config.withDefault(30000))
