@@ -52,6 +52,7 @@ describe('constructQuestions', () => {
       section: 'System of Government',
       question: VARIABLE_QUESTIONS.STATE_SENATORS,
       questionNumber: 1,
+      expectedAnswers: 1,
       answers: {
         _type: 'text',
         choices: ['Not set']
@@ -62,6 +63,7 @@ describe('constructQuestions', () => {
       section: 'System of Government',
       question: VARIABLE_QUESTIONS.STATE_REPRESENTATIVES,
       questionNumber: 2,
+      expectedAnswers: 1,
       answers: {
         _type: 'text',
         choices: [
@@ -74,6 +76,7 @@ describe('constructQuestions', () => {
       section: 'System of Government',
       question: VARIABLE_QUESTIONS.STATE_GOVERNORS,
       questionNumber: 3,
+      expectedAnswers: 1,
       answers: {
         _type: 'text',
         choices: ['Not set']
@@ -84,6 +87,7 @@ describe('constructQuestions', () => {
       section: 'System of Government',
       question: VARIABLE_QUESTIONS.STATE_CAPITALS,
       questionNumber: 4,
+      expectedAnswers: 1,
       answers: {
         _type: 'text',
         choices: ['Not set']
@@ -172,6 +176,7 @@ describe('constructQuestions', () => {
             section: 'System of Government',
             question: 'Some other question',
             questionNumber: 1,
+            expectedAnswers: 1,
             answers: { _type: 'text', choices: ['foo'] }
           }
         ])
@@ -261,6 +266,7 @@ describe('constructQuestions', () => {
             section: 'Colonial Period',
             question: 'Who was the first President?',
             questionNumber: 1,
+            expectedAnswers: 1,
             answers: { _type: 'text', choices: ['George Washington'] }
           }
         ])
@@ -328,6 +334,7 @@ describe('constructQuestions', () => {
             section: 'Colonial Period',
             question: 'Who was the first President?',
             questionNumber: 70,
+            expectedAnswers: 1,
             answers: { _type: 'text', choices: ['George Washington'] }
           }
         ])
