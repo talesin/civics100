@@ -1,4 +1,4 @@
-import { Effect, Layer, Config } from 'effect'
+import { Effect, Layer } from 'effect'
 import * as Metric from 'effect/Metric'
 import * as Cache from 'effect/Cache'
 import OpenAI from 'openai'
@@ -18,24 +18,22 @@ import {
   generateOpenAICacheKey
 } from '@src/utils/cache'
 import { DistractorMetrics, measureAndTrack, measureDuration } from '@src/utils/metrics'
-
-// OpenAI configuration with Effect Config
-const OpenAIApiKey = Config.string('OPENAI_API_KEY')
-const OpenAIModel = Config.string('OPENAI_MODEL').pipe(Config.withDefault('gpt-4o-mini'))
-const OpenAITemperature = Config.number('OPENAI_TEMPERATURE').pipe(Config.withDefault(0.7))
-const OpenAIMaxTokens = Config.number('OPENAI_MAX_TOKENS').pipe(Config.withDefault(1000))
-const OpenAITimeout = Config.number('OPENAI_TIMEOUT_MS').pipe(Config.withDefault(30000))
-const OpenAIRequestsPerMinute = Config.number('OPENAI_REQUESTS_PER_MINUTE').pipe(
-  Config.withDefault(60)
-)
-const OpenAICacheSize = Config.number('OPENAI_CACHE_SIZE').pipe(Config.withDefault(1000))
-const OpenAICacheTTLHours = Config.number('OPENAI_CACHE_TTL_HOURS').pipe(Config.withDefault(24))
+import {
+  openaiApiKeyConfig,
+  openaiModelConfig,
+  openaiTemperatureConfig,
+  openaiMaxTokensConfig,
+  openaiTimeoutConfig,
+  openaiRequestsPerMinuteConfig,
+  openaiCacheSizeConfig,
+  openaiCacheTTLHoursConfig
+} from '@src/config/environment'
 
 // Helper function to create OpenAI client instance
 const createOpenAIClient = () =>
   Effect.fn(function* () {
-    const apiKey = yield* OpenAIApiKey
-    const timeout = yield* OpenAITimeout
+    const apiKey = yield* openaiApiKeyConfig
+    const timeout = yield* openaiTimeoutConfig
 
     return new OpenAI({
       apiKey,
@@ -146,10 +144,10 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
   Effect.scoped(
     Effect.gen(function* () {
       const client = yield* createOpenAIClient()()
-      const model = yield* OpenAIModel
-      const temperature = yield* OpenAITemperature
-      const maxTokens = yield* OpenAIMaxTokens
-      const requestsPerMinute = yield* OpenAIRequestsPerMinute
+      const model = yield* openaiModelConfig
+      const temperature = yield* openaiTemperatureConfig
+      const maxTokens = yield* openaiMaxTokensConfig
+      const requestsPerMinute = yield* openaiRequestsPerMinuteConfig
 
       // Create rate limiter for this service instance
       const rateLimiter = yield* createOpenAIRateLimiter(requestsPerMinute)
@@ -477,7 +475,7 @@ FORMAT REQUIREMENTS:
 // Function to validate OpenAI configuration (following coding guide)
 export const validateOpenAIConfig = () =>
   Effect.fn(function* () {
-    const apiKey = yield* OpenAIApiKey
+    const apiKey = yield* openaiApiKeyConfig
 
     if (apiKey === undefined || apiKey === null || apiKey.trim().length === 0) {
       return yield* Effect.fail(
@@ -513,8 +511,8 @@ export class OpenAIDistractorService extends Effect.Service<OpenAIDistractorServ
       yield* validateOpenAIConfig()()
 
       // Initialize cache
-      const cacheSize = yield* OpenAICacheSize
-      const cacheTTL = yield* OpenAICacheTTLHours
+      const cacheSize = yield* openaiCacheSizeConfig
+      const cacheTTL = yield* openaiCacheTTLHoursConfig
       const responseCache = yield* createOpenAIResponseCache(cacheSize, cacheTTL)
 
       return {

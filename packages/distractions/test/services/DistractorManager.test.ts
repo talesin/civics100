@@ -1,12 +1,11 @@
 import { describe, it, expect, jest } from '@jest/globals'
 import { Effect } from 'effect'
 import { generateAndWrite } from '../../src/services/DistractorManager'
-import {
-  QuestionWithDistractors,
-  TestStaticGeneratorLayer
-} from '../../src/generators/StaticGenerator'
+import { QuestionWithDistractors } from '../../src/generators/StaticGenerator'
+import { TestEnhancedStaticGeneratorLayer } from '../../src/generators/EnhancedStaticGenerator'
 import { FileSystem, Path } from '@effect/platform'
-import { StaticGenerator } from '../../src/generators/StaticGenerator'
+import { EnhancedStaticGenerator } from '../../src/generators/EnhancedStaticGenerator'
+import { DEFAULT_GENERATION_OPTIONS } from '../../src/types/config'
 
 describe('DistractorManager', () => {
   it('should generate and write distractors to a file', async () => {
@@ -24,10 +23,10 @@ describe('DistractorManager', () => {
       }
     }
 
-    const mockGenerate = jest.fn(() => Effect.succeed([question]))
+    const mockGenerateEnhanced = jest.fn(() => Effect.succeed([question]))
 
-    const staticGeneratorTestLayer = TestStaticGeneratorLayer({
-      generate: mockGenerate
+    const enhancedGeneratorTestLayer = TestEnhancedStaticGeneratorLayer({
+      generateEnhanced: mockGenerateEnhanced
     })
 
     let wroteFile = false
@@ -40,14 +39,14 @@ describe('DistractorManager', () => {
     const pathTestLayer = Path.layer
 
     await Effect.gen(function* () {
-      const generator = yield* StaticGenerator
+      const generator = yield* EnhancedStaticGenerator
       const fs = yield* FileSystem.FileSystem
       const path = yield* Path.Path
-      yield* generateAndWrite(generator, fs, path)()
+      yield* generateAndWrite(generator, fs, path, DEFAULT_GENERATION_OPTIONS)()
 
       expect(wroteFile).toBe(true)
     }).pipe(
-      Effect.provide(staticGeneratorTestLayer),
+      Effect.provide(enhancedGeneratorTestLayer),
       Effect.provide(fileSystemTestLayer),
       Effect.provide(pathTestLayer),
       Effect.runPromise

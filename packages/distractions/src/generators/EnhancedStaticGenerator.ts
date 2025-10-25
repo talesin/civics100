@@ -1,3 +1,84 @@
+/**
+ * EnhancedStaticGenerator - Production-Ready Distractor Generation
+ *
+ * @module EnhancedStaticGenerator
+ *
+ * **Purpose:**
+ * Advanced distractor generation system that combines multiple strategies,
+ * quality filtering, and OpenAI integration to produce high-quality incorrect
+ * answer choices for civics questions.
+ *
+ * **Key Features:**
+ * - **Multiple Generation Strategies:**
+ *   - `curated`: Hand-crafted distractors from experts
+ *   - `static-pool`: Distractors from pre-populated data pools (senators, governors, etc.)
+ *   - `openai-text`: AI-generated distractors for conceptual questions
+ *   - `section-based`: Answers from related questions as distractors
+ *   - `hybrid`: Combination of multiple approaches
+ *
+ * - **Quality Assurance:**
+ *   - Similarity filtering to avoid duplicates
+ *   - Quality scoring (relevance, plausibility, educational value)
+ *   - Configurable thresholds
+ *   - Cross-checking against correct answers
+ *
+ * - **OpenAI Integration:**
+ *   - GPT-5-mini for intelligent text distractors
+ *   - Response caching to reduce API costs
+ *   - Rate limiting to prevent quota exhaustion
+ *   - Automatic retry with exponential backoff
+ *   - Graceful fallback to static generation
+ *
+ * - **Observability:**
+ *   - Comprehensive metrics tracking
+ *   - Performance monitoring
+ *   - Generation quality metrics
+ *   - Error reporting
+ *
+ * **Configuration:**
+ * All behavior is controlled via {@link DistractorGenerationOptions}:
+ * - `targetCount`: Number of distractors per question (5-20)
+ * - `useOpenAI`: Enable/disable OpenAI generation
+ * - `filterSimilar`: Apply similarity filtering
+ * - `checkAnswers`: Cross-check against correct answers
+ * - `batchSize`: Parallel processing batch size
+ *
+ * @example Basic Usage
+ * ```typescript
+ * import { EnhancedStaticGenerator } from './generators/EnhancedStaticGenerator'
+ * import { DEFAULT_GENERATION_OPTIONS } from './types/config'
+ *
+ * const program = Effect.gen(function* () {
+ *   const generator = yield* EnhancedStaticGenerator
+ *
+ *   const options = {
+ *     ...DEFAULT_GENERATION_OPTIONS,
+ *     targetCount: 10,
+ *     useOpenAI: true
+ *   }
+ *
+ *   const questionsWithDistractors = yield* generator.generateEnhanced(options)
+ *   return questionsWithDistractors
+ * })
+ * ```
+ *
+ * @example Custom Configuration
+ * ```typescript
+ * const options: DistractorGenerationOptions = {
+ *   regenAll: false,
+ *   regenIncomplete: true,
+ *   targetCount: 15,
+ *   filterSimilar: true,
+ *   checkAnswers: true,
+ *   useOpenAI: true,
+ *   batchSize: 10,
+ *   maxRetries: 3
+ * }
+ *
+ * const results = yield* generator.generateEnhanced(options)
+ * ```
+ */
+
 import { Effect, Layer, Schedule } from 'effect'
 import * as Metric from 'effect/Metric'
 import type { Question } from 'civics2json'
@@ -45,7 +126,25 @@ const getAnswerText = (choice: Question['answers']['choices'][number]): string =
   return ''
 }
 
-// Strategy selection based on question type (following coding guide)
+/**
+ * Select the optimal distractor generation strategy for a given question.
+ *
+ * **Strategy Selection Logic:**
+ * - Text questions with OpenAI enabled → `openai-text` (best quality)
+ * - Structured questions (senator, representative, etc.) → `static-pool` (fast, accurate)
+ * - Text questions with OpenAI disabled → `section-based` (fallback)
+ * - Unknown types → `hybrid` (maximum coverage)
+ *
+ * **Future Enhancements (Phase 2):**
+ * - Question complexity analysis
+ * - Historical performance data
+ * - Cost optimization
+ * - Quality-based fallback chains
+ *
+ * @param question - The civics question to generate distractors for
+ * @param options - Generation configuration including OpenAI enablement
+ * @returns Effect producing the selected strategy
+ */
 export const selectDistractorStrategy = (
   question: Question,
   options: DistractorGenerationOptions
@@ -455,7 +554,38 @@ export const generateEnhancedDistractors =
     )
   }
 
-// Main generation function (following coding guide)
+/**
+ * Generate distractors for all civics questions using the enhanced pipeline.
+ *
+ * **Processing Pipeline:**
+ * 1. Load all questions from data service
+ * 2. For each question:
+ *    a. Check for curated distractors (highest priority)
+ *    b. Select generation strategy based on question type
+ *    c. Generate raw distractors using selected strategy
+ *    d. Apply quality filtering
+ *    e. Apply similarity filtering (if enabled)
+ *    f. Pad to target count if needed
+ *    g. Track metrics
+ * 3. Return all questions with distractors attached
+ *
+ * **Error Handling:**
+ * - Individual question failures don't stop the pipeline
+ * - OpenAI failures automatically fallback to static generation
+ * - Empty distractor sets are allowed (won't crash)
+ *
+ * **Performance:**
+ * - Questions processed in parallel (configurable batch size)
+ * - OpenAI responses cached to reduce API calls
+ * - Rate limiting prevents quota exhaustion
+ *
+ * @param questionsDataService - Service to fetch all civics questions
+ * @param curatedDistractorService - Service for hand-crafted distractors
+ * @param openaiService - Service for AI-generated distractors
+ * @param qualityService - Service for quality filtering
+ * @param similarityService - Service for similarity detection
+ * @returns Function that takes options and returns Effect with questions+distractors
+ */
 export const generateEnhanced =
   (
     questionsDataService: QuestionsDataService,
@@ -488,7 +618,32 @@ export const generateEnhanced =
       )
     })
 
-// Service class - minimal configuration (following coding guide)
+/**
+ * EnhancedStaticGenerator Service
+ *
+ * **Recommended for:** Production use, CLI tool, API integration
+ *
+ * **Service Dependencies:**
+ * - {@link QuestionsDataService} - Provides civics questions
+ * - {@link CuratedDistractorService} - Provides hand-crafted distractors
+ * - {@link OpenAIDistractorService} - Provides AI-generated distractors
+ * - {@link DistractorQualityService} - Filters low-quality distractors
+ * - {@link SimilarityService} - Removes duplicate/similar distractors
+ *
+ * **Configuration:**
+ * Pass {@link DistractorGenerationOptions} to `generateEnhanced()` to control:
+ * - Target distractor count
+ * - OpenAI enablement
+ * - Quality filtering
+ * - Similarity detection
+ * - Batch processing
+ *
+ * **Usage in CLI:**
+ * This service is automatically wired in the CLI with all dependencies.
+ * Options are mapped from command-line arguments.
+ *
+ * @see {@link DistractorManager} for file I/O integration
+ */
 export class EnhancedStaticGenerator extends Effect.Service<EnhancedStaticGenerator>()(
   'EnhancedStaticGenerator',
   {

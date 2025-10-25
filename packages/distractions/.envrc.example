@@ -1,0 +1,20 @@
+# OpenAI Configuration
+export OPENAI_API_KEY=sk-your-api-key-here
+export OPENAI_MODEL=gpt-5-mini
+export OPENAI_TEMPERATURE=0.7
+export OPENAI_MAX_TOKENS=1000
+export OPENAI_REQUESTS_PER_MINUTE=60
+export OPENAI_TIMEOUT_MS=30000
+
+# General Configuration
+export NODE_ENV=development
+export LOG_LEVEL=info
+
+# Distractor Generation Settings
+export DISTRACTOR_TARGET_COUNT=15
+export ENABLE_METRICS=true
+export CACHE_ENABLED=true
+
+# Development Settings (optional)
+# Set to false to disable OpenAI calls during development
+# export USE_OPENAI=true

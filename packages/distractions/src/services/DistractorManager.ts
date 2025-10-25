@@ -1,16 +1,18 @@
 import { Console, Effect, Layer } from 'effect'
 import { FileSystem, Path } from '@effect/platform'
 import { PlatformError } from '@effect/platform/Error'
-import { StaticGenerator } from '../generators/StaticGenerator'
+import { EnhancedStaticGenerator } from '../generators/EnhancedStaticGenerator'
+import { DEFAULT_GENERATION_OPTIONS, DistractorGenerationOptions } from '../types/config'
 
 export const generateAndWrite = (
-  generator: StaticGenerator,
+  generator: EnhancedStaticGenerator,
   fs: FileSystem.FileSystem,
-  path: Path.Path
+  path: Path.Path,
+  options: DistractorGenerationOptions = DEFAULT_GENERATION_OPTIONS
 ) =>
   Effect.fn(function* () {
     const outputPath = path.join('data', 'questions-with-distractors.json')
-    const questionsWithDistractors = yield* generator.generate()
+    const questionsWithDistractors = yield* generator.generateEnhanced(options)
 
     const json = JSON.stringify(questionsWithDistractors, null, 2)
 
@@ -21,24 +23,25 @@ export const generateAndWrite = (
 
 export class DistractorManager extends Effect.Service<DistractorManager>()('DistractorManager', {
   effect: Effect.gen(function* () {
-    const generator = yield* StaticGenerator
+    const generator = yield* EnhancedStaticGenerator
     const fs = yield* FileSystem.FileSystem
     const path = yield* Path.Path
 
     return {
-      generateAndWrite: generateAndWrite(generator, fs, path)
+      generateAndWrite: (options?: DistractorGenerationOptions) =>
+        generateAndWrite(generator, fs, path, options)()
     }
   }),
-  dependencies: [StaticGenerator.Default]
+  dependencies: [EnhancedStaticGenerator.Default]
 }) {}
 
 export const TestDistractorManagerLayer = (fn?: {
-  generateAndWrite?: () => Effect.Effect<void, PlatformError>
+  generateAndWrite?: (options?: DistractorGenerationOptions) => Effect.Effect<void, PlatformError>
 }) =>
   Layer.succeed(
     DistractorManager,
     DistractorManager.of({
       _tag: 'DistractorManager',
-      generateAndWrite: fn?.generateAndWrite ?? (() => Effect.void)
+      generateAndWrite: fn?.generateAndWrite ?? ((_options?: DistractorGenerationOptions) => Effect.void)
     })
   )
