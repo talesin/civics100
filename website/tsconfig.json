@@ -38,6 +38,7 @@
     "skipLibCheck": true,
     "allowJs": true,
     "noEmit": true,
+    "composite": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "preserve",
@@ -62,5 +63,9 @@
   ],
   "exclude": [
     "node_modules"
+  ],
+  "references": [
+    { "path": "../packages/civics2json" },
+    { "path": "../packages/questionnaire" }
   ]
 }

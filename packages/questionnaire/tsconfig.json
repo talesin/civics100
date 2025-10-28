@@ -2,8 +2,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ES2020", "ESNext", "DOM", "DOM.Iterable"],
-    "noEmit": true,
-    "declaration": false,
+    "noEmit": false,
+    "declaration": true,
+    "declarationMap": true,
+    "composite": true,
+    "outDir": "dist",
     "inlineSourceMap": false,
 
     "module": "ESNext",
@@ -45,5 +48,9 @@
       "@test/*": ["./test/*"]
     }
   },
-  "include": ["src", "test" ]
+  "include": ["src", "test"],
+  "references": [
+    { "path": "../civics2json" },
+    { "path": "../distractions" }
+  ]
 }

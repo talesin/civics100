@@ -4,6 +4,8 @@
     "lib": ["ES2020", "ESNext", "DOM", "DOM.Iterable"],
     "noEmit": false,
     "declaration": true,
+    "declarationMap": true,
+    "composite": true,
     "outDir": "dist",
     "inlineSourceMap": true,
 
@@ -47,5 +49,8 @@
       "@data/*": ["./data/*"]
     }
   },
-  "include": ["src", "test", "data/questions-with-distractors.json"]
+  "include": ["src", "test", "data/questions-with-distractors.json"],
+  "references": [
+    { "path": "../civics2json" }
+  ]
 }
