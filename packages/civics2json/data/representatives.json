@@ -356,7 +356,7 @@
     "party": "D",
     "officeRoom": "174 CHOB",
     "phone": "(202) 225-5065",
-    "committeeAssignment": "Homeland Security|Judiciary",
+    "committeeAssignment": "Homeland Security|Judiciary|Select Subcomm to Investigate Questions about Jan 6, 2021",
     "website": "https://swalwell.house.gov"
   },
   {
@@ -946,7 +946,7 @@
     "party": "R",
     "officeRoom": "244 CHOB",
     "phone": "(202) 225-2706",
-    "committeeAssignment": "Education and Workforce",
+    "committeeAssignment": "Education and Workforce|Foreign Affairs",
     "website": "https://fine.house.gov/"
   },
   {
@@ -986,7 +986,7 @@
     "party": "D",
     "officeRoom": "1224 LHOB",
     "phone": "(202) 225-2176",
-    "committeeAssignment": "Oversight and Government Reform|Science, Space, and Technology",
+    "committeeAssignment": "Oversight and Government Reform|Transportation and Infrastructure|Science, Space, and Technology",
     "website": "https://frost.house.gov"
   },
   {
@@ -1116,7 +1116,7 @@
     "party": "D",
     "officeRoom": "242 CHOB",
     "phone": "(202) 225-3001",
-    "committeeAssignment": "Foreign Affairs|Judiciary",
+    "committeeAssignment": "Foreign Affairs|Judiciary|Select Subcomm to Investigate Questions about Jan 6, 2021",
     "website": "https://moskowitz.house.gov"
   },
   {
@@ -1276,7 +1276,7 @@
     "party": "R",
     "officeRoom": "2133 RHOB",
     "phone": "(202) 225-2931",
-    "committeeAssignment": "Financial Services|House Administration",
+    "committeeAssignment": "Financial Services|House Administration|Select Subcomm to Investigate Questions about Jan 6, 2021",
     "website": "https://loudermilk.house.gov"
   },
   {
@@ -1786,7 +1786,7 @@
     "party": "R",
     "officeRoom": "572 CHOB",
     "phone": "(202) 225-2031",
-    "committeeAssignment": "Armed Services|Oversight and Government Reform|Homeland Security",
+    "committeeAssignment": "Armed Services|Oversight and Government Reform|Select Subcomm to Investigate Questions about Jan 6, 2021",
     "website": "https://clayhiggins.house.gov"
   },
   {
@@ -2806,7 +2806,7 @@
     "party": "R",
     "officeRoom": "2211 RHOB",
     "phone": "(202) 225-4611",
-    "committeeAssignment": "Armed Services|Education and Workforce",
+    "committeeAssignment": "Armed Services|Education and Workforce|Intelligence",
     "website": "https://stefanik.house.gov/"
   },
   {
@@ -3866,7 +3866,7 @@
     "party": "R",
     "officeRoom": "1104 LHOB",
     "phone": "(202) 225-5951",
-    "committeeAssignment": "Judiciary|Transportation and Infrastructure",
+    "committeeAssignment": "Judiciary|Transportation and Infrastructure|Select Subcomm to Investigate Questions about Jan 6, 2021",
     "website": "https://nehls.house.gov"
   },
   {
@@ -3946,7 +3946,7 @@
     "party": "D",
     "officeRoom": "1616 LHOB",
     "phone": "(202) 225-8885",
-    "committeeAssignment": "Oversight and Government Reform|Judiciary",
+    "committeeAssignment": "Oversight and Government Reform|Judiciary|Select Subcomm to Investigate Questions about Jan 6, 2021",
     "website": "https://crockett.house.gov"
   },
   {
@@ -4166,7 +4166,7 @@
     "party": "R",
     "officeRoom": "2110 RHOB",
     "phone": "(202) 225-3861",
-    "committeeAssignment": "House Administration|Energy and Commerce|Rules",
+    "committeeAssignment": "House Administration|Energy and Commerce|Select Subcomm to Investigate Questions about Jan 6, 2021|Rules",
     "website": "https://morgangriffith.house.gov/"
   },
   {
@@ -4180,14 +4180,14 @@
     "website": "https://subramanyam.house.gov/"
   },
   {
-    "name": "Gerald E.- Vacancy Connolly",
+    "name": "James Walkinshaw",
     "state": "VA",
     "district": "11th",
     "party": "D",
     "officeRoom": "2265 RHOB",
     "phone": "(202) 225-1492",
-    "committeeAssignment": "",
-    "website": "https://clerk.house.gov/members/VA11/vacancy"
+    "committeeAssignment": "Oversight and Government Reform",
+    "website": "https://walkinshaw.house.gov/"
   },
   {
     "name": "Stacey Plaskett",
@@ -4406,7 +4406,7 @@
     "party": "R",
     "officeRoom": "1227 LHOB",
     "phone": "(202) 225-2311",
-    "committeeAssignment": "Natural Resources|Judiciary",
+    "committeeAssignment": "Natural Resources|Judiciary|Select Subcomm to Investigate Questions about Jan 6, 2021",
     "website": "https://hageman.house.gov"
   }
 ]

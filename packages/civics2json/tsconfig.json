@@ -5,6 +5,8 @@
     "noEmit": false,
     "inlineSourceMap": true,
     "declaration": true,
+    "declarationMap": true,
+    "composite": true,
     "emitDeclarationOnly": true,
 
     "module": "ESNext",

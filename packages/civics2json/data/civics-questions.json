@@ -2807,7 +2807,7 @@
           "district": "10th"
         },
         {
-          "representative": "Gerald E.- Vacancy Connolly",
+          "representative": "James Walkinshaw",
           "state": "VA",
           "district": "11th"
         },
@@ -3165,7 +3165,8 @@
       "_type": "text",
       "choices": [
         "John Roberts",
-        "John G. Roberts, Jr."
+        "John G. Roberts, Jr.",
+        "Roberts"
       ]
     }
   },
@@ -4518,11 +4519,10 @@
     "answers": {
       "_type": "text",
       "choices": [
-        "New Year’s Day",
+        "New Year's Day",
         "Martin Luther King, Jr. Day",
-        "Presidents’ Day",
+        "Presidents' Day",
         "Memorial Day",
-        "Juneteenth",
         "Independence Day",
         "Labor Day",
         "Columbus Day",

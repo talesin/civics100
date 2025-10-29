@@ -4,25 +4,25 @@
   "version": "0.1.0",
   "type": "module",
   "main": "dist/types.js",
-  "types": "dist/types.d.ts",
+  "types": "dist/src/types.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
       "import": "./dist/types.js",
-      "types": "./dist/types.d.ts"
+      "types": "./dist/src/types.d.ts"
     },
     "./Questions": {
       "import": "./dist/Questions.js",
-      "types": "./dist/Questions.d.ts"
+      "types": "./dist/src/Questions.d.ts"
     }
   },
   "scripts": {
     "clean": "rm -rf dist/ node_modules/ build/ coverage/ data/*",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "build": "npx tsc && npx tsup src/types.ts src/Questions.ts --dts --format esm --out-dir dist && npm run list-todos",
+    "build": "tsc --build && npx tsup src/types.ts src/Questions.ts --format esm --out-dir dist && npm run list-todos",
     "build:vercel": "npx tsx src/index.ts questions construct && npm run build",
     "package": "npm install && npx tsx src/index.ts questions construct && npm run lint && npm run test && npm run build",
     "test": "npx jest",
