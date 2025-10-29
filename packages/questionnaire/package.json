@@ -4,25 +4,25 @@
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "types": "dist/src/index.d.ts",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/src/index.d.ts"
     },
     "./data": {
       "import": "./dist/data/index.js",
-      "types": "./dist/data/index.d.ts"
+      "types": "./dist/src/data/index.d.ts"
     }
   },
   "scripts": {
     "clean": "rm -rf dist/ node_modules/ build/ coverage/",
     "lint": "npx eslint .",
     "lint:fix": "npx eslint . --fix",
-    "build": "npx tsup src/index.ts src/data/index.ts --format esm --out-dir dist && npm run list-todos",
+    "build": "tsc --build && npx tsup src/index.ts src/data/index.ts --format esm --out-dir dist && npm run list-todos",
     "build:vercel": "npm run build",
     "package": "npm install && npm run lint && npm run test && npm run build",
     "test": "npx jest",

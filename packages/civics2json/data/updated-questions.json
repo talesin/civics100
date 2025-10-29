@@ -66,22 +66,49 @@
     }
   },
   {
-    "question": "Name two national U.S. holidays.",
-    "questionNumber": 100,
+    "question": "What is the name of the Speaker of the House of Representatives now?",
+    "questionNumber": 30,
     "answers": {
       "_type": "text",
       "choices": [
-        "New Year’s Day",
-        "Martin Luther King, Jr. Day",
-        "Presidents’ Day",
-        "Memorial Day",
-        "Juneteenth",
-        "Independence Day",
-        "Labor Day",
-        "Columbus Day",
-        "Veterans Day",
-        "Thanksgiving",
-        "Christmas"
+        "Mike Johnson",
+        "Johnson",
+        "James Michael Johnson (birth name)"
+      ]
+    }
+  },
+  {
+    "question": "What is the name of the President of the United States now?*",
+    "questionNumber": 38,
+    "answers": {
+      "_type": "text",
+      "choices": [
+        "Donald J. Trump",
+        "Donald Trump",
+        "Trump"
+      ]
+    }
+  },
+  {
+    "question": "What is the name of the Vice President of the United States now?",
+    "questionNumber": 39,
+    "answers": {
+      "_type": "text",
+      "choices": [
+        "JD Vance",
+        "Vance"
+      ]
+    }
+  },
+  {
+    "question": "Who is the Chief Justice of the United States now?",
+    "questionNumber": 57,
+    "answers": {
+      "_type": "text",
+      "choices": [
+        "John Roberts",
+        "John G. Roberts, Jr.",
+        "Roberts"
       ]
     }
   }

@@ -38,7 +38,6 @@
     "skipLibCheck": true,
     "allowJs": true,
     "noEmit": true,
-    "composite": true,
     "module": "esnext",
     "moduleResolution": "bundler",
     "jsx": "preserve",

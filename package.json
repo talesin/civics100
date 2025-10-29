@@ -8,7 +8,7 @@
   "scripts": {
     "test": "npm run test --workspaces",
     "clean": "rm -rf node_modules/ package-lock.json .next/ && npm run clean --workspaces",
-    "build": "tsc --build && npm run build --workspaces",
+    "build": "npm run build:vercel --workspace=civics2json && npm run build --workspaces --if-present",
     "build:vercel": "npm run build:vercel --workspaces",
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint:fix --workspaces",
