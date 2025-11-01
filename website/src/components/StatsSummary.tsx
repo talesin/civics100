@@ -75,9 +75,9 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
         </div>
       </div>
 
-      {(stats.averageScore >= 60 || stats.bestScore === 100) && (
+      {(stats.averageScore >= 60 || stats.bestScore === 100) === true ? (
         <div className="mt-6 space-y-3">
-          {stats.averageScore >= 60 && (
+          {(stats.averageScore >= 60) === true ? (
             <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg animate-fade-in">
               <div className="flex items-center">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3">
@@ -100,9 +100,9 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
                 </p>
               </div>
             </div>
-          )}
+          ) : null}
 
-          {stats.bestScore === 100 && (
+          {(stats.bestScore === 100) === true ? (
             <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg animate-fade-in">
               <div className="flex items-center">
                 <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-3">
@@ -125,9 +125,9 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
                 </p>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

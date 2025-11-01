@@ -107,14 +107,14 @@ export default function Results() {
             >
               Take New Test
             </button>
-            {results.length > 0 && (
+            {(results.length > 0) === true ? (
               <button
                 onClick={handleClearData}
                 className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
               >
                 Clear All Data
               </button>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -183,11 +183,11 @@ export default function Results() {
                         <span className="text-gray-600 dark:text-gray-300">
                           {result.correctAnswers}/{result.totalQuestions} correct
                         </span>
-                        {result.isEarlyWin === true && (
+                        {result.isEarlyWin === true ? (
                           <span className="text-yellow-600 dark:text-yellow-400 text-xs">
                             ⭐ Early completion
                           </span>
-                        )}
+                        ) : null}
                       </div>
                     </div>
                     <div className="flex-shrink-0">

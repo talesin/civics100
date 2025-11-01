@@ -262,13 +262,13 @@ export default function Settings() {
           </div>
         </div>
 
-        {hasChanges && (
+        {hasChanges === true ? (
           <div className="text-center">
             <p className="text-sm text-amber-600 dark:text-amber-400">
               You have unsaved changes. Click &quot;Save Settings&quot; to persist them.
             </p>
           </div>
-        )}
+        ) : null}
       </div>
     </Layout>
   )

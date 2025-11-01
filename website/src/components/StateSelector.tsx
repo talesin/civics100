@@ -113,7 +113,7 @@ export default function StateSelector({
 
         {typeof navigator !== 'undefined' &&
           typeof navigator.geolocation !== 'undefined' &&
-          hasLocationPermission !== false && (
+          hasLocationPermission !== false ? (
             <button
               onClick={detectLocation}
               disabled={isDetectingLocation}
@@ -158,7 +158,7 @@ export default function StateSelector({
                 </span>
               )}
             </button>
-          )}
+          ) : null}
       </div>
 
       <div className="relative">
@@ -192,16 +192,16 @@ export default function StateSelector({
         </div>
       </div>
 
-      {selectedStateInfo !== undefined && (
+      {selectedStateInfo !== undefined ? (
         <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-md">
           <span className="font-medium">Selected:</span> {selectedStateInfo.name}
-          {selectedStateInfo.capital !== 'D.C. is not a state and does not have a capital' && (
+          {selectedStateInfo.capital !== 'D.C. is not a state and does not have a capital' ? (
             <span className="ml-2">
               <span className="font-medium">Capital:</span> {selectedStateInfo.capital}
             </span>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
 
       <div className="text-xs text-gray-500 dark:text-gray-400">
         Questions will be customized based on your selected state&apos;s representatives, senators,

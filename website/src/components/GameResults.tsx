@@ -106,13 +106,13 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
         </p>
       </div>
 
-      {result.isEarlyWin === true && (
+      {result.isEarlyWin === true ? (
         <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
           <p className="text-yellow-800 dark:text-yellow-200 text-sm">
             🌟 Early Win Achievement! You answered 6 questions correctly and chose to finish early.
           </p>
         </div>
-      )}
+      ) : null}
 
       <div className="flex space-x-4 justify-center">
         <button

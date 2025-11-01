@@ -174,11 +174,11 @@ export default function DistrictSelector({
         </div>
       </div>
 
-      {(selectedDistrict != null) && (
+      {selectedDistrict !== null && selectedDistrict !== undefined ? (
         <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-md">
           <span className="font-medium">Selected:</span> {formatDistrictLabel(selectedDistrict)}
         </div>
-      )}
+      ) : null}
 
       <div className="text-xs text-gray-500 dark:text-gray-400">
         Selecting your district will show only your specific representative in relevant questions.

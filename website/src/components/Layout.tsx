@@ -24,7 +24,7 @@ export default function Layout({
         Skip to main content
       </a>
 
-      {showHeader && (
+      {showHeader === true ? (
         <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
           <div className="container">
             <div className="flex justify-between items-center h-16">
@@ -92,7 +92,7 @@ export default function Layout({
             </div>
 
             {/* Mobile Navigation */}
-            {mobileMenuOpen && (
+            {mobileMenuOpen === true ? (
               <div className="md:hidden" id="mobile-menu" data-testid="mobile-menu">
                 <div className="px-2 pt-2 pb-3 space-y-1 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
                   <Link
@@ -111,10 +111,10 @@ export default function Layout({
                   </Link>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </header>
-      )}
+      ) : null}
 
       {/* Main content */}
       <main id="main-content" className="flex-1 container py-6 sm:py-8 lg:py-12" role="main">
