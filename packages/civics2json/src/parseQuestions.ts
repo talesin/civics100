@@ -126,6 +126,15 @@ const classifyLine = (line: string): LineClassification => {
     return { type: 'empty' }
   }
 
+  // Answer line (starts with ". " for old format or "• " for new 2025 format)
+  // CHECK THIS BEFORE THEME because "• 1870" would incorrectly match theme (all uppercase)
+  if (line.startsWith('. ')) {
+    return { type: 'answer', value: line.substring(2).trim() }
+  }
+  if (line.startsWith('• ')) {
+    return { type: 'answer', value: line.substring(2).trim() }
+  }
+
   // Theme line (all uppercase)
   if (line === line.toUpperCase() && !line.startsWith('.') && !line.match(/^\d+\./)) {
     return { type: 'theme', value: line.trim() }
@@ -149,11 +158,6 @@ const classifyLine = (line: string): LineClassification => {
       value: questionMatch[2].trim(),
       questionNumber: parseInt(questionMatch[1], 10)
     }
-  }
-
-  // Answer line (starts with ". ")
-  if (line.startsWith('. ')) {
-    return { type: 'answer', value: line.substring(2).trim() }
   }
 
   // Other line (explanatory text, etc.)
@@ -204,6 +208,7 @@ type ParseQuestionsResult = { questions: readonly ParsedQuestion[]; rest: readon
 /**
  * Recursively parses questions from the input lines within a section.
  * Each question may contain multiple answers.
+ * Handles multi-line questions by accumulating continuation lines.
  * Returns all parsed questions and any remaining lines.
  */
 const parseQuestions = (
@@ -220,9 +225,27 @@ const parseQuestions = (
     return { questions, rest: lines }
   }
 
-  const questionName = cl.value
+  let questionName = cl.value
   const questionNumber = cl.questionNumber
-  const { answers, rest: afterAnswers } = parseAnswers(rest, [])
+
+  // Handle multi-line questions: accumulate lines until we hit an answer, question, section, or theme
+  let continuationLines = rest
+  while (continuationLines.length > 0) {
+    const [nextLine, ...remaining] = continuationLines
+    if (nextLine === undefined) break
+
+    const nextCl = classifyLine(nextLine)
+    // If it's an "other" line, it's a continuation of the question
+    if (nextCl.type === 'other' && nextLine.trim().length > 0) {
+      questionName = questionName + ' ' + nextLine.trim()
+      continuationLines = remaining
+    } else {
+      // Hit something else, stop accumulating
+      break
+    }
+  }
+
+  const { answers, rest: afterAnswers } = parseAnswers(continuationLines, [])
   return parseQuestions(afterAnswers, [
     ...questions,
     { question: questionName, questionNumber, answers }
@@ -262,6 +285,19 @@ const parseAnswers = (
 }
 
 /**
+ * Cleans PDF page markers from extracted text.
+ * Removes patterns like ",15 of 19uscis.gov/citizenship" that appear in PDF extractions.
+ */
+const cleanPdfPageMarkers = (text: string): string => {
+  // Remove page markers like ",15 of 19uscis.gov/citizenship" or "1 of 19uscis.gov/citizenship"
+  // This handles both inline markers (with comma) and standalone markers
+  return text
+    .replace(/,\d+\s+of\s+\d+uscis\.gov\/citizenship/g, '') // Inline with comma
+    .replace(/^\d+\s+of\s+\d+uscis\.gov\/citizenship$/gm, '') // Standalone lines
+    .replace(/\d+\s+of\s+\d+uscis\.gov\/citizenship/g, '') // Any remaining markers
+}
+
+/**
  * Parses a civics questions file (string) into a flat array of Question objects.
  * Handles themes, sections, questions, and answers, flattening the hierarchy.
  * Returns an Effect that yields the parsed questions.
@@ -271,7 +307,10 @@ export const parseQuestionsFile = (
   _options?: { skipValidation?: boolean }
 ): Effect.Effect<readonly Question[]> => {
   return Effect.sync(() => {
-    const lines = text
+    // Clean PDF page markers before parsing
+    const cleanedText = cleanPdfPageMarkers(text)
+
+    const lines = cleanedText
       .split(/\r?\n/)
       .map((l) => l.trim())
       .filter((l) => l.length > 0)

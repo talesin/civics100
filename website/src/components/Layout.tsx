@@ -133,14 +133,8 @@ export default function Layout({
             </div>
             <p className="text-xs text-gray-400 dark:text-gray-500 max-w-2xl mx-auto">
               Test your knowledge of American civics and history with questions based on the
-              official U.S. Citizenship Test. Practice makes perfect for understanding our
-              democracy.
+              official U.S. Citizenship Test.
             </p>
-            <div className="flex justify-center space-x-6 text-xs text-gray-400 dark:text-gray-500">
-              <span>Educational Use Only</span>
-              <span>•</span>
-              <span>Built with ❤️ for Democracy</span>
-            </div>
           </div>
         </div>
       </footer>

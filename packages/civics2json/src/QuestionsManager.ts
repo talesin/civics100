@@ -26,10 +26,10 @@ import { ParseHTMLError } from './utils'
  * The variable questions that are used to identify the senator, representative, and governor questions in the civics questions set.
  */
 export const VARIABLE_QUESTIONS = {
-  STATE_SENATORS: "Who is one of your state's U.S. Senators now?*",
-  STATE_REPRESENTATIVES: 'Name your U.S. Representative.',
-  STATE_GOVERNORS: 'Who is the Governor of your state now?',
-  STATE_CAPITALS: 'What is the capital of your state?*'
+  STATE_SENATORS: "Who is one of your state’s U.S. senators now?",
+  STATE_REPRESENTATIVES: "Name your U.S. representative.",
+  STATE_GOVERNORS: "Who is the governor of your state now? *",
+  STATE_CAPITALS: "What is the capital of your state?",
 } as const
 
 /**
@@ -41,14 +41,14 @@ export const fetchCivicsQuestions = (
   fs: FileSystem.FileSystem,
   cq: CivicsQuestionsClient,
   config: CivicsConfig
-): (() => Effect.Effect<string, HttpClientError | PlatformError>) =>
+): (() => Effect.Effect<string, HttpClientError | PlatformError | Error>) =>
   Effect.fn(function* () {
     const exists = yield* fs.exists(config.QUESTIONS_TEXT_FILE)
     if (exists) {
       yield* Effect.log(`Using local file ${config.QUESTIONS_TEXT_FILE}`)
       return yield* fs.readFileString(config.QUESTIONS_TEXT_FILE)
     }
-    const text = yield* cq.fetch()
+    const text = yield* cq.fetch
     yield* Effect.log(`Saving fetched content to ${config.QUESTIONS_TEXT_FILE}`)
     yield* fs.writeFileString(config.QUESTIONS_TEXT_FILE, text)
     return text
@@ -63,7 +63,7 @@ export const fetchAndParseCivicsQuestions = (
   fs: FileSystem.FileSystem,
   cq: CivicsQuestionsClient,
   config: CivicsConfig
-): (() => Effect.Effect<readonly Question[], HttpClientError | PlatformError>) =>
+): (() => Effect.Effect<readonly Question[], HttpClientError | PlatformError | Error>) =>
   Effect.fn(function* () {
     const text = yield* fetchCivicsQuestions(fs, cq, config)()
     const questions = yield* cq.parse(text)
@@ -463,6 +463,20 @@ export class UpdatedQuestionNotFoundError extends Data.TaggedError('UpdatedQuest
   readonly question: string
 }> {}
 
+/**
+ * Normalizes question text for comparison by handling asterisk formatting variations.
+ * Removes spaces before asterisks, trailing asterisks, normalizes apostrophes, and converts to lowercase.
+ * This allows matching questions regardless of whether they have " *", "*", or no asterisk,
+ * regardless of capitalization differences, and regardless of apostrophe style (straight ' vs curly ').
+ */
+const normalizeQuestionText = (text: string): string => {
+  return text
+    .replace(/\s*\*\s*$/g, '') // Remove trailing asterisk with optional spaces
+    .replace(/[\u2018\u2019]/g, "'") // Normalize curly apostrophes (U+2018, U+2019) to straight apostrophes
+    .trim()
+    .toLowerCase() // Case-insensitive matching
+}
+
 export const getUpdatedQuestions = (
   fs: FileSystem.FileSystem,
   config: CivicsConfig,
@@ -476,30 +490,52 @@ export const getUpdatedQuestions = (
   Effect.fn(function* (questionMap: Record<string, Question>) {
     const updatedQuestionPartials = yield* fetchAndParseUpdates(fs, config, updatesClient)()
 
-    return yield* Effect.forEach(updatedQuestionPartials, (partial) => {
-      if (partial.question === undefined || partial.question.length === 0) {
-        // This should not be reachable if parseUpdates is correct
-        return Effect.die(new Error('Partial question missing question text'))
-      }
-      const originalQuestion = questionMap[partial.question]
-
-      if (originalQuestion === undefined) {
-        return Effect.fail(new UpdatedQuestionNotFoundError({ question: partial.question }))
-      }
-
-      if (partial.answers === undefined) {
-        return Effect.die(new Error(`Partial question missing answers for: ${partial.question}`))
-      }
-
-      // The partial from parseUpdates has `question`, `questionNumber`, and `answers`.
-      // The `Question` type has `theme`, `section`, `question`, `questionNumber`, `answers`.
-      // We need to merge them.
-      const updatedQuestion: Question = {
-        ...originalQuestion,
-        answers: partial.answers
-      }
-      return Effect.succeed(updatedQuestion)
+    // Create a normalized lookup map for flexible matching
+    const normalizedMap: Record<string, Question> = {}
+    Object.values(questionMap).forEach((q) => {
+      normalizedMap[normalizeQuestionText(q.question)] = q
     })
+
+    const results = yield* Effect.forEach(updatedQuestionPartials, (partial) =>
+      Effect.gen(function* () {
+        if (partial.question === undefined || partial.question.length === 0) {
+          // This should not be reachable if parseUpdates is correct
+          return yield* Effect.die(new Error('Partial question missing question text'))
+        }
+
+        // Try exact match first, then normalized match
+        let originalQuestion = questionMap[partial.question]
+        if (originalQuestion === undefined) {
+          const normalized = normalizeQuestionText(partial.question)
+          originalQuestion = normalizedMap[normalized]
+          if (originalQuestion === undefined) {
+            // Question from updates page doesn't exist in the 2025 questions set
+            // This can happen when USCIS changes question wording between versions
+            // Skip this update rather than failing
+            yield* Effect.log(
+              `Skipping update for question not found in 2025 set: "${partial.question}"`
+            )
+            return null // Return null to be filtered out
+          }
+        }
+
+        if (partial.answers === undefined) {
+          return yield* Effect.die(new Error(`Partial question missing answers for: ${partial.question}`))
+        }
+
+        // The partial from parseUpdates has `question`, `questionNumber`, and `answers`.
+        // The `Question` type has `theme`, `section`, `question`, `questionNumber`, `answers`.
+        // We need to merge them.
+        const updatedQuestion: Question = {
+          ...originalQuestion,
+          answers: partial.answers
+        }
+        return updatedQuestion
+      })
+    )
+
+    // Filter out null results (questions that didn't match)
+    return results.filter((q): q is Question => q !== null)
   })
 
 /**
@@ -540,16 +576,28 @@ export const constructQuestions = (
     const updatedCivicsQuestions = yield* getUpdatedQuestions(fs, c, uc)(questionMap)
 
     // 3. update question map
+    // Filter out variable questions from civics updates to avoid overwriting
+    const variableQuestionTexts = new Set([
+      updatedSenatorsQuestion.question,
+      updatedRepresentativesQuestion.question,
+      updatedGovernorsQuestion.question,
+      updatedCapitalsQuestion.question
+    ])
+    const filteredCivicsUpdates = updatedCivicsQuestions.filter(
+      (q) => !variableQuestionTexts.has(q.question)
+    )
+
     const updatedQuestionMap = {
       ...questionMap,
+      ...filteredCivicsUpdates.reduce(
+        (acc, q) => ({ ...acc, [q.question]: q }),
+        {} as Record<string, Question>
+      ),
+      // Variable questions must come AFTER civics updates to take precedence
       [updatedSenatorsQuestion.question]: updatedSenatorsQuestion,
       [updatedRepresentativesQuestion.question]: updatedRepresentativesQuestion,
       [updatedGovernorsQuestion.question]: updatedGovernorsQuestion,
-      [updatedCapitalsQuestion.question]: updatedCapitalsQuestion,
-      ...updatedCivicsQuestions.reduce(
-        (acc, q) => ({ ...acc, [q.question]: q }),
-        {} as Record<string, Question>
-      )
+      [updatedCapitalsQuestion.question]: updatedCapitalsQuestion
     }
 
     // 4. write to file
