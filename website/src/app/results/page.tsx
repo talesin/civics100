@@ -110,6 +110,12 @@ export default function Results() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Test Results</h1>
           <div className="flex space-x-3">
             <button
+              onClick={() => (window.location.href = '/statistics')}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+            >
+              View Question Stats
+            </button>
+            <button
               onClick={() => (window.location.href = '/game')}
               className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
             >

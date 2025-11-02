@@ -151,7 +151,7 @@ describe('constructQuestions', () => {
       const gc = yield* GovernorsClient
       const uc = yield* Updates
       const questions = yield* constructQuestions(fs, cqc, sc, rc, gc, uc, c)()
-      expect(questions?.[0]?.question).toBe("Who is one of your state’s U.S. senators now?")
+      expect(questions?.[0]?.question).toBe("Who is one of your state's U.S. senators now?")
       expect(questions?.[0]?.answers).toEqual({
         _type: 'senator',
         choices: SENATORS_CHOICES

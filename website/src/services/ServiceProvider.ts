@@ -3,6 +3,7 @@ import { GameService } from 'questionnaire'
 import { QuestionDataService } from './QuestionDataService'
 import { SessionService } from './SessionService'
 import { LocalStorageService } from './LocalStorageService'
+import { StatisticsService } from './StatisticsService'
 
 /**
  * Centralized service layer that provides all application services
@@ -14,7 +15,8 @@ export const AppServiceLayer = Layer.mergeAll(
   LocalStorageService.Default,
   GameService.Default,
   QuestionDataService.Default,
-  SessionService.Default
+  SessionService.Default,
+  StatisticsService.Default
 )
 
 /**

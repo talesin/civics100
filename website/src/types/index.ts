@@ -29,3 +29,31 @@ export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
   userDistrict: undefined,
   darkMode: false
 }
+
+// Statistics types
+export interface QuestionStatistics {
+  pairedQuestionNumber: string
+  questionNumber: string
+  questionText: string
+  correctAnswerText: string
+  timesAsked: number
+  timesCorrect: number
+  timesIncorrect: number
+  accuracy: number
+  selectionProbability: number
+  lastAsked?: Date
+}
+
+export enum QuestionFilter {
+  All = 'all',
+  Mastered = 'mastered',
+  NeedsPractice = 'needs-practice',
+  NeverAsked = 'never-asked'
+}
+
+export enum QuestionSortField {
+  QuestionNumber = 'question-number',
+  TimesAsked = 'times-asked',
+  Accuracy = 'accuracy',
+  Probability = 'probability'
+}

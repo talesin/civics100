@@ -42,8 +42,15 @@ export default function Game() {
       Effect.gen(function* () {
         const sessionService = yield* SessionService
         const questionService = yield* QuestionDataService
+        const storageService = yield* LocalStorageService
 
-        const newSession = yield* sessionService.createNewSession(gameSettings)
+        // Load existing paired answers to enable adaptive learning
+        const existingPairedAnswers = yield* storageService.getPairedAnswers()
+
+        const newSession = yield* sessionService.createNewSession(
+          gameSettings,
+          existingPairedAnswers
+        )
         const gameQuestions = yield* questionService.generateGameQuestions(
           gameSettings.maxQuestions,
           gameSettings.userState
@@ -68,6 +75,9 @@ export default function Game() {
 
           const result = sessionService.calculateResult(finalSession)
           yield* storageService.saveGameResult(result)
+
+          // Save paired answers for adaptive learning
+          yield* storageService.savePairedAnswers(finalSession.pairedAnswers)
 
           // Play completion sound
           if (finalSession.isEarlyWin === true) {
