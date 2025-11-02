@@ -120,6 +120,26 @@ describe('parseUpdates', () => {
 
   const expectedJson = [
     {
+      question: "Who is one of your state's U.S. Senators now?*",
+      questionNumber: 20,
+      answers: {
+        _type: 'text',
+        choices: [
+          "Answers will vary. [District of Columbia residents and residents of U.S. territories should answer that D.C. (or the territory where the applicant lives) has no U.S. Senators.]"
+        ]
+      }
+    },
+    {
+      question: 'Name your U.S. Representative.',
+      questionNumber: 23,
+      answers: {
+        _type: 'text',
+        choices: [
+          'Answers will vary. [Residents of territories with nonvoting Delegates or Resident Commissioners may provide the name of that Delegate or Commissioner. Also acceptable is any statement that the territory has no (voting) Representatives in Congress.]'
+        ]
+      }
+    },
+    {
       question: 'What is the name of the President of the United States now?*',
       questionNumber: 28,
       answers: {
@@ -149,6 +169,16 @@ describe('parseUpdates', () => {
       answers: {
         _type: 'text',
         choices: ['John Roberts', 'John G. Roberts, Jr.']
+      }
+    },
+    {
+      question: 'Who is the Governor of your state now?',
+      questionNumber: 43,
+      answers: {
+        _type: 'text',
+        choices: [
+          'Answers will vary. [District of Columbia residents should answer that D.C. does not have a Governor.]'
+        ]
       }
     },
     {

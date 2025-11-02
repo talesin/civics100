@@ -55,6 +55,12 @@ export default function Layout({
                   >
                     Results
                   </Link>
+                  <Link
+                    href="/statistics"
+                    className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-sm font-medium transition-colors focus-ring"
+                  >
+                    Statistics
+                  </Link>
                 </nav>
                 <div className="border-l border-gray-300 dark:border-gray-600 h-6 mx-2" />
                 <ThemeToggle />
@@ -108,6 +114,13 @@ export default function Layout({
                     className="block text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium transition-colors focus-ring"
                   >
                     Results
+                  </Link>
+                  <Link
+                    href="/statistics"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="block text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 px-3 py-2 rounded-md text-base font-medium transition-colors focus-ring"
+                  >
+                    Statistics
                   </Link>
                 </div>
               </div>
