@@ -19,11 +19,12 @@ export interface GameStats {
   averageScore: number
   bestScore: number
   earlyWins: number
+  earlyFailures: number
 }
 
 export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
-  maxQuestions: 10,
-  winThreshold: 6,
+  maxQuestions: 20,
+  winThreshold: 12,
   userState: 'CA' as import('civics2json').StateAbbreviation,
   userDistrict: undefined,
   darkMode: false

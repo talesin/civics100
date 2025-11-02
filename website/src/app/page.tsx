@@ -12,7 +12,8 @@ export default function Home() {
     totalGames: 0,
     averageScore: 0,
     bestScore: 0,
-    earlyWins: 0
+    earlyWins: 0,
+    earlyFailures: 0
   })
   const [isLoading, setIsLoading] = useState(true)
 

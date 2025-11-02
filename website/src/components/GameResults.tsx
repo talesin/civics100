@@ -9,8 +9,10 @@ interface GameResultsProps {
 
 export default function GameResults({ result, onPlayAgain, onViewHistory }: GameResultsProps) {
   const getResultMessage = () => {
-    if (result.isEarlyWin === true) {
-      return '🎉 Excellent! You passed with 6 correct answers!'
+    if (result.isEarlyFail === true) {
+      return '📚 Test ended - You answered 9 questions incorrectly. Keep studying and try again!'
+    } else if (result.isEarlyWin === true) {
+      return `🎉 Excellent! You passed with ${result.correctAnswers} correct answers!`
     } else if (result.percentage >= 60) {
       return '✅ Congratulations! You passed the civics test!'
     } else {
@@ -19,7 +21,9 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
   }
 
   const getResultColor = () => {
-    if (result.isEarlyWin === true || result.percentage >= 60) {
+    if (result.isEarlyFail === true) {
+      return 'text-red-600 dark:text-red-400'
+    } else if (result.isEarlyWin === true || result.percentage >= 60) {
       return 'text-green-600 dark:text-green-400'
     } else {
       return 'text-red-600 dark:text-red-400'
@@ -36,7 +40,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
     <div className="result-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
       <div className="mb-6">
         <div className="animate-bounce-in">
-          {result.isEarlyWin === true || result.percentage >= 60 ? (
+          {result.isEarlyFail !== true && (result.isEarlyWin === true || result.percentage >= 60) ? (
             <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-10 h-10 text-green-600 dark:text-green-400"

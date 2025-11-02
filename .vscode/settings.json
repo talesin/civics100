@@ -1,0 +1,8 @@
+{
+  "rhda.exhort.excludeDirectories": [
+    "**/dist/**",
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/build/**"
+  ]
+}

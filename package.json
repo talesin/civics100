@@ -13,7 +13,8 @@
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint:fix --workspaces",
     "package": "npm install && npm run package --workspaces",
-    "dev": "npm run dev --workspace=website"
+    "dev": "npm run dev --workspace=website",
+    "refresh": "npm run clean && npm install && npm run build"
   },
   "dependencies": {
     "entities": "^6.0.0"

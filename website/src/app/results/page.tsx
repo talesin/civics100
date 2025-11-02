@@ -13,7 +13,8 @@ export default function Results() {
     totalGames: 0,
     averageScore: 0,
     bestScore: 0,
-    earlyWins: 0
+    earlyWins: 0,
+    earlyFailures: 0
   })
   const [isLoading, setIsLoading] = useState(true)
 
@@ -47,7 +48,8 @@ export default function Results() {
           totalGames: 0,
           averageScore: 0,
           bestScore: 0,
-          earlyWins: 0
+          earlyWins: 0,
+          earlyFailures: 0
         })
       })
 
@@ -58,7 +60,13 @@ export default function Results() {
   }
 
   const getResultBadge = (result: GameResult) => {
-    if (result.isEarlyWin === true) {
+    if (result.isEarlyFail === true) {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
+          Early Fail
+        </span>
+      )
+    } else if (result.isEarlyWin === true) {
       return (
         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
           Early Win
