@@ -104,9 +104,11 @@ export type GameSession = {
   questions: ReadonlyArray<string> // Question IDs
   currentQuestionIndex: number
   correctAnswers: number
+  incorrectAnswers: number
   totalAnswered: number
   isCompleted: boolean
   isEarlyWin: boolean
+  isEarlyFail: boolean
   startedAt: Date
   completedAt?: Date
   pairedAnswers: PairedAnswers
@@ -130,8 +132,10 @@ export type GameResult = {
   sessionId: string
   totalQuestions: number
   correctAnswers: number
+  incorrectAnswers: number
   percentage: number
   isEarlyWin: boolean
+  isEarlyFail: boolean
   completedAt: Date
 }
 

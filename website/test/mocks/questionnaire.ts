@@ -35,9 +35,11 @@ export type GameSession = {
   questions: ReadonlyArray<string>
   currentQuestionIndex: number
   correctAnswers: number
+  incorrectAnswers: number
   totalAnswered: number
   isCompleted: boolean
   isEarlyWin: boolean
+  isEarlyFail: boolean
   startedAt: Date
   completedAt?: Date
   pairedAnswers: PairedAnswers
@@ -55,8 +57,10 @@ export type GameResult = {
   sessionId: string
   totalQuestions: number
   correctAnswers: number
+  incorrectAnswers: number
   percentage: number
   isEarlyWin: boolean
+  isEarlyFail: boolean
   completedAt: Date
 }
 
@@ -70,9 +74,11 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
           questions: Array.from({ length: settings.maxQuestions }, (_, i) => `${i + 1}-0`),
           currentQuestionIndex: 0,
           correctAnswers: 0,
+          incorrectAnswers: 0,
           totalAnswered: 0,
           isCompleted: false,
           isEarlyWin: false,
+          isEarlyFail: false,
           startedAt: new Date(),
           pairedAnswers: {},
           settings
@@ -88,18 +94,22 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
       }),
     processGameAnswer: (session: GameSession, answer: UserAnswer) => {
       const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0)
+      const newIncorrectAnswers = session.incorrectAnswers + (answer.isCorrect ? 0 : 1)
       const newTotalAnswered = session.totalAnswered + 1
       const newCurrentIndex = session.currentQuestionIndex + 1
-      const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold
-      const isCompleted = isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
+      const isEarlyFail = newIncorrectAnswers >= 9
+      const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold && !isEarlyFail
+      const isCompleted = isEarlyFail || isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
 
       const updatedSession = {
         ...session,
         currentQuestionIndex: newCurrentIndex,
         correctAnswers: newCorrectAnswers,
+        incorrectAnswers: newIncorrectAnswers,
         totalAnswered: newTotalAnswered,
         isCompleted,
-        isEarlyWin
+        isEarlyWin,
+        isEarlyFail
       }
 
       if (isCompleted) {
@@ -112,11 +122,13 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
       sessionId: session.id,
       totalQuestions: session.totalAnswered,
       correctAnswers: session.correctAnswers,
+      incorrectAnswers: session.incorrectAnswers,
       percentage:
         session.totalAnswered > 0
           ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
           : 0,
       isEarlyWin: session.isEarlyWin,
+      isEarlyFail: session.isEarlyFail,
       completedAt: session.completedAt ?? new Date()
     }),
     transformQuestionToDisplay: (
@@ -164,9 +176,11 @@ export const TestGameServiceLayer = (fn?: any) =>
               questions: Array.from({ length: settings.maxQuestions }, (_, i) => `${i + 1}-0`),
               currentQuestionIndex: 0,
               correctAnswers: 0,
+              incorrectAnswers: 0,
               totalAnswered: 0,
               isCompleted: false,
               isEarlyWin: false,
+              isEarlyFail: false,
               startedAt: new Date(),
               pairedAnswers: {},
               settings
@@ -189,18 +203,22 @@ export const TestGameServiceLayer = (fn?: any) =>
         fn?.processGameAnswer ??
         ((session: GameSession, answer: UserAnswer) => {
           const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0)
+          const newIncorrectAnswers = session.incorrectAnswers + (answer.isCorrect ? 0 : 1)
           const newTotalAnswered = session.totalAnswered + 1
           const newCurrentIndex = session.currentQuestionIndex + 1
-          const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold
-          const isCompleted = isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
+          const isEarlyFail = newIncorrectAnswers >= 9
+          const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold && !isEarlyFail
+          const isCompleted = isEarlyFail || isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
 
           const updatedSession = {
             ...session,
             currentQuestionIndex: newCurrentIndex,
             correctAnswers: newCorrectAnswers,
+            incorrectAnswers: newIncorrectAnswers,
             totalAnswered: newTotalAnswered,
             isCompleted,
-            isEarlyWin
+            isEarlyWin,
+            isEarlyFail
           }
 
           if (isCompleted) {
@@ -215,11 +233,13 @@ export const TestGameServiceLayer = (fn?: any) =>
           sessionId: session.id,
           totalQuestions: session.totalAnswered,
           correctAnswers: session.correctAnswers,
+          incorrectAnswers: session.incorrectAnswers,
           percentage:
             session.totalAnswered > 0
               ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
               : 0,
           isEarlyWin: session.isEarlyWin,
+          isEarlyFail: session.isEarlyFail,
           completedAt: session.completedAt ?? new Date()
         })),
       transformQuestionToDisplay:

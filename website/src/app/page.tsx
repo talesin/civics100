@@ -12,7 +12,8 @@ export default function Home() {
     totalGames: 0,
     averageScore: 0,
     bestScore: 0,
-    earlyWins: 0
+    earlyWins: 0,
+    earlyFailures: 0
   })
   const [isLoading, setIsLoading] = useState(true)
 
@@ -71,7 +72,7 @@ export default function Home() {
 
           <div className="flex flex-wrap justify-center gap-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-8">
             <span className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full">
-              📚 100 Questions
+              📚 128 Questions
             </span>
             <span className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 px-3 py-1 rounded-full">
               ✅ 60% to Pass
@@ -190,9 +191,10 @@ export default function Home() {
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">Test Format</h4>
               <ul className="space-y-1">
-                <li>• Up to 10 multiple choice questions</li>
-                <li>• Pass with 6 correct answers</li>
-                <li>• Questions from real civics test</li>
+                <li>• Up to 20 questions from pool of 128</li>
+                <li>• Pass with 12 correct answers (60%)</li>
+                <li>• Questions from 2025 USCIS civics test</li>
+                <li>• Version M-1778 (09/25)</li>
               </ul>
             </div>
             <div>
@@ -200,17 +202,91 @@ export default function Home() {
               <ul className="space-y-1">
                 <li>• American Government</li>
                 <li>• American History</li>
-                <li>• Integrated Civics</li>
+                <li>• Symbols and Holidays</li>
               </ul>
             </div>
             <div>
-              <h4 className="font-medium text-gray-900 dark:text-white mb-2">Features</h4>
+              <h4 className="font-medium text-gray-900 dark:text-white mb-2">Dynamic Content</h4>
               <ul className="space-y-1">
-                <li>• Track your progress</li>
-                <li>• Immediate feedback</li>
-                <li>• Historical performance</li>
+                <li>• Current senators and representatives</li>
+                <li>• Updated from official government sources</li>
+                <li>• Track your progress over time</li>
               </ul>
             </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Official Sources
+          </h3>
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="mb-3">
+              All test questions and state-specific data are sourced from official U.S. government
+              websites:
+            </p>
+            <ul className="space-y-2">
+              <li>
+                •{' '}
+                <a
+                  href="https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  USCIS 128 Civics Questions (2025)
+                </a>{' '}
+                - Official 2025 test questions for naturalization
+              </li>
+              <li>
+                •{' '}
+                <a
+                  href="https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  USCIS Test Updates
+                </a>{' '}
+                - Current test changes and updates
+              </li>
+              <li>
+                •{' '}
+                <a
+                  href="https://www.senate.gov/senators/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  U.S. Senate
+                </a>{' '}
+                - Current senators by state
+              </li>
+              <li>
+                •{' '}
+                <a
+                  href="https://www.house.gov/representatives"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  U.S. House of Representatives
+                </a>{' '}
+                - Current representatives by district
+              </li>
+              <li>
+                •{' '}
+                <a
+                  href="https://www.usa.gov/state-governments"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 dark:text-blue-400 hover:underline"
+                >
+                  USA.gov State Governments
+                </a>{' '}
+                - State government information and governors
+              </li>
+            </ul>
           </div>
         </div>
       </div>

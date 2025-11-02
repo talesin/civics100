@@ -104,14 +104,16 @@ export const TestSessionServiceLayer = (fn?: {
             questions: [],
             currentQuestionIndex: 0,
             correctAnswers: 0,
+            incorrectAnswers: 0,
             totalAnswered: 0,
             isCompleted: false,
             isEarlyWin: false,
+            isEarlyFail: false,
             startedAt: new Date(),
             pairedAnswers: {},
             settings: {
-              maxQuestions: 10,
-              winThreshold: 6,
+              maxQuestions: 20,
+              winThreshold: 12,
               userState: 'CA' as import('civics2json').StateAbbreviation
             }
           })),
@@ -122,8 +124,10 @@ export const TestSessionServiceLayer = (fn?: {
           sessionId: 'test',
           totalQuestions: 0,
           correctAnswers: 0,
+          incorrectAnswers: 0,
           percentage: 0,
           isEarlyWin: false,
+          isEarlyFail: false,
           completedAt: new Date()
         })),
       getCurrentQuestion: fn?.getCurrentQuestion ?? (() => undefined),

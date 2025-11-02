@@ -169,11 +169,9 @@ export default function Settings() {
                   onChange={handleMaxQuestionsChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value={5}>5 questions</option>
-                  <option value={10}>10 questions</option>
-                  <option value={15}>15 questions</option>
-                  <option value={20}>20 questions</option>
-                  <option value={25}>25 questions</option>
+                  <option value={20}>20 questions (Official 2025 minimum)</option>
+                  <option value={50}>50 questions</option>
+                  <option value={100}>100 questions (All questions)</option>
                 </select>
               </div>
 
@@ -190,25 +188,27 @@ export default function Settings() {
                   onChange={handleWinThresholdChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value={Math.ceil(settings.maxQuestions * 0.4)}>
-                    {Math.ceil(settings.maxQuestions * 0.4)} correct (40%)
-                  </option>
-                  <option value={Math.ceil(settings.maxQuestions * 0.5)}>
-                    {Math.ceil(settings.maxQuestions * 0.5)} correct (50%)
-                  </option>
                   <option value={Math.ceil(settings.maxQuestions * 0.6)}>
                     {Math.ceil(settings.maxQuestions * 0.6)} correct (60%)
                   </option>
                   <option value={Math.ceil(settings.maxQuestions * 0.7)}>
                     {Math.ceil(settings.maxQuestions * 0.7)} correct (70%)
                   </option>
+                  <option value={Math.ceil(settings.maxQuestions * 0.8)}>
+                    {Math.ceil(settings.maxQuestions * 0.8)} correct (80%)
+                  </option>
+                  <option value={Math.ceil(settings.maxQuestions * 0.9)}>
+                    {Math.ceil(settings.maxQuestions * 0.9)} correct (90%)
+                  </option>
+                  <option value={settings.maxQuestions}>
+                    {settings.maxQuestions} correct (100%)
+                  </option>
                 </select>
               </div>
             </div>
 
             <div className="text-xs text-gray-500 dark:text-gray-400">
-              The game will end early if you reach the pass threshold before answering all
-              questions.
+              The game ends when you reach the pass threshold (early win), answer 9 questions incorrectly (early fail), or complete all questions. This matches the 2025 USCIS Civics Test format.
             </div>
           </div>
 
@@ -262,13 +262,13 @@ export default function Settings() {
           </div>
         </div>
 
-        {hasChanges && (
+        {hasChanges === true ? (
           <div className="text-center">
             <p className="text-sm text-amber-600 dark:text-amber-400">
               You have unsaved changes. Click &quot;Save Settings&quot; to persist them.
             </p>
           </div>
-        )}
+        ) : null}
       </div>
     </Layout>
   )

@@ -49,9 +49,11 @@ const createGameSession = (
       questions: selectedQuestions.map((q) => q.pairedQuestionNumber),
       currentQuestionIndex: 0,
       correctAnswers: 0,
+      incorrectAnswers: 0,
       totalAnswered: 0,
       isCompleted: false,
       isEarlyWin: false,
+      isEarlyFail: false,
       startedAt: new Date(),
       pairedAnswers: existingPairedAnswers ?? {},
       settings
@@ -139,6 +141,7 @@ const processGameAnswer =
   (questionSelector: QuestionSelector) =>
   (session: GameSession, answer: UserAnswer): GameSession => {
     const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0)
+    const newIncorrectAnswers = session.incorrectAnswers + (answer.isCorrect ? 0 : 1)
     const newTotalAnswered = session.totalAnswered + 1
     const newCurrentIndex = session.currentQuestionIndex + 1
 
@@ -149,16 +152,24 @@ const processGameAnswer =
       session.pairedAnswers
     )
 
-    const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold
-    const isCompleted = isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
+    // Check for early failure (9 incorrect answers)
+    const isEarlyFail = newIncorrectAnswers >= 9
+
+    // Check for early win (only if not already failed)
+    const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold && !isEarlyFail
+
+    // Game completes if: early fail, early win, or all questions answered
+    const isCompleted = isEarlyFail || isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
 
     const updatedSession: GameSession = {
       ...session,
       currentQuestionIndex: newCurrentIndex,
       correctAnswers: newCorrectAnswers,
+      incorrectAnswers: newIncorrectAnswers,
       totalAnswered: newTotalAnswered,
       isCompleted,
       isEarlyWin,
+      isEarlyFail,
       pairedAnswers: updatedPairedAnswers
     }
 
@@ -182,8 +193,10 @@ const calculateGameResult = (session: GameSession): GameResult => {
     sessionId: session.id,
     totalQuestions: session.totalAnswered,
     correctAnswers: session.correctAnswers,
+    incorrectAnswers: session.incorrectAnswers,
     percentage,
     isEarlyWin: session.isEarlyWin,
+    isEarlyFail: session.isEarlyFail,
     completedAt: session.completedAt ?? new Date()
   }
 }
@@ -291,14 +304,16 @@ export const TestGameServiceLayer = (fn?: {
               questions: [],
               currentQuestionIndex: 0,
               correctAnswers: 0,
+              incorrectAnswers: 0,
               totalAnswered: 0,
               isCompleted: false,
               isEarlyWin: false,
+              isEarlyFail: false,
               startedAt: new Date(),
               pairedAnswers: {},
               settings: {
-                maxQuestions: 10,
-                winThreshold: 6,
+                maxQuestions: 20,
+                winThreshold: 12,
                 userState: 'CA' as import('civics2json').StateAbbreviation
               }
             },
@@ -311,8 +326,10 @@ export const TestGameServiceLayer = (fn?: {
           sessionId: 'test',
           totalQuestions: 0,
           correctAnswers: 0,
+          incorrectAnswers: 0,
           percentage: 0,
           isEarlyWin: false,
+          isEarlyFail: false,
           completedAt: new Date()
         })),
       transformQuestionToDisplay:

@@ -37,7 +37,7 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
         <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
           <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
             {stats.totalGames}
@@ -73,11 +73,20 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
             Early Wins
           </div>
         </div>
+
+        <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-100 dark:border-orange-800">
+          <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
+            {stats.earlyFailures}
+          </div>
+          <div className="text-xs sm:text-sm text-orange-700 dark:text-orange-300 font-medium">
+            Early Failures
+          </div>
+        </div>
       </div>
 
-      {(stats.averageScore >= 60 || stats.bestScore === 100) && (
+      {(stats.averageScore >= 60 || stats.bestScore === 100) === true ? (
         <div className="mt-6 space-y-3">
-          {stats.averageScore >= 60 && (
+          {(stats.averageScore >= 60) === true ? (
             <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg animate-fade-in">
               <div className="flex items-center">
                 <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3">
@@ -100,9 +109,9 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
                 </p>
               </div>
             </div>
-          )}
+          ) : null}
 
-          {stats.bestScore === 100 && (
+          {(stats.bestScore === 100) === true ? (
             <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg animate-fade-in">
               <div className="flex items-center">
                 <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-3">
@@ -125,9 +134,9 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
                 </p>
               </div>
             </div>
-          )}
+          ) : null}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

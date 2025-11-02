@@ -35,7 +35,8 @@
     "effect": "^3.14.14",
     "fast-xml-parser": "^5.2.5",
     "linkedom": "^0.18.11",
-    "ts-essentials": "^10.0.4"
+    "ts-essentials": "^10.0.4",
+    "unpdf": "^1.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",

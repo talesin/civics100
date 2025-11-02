@@ -28,7 +28,7 @@ export default function GameControls({
       </div>
 
       <div className="flex space-x-3">
-        {showNext && onNext !== undefined && (
+        {showNext === true && onNext !== undefined ? (
           <button
             onClick={onNext}
             className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
@@ -37,25 +37,25 @@ export default function GameControls({
               ? 'Finish'
               : 'Next Question'}
           </button>
-        )}
+        ) : null}
 
-        {showRestart && onRestart !== undefined && (
+        {showRestart === true && onRestart !== undefined ? (
           <button
             onClick={onRestart}
             className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
           >
             Restart Game
           </button>
-        )}
+        ) : null}
       </div>
 
-      {session.correctAnswers >= 6 && session.isCompleted === false && (
+      {session.correctAnswers >= session.settings.winThreshold && session.isCompleted === false ? (
         <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <p className="text-green-800 dark:text-green-200 text-sm font-medium">
-            🎉 You&apos;ve reached 6 correct answers! You can continue or finish now.
+            🎉 You&apos;ve reached {session.settings.winThreshold} correct answers! You can continue or finish now.
           </p>
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

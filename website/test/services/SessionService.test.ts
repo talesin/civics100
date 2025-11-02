@@ -1,12 +1,11 @@
 import { describe, it, expect } from '@jest/globals'
-import { Effect, Layer } from 'effect'
+import { Effect } from 'effect'
 import { SessionService } from '@/services/SessionService'
 import { DEFAULT_GAME_SETTINGS } from '@/types'
-import { GameSession, TestGameServiceLayer } from 'questionnaire'
+import { GameSession } from 'questionnaire'
 
 describe('SessionService', () => {
-  const gameServiceLayer = TestGameServiceLayer()
-  const testLayer = SessionService.DefaultWithoutDependencies.pipe(Layer.provide(gameServiceLayer))
+  const testLayer = SessionService.Default
 
   it('should create a new session with correct structure', async () => {
     await Effect.gen(function* () {
@@ -75,13 +74,13 @@ describe('SessionService', () => {
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
-  it('should detect early win at 6 correct answers', async () => {
+  it('should detect early win at 12 correct answers (2025 default)', async () => {
     await Effect.gen(function* () {
       const sessionService = yield* SessionService
       let session = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
 
-      // Answer 6 questions correctly
-      for (let i = 0; i < 6; i++) {
+      // Answer 12 questions correctly
+      for (let i = 0; i < 12; i++) {
         const correctAnswer = {
           questionId: `question-${i + 1}`,
           selectedAnswerIndex: 0,
@@ -92,10 +91,12 @@ describe('SessionService', () => {
       }
 
       expect(session).toMatchObject({
-        correctAnswers: 6,
-        totalAnswered: 6,
+        correctAnswers: 12,
+        totalAnswered: 12,
+        incorrectAnswers: 0,
         isCompleted: true,
         isEarlyWin: true,
+        isEarlyFail: false,
         completedAt: expect.any(Date)
       })
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
@@ -121,10 +122,40 @@ describe('SessionService', () => {
       }
 
       expect(session.correctAnswers).toBe(2)
+      expect(session.incorrectAnswers).toBe(1)
       expect(session.totalAnswered).toBe(3)
       expect(session.isCompleted).toBe(true)
-      expect(session.isEarlyWin).toBe(false) // Only 2 correct, not 6
+      expect(session.isEarlyWin).toBe(false)
+      expect(session.isEarlyFail).toBe(false)
       expect(session.completedAt).toBeInstanceOf(Date)
+    }).pipe(Effect.provide(testLayer), Effect.runPromise)
+  })
+
+  it('should detect early fail at 9 incorrect answers (2025 rule)', async () => {
+    await Effect.gen(function* () {
+      const sessionService = yield* SessionService
+      let session = yield* sessionService.createNewSession(DEFAULT_GAME_SETTINGS)
+
+      // Answer 9 questions incorrectly
+      for (let i = 0; i < 9; i++) {
+        const incorrectAnswer = {
+          questionId: `question-${i + 1}`,
+          selectedAnswerIndex: 0,
+          isCorrect: false,
+          answeredAt: new Date()
+        }
+        session = sessionService.processAnswer(session, incorrectAnswer)
+      }
+
+      expect(session).toMatchObject({
+        correctAnswers: 0,
+        incorrectAnswers: 9,
+        totalAnswered: 9,
+        isCompleted: true,
+        isEarlyWin: false,
+        isEarlyFail: true,
+        completedAt: expect.any(Date)
+      })
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 

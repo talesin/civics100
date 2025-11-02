@@ -5,14 +5,15 @@ import { Question } from './types'
 import { getDOMDocument, getElementSiblings, ParseHTMLError } from './utils'
 
 /**
- * Filtered set of updated questions
+ * Filtered set of updated questions that exist in the 2025 civics test.
+ * Questions whose answers change over time with current political information.
+ * Note: This set is no longer used for filtering as we now use normalization
+ * to match questions dynamically.
  */
 export const UPDATED_QUESTIONS = new Set([
   'What is the name of the President of the United States now?*',
   'What is the name of the Vice President of the United States now?',
-  'How many justices are on the Supreme Court?',
   'Who is the Chief Justice of the United States now?',
-  'What is the political party of the President now?',
   'What is the name of the Speaker of the House of Representatives now?',
   'Name two national U.S. holidays.'
 ])
@@ -69,8 +70,9 @@ export const parseUpdates: (html: string) => Effect.Effect<Partial<Question>[], 
       .filter(
         (item): item is { question: { text: string; number: number }; answers: string[] } =>
           item.question?.text !== undefined &&
-          item.question?.number !== undefined &&
-          UPDATED_QUESTIONS.has(item.question.text)
+          item.question?.number !== undefined
+          // Note: Removed UPDATED_QUESTIONS filter to allow all parsed questions through.
+          // Matching is now handled by normalizeQuestionText() in QuestionsManager.
       )
       // map each object to a Partial<Question> object
       .map((item) => ({

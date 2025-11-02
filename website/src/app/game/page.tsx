@@ -330,7 +330,7 @@ export default function Game() {
         </div>
 
         {/* Early Win Option */}
-        {showEarlyWinOption && gameState === 'answered' && (
+        {showEarlyWinOption === true && gameState === 'answered' ? (
           <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 animate-fade-in">
             <div className="text-center">
               <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
@@ -356,7 +356,7 @@ export default function Game() {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Game Controls */}
         <GameControls
@@ -368,7 +368,7 @@ export default function Game() {
         />
 
         {/* Keyboard Help */}
-        {showKeyboardHelp && (
+        {showKeyboardHelp === true ? (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md mx-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -402,7 +402,7 @@ export default function Game() {
               </button>
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Keyboard Help Toggle */}
         <button

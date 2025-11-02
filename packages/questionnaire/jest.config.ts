@@ -21,4 +21,5 @@ export default {
   },
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 };

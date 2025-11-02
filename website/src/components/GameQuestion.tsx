@@ -193,11 +193,11 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
         </h2>
         
         {/* Multiple choice instruction */}
-        {isMultipleChoice && (
+        {isMultipleChoice === true ? (
           <p className="text-sm text-blue-600 dark:text-blue-400 mb-4 font-medium">
             Select {expectedCount} answer{expectedCount > 1 ? 's' : ''} ({selectedAnswers.length}/{expectedCount} selected)
           </p>
-        )}
+        ) : null}
       </div>
 
       {/* Answer Options */}
@@ -231,19 +231,19 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
       </div>
 
       {/* Keyboard Hint */}
-      {!hasAnswered && !disabled && (
+      {hasAnswered === false && disabled === false ? (
         <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <p className="text-xs text-blue-700 dark:text-blue-300 text-center">
             💡 Use keyboard:{' '}
             <kbd className="bg-white dark:bg-gray-700 px-1 rounded text-xs">1-4</kbd> or{' '}
-            <kbd className="bg-white dark:bg-gray-700 px-1 rounded text-xs">A-D</kbd> to {isMultipleChoice ? 'toggle' : 'select'} answers
-            {isMultipleChoice && ` (need ${expectedCount - selectedAnswers.length} more)`}
+            <kbd className="bg-white dark:bg-gray-700 px-1 rounded text-xs">A-D</kbd> to {isMultipleChoice === true ? 'toggle' : 'select'} answers
+            {isMultipleChoice === true ? ` (need ${expectedCount - selectedAnswers.length} more)` : ''}
           </p>
         </div>
-      )}
+      ) : null}
 
       {/* Answer Feedback */}
-      {hasAnswered && (
+      {hasAnswered === true ? (
         <div
           id="answer-feedback"
           className="mt-6 p-4 rounded-lg animate-fade-in"
@@ -322,7 +322,7 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
             </div>
           )}
         </div>
-      )}
+      ) : null}
     </div>
   )
 }

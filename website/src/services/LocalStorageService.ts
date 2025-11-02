@@ -7,8 +7,10 @@ const GameResultSchema = Schema.Struct({
   sessionId: Schema.NonEmptyString,
   totalQuestions: Schema.Number,
   correctAnswers: Schema.Number,
+  incorrectAnswers: Schema.optionalWith(Schema.Number, { default: () => 0 }),
   percentage: Schema.Number,
   isEarlyWin: Schema.Boolean,
+  isEarlyFail: Schema.optionalWith(Schema.Boolean, { default: () => false }),
   completedAt: Schema.DateFromString
 })
 
@@ -187,6 +189,7 @@ const getGameStats = (): Effect.Effect<
     averageScore: number
     bestScore: number
     earlyWins: number
+    earlyFailures: number
   },
   never,
   never
@@ -199,7 +202,8 @@ const getGameStats = (): Effect.Effect<
         totalGames: 0,
         averageScore: 0,
         bestScore: 0,
-        earlyWins: 0
+        earlyWins: 0,
+        earlyFailures: 0
       }
     }
 
@@ -207,12 +211,14 @@ const getGameStats = (): Effect.Effect<
     const averageScore = Math.round(results.reduce((sum, r) => sum + r.percentage, 0) / totalGames)
     const bestScore = Math.max(...results.map((r) => r.percentage))
     const earlyWins = results.filter((r) => r.isEarlyWin === true).length
+    const earlyFailures = results.filter((r) => r.isEarlyFail === true).length
 
     return {
       totalGames,
       averageScore,
       bestScore,
-      earlyWins
+      earlyWins,
+      earlyFailures
     }
   })
 }
@@ -301,7 +307,8 @@ export const TestLocalStorageServiceLayer = (fn?: {
             totalGames: 0,
             averageScore: 0,
             bestScore: 0,
-            earlyWins: 0
+            earlyWins: 0,
+            earlyFailures: 0
           })),
       checkStorageAvailable: fn?.checkStorageAvailable ?? (() => false)
     })
