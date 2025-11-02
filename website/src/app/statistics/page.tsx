@@ -223,13 +223,15 @@ export default function Statistics() {
 
         {/* Statistics Table */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-          <QuestionStatisticsTable
-            statistics={filteredStatistics}
-            sortField={sortField}
-            sortAscending={sortAscending}
-            onSort={handleSort}
-            onQuestionClick={(stat) => setSelectedQuestion(stat)}
-          />
+          <div className="overflow-y-auto max-h-[calc(100vh-27.5rem)] sm:max-h-[calc(100vh-23rem)] lg:max-h-[calc(100vh-20rem)]">
+            <QuestionStatisticsTable
+              statistics={filteredStatistics}
+              sortField={sortField}
+              sortAscending={sortAscending}
+              onSort={handleSort}
+              onQuestionClick={(stat) => setSelectedQuestion(stat)}
+            />
+          </div>
         </div>
       </div>
 
