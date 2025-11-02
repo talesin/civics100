@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { QuestionStatistics } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 import { PairedQuestionNumber } from 'questionnaire'
+import { MASTERY_THRESHOLD, NEEDS_PRACTICE_THRESHOLD } from '@/services/StatisticsService'
 
 interface QuestionDetailModalProps {
   question: QuestionStatistics
@@ -30,10 +31,10 @@ export default function QuestionDetailModal({
 
   // Determine mastery status
   const isMastered = (() => {
-    if (history.length < 3) {
+    if (history.length < MASTERY_THRESHOLD) {
       return false
     }
-    const recentAnswers = history.slice(-3)
+    const recentAnswers = history.slice(-MASTERY_THRESHOLD)
     return recentAnswers.every((answer) => answer.correct === true)
   })()
 
@@ -50,7 +51,7 @@ export default function QuestionDetailModal({
           ✅ Mastered
         </span>
       )
-    } else if (question.accuracy < 0.6) {
+    } else if (question.accuracy < NEEDS_PRACTICE_THRESHOLD) {
       return (
         <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
           Needs Practice

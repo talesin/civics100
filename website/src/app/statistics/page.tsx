@@ -35,6 +35,8 @@ export default function Statistics() {
 
   useEffect(() => {
     applyFiltersAndSort()
+    // Dependencies intentionally limited to trigger re-filter only when these values change.
+    // Including pairedAnswers or service methods would cause unnecessary re-renders.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statistics, filter, sortField, sortAscending, searchQuery])
 

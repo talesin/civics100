@@ -4,6 +4,16 @@ import { PairedQuestionNumber, QuestionSelector, QuestionSelectorDefault } from 
 import { QuestionStatistics, QuestionFilter, QuestionSortField } from '@/types'
 
 /**
+ * Number of consecutive correct answers required to consider a question "mastered"
+ */
+export const MASTERY_THRESHOLD = 3
+
+/**
+ * Accuracy threshold below which a question is considered to need practice
+ */
+export const NEEDS_PRACTICE_THRESHOLD = 0.6
+
+/**
  * Default weights for adaptive question selection
  * These match the weights used in QuestionSelector
  */
@@ -15,7 +25,10 @@ const DEFAULT_WEIGHTS = {
 
 /**
  * Calculate the selection weight for a paired question based on answer history
- * This mirrors the logic in QuestionSelector.calculatePairedQuestionWeight
+ *
+ * NOTE: This logic is intentionally duplicated from QuestionSelector.calculatePairedQuestionWeight
+ * to maintain transparency in statistics calculations and avoid coupling the statistics service
+ * to game session logic. Keep these implementations synchronized.
  */
 const calculateWeight = (
   pairedQuestionNumber: string,
@@ -43,16 +56,16 @@ const calculateWeight = (
 }
 
 /**
- * Check if a question is mastered (last 3 answers were correct)
+ * Check if a question is mastered (last N answers were correct, where N = MASTERY_THRESHOLD)
  */
 const isMastered = (pairedQuestionNumber: string, pairedAnswers: PairedAnswers): boolean => {
   const pqn = PairedQuestionNumber(pairedQuestionNumber)
   const history = pairedAnswers[pqn]
-  if (history === undefined || history.length < 3) {
+  if (history === undefined || history.length < MASTERY_THRESHOLD) {
     return false
   }
 
-  const recentAnswers = history.slice(-3)
+  const recentAnswers = history.slice(-MASTERY_THRESHOLD)
   return recentAnswers.every((answer) => answer.correct === true)
 }
 
@@ -135,7 +148,7 @@ const filterQuestions = (
       return statistics.filter(
         (stat) =>
           stat.timesAsked > 0 &&
-          stat.accuracy < 0.6 &&
+          stat.accuracy < NEEDS_PRACTICE_THRESHOLD &&
           !isMastered(stat.pairedQuestionNumber, pairedAnswers)
       )
 
@@ -223,7 +236,7 @@ const getSummaryStatistics = (
     const history = pairedAnswers[pqn] ?? []
     const correct = history.filter((a) => a.correct === true).length
     const accuracy = history.length > 0 ? correct / history.length : 0
-    return accuracy < 0.6 && !isMastered(q.pairedQuestionNumber, pairedAnswers)
+    return accuracy < NEEDS_PRACTICE_THRESHOLD && !isMastered(q.pairedQuestionNumber, pairedAnswers)
   })
   const questionsNeedingPractice = needsPractice.length
 
