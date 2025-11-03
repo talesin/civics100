@@ -7,6 +7,7 @@ export default {
     "^@src/(.*)$": "<rootDir>/src/$1",
     "^@test/(.*)$": "<rootDir>/test/$1",
     "^(\\.{1,2}/.*)\\.js$": "$1",
+    "^distractions$": "<rootDir>/test/__mocks__/distractions.ts",
   },
   transform: {
     "^.+\\.tsx?$": [

@@ -52,7 +52,9 @@ export default function Settings() {
 
   const handleMaxQuestionsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(event.target.value)
-    setSettings((prev) => ({ ...prev, maxQuestions: value }))
+    // Auto-calculate winThreshold as 60% of maxQuestions
+    const newWinThreshold = Math.ceil(value * 0.6)
+    setSettings((prev) => ({ ...prev, maxQuestions: value, winThreshold: newWinThreshold }))
     setHasChanges(true)
   }
 
