@@ -190,7 +190,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { container } = render(
+    const { getByTestId } = render(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -198,7 +198,7 @@ describe('GameResults', () => {
       />
     )
 
-    const greenCircle = container.querySelector('.bg-green-100')
+    const greenCircle = getByTestId('result-icon-success')
     expect(greenCircle).toBeInTheDocument()
   })
 
@@ -213,7 +213,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { container } = render(
+    const { getByTestId } = render(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -221,7 +221,7 @@ describe('GameResults', () => {
       />
     )
 
-    const redCircle = container.querySelector('.bg-red-100')
+    const redCircle = getByTestId('result-icon-failure')
     expect(redCircle).toBeInTheDocument()
   })
 
@@ -236,7 +236,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { container } = render(
+    const { getByTestId } = render(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -244,7 +244,7 @@ describe('GameResults', () => {
       />
     )
 
-    const redCircle = container.querySelector('.bg-red-100')
+    const redCircle = getByTestId('result-icon-failure')
     expect(redCircle).toBeInTheDocument()
   })
 
@@ -330,7 +330,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { container } = render(
+    const { getByTestId } = render(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -338,7 +338,7 @@ describe('GameResults', () => {
       />
     )
 
-    const progressBar = container.querySelector('.bg-green-500')
+    const progressBar = getByTestId('progress-bar')
     expect(progressBar).toBeInTheDocument()
     expect(progressBar).toHaveStyle({ width: '75%' })
   })
@@ -354,7 +354,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { container } = render(
+    const { getByTestId } = render(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -362,7 +362,7 @@ describe('GameResults', () => {
       />
     )
 
-    const progressBar = container.querySelector('.bg-red-500')
+    const progressBar = getByTestId('progress-bar')
     expect(progressBar).toBeInTheDocument()
     expect(progressBar).toHaveStyle({ width: '40%' })
   })

@@ -240,7 +240,7 @@ describe('SessionService', () => {
         let session = yield* sessionService.createNewSession({
           ...DEFAULT_GAME_SETTINGS,
           maxQuestions: 50,
-          winThreshold: 30 // 60% of 50
+          winThreshold: 30 // 60% of 50; early fail still at 9 incorrect (not proportional to question count)
         })
 
         // Answer 30 questions correctly
@@ -270,7 +270,7 @@ describe('SessionService', () => {
         let session = yield* sessionService.createNewSession({
           ...DEFAULT_GAME_SETTINGS,
           maxQuestions: 100,
-          winThreshold: 60 // 60% of 100
+          winThreshold: 60 // 60% of 100; note: early fail remains at 9 incorrect regardless of total question count
         })
 
         // Answer 60 questions correctly

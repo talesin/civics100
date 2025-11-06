@@ -340,7 +340,7 @@ describe('GameService', () => {
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
-    it('should prioritize early fail over early win when both conditions met', async () => {
+    it('should prioritize early fail over early win when both conditions are met', async () => {
       await Effect.gen(function* () {
         const gameService = yield* GameService
 

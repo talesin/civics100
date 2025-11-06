@@ -22,9 +22,12 @@ export interface GameStats {
   earlyFailures: number
 }
 
+// Win threshold percentage used for calculating pass requirements
+export const WIN_THRESHOLD_PERCENTAGE = 0.6
+
 export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
   maxQuestions: 20,
-  winThreshold: 12,
+  winThreshold: Math.ceil(20 * WIN_THRESHOLD_PERCENTAGE), // 12 (60% of 20)
   userState: 'CA' as import('civics2json').StateAbbreviation,
   userDistrict: undefined,
   darkMode: false
