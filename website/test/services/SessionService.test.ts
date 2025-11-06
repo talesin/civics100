@@ -231,4 +231,182 @@ describe('SessionService', () => {
       expect(sessionService.canContinue(earlyWinSession)).toBe(false)
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
+
+  // New tests for 50 and 100 question early exit scenarios
+  describe('Early Exit Conditions for Different Question Counts', () => {
+    it('should allow early win at 30 correct for 50 questions', async () => {
+      await Effect.gen(function* () {
+        const sessionService = yield* SessionService
+        let session = yield* sessionService.createNewSession({
+          ...DEFAULT_GAME_SETTINGS,
+          maxQuestions: 50,
+          winThreshold: 30 // 60% of 50; early fail still at 9 incorrect (not proportional to question count)
+        })
+
+        // Answer 30 questions correctly
+        for (let i = 0; i < 30; i++) {
+          const correctAnswer = {
+            questionId: `question-${i + 1}`,
+            selectedAnswerIndex: 0,
+            isCorrect: true,
+            answeredAt: new Date()
+          }
+          session = sessionService.processAnswer(session, correctAnswer)
+        }
+
+        expect(session).toMatchObject({
+          correctAnswers: 30,
+          totalAnswered: 30,
+          isCompleted: true,
+          isEarlyWin: true,
+          isEarlyFail: false
+        })
+      }).pipe(Effect.provide(testLayer), Effect.runPromise)
+    })
+
+    it('should allow early win at 60 correct for 100 questions', async () => {
+      await Effect.gen(function* () {
+        const sessionService = yield* SessionService
+        let session = yield* sessionService.createNewSession({
+          ...DEFAULT_GAME_SETTINGS,
+          maxQuestions: 100,
+          winThreshold: 60 // 60% of 100; note: early fail remains at 9 incorrect regardless of total question count
+        })
+
+        // Answer 60 questions correctly
+        for (let i = 0; i < 60; i++) {
+          const correctAnswer = {
+            questionId: `question-${i + 1}`,
+            selectedAnswerIndex: 0,
+            isCorrect: true,
+            answeredAt: new Date()
+          }
+          session = sessionService.processAnswer(session, correctAnswer)
+        }
+
+        expect(session).toMatchObject({
+          correctAnswers: 60,
+          totalAnswered: 60,
+          isCompleted: true,
+          isEarlyWin: true,
+          isEarlyFail: false
+        })
+      }).pipe(Effect.provide(testLayer), Effect.runPromise)
+    })
+
+    it('should trigger early fail at 9 incorrect for 50 questions', async () => {
+      await Effect.gen(function* () {
+        const sessionService = yield* SessionService
+        let session = yield* sessionService.createNewSession({
+          ...DEFAULT_GAME_SETTINGS,
+          maxQuestions: 50,
+          winThreshold: 30
+        })
+
+        // Answer 9 questions incorrectly
+        for (let i = 0; i < 9; i++) {
+          const incorrectAnswer = {
+            questionId: `question-${i + 1}`,
+            selectedAnswerIndex: 0,
+            isCorrect: false,
+            answeredAt: new Date()
+          }
+          session = sessionService.processAnswer(session, incorrectAnswer)
+        }
+
+        expect(session).toMatchObject({
+          incorrectAnswers: 9,
+          isCompleted: true,
+          isEarlyWin: false,
+          isEarlyFail: true
+        })
+      }).pipe(Effect.provide(testLayer), Effect.runPromise)
+    })
+
+    it('should trigger early fail at 9 incorrect for 100 questions', async () => {
+      await Effect.gen(function* () {
+        const sessionService = yield* SessionService
+        let session = yield* sessionService.createNewSession({
+          ...DEFAULT_GAME_SETTINGS,
+          maxQuestions: 100,
+          winThreshold: 60
+        })
+
+        // Answer 9 questions incorrectly
+        for (let i = 0; i < 9; i++) {
+          const incorrectAnswer = {
+            questionId: `question-${i + 1}`,
+            selectedAnswerIndex: 0,
+            isCorrect: false,
+            answeredAt: new Date()
+          }
+          session = sessionService.processAnswer(session, incorrectAnswer)
+        }
+
+        expect(session).toMatchObject({
+          incorrectAnswers: 9,
+          isCompleted: true,
+          isEarlyWin: false,
+          isEarlyFail: true
+        })
+      }).pipe(Effect.provide(testLayer), Effect.runPromise)
+    })
+
+    it('should NOT allow early win before reaching threshold', async () => {
+      await Effect.gen(function* () {
+        const sessionService = yield* SessionService
+
+        // Test 11/20 (one short of 12)
+        let session20 = yield* sessionService.createNewSession({
+          ...DEFAULT_GAME_SETTINGS,
+          maxQuestions: 20,
+          winThreshold: 12
+        })
+        for (let i = 0; i < 11; i++) {
+          session20 = sessionService.processAnswer(session20, {
+            questionId: `q-${i}`,
+            selectedAnswerIndex: 0,
+            isCorrect: true,
+            answeredAt: new Date()
+          })
+        }
+        expect(session20.isEarlyWin).toBe(false)
+        expect(session20.isCompleted).toBe(false)
+
+        // Test 29/50 (one short of 30)
+        let session50 = yield* sessionService.createNewSession({
+          ...DEFAULT_GAME_SETTINGS,
+          maxQuestions: 50,
+          winThreshold: 30
+        })
+        for (let i = 0; i < 29; i++) {
+          session50 = sessionService.processAnswer(session50, {
+            questionId: `q-${i}`,
+            selectedAnswerIndex: 0,
+            isCorrect: true,
+            answeredAt: new Date()
+          })
+        }
+        expect(session50.isEarlyWin).toBe(false)
+        expect(session50.isCompleted).toBe(false)
+
+        // Test 59/100 (one short of 60)
+        let session100 = yield* sessionService.createNewSession({
+          ...DEFAULT_GAME_SETTINGS,
+          maxQuestions: 100,
+          winThreshold: 60
+        })
+        for (let i = 0; i < 59; i++) {
+          session100 = sessionService.processAnswer(session100, {
+            questionId: `q-${i}`,
+            selectedAnswerIndex: 0,
+            isCorrect: true,
+            answeredAt: new Date()
+          })
+        }
+        expect(session100.isEarlyWin).toBe(false)
+        expect(session100.isCompleted).toBe(false)
+      }).pipe(Effect.provide(testLayer), Effect.runPromise)
+    })
+  })
 })

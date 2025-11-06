@@ -41,7 +41,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
       <div className="mb-6">
         <div className="animate-bounce-in">
           {result.isEarlyFail !== true && (result.isEarlyWin === true || result.percentage >= 60) ? (
-            <div className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div data-testid="result-icon-success" className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-10 h-10 text-green-600 dark:text-green-400"
                 fill="none"
@@ -57,7 +57,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
               </svg>
             </div>
           ) : (
-            <div className="w-20 h-20 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div data-testid="result-icon-failure" className="w-20 h-20 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg
                 className="w-10 h-10 text-red-600 dark:text-red-400"
                 fill="none"
@@ -99,6 +99,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
       <div className="mb-6">
         <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
           <div
+            data-testid="progress-bar"
             className={`h-3 rounded-full transition-all duration-500 ${
               result.percentage >= 60 ? 'bg-green-500' : 'bg-red-500'
             }`}
@@ -113,7 +114,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
       {result.isEarlyWin === true ? (
         <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
           <p className="text-yellow-800 dark:text-yellow-200 text-sm">
-            🌟 Early Win Achievement! You answered 6 questions correctly and chose to finish early.
+            🌟 Early Win Achievement! You answered {result.correctAnswers} questions correctly and chose to finish early.
           </p>
         </div>
       ) : null}

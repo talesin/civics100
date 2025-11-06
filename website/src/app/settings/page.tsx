@@ -6,7 +6,7 @@ import { StateAbbreviation } from 'civics2json'
 import Layout from '@/components/Layout'
 import StateSelector from '@/components/StateSelector'
 import DistrictSelector from '@/components/DistrictSelector'
-import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings } from '@/types'
+import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings, WIN_THRESHOLD_PERCENTAGE } from '@/types'
 
 export default function Settings() {
   const router = useRouter()
@@ -52,7 +52,9 @@ export default function Settings() {
 
   const handleMaxQuestionsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(event.target.value)
-    setSettings((prev) => ({ ...prev, maxQuestions: value }))
+    // Auto-calculate winThreshold as 60% of maxQuestions
+    const newWinThreshold = Math.ceil(value * WIN_THRESHOLD_PERCENTAGE)
+    setSettings((prev) => ({ ...prev, maxQuestions: value, winThreshold: newWinThreshold }))
     setHasChanges(true)
   }
 
@@ -188,8 +190,8 @@ export default function Settings() {
                   onChange={handleWinThresholdChange}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
-                  <option value={Math.ceil(settings.maxQuestions * 0.6)}>
-                    {Math.ceil(settings.maxQuestions * 0.6)} correct (60%)
+                  <option value={Math.ceil(settings.maxQuestions * WIN_THRESHOLD_PERCENTAGE)}>
+                    {Math.ceil(settings.maxQuestions * WIN_THRESHOLD_PERCENTAGE)} correct (60%)
                   </option>
                   <option value={Math.ceil(settings.maxQuestions * 0.7)}>
                     {Math.ceil(settings.maxQuestions * 0.7)} correct (70%)

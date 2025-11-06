@@ -78,7 +78,7 @@ export default function Home() {
               ✅ 60% to Pass
             </span>
             <span className="bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 px-3 py-1 rounded-full">
-              ⚡ 6 Early Win
+              ⚡ 12 Early Win
             </span>
           </div>
         </div>
@@ -105,8 +105,9 @@ export default function Home() {
                 Take the Test
               </h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6 text-balance">
-                Start a new civics test with up to 10 questions. You need 6 correct answers to pass,
-                or you can continue to answer all 10 questions.
+                Start a new civics test with up to 20 questions (configurable in settings). You need
+                12 correct answers (60%) to pass, or you can continue to answer all 20 questions.
+                Note: The test will automatically end if you answer 9 questions incorrectly.
               </p>
               <div className="flex flex-wrap gap-2 justify-center mb-6">
                 <span className="text-xs bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 px-2 py-1 rounded">
