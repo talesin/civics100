@@ -122,7 +122,7 @@ npx tsx src/index.ts updates parse [--force]          # Parse updates
 - Keep the codebase simple and easy to understand
 - Focus only on areas relevant to the task at hand
 - Write thorough tests for all code
-- Read .windsurf/rules/code-style-guide.md for more information
+- Read @./coding-style-guide.md for more information
 
 ### TypeScript/Effect-TS Specific
 
@@ -152,3 +152,4 @@ npx tsx src/index.ts updates parse [--force]          # Parse updates
 
 - All temporary working scripts or files should start with 'temp\_'
 - Record plans to 'plans/' in markdown
+
