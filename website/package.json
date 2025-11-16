@@ -19,12 +19,17 @@
   },
   "dependencies": {
     "@effect/platform": "^0.88.0",
+    "@tamagui/animations-css": "^1.138.0",
+    "@tamagui/config": "^1.138.0",
+    "@tamagui/next-plugin": "^1.138.0",
+    "@tamagui/next-theme": "^1.138.0",
     "civics2json": "*",
     "effect": "^3.16.13",
     "next": "^15.3.5",
     "questionnaire": "*",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "tamagui": "^1.138.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
