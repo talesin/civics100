@@ -73,6 +73,7 @@ const tokens = createTokens({
     2: 8,     // 0.5rem
     3: 12,    // 0.75rem
     4: 16,    // 1rem
+    true: 16, // default space (1rem)
     5: 20,    // 1.25rem
     6: 24,    // 1.5rem
     8: 32,    // 2rem
@@ -89,6 +90,7 @@ const tokens = createTokens({
     2: 24,
     3: 28,
     4: 32,
+    true: 32, // default size
     5: 36,
     6: 40,
     7: 44,
