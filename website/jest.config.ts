@@ -21,7 +21,8 @@ const config: Config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^questionnaire$': '<rootDir>/test/mocks/questionnaire.ts',
-    '^slash$': '<rootDir>/test/mocks/slash.js'
+    '^slash$': '<rootDir>/test/mocks/slash.js',
+    '\\.(css|less|scss|sass)$': '<rootDir>/test/mocks/styleMock.js'
   },
   testTimeout: 10000,
   // Ensure consistent React resolution across monorepo
