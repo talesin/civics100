@@ -12,9 +12,9 @@
     "lint": "npx next lint",
     "lint:fix": "npx next lint --fix",
     "export": "npx next build",
-    "test": "npx jest",
-    "test:watch": "npx jest --watch",
-    "test:coverage": "npx jest --coverage",
+    "test": "NODE_OPTIONS='--experimental-vm-modules' npx jest",
+    "test:watch": "NODE_OPTIONS='--experimental-vm-modules' npx jest --watch",
+    "test:coverage": "NODE_OPTIONS='--experimental-vm-modules' npx jest --coverage",
     "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
