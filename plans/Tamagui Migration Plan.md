@@ -14,9 +14,35 @@ This plan provides a granular, step-by-step approach to migrating the civics-nat
 **Total Estimated Time:** 8-12 hours across 9 phases
 **Risk Level:** Medium (managed through incremental approach)
 
-### Important: Git Command Handling
+### ⚠️ CRITICAL: Git Command Handling ⚠️
 
-**All git write commands (checkout, commit, add, etc.) will be prompted to you for manual execution.** Claude will prepare the content changes, run builds/tests, and provide the exact commands you should run. Git checkpoints are marked with **→ ACTION REQUIRED** throughout the plan.
+**━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━**
+**██ CLAUDE: YOU ARE ABSOLUTELY FORBIDDEN FROM USING GIT WRITE COMMANDS ██**
+**━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━**
+
+**NEVER, EVER RUN:**
+- ❌ `git add`
+- ❌ `git commit`
+- ❌ `git checkout`
+- ❌ `git branch`
+- ❌ `git merge`
+- ❌ `git push`
+- ❌ `git reset`
+- ❌ ANY OTHER GIT WRITE COMMAND
+
+**YOU MAY ONLY:**
+- ✅ `git status` (read only)
+- ✅ `git log` (read only)
+- ✅ `git diff` (read only)
+- ✅ `git show` (read only)
+
+**ALL GIT WRITE COMMANDS MUST BE:**
+1. Suggested to the user with exact command text
+2. Marked with **→ ACTION REQUIRED**
+3. NEVER executed by Claude
+4. Manually executed by the user
+
+**Claude will prepare content changes, run builds/tests, and provide exact git commands for the user to run.**
 
 ---
 
@@ -637,15 +663,18 @@ npm install
 
 ---
 
-## Phase 5: Create Base Tamagui Components
+## Phase 5: Create Base Tamagui Components ✅ COMPLETE
 
 **Goal:** Create Tamagui versions of primitive components without replacing Tailwind ones
 **Duration:** 60 minutes
 **Risk:** Low (new files, no changes to existing)
+**Status:** Completed - Base components created (Button, Card, Text), build passes, tests pass
 
 ### Prerequisites
 ✅ Phase 4 completed
 ✅ TamaguiProvider active
+
+**IMPORTANT: CLAUDE MUST WAIT FOR USER VERIFICATION BEFORE PROCEEDING TO NEXT PHASE**
 
 ### Steps
 
@@ -867,12 +896,14 @@ describe('Tamagui Button', () => {
 ```
 
 ### Verification Checklist
-- [ ] All component files created
-- [ ] TypeScript compiles without errors
-- [ ] `npm run build` succeeds
-- [ ] Tests pass: `npm run test`
-- [ ] Components render in isolation
-- [ ] No impact on existing Tailwind components
+- [x] All component files created
+- [x] TypeScript compiles without errors
+- [x] `npm run build` succeeds
+- [x] Tests pass: `npm run test` (50 tests passing)
+- [x] Components render in isolation
+- [x] No impact on existing Tailwind components
+
+**→ USER VERIFICATION REQUIRED:** Please verify Phase 5 is complete before proceeding to Phase 6.
 
 ### Rollback
 **→ ACTION REQUIRED:** To rollback this phase:
@@ -1535,4 +1566,15 @@ declare module 'tamagui' {
 - Visual regression checked against baseline screenshots
 - Git commits created at each checkpoint
 
-**Do not proceed to next phase until current phase is 100% verified.**
+**━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━**
+**CRITICAL RULES FOR CLAUDE:**
+**━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━**
+
+1. **NEVER RUN GIT WRITE COMMANDS** (add, commit, checkout, branch, merge, push, reset)
+2. **Do not proceed to next phase until current phase is 100% verified by the user**
+3. Complete all tasks for a phase
+4. Run all verification steps
+5. Report results to user
+6. **WAIT for explicit user approval before proceeding to next phase**
+7. Never skip ahead or assume approval
+8. Only suggest git commands for user to run manually

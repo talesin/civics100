@@ -116,7 +116,7 @@
     "party": "D",
     "officeRoom": "1432 LHOB",
     "phone": "(202) 225-4065",
-    "committeeAssignment": "Education and Workforce|Oversight and Government Reform|Natural Resources",
+    "committeeAssignment": "Oversight and Government Reform|Natural Resources",
     "website": "https://ansari.house.gov/"
   },
   {
@@ -156,7 +156,7 @@
     "party": "D",
     "officeRoom": "1203 LHOB",
     "phone": "(202) 225-2435",
-    "committeeAssignment": "",
+    "committeeAssignment": "Education and Workforce|Natural Resources",
     "website": "https://grijalva.house.gov/"
   },
   {
@@ -416,7 +416,7 @@
     "party": "R",
     "officeRoom": "243 CHOB",
     "phone": "(202) 225-2915",
-    "committeeAssignment": "Transportation and Infrastructure|Science, Space, and Technology",
+    "committeeAssignment": "Homeland Security|Transportation and Infrastructure|Science, Space, and Technology",
     "website": "https://fong.house.gov/"
   },
   {
@@ -2476,7 +2476,7 @@
     "party": "D",
     "officeRoom": "1022 LHOB",
     "phone": "(202) 225-4765",
-    "committeeAssignment": "Small Business|Veterans' Affairs",
+    "committeeAssignment": "Armed Services|Small Business|Veterans' Affairs",
     "website": "https://conaway.house.gov/"
   },
   {
@@ -2550,14 +2550,14 @@
     "website": "https://mciver.house.gov/"
   },
   {
-    "name": "Mikie Sherrill",
+    "name": "Mikie- Vacancy Sherrill",
     "state": "NJ",
     "district": "11th",
     "party": "D",
     "officeRoom": "1427 LHOB",
     "phone": "(202) 225-5034",
-    "committeeAssignment": "Armed Services|Select Comm on the Strategic Competition US and China",
-    "website": "https://sherrill.house.gov/"
+    "committeeAssignment": "",
+    "website": "https://clerk.house.gov/members/NJ11/vacancy"
   },
   {
     "name": "Bonnie Watson Coleman",
@@ -2666,7 +2666,7 @@
     "party": "D",
     "officeRoom": "2302 RHOB",
     "phone": "(202) 225-2361",
-    "committeeAssignment": "Financial Services|Natural Resources|Small Business",
+    "committeeAssignment": "Financial Services|Small Business",
     "website": "https://velazquez.house.gov"
   },
   {
@@ -4186,7 +4186,7 @@
     "party": "D",
     "officeRoom": "2265 RHOB",
     "phone": "(202) 225-1492",
-    "committeeAssignment": "Oversight and Government Reform",
+    "committeeAssignment": "Oversight and Government Reform|Homeland Security",
     "website": "https://walkinshaw.house.gov/"
   },
   {
