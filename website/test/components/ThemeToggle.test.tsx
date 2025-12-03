@@ -1,6 +1,13 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import ThemeToggle from '@/components/ThemeToggle'
+import { TamaguiProvider } from '@/components/TamaguiProvider'
+
+function renderWithProvider(component) {
+  return render(
+    <TamaguiProvider>{component}</TamaguiProvider>
+  )
+}
 
 // Mock localStorage
 const mockLocalStorage = {
@@ -45,7 +52,7 @@ beforeEach(() => {
 
 describe('ThemeToggle', () => {
   it('should render a button', () => {
-    render(<ThemeToggle />)
+    renderWithProvider(<ThemeToggle />)
     
     // Should show a button element
     const button = screen.getByRole('button')
@@ -64,8 +71,8 @@ describe('ThemeToggle', () => {
     }))
     
     mockLocalStorage.getItem.mockReturnValue(null)
-    
-    render(<ThemeToggle />)
+
+    renderWithProvider(<ThemeToggle />)
     
     // Wait for component to mount
     await waitFor(() => {
@@ -78,8 +85,8 @@ describe('ThemeToggle', () => {
 
   it('should initialize with saved theme preference', async () => {
     mockLocalStorage.getItem.mockReturnValue('dark')
-    
-    render(<ThemeToggle />)
+
+    renderWithProvider(<ThemeToggle />)
     
     // Wait for component to mount
     await waitFor(() => {
@@ -92,8 +99,8 @@ describe('ThemeToggle', () => {
 
   it('should toggle theme when clicked', async () => {
     mockLocalStorage.getItem.mockReturnValue('light')
-    
-    render(<ThemeToggle />)
+
+    renderWithProvider(<ThemeToggle />)
     
     // Wait for component to mount
     await waitFor(() => {
@@ -114,8 +121,8 @@ describe('ThemeToggle', () => {
 
   it('should persist theme preference in localStorage', async () => {
     mockLocalStorage.getItem.mockReturnValue('light')
-    
-    render(<ThemeToggle />)
+
+    renderWithProvider(<ThemeToggle />)
     
     // Wait for component to mount
     await waitFor(() => {
@@ -153,8 +160,8 @@ describe('ThemeToggle', () => {
       removeEventListener: jest.fn(),
       dispatchEvent: jest.fn(),
     }))
-    
-    render(<ThemeToggle />)
+
+    renderWithProvider(<ThemeToggle />)
     
     // Should still work and fall back to system preference
     await waitFor(() => {
@@ -168,8 +175,8 @@ describe('ThemeToggle', () => {
 
   it('should display correct icons for light and dark modes', async () => {
     mockLocalStorage.getItem.mockReturnValue('light')
-    
-    render(<ThemeToggle />)
+
+    renderWithProvider(<ThemeToggle />)
     
     // Wait for component to mount
     await waitFor(() => {
@@ -188,21 +195,20 @@ describe('ThemeToggle', () => {
     expect(darkModeButton.querySelector('svg')).toBeInTheDocument()
   })
 
-  it('should apply correct CSS classes for dark mode', async () => {
+  it('should render with Tamagui styled button', async () => {
     mockLocalStorage.getItem.mockReturnValue('light')
-    
-    render(<ThemeToggle />)
-    
+
+    renderWithProvider(<ThemeToggle />)
+
     // Wait for component to mount
     await waitFor(() => {
       expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument()
     })
-    
+
     const button = screen.getByLabelText('Switch to dark mode')
-    
-    // Should have dark mode classes
-    expect(button).toHaveClass('dark:text-gray-300')
-    expect(button).toHaveClass('dark:hover:text-white')
-    expect(button).toHaveClass('dark:hover:bg-gray-700')
+
+    // Should render as a button element (Tamagui styled)
+    expect(button).toBeInTheDocument()
+    expect(button.tagName).toBe('BUTTON')
   })
 })
