@@ -1,32 +1,207 @@
 import React from 'react'
 import { GameStats } from '@/types'
+import { Card, XStack, YStack, Text } from '@/components/tamagui'
+import { styled } from 'tamagui'
 
 interface StatsSummaryProps {
   stats: GameStats
 }
 
+const HeaderIcon = styled(YStack, {
+  width: 32,
+  height: 32,
+  borderRadius: '$3',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '#a855f7', // purple-500 as fallback for gradient
+})
+
+const StatCard = styled(YStack, {
+  padding: '$4',
+  borderRadius: '$3',
+  borderWidth: 1,
+  minWidth: 0,
+  flex: 1,
+  alignItems: 'center',
+
+  variants: {
+    variant: {
+      blue: {
+        backgroundColor: '#eff6ff', // blue-50
+        borderColor: '#dbeafe', // blue-100
+      },
+      green: {
+        backgroundColor: '#f0fdf4', // green-50
+        borderColor: '#dcfce7', // green-100
+      },
+      purple: {
+        backgroundColor: '#faf5ff', // purple-50
+        borderColor: '#f3e8ff', // purple-100
+      },
+      yellow: {
+        backgroundColor: '#fefce8', // yellow-50
+        borderColor: '#fef9c3', // yellow-100
+      },
+      orange: {
+        backgroundColor: '#fff7ed', // orange-50
+        borderColor: '#ffedd5', // orange-100
+      },
+    },
+  },
+} as const)
+
+const StatValue = styled(Text, {
+  fontSize: '$8', // text-2xl
+  fontWeight: 'bold',
+  marginBottom: '$1',
+
+  '$sm': {
+    fontSize: '$9', // text-3xl on sm+
+  },
+
+  variants: {
+    variant: {
+      blue: {
+        color: '#2563eb', // blue-600
+      },
+      green: {
+        color: '#16a34a', // green-600
+      },
+      purple: {
+        color: '#9333ea', // purple-600
+      },
+      yellow: {
+        color: '#ca8a04', // yellow-600
+      },
+      orange: {
+        color: '#ea580c', // orange-600
+      },
+    },
+  },
+} as const)
+
+const StatLabel = styled(Text, {
+  fontSize: '$2', // text-xs
+  fontWeight: '500',
+
+  '$sm': {
+    fontSize: '$3', // text-sm on sm+
+  },
+
+  variants: {
+    variant: {
+      blue: {
+        color: '#1d4ed8', // blue-700
+      },
+      green: {
+        color: '#15803d', // green-700
+      },
+      purple: {
+        color: '#7e22ce', // purple-700
+      },
+      yellow: {
+        color: '#a16207', // yellow-700
+      },
+      orange: {
+        color: '#c2410c', // orange-700
+      },
+    },
+  },
+} as const)
+
+const AchievementBadge = styled(XStack, {
+  padding: '$4',
+  borderRadius: '$3',
+  borderWidth: 1,
+  alignItems: 'center',
+  animation: 'fast',
+
+  variants: {
+    variant: {
+      green: {
+        backgroundColor: '#f0fdf4', // green-50
+        borderColor: '#bbf7d0', // green-200
+      },
+      yellow: {
+        backgroundColor: '#fefce8', // yellow-50
+        borderColor: '#fef08a', // yellow-200
+      },
+    },
+  },
+} as const)
+
+const BadgeIcon = styled(YStack, {
+  width: 24,
+  height: 24,
+  borderRadius: 999,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: '$3',
+
+  variants: {
+    variant: {
+      green: {
+        backgroundColor: '#22c55e', // green-500
+      },
+      yellow: {
+        backgroundColor: '#eab308', // yellow-500
+      },
+    },
+  },
+} as const)
+
+const BadgeText = styled(Text, {
+  fontSize: '$3',
+  fontWeight: '500',
+
+  variants: {
+    variant: {
+      green: {
+        color: '#166534', // green-800
+      },
+      yellow: {
+        color: '#854d0e', // yellow-800
+      },
+    },
+  },
+} as const)
+
 export default function StatsSummary({ stats }: StatsSummaryProps) {
   if (stats.totalGames === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 text-center">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Your Statistics
-        </h3>
-        <p className="text-gray-600 dark:text-gray-300">
-          No games played yet. Start your first civics test!
-        </p>
-      </div>
+      <Card elevated padding="$6">
+        <YStack alignItems="center">
+          <Text
+            fontSize="$5"
+            fontWeight="600"
+            color="$color"
+            marginBottom="$2"
+            tag="h3"
+          >
+            Your Statistics
+          </Text>
+          <Text color="$color" opacity={0.8}>
+            No games played yet. Start your first civics test!
+          </Text>
+        </YStack>
+      </Card>
     )
   }
 
   return (
-    <div className="card">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+    <Card elevated padding="$6">
+      <XStack alignItems="center" justifyContent="space-between" marginBottom="$6">
+        <Text
+          fontSize="$5"
+          fontWeight="bold"
+          color="$color"
+          tag="h3"
+          $sm={{ fontSize: '$6' }}
+        >
           Your Statistics
-        </h3>
-        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-          <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        </Text>
+        <HeaderIcon>
+          <svg width={20} height={20} fill="none" stroke="white" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -34,109 +209,75 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
               d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
             />
           </svg>
-        </div>
-      </div>
+        </HeaderIcon>
+      </XStack>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
-        <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
-          <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
-            {stats.totalGames}
-          </div>
-          <div className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 font-medium">
-            Games Played
-          </div>
-        </div>
+      <XStack flexWrap="wrap" gap="$4" $sm={{ gap: '$6' }}>
+        <StatCard variant="blue">
+          <StatValue variant="blue">{stats.totalGames}</StatValue>
+          <StatLabel variant="blue">Games Played</StatLabel>
+        </StatCard>
 
-        <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-100 dark:border-green-800">
-          <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-1">
-            {stats.averageScore}%
-          </div>
-          <div className="text-xs sm:text-sm text-green-700 dark:text-green-300 font-medium">
-            Average Score
-          </div>
-        </div>
+        <StatCard variant="green">
+          <StatValue variant="green">{stats.averageScore}%</StatValue>
+          <StatLabel variant="green">Average Score</StatLabel>
+        </StatCard>
 
-        <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-100 dark:border-purple-800">
-          <div className="text-2xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400 mb-1">
-            {stats.bestScore}%
-          </div>
-          <div className="text-xs sm:text-sm text-purple-700 dark:text-purple-300 font-medium">
-            Best Score
-          </div>
-        </div>
+        <StatCard variant="purple">
+          <StatValue variant="purple">{stats.bestScore}%</StatValue>
+          <StatLabel variant="purple">Best Score</StatLabel>
+        </StatCard>
 
-        <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-100 dark:border-yellow-800">
-          <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
-            {stats.earlyWins}
-          </div>
-          <div className="text-xs sm:text-sm text-yellow-700 dark:text-yellow-300 font-medium">
-            Early Wins
-          </div>
-        </div>
+        <StatCard variant="yellow">
+          <StatValue variant="yellow">{stats.earlyWins}</StatValue>
+          <StatLabel variant="yellow">Early Wins</StatLabel>
+        </StatCard>
 
-        <div className="text-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-100 dark:border-orange-800">
-          <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-1">
-            {stats.earlyFailures}
-          </div>
-          <div className="text-xs sm:text-sm text-orange-700 dark:text-orange-300 font-medium">
-            Early Failures
-          </div>
-        </div>
-      </div>
+        <StatCard variant="orange">
+          <StatValue variant="orange">{stats.earlyFailures}</StatValue>
+          <StatLabel variant="orange">Early Failures</StatLabel>
+        </StatCard>
+      </XStack>
 
       {(stats.averageScore >= 60 || stats.bestScore === 100) === true ? (
-        <div className="mt-6 space-y-3">
+        <YStack marginTop="$6" gap="$3">
           {(stats.averageScore >= 60) === true ? (
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg animate-fade-in">
-              <div className="flex items-center">
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <p className="text-green-800 dark:text-green-200 text-sm font-medium">
-                  🎯 Great job! You&apos;re consistently passing the civics test.
-                </p>
-              </div>
-            </div>
+            <AchievementBadge variant="green">
+              <BadgeIcon variant="green">
+                <svg width={16} height={16} fill="none" stroke="white" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </BadgeIcon>
+              <BadgeText variant="green">
+                🎯 Great job! You&apos;re consistently passing the civics test.
+              </BadgeText>
+            </AchievementBadge>
           ) : null}
 
           {(stats.bestScore === 100) === true ? (
-            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg animate-fade-in">
-              <div className="flex items-center">
-                <div className="w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center mr-3">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 15l7-7 7 7"
-                    />
-                  </svg>
-                </div>
-                <p className="text-yellow-800 dark:text-yellow-200 text-sm font-medium">
-                  🏆 Perfect score achieved! You&apos;re a civics expert!
-                </p>
-              </div>
-            </div>
+            <AchievementBadge variant="yellow">
+              <BadgeIcon variant="yellow">
+                <svg width={16} height={16} fill="none" stroke="white" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 15l7-7 7 7"
+                  />
+                </svg>
+              </BadgeIcon>
+              <BadgeText variant="yellow">
+                🏆 Perfect score achieved! You&apos;re a civics expert!
+              </BadgeText>
+            </AchievementBadge>
           ) : null}
-        </div>
+        </YStack>
       ) : null}
-    </div>
+    </Card>
   )
 }
