@@ -52,8 +52,9 @@ npm run clean
 - TypeScript with strict configuration
 - Effect-TS functional programming
 - Next.js 15 with App Router
-- Tailwind CSS v4
-- Jest testing
+- React 19
+- Tamagui (cross-platform UI framework)
+- Jest + React Testing Library
 
 ## License
 
