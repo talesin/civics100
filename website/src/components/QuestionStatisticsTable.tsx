@@ -1,5 +1,7 @@
 import React from 'react'
 import { QuestionStatistics, QuestionSortField } from '@/types'
+import { YStack, Text } from '@/components/tamagui'
+import { styled } from 'tamagui'
 
 interface QuestionStatisticsTableProps {
   statistics: ReadonlyArray<QuestionStatistics>
@@ -7,6 +9,65 @@ interface QuestionStatisticsTableProps {
   sortAscending: boolean
   onSort: (field: QuestionSortField) => void
   onQuestionClick: (stat: QuestionStatistics) => void
+}
+
+const EmptyContainer = styled(YStack, {
+  paddingVertical: '$6',
+  alignItems: 'center',
+})
+
+const EmptyText = styled(Text, {
+  color: '#6b7280', // gray-500
+  fontSize: '$3',
+})
+
+// Table styles
+const tableStyles: React.CSSProperties = {
+  minWidth: '100%',
+  borderCollapse: 'separate',
+  borderSpacing: 0,
+}
+
+const theadStyles: React.CSSProperties = {
+  backgroundColor: '#f9fafb', // gray-50
+}
+
+const thStyles: React.CSSProperties = {
+  padding: '12px 16px',
+  textAlign: 'left',
+  fontSize: 12,
+  fontWeight: 500,
+  color: '#374151', // gray-700
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  borderBottom: '1px solid #e5e7eb', // gray-200
+}
+
+const thSortableStyles: React.CSSProperties = {
+  ...thStyles,
+  cursor: 'pointer',
+}
+
+const tbodyStyles: React.CSSProperties = {
+  backgroundColor: 'white',
+}
+
+const trStyles: React.CSSProperties = {
+  cursor: 'pointer',
+  transition: 'background-color 150ms',
+}
+
+const tdStyles: React.CSSProperties = {
+  padding: '16px',
+  fontSize: 14,
+  color: '#1f2937', // gray-900
+  borderBottom: '1px solid #e5e7eb', // gray-200
+}
+
+const tdNumberStyles: React.CSSProperties = {
+  ...tdStyles,
+  whiteSpace: 'nowrap',
+  fontWeight: 500,
 }
 
 export default function QuestionStatisticsTable({
@@ -19,7 +80,7 @@ export default function QuestionStatisticsTable({
   const getSortIcon = (field: QuestionSortField) => {
     if (sortField !== field) {
       return (
-        <svg className="w-4 h-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ opacity: 0.3 }}>
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -32,7 +93,7 @@ export default function QuestionStatisticsTable({
 
     if (sortAscending) {
       return (
-        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -44,24 +105,24 @@ export default function QuestionStatisticsTable({
     }
 
     return (
-      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
       </svg>
     )
   }
 
-  const getAccuracyColor = (accuracy: number) => {
-    if (accuracy >= 0.8) return 'text-green-600 dark:text-green-400'
-    if (accuracy >= 0.6) return 'text-blue-600 dark:text-blue-400'
-    if (accuracy > 0) return 'text-orange-600 dark:text-orange-400'
-    return 'text-gray-500 dark:text-gray-400'
+  const getAccuracyColor = (accuracy: number): string => {
+    if (accuracy >= 0.8) return '#16a34a' // green-600
+    if (accuracy >= 0.6) return '#2563eb' // blue-600
+    if (accuracy > 0) return '#ea580c' // orange-600
+    return '#6b7280' // gray-500
   }
 
-  const getProbabilityColor = (probability: number) => {
-    if (probability >= 8) return 'text-red-600 dark:text-red-400'
-    if (probability >= 5) return 'text-orange-600 dark:text-orange-400'
-    if (probability >= 2) return 'text-blue-600 dark:text-blue-400'
-    return 'text-gray-600 dark:text-gray-400'
+  const getProbabilityColor = (probability: number): string => {
+    if (probability >= 8) return '#dc2626' // red-600
+    if (probability >= 5) return '#ea580c' // orange-600
+    if (probability >= 2) return '#2563eb' // blue-600
+    return '#4b5563' // gray-600
   }
 
   const formatAccuracy = (accuracy: number) => {
@@ -79,106 +140,116 @@ export default function QuestionStatisticsTable({
 
   if (statistics.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-        <p>No questions match your current filters.</p>
-      </div>
+      <EmptyContainer>
+        <EmptyText>No questions match your current filters.</EmptyText>
+      </EmptyContainer>
     )
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-900">
+    <div style={{ overflowX: 'auto' }}>
+      <table style={tableStyles}>
+        <thead style={theadStyles}>
           <tr>
             <th
-              className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              style={thSortableStyles}
               onClick={() => onSort(QuestionSortField.QuestionNumber)}
+              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6' }}
+              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
             >
-              <div className="flex items-center space-x-1">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Question #</span>
                 {getSortIcon(QuestionSortField.QuestionNumber)}
               </div>
             </th>
 
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            <th style={thStyles}>
               Question
             </th>
 
             <th
-              className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              style={thSortableStyles}
               onClick={() => onSort(QuestionSortField.TimesAsked)}
+              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6' }}
+              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
             >
-              <div className="flex items-center space-x-1">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Asked</span>
                 {getSortIcon(QuestionSortField.TimesAsked)}
               </div>
             </th>
 
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+            <th style={thStyles}>
               Correct
             </th>
 
             <th
-              className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              style={thSortableStyles}
               onClick={() => onSort(QuestionSortField.Accuracy)}
+              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6' }}
+              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
             >
-              <div className="flex items-center space-x-1">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Accuracy</span>
                 {getSortIcon(QuestionSortField.Accuracy)}
               </div>
             </th>
 
             <th
-              className="px-4 py-3 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800"
+              style={thSortableStyles}
               onClick={() => onSort(QuestionSortField.Probability)}
+              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f3f4f6' }}
+              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
             >
-              <div className="flex items-center space-x-1">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Next Time %</span>
                 {getSortIcon(QuestionSortField.Probability)}
               </div>
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+        <tbody style={tbodyStyles}>
           {statistics.map((stat) => (
             <tr
               key={stat.pairedQuestionNumber}
               onClick={() => onQuestionClick(stat)}
-              className="hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-150"
+              style={trStyles}
+              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f9fafb' }}
+              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
             >
-              <td className="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+              <td style={tdNumberStyles}>
                 {stat.questionNumber}
               </td>
 
-              <td className="px-4 py-4 text-sm text-gray-700 dark:text-gray-300">
-                <div className="max-w-md">
-                  <div className="font-medium">{truncateText(stat.questionText, 80)}</div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              <td style={tdStyles}>
+                <div style={{ maxWidth: 448 }}>
+                  <div style={{ fontWeight: 500 }}>{truncateText(stat.questionText, 80)}</div>
+                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 4 }}>
                     Answer: {truncateText(stat.correctAnswerText, 60)}
                   </div>
                 </div>
               </td>
 
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              <td style={{ ...tdStyles, whiteSpace: 'nowrap' }}>
                 {stat.timesAsked > 0 ? stat.timesAsked : '-'}
               </td>
 
-              <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+              <td style={{ ...tdStyles, whiteSpace: 'nowrap' }}>
                 {stat.timesCorrect > 0 ? stat.timesCorrect : '-'}
               </td>
 
-              <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+              <td style={{ ...tdStyles, whiteSpace: 'nowrap', fontWeight: 500 }}>
                 {stat.timesAsked > 0 ? (
-                  <span className={getAccuracyColor(stat.accuracy)}>
+                  <span style={{ color: getAccuracyColor(stat.accuracy) }}>
                     {formatAccuracy(stat.accuracy)}
                   </span>
                 ) : (
-                  <span className="text-gray-500 dark:text-gray-400">-</span>
+                  <span style={{ color: '#6b7280' }}>-</span>
                 )}
               </td>
 
-              <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                <span className={getProbabilityColor(stat.selectionProbability)}>
+              <td style={{ ...tdStyles, whiteSpace: 'nowrap', fontWeight: 500 }}>
+                <span style={{ color: getProbabilityColor(stat.selectionProbability) }}>
                   {formatProbability(stat.selectionProbability)}
                 </span>
               </td>

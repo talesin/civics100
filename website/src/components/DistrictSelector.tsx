@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { StateAbbreviation } from 'civics2json'
-import { 
-  getDistrictsForState, 
+import {
+  getDistrictsForState,
   formatDistrictLabel
 } from '@/services/DistrictDataService'
+import { XStack, YStack, Text } from '@/components/tamagui'
+import { styled } from 'tamagui'
 
 type NonEmptyArray<T> = [T, ...T[]];
 
@@ -11,13 +13,63 @@ function isNonEmptyArray<T>(arr: T[]): arr is NonEmptyArray<T> {
   return arr.length > 0;
 }
 
-
 interface DistrictSelectorProps {
   selectedState: StateAbbreviation
   selectedDistrict?: string | undefined
   onDistrictChange: (district: string | undefined) => void
   className?: string
 }
+
+const Label = styled(Text, {
+  fontSize: '$3',
+  fontWeight: '500',
+  color: '$color',
+})
+
+const LoadingBox = styled(XStack, {
+  paddingHorizontal: '$3',
+  paddingVertical: '$2',
+  borderWidth: 1,
+  borderColor: '#d1d5db', // gray-300
+  borderRadius: '$2',
+  backgroundColor: '#f9fafb', // gray-50
+  alignItems: 'center',
+  gap: '$2',
+})
+
+const LoadingText = styled(Text, {
+  fontSize: '$3',
+  color: '#6b7280', // gray-500
+})
+
+const ErrorBox = styled(YStack, {
+  backgroundColor: '#fef2f2', // red-50
+  paddingHorizontal: '$3',
+  paddingVertical: '$2',
+  borderRadius: '$2',
+})
+
+const ErrorText = styled(Text, {
+  fontSize: '$3',
+  color: '#dc2626', // red-600
+})
+
+const InfoBox = styled(XStack, {
+  backgroundColor: '#f9fafb', // gray-50
+  paddingHorizontal: '$3',
+  paddingVertical: '$2',
+  borderRadius: '$2',
+})
+
+const InfoText = styled(Text, {
+  fontSize: '$2',
+  color: '#4b5563', // gray-600
+})
+
+const HelperText = styled(Text, {
+  fontSize: '$2',
+  color: '#6b7280', // gray-500
+})
 
 export default function DistrictSelector({
   selectedState,
@@ -63,50 +115,42 @@ export default function DistrictSelector({
   // Don't render if no districts loaded yet or error occurred
   if (isLoading) {
     return (
-      <div className={`space-y-3 ${className}`}>
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Congressional District:
-          </label>
-        </div>
-        <div className="relative">
-          <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-2">
-              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              Loading districts...
-            </div>
-          </div>
-        </div>
-      </div>
+      <YStack gap="$3" className={className}>
+        <XStack alignItems="center" justifyContent="space-between">
+          <Label>Congressional District:</Label>
+        </XStack>
+        <LoadingBox>
+          <svg width={16} height={16} fill="none" viewBox="0 0 24 24" style={{ animation: 'spin 1s linear infinite' }}>
+            <circle
+              opacity={0.25}
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              strokeWidth="4"
+            />
+            <path
+              opacity={0.75}
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+            />
+          </svg>
+          <LoadingText>Loading districts...</LoadingText>
+        </LoadingBox>
+      </YStack>
     )
   }
 
   if (error != null) {
     return (
-      <div className={`space-y-3 ${className}`}>
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Congressional District:
-          </label>
-        </div>
-        <div className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-3 py-2 rounded-md">
-          {error}
-        </div>
-      </div>
+      <YStack gap="$3" className={className}>
+        <XStack alignItems="center" justifyContent="space-between">
+          <Label>Congressional District:</Label>
+        </XStack>
+        <ErrorBox>
+          <ErrorText>{error}</ErrorText>
+        </ErrorBox>
+      </YStack>
     )
   }
 
@@ -118,36 +162,43 @@ export default function DistrictSelector({
   // If only one district, show it as read-only info
   if (districts.length === 1) {
     return (
-      <div className={`space-y-3 ${className}`}>
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Congressional District:
-          </label>
-        </div>
-        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-md">
-          <span className="font-medium">District:</span> {formatDistrictLabel(districts[0])}
-        </div>
-      </div>
+      <YStack gap="$3" className={className}>
+        <XStack alignItems="center" justifyContent="space-between">
+          <Label>Congressional District:</Label>
+        </XStack>
+        <InfoBox>
+          <InfoText>
+            <Text fontWeight="500">District:</Text> {formatDistrictLabel(districts[0])}
+          </InfoText>
+        </InfoBox>
+      </YStack>
     )
   }
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      <div className="flex items-center justify-between">
-        <label
-          htmlFor="district-selector"
-          className="text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
+    <YStack gap="$3" className={className}>
+      <XStack alignItems="center" justifyContent="space-between">
+        <Label tag="label" htmlFor="district-selector">
           Select your congressional district:
-        </label>
-      </div>
+        </Label>
+      </XStack>
 
-      <div className="relative">
+      <YStack position="relative">
         <select
           id="district-selector"
           value={selectedDistrict ?? ''}
           onChange={handleDistrictChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            borderWidth: 1,
+            borderStyle: 'solid',
+            borderColor: '#d1d5db',
+            borderRadius: 6,
+            backgroundColor: 'white',
+            fontSize: 14,
+            outline: 'none',
+          }}
         >
           <option value="">Select a district...</option>
           {districts.map((district) => (
@@ -156,33 +207,19 @@ export default function DistrictSelector({
             </option>
           ))}
         </select>
-
-        <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-          <svg
-            className="w-5 h-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-            />
-          </svg>
-        </div>
-      </div>
+      </YStack>
 
       {selectedDistrict !== null && selectedDistrict !== undefined ? (
-        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-md">
-          <span className="font-medium">Selected:</span> {formatDistrictLabel(selectedDistrict)}
-        </div>
+        <InfoBox>
+          <InfoText>
+            <Text fontWeight="500">Selected:</Text> {formatDistrictLabel(selectedDistrict)}
+          </InfoText>
+        </InfoBox>
       ) : null}
 
-      <div className="text-xs text-gray-500 dark:text-gray-400">
+      <HelperText>
         Selecting your district will show only your specific representative in relevant questions.
-      </div>
-    </div>
+      </HelperText>
+    </YStack>
   )
 }

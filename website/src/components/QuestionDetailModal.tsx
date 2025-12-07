@@ -3,11 +3,256 @@ import { QuestionStatistics } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 import { PairedQuestionNumber } from 'questionnaire'
 import { MASTERY_THRESHOLD, NEEDS_PRACTICE_THRESHOLD } from '@/services/StatisticsService'
+import { XStack, YStack, Text, Button } from '@/components/tamagui'
+import { styled } from 'tamagui'
 
 interface QuestionDetailModalProps {
   question: QuestionStatistics
   pairedAnswers: PairedAnswers
   onClose: () => void
+}
+
+// Overlay styles - using native div since Tamagui doesn't support position: fixed
+const overlayStyles: React.CSSProperties = {
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 50,
+  padding: 16,
+}
+
+// Modal container styles - using native div for overflow control
+const modalContainerStyles: React.CSSProperties = {
+  backgroundColor: 'white',
+  borderRadius: 16,
+  maxWidth: 768,
+  width: '100%',
+  maxHeight: '90vh',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+}
+
+const Header = styled(XStack, {
+  // Note: sticky positioning handled via inline styles on web
+  top: 0,
+  backgroundColor: 'white',
+  borderBottomWidth: 1,
+  borderBottomColor: '#e5e7eb',
+  paddingHorizontal: '$5',
+  paddingVertical: '$4',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+})
+
+const HeaderTitle = styled(Text, {
+  fontSize: '$6',
+  fontWeight: '600',
+  color: '#111827',
+})
+
+const HeaderSubtitle = styled(Text, {
+  fontSize: '$2',
+  color: '#6b7280',
+})
+
+const CloseButton = styled(Button, {
+  backgroundColor: 'transparent',
+  padding: '$1',
+
+  hoverStyle: {
+    opacity: 0.7,
+  },
+})
+
+const Content = styled(YStack, {
+  paddingHorizontal: '$5',
+  paddingVertical: '$5',
+  gap: '$5',
+})
+
+const SectionLabel = styled(Text, {
+  fontSize: '$2',
+  fontWeight: '500',
+  color: '#6b7280',
+  marginBottom: '$2',
+})
+
+const QuestionText = styled(Text, {
+  fontSize: '$5',
+  color: '#111827',
+})
+
+const AnswerText = styled(Text, {
+  color: '#15803d',
+  fontWeight: '500',
+})
+
+const StatsGrid = styled(XStack, {
+  backgroundColor: '#f9fafb',
+  borderRadius: '$3',
+  padding: '$4',
+  flexWrap: 'wrap',
+  gap: '$4',
+})
+
+const StatItem = styled(YStack, {
+  minWidth: 80,
+  flex: 1,
+})
+
+const StatLabel = styled(Text, {
+  fontSize: '$1',
+  color: '#6b7280',
+  marginBottom: '$1',
+})
+
+const StatValue = styled(Text, {
+  fontSize: '$7',
+  fontWeight: 'bold',
+})
+
+const PerformanceCircle = styled(YStack, {
+  width: 48,
+  height: 48,
+  borderRadius: 24,
+  alignItems: 'center',
+  justifyContent: 'center',
+
+  variants: {
+    variant: {
+      correct: {
+        backgroundColor: '#dcfce7',
+      },
+      incorrect: {
+        backgroundColor: '#fee2e2',
+      },
+    },
+  } as const,
+})
+
+const PerformanceIcon = styled(Text, {
+  fontSize: '$4',
+
+  variants: {
+    variant: {
+      correct: {
+        color: '#15803d',
+      },
+      incorrect: {
+        color: '#b91c1c',
+      },
+    },
+  } as const,
+})
+
+const Footer = styled(XStack, {
+  // Note: sticky positioning handled via inline styles on web
+  bottom: 0,
+  backgroundColor: '#f9fafb',
+  borderTopWidth: 1,
+  borderTopColor: '#e5e7eb',
+  paddingHorizontal: '$5',
+  paddingVertical: '$4',
+  justifyContent: 'flex-end',
+})
+
+const PrimaryButton = styled(Button, {
+  backgroundColor: '#2563eb',
+  paddingVertical: '$2',
+  paddingHorizontal: '$4',
+  borderRadius: '$3',
+
+  hoverStyle: {
+    backgroundColor: '#1d4ed8',
+  },
+})
+
+const ButtonText = styled(Text, {
+  color: 'white',
+  fontWeight: '500',
+})
+
+const Badge = styled(XStack, {
+  paddingHorizontal: '$3',
+  paddingVertical: '$1',
+  borderRadius: 9999,
+  alignItems: 'center',
+
+  variants: {
+    variant: {
+      gray: {
+        backgroundColor: '#f3f4f6',
+      },
+      green: {
+        backgroundColor: '#dcfce7',
+      },
+      orange: {
+        backgroundColor: '#ffedd5',
+      },
+      blue: {
+        backgroundColor: '#dbeafe',
+      },
+    },
+  } as const,
+})
+
+const BadgeText = styled(Text, {
+  fontSize: '$2',
+  fontWeight: '500',
+
+  variants: {
+    variant: {
+      gray: {
+        color: '#1f2937',
+      },
+      green: {
+        color: '#166534',
+      },
+      orange: {
+        color: '#9a3412',
+      },
+      blue: {
+        color: '#1e40af',
+      },
+    },
+  } as const,
+})
+
+const EmptyText = styled(Text, {
+  color: '#6b7280',
+  textAlign: 'center',
+  paddingVertical: '$6',
+})
+
+// Table styles
+const tableStyles: React.CSSProperties = {
+  minWidth: '100%',
+  borderCollapse: 'separate',
+  borderSpacing: 0,
+}
+
+const thStyles: React.CSSProperties = {
+  padding: '8px 16px',
+  textAlign: 'left',
+  fontSize: 12,
+  fontWeight: 500,
+  color: '#374151',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  backgroundColor: '#f9fafb',
+}
+
+const tdStyles: React.CSSProperties = {
+  padding: '8px 16px',
+  fontSize: 14,
+  borderTop: '1px solid #e5e7eb',
 }
 
 export default function QuestionDetailModal({
@@ -41,27 +286,27 @@ export default function QuestionDetailModal({
   const getStatusBadge = () => {
     if (question.timesAsked === 0) {
       return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-          Never Asked
-        </span>
+        <Badge variant="gray">
+          <BadgeText variant="gray">Never Asked</BadgeText>
+        </Badge>
       )
     } else if (isMastered === true) {
       return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-          ✅ Mastered
-        </span>
+        <Badge variant="green">
+          <BadgeText variant="green">Mastered</BadgeText>
+        </Badge>
       )
     } else if (question.accuracy < NEEDS_PRACTICE_THRESHOLD) {
       return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-          Needs Practice
-        </span>
+        <Badge variant="orange">
+          <BadgeText variant="orange">Needs Practice</BadgeText>
+        </Badge>
       )
     } else {
       return (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-          In Progress
-        </span>
+        <Badge variant="blue">
+          <BadgeText variant="blue">In Progress</BadgeText>
+        </Badge>
       )
     }
   }
@@ -83,32 +328,23 @@ export default function QuestionDetailModal({
   }
 
   return (
-    <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in"
-      onClick={onClose}
-    >
-      <div
-        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div style={overlayStyles} onClick={onClose}>
+      <div style={modalContainerStyles} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-between items-start">
-          <div className="flex-1 pr-4">
-            <div className="flex items-center space-x-3 mb-2">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <Header>
+          <YStack flex={1} paddingRight="$4">
+            <XStack alignItems="center" gap="$3" marginBottom="$2">
+              <HeaderTitle>
                 Question {question.questionNumber}
-              </h2>
+              </HeaderTitle>
               {getStatusBadge()}
-            </div>
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
+            </XStack>
+            <HeaderSubtitle>
               Paired ID: {question.pairedQuestionNumber}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            </HeaderSubtitle>
+          </YStack>
+          <CloseButton onPress={onClose}>
+            <svg width={24} height={24} fill="none" stroke="#9ca3af" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -116,117 +352,116 @@ export default function QuestionDetailModal({
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </button>
-        </div>
+          </CloseButton>
+        </Header>
 
         {/* Content */}
-        <div className="px-6 py-6 space-y-6">
+        <Content>
           {/* Question and Answer */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-              Question
-            </h3>
-            <p className="text-gray-900 dark:text-white text-lg">{question.questionText}</p>
-          </div>
+          <YStack>
+            <SectionLabel>Question</SectionLabel>
+            <QuestionText>{question.questionText}</QuestionText>
+          </YStack>
 
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-              Correct Answer
-            </h3>
-            <p className="text-green-700 dark:text-green-300 font-medium">
-              {question.correctAnswerText}
-            </p>
-          </div>
+          <YStack>
+            <SectionLabel>Correct Answer</SectionLabel>
+            <AnswerText>{question.correctAnswerText}</AnswerText>
+          </YStack>
 
           {/* Statistics */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
-            <div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Times Asked</div>
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                {question.timesAsked}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Correct</div>
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                {question.timesCorrect}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Accuracy</div>
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <StatsGrid>
+            <StatItem>
+              <StatLabel>Times Asked</StatLabel>
+              <StatValue color="#111827">{question.timesAsked}</StatValue>
+            </StatItem>
+            <StatItem>
+              <StatLabel>Correct</StatLabel>
+              <StatValue color="#16a34a">{question.timesCorrect}</StatValue>
+            </StatItem>
+            <StatItem>
+              <StatLabel>Accuracy</StatLabel>
+              <StatValue color="#2563eb">
                 {question.timesAsked > 0 ? `${Math.round(question.accuracy * 100)}%` : '-'}
-              </div>
-            </div>
-            <div>
-              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1">Next Time %</div>
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                {question.selectionProbability.toFixed(2)}%
-              </div>
-            </div>
-          </div>
+              </StatValue>
+            </StatItem>
+            <StatItem>
+              <StatLabel>Next Time %</StatLabel>
+              <StatValue color="#9333ea">{question.selectionProbability.toFixed(2)}%</StatValue>
+            </StatItem>
+          </StatsGrid>
 
           {/* Recent Performance */}
           {history.length > 0 ? (
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                Recent Performance (Last 5)
-              </h3>
-              <div className="flex space-x-2">
+            <YStack>
+              <SectionLabel>Recent Performance (Last 5)</SectionLabel>
+              <XStack gap="$2">
                 {getRecentPerformance().map((answer, index) => (
-                  <div
+                  <PerformanceCircle
                     key={index}
-                    className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${
-                      answer.correct === true
-                        ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300'
-                        : 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300'
-                    }`}
+                    variant={answer.correct === true ? 'correct' : 'incorrect'}
                   >
-                    {answer.correct === true ? '✓' : '✗'}
-                  </div>
+                    <PerformanceIcon variant={answer.correct === true ? 'correct' : 'incorrect'}>
+                      {answer.correct === true ? '✓' : '✗'}
+                    </PerformanceIcon>
+                  </PerformanceCircle>
                 ))}
-              </div>
-            </div>
+              </XStack>
+            </YStack>
           ) : null}
 
           {/* Full History */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-              Complete History
-            </h3>
+          <YStack>
+            <SectionLabel>Complete History</SectionLabel>
             {history.length > 0 ? (
-              <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-900">
+              <YStack
+                borderWidth={1}
+                borderColor="#e5e7eb"
+                borderRadius="$3"
+                overflow="hidden"
+              >
+                <table style={tableStyles}>
+                  <thead>
                     <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        #
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        Date & Time
-                      </th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        Result
-                      </th>
+                      <th style={thStyles}>#</th>
+                      <th style={thStyles}>Date & Time</th>
+                      <th style={thStyles}>Result</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody>
                     {[...history].reverse().map((answer, index) => (
                       <tr key={index}>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        <td style={{ ...tdStyles, color: '#6b7280', whiteSpace: 'nowrap' }}>
                           {history.length - index}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                        <td style={{ ...tdStyles, color: '#111827', whiteSpace: 'nowrap' }}>
                           {formatDate(answer.ts)}
                         </td>
-                        <td className="px-4 py-2 whitespace-nowrap text-sm">
+                        <td style={tdStyles}>
                           {answer.correct === true ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                              ✅ Correct
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              padding: '2px 10px',
+                              borderRadius: 9999,
+                              fontSize: 12,
+                              fontWeight: 500,
+                              backgroundColor: '#dcfce7',
+                              color: '#166534',
+                            }}>
+                              Correct
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-                              ❌ Incorrect
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              padding: '2px 10px',
+                              borderRadius: 9999,
+                              fontSize: 12,
+                              fontWeight: 500,
+                              backgroundColor: '#fee2e2',
+                              color: '#991b1b',
+                            }}>
+                              Incorrect
                             </span>
                           )}
                         </td>
@@ -234,24 +469,21 @@ export default function QuestionDetailModal({
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </YStack>
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center py-8">
+              <EmptyText>
                 No attempts yet. This question has never been asked.
-              </p>
+              </EmptyText>
             )}
-          </div>
-        </div>
+          </YStack>
+        </Content>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4 flex justify-end">
-          <button
-            onClick={onClose}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
-          >
-            Close
-          </button>
-        </div>
+        <Footer>
+          <PrimaryButton onPress={onClose}>
+            <ButtonText>Close</ButtonText>
+          </PrimaryButton>
+        </Footer>
       </div>
     </div>
   )
