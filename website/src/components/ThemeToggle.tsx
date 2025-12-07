@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Stack } from '@/components/tamagui'
+import { useThemeContext } from '@/components/TamaguiProvider'
 import { styled } from 'tamagui'
 
 const ThemeButton = styled(Stack, {
@@ -30,45 +31,19 @@ const ThemeButton = styled(Stack, {
 const LoadingSkeleton = styled(Stack, {
   width: 20,
   height: 20,
-  backgroundColor: '$gray300',
+  backgroundColor: '$borderColor',
   borderRadius: '$1',
 })
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false)
+  const { theme, toggleTheme } = useThemeContext()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    // Check for saved theme preference or default to system preference
-    try {
-      const savedTheme = localStorage.getItem('theme')
-      if (savedTheme !== null) {
-        setIsDark(savedTheme === 'dark')
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark')
-      } else {
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        setIsDark(systemDark)
-        document.documentElement.classList.toggle('dark', systemDark)
-      }
-    } catch {
-      // Fallback to system preference if localStorage fails
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setIsDark(systemDark)
-      document.documentElement.classList.toggle('dark', systemDark)
-    }
   }, [])
 
-  const toggleTheme = () => {
-    const newTheme = !isDark
-    setIsDark(newTheme)
-    try {
-      localStorage.setItem('theme', newTheme ? 'dark' : 'light')
-    } catch {
-      // Silently fail if localStorage is unavailable
-    }
-    document.documentElement.classList.toggle('dark', newTheme)
-  }
+  const isDark = theme === 'dark'
 
   // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {

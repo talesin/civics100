@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
+import { useThemeContext } from '@/components/TamaguiProvider'
 import { XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
 
@@ -11,23 +12,31 @@ interface LayoutProps {
   className?: string
 }
 
-// Container styles
-const pageStyles: React.CSSProperties = {
-  minHeight: '100vh',
-  display: 'flex',
-  flexDirection: 'column',
-  backgroundColor: '#f9fafb', // gray-50
+// Theme-aware color maps
+const themeColors = {
+  light: {
+    pageBg: '#f9fafb',      // gray-50
+    headerBg: '#ffffff',
+    headerBorder: '#e5e7eb', // gray-200
+    footerBg: '#ffffff',
+    navText: '#4b5563',      // gray-600
+    navTextHover: '#1f2937', // gray-800
+    divider: '#d1d5db',      // gray-300
+    mobileMenuBg: '#ffffff',
+  },
+  dark: {
+    pageBg: '#111827',       // gray-900
+    headerBg: '#1f2937',     // gray-800
+    headerBorder: '#374151', // gray-700
+    footerBg: '#1f2937',     // gray-800
+    navText: '#d1d5db',      // gray-300
+    navTextHover: '#f9fafb', // gray-50
+    divider: '#4b5563',      // gray-600
+    mobileMenuBg: '#1f2937', // gray-800
+  },
 }
 
-const headerStyles: React.CSSProperties = {
-  backgroundColor: 'white',
-  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-  borderBottom: '1px solid #e5e7eb',
-  position: 'sticky',
-  top: 0,
-  zIndex: 40,
-}
-
+// Base styles (theme-independent)
 const containerStyles: React.CSSProperties = {
   width: '100%',
   maxWidth: 1280,
@@ -72,56 +81,51 @@ const Title = styled(Text, {
   color: '$color',
 })
 
-const navLinkStyles: React.CSSProperties = {
-  color: '#4b5563', // gray-600
+// Helper to generate theme-aware style functions
+const getNavLinkStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
+  color: colors.navText,
   padding: '8px 12px',
   borderRadius: 6,
   fontSize: 14,
   fontWeight: 500,
   textDecoration: 'none',
   transition: 'all 200ms',
-}
+})
 
-const dividerStyles: React.CSSProperties = {
-  borderLeft: '1px solid #d1d5db',
+const getDividerStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
+  borderLeft: `1px solid ${colors.divider}`,
   height: 24,
   margin: '0 8px',
-}
+})
 
-const mobileMenuButtonStyles: React.CSSProperties = {
+const getMobileMenuButtonStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
   padding: 8,
   borderRadius: 6,
   backgroundColor: 'transparent',
   border: 'none',
   cursor: 'pointer',
-  color: '#4b5563',
-}
+  color: colors.navText,
+})
 
-const mobileMenuStyles: React.CSSProperties = {
+const getMobileMenuStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
   padding: '8px 8px 12px',
-  backgroundColor: 'white',
-  borderTop: '1px solid #e5e7eb',
-}
+  backgroundColor: colors.mobileMenuBg,
+  borderTop: `1px solid ${colors.headerBorder}`,
+})
 
-const mobileNavLinkStyles: React.CSSProperties = {
+const getMobileNavLinkStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
   display: 'block',
-  color: '#4b5563',
+  color: colors.navText,
   padding: '8px 12px',
   borderRadius: 6,
   fontSize: 16,
   fontWeight: 500,
   textDecoration: 'none',
-}
+})
 
 const mainStyles: React.CSSProperties = {
   flex: 1,
   padding: '24px 16px',
-}
-
-const footerStyles: React.CSSProperties = {
-  backgroundColor: 'white',
-  borderTop: '1px solid #e5e7eb',
-  marginTop: 'auto',
 }
 
 const footerContainerStyles: React.CSSProperties = {
@@ -131,12 +135,14 @@ const footerContainerStyles: React.CSSProperties = {
 
 const FooterText = styled(Text, {
   fontSize: '$2',
-  color: '#6b7280',
+  color: '$color',
+  opacity: 0.7,
 })
 
 const FooterSubtext = styled(Text, {
   fontSize: '$1',
-  color: '#9ca3af',
+  color: '$color',
+  opacity: 0.5,
   textAlign: 'center',
   maxWidth: 672,
   marginHorizontal: 'auto',
@@ -149,6 +155,37 @@ export default function Layout({
   className = ''
 }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { theme } = useThemeContext()
+  const colors = themeColors[theme]
+
+  // Dynamic styles based on theme
+  const pageStyles: React.CSSProperties = {
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    backgroundColor: colors.pageBg,
+  }
+
+  const headerStyles: React.CSSProperties = {
+    backgroundColor: colors.headerBg,
+    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    borderBottom: `1px solid ${colors.headerBorder}`,
+    position: 'sticky',
+    top: 0,
+    zIndex: 40,
+  }
+
+  const footerStyles: React.CSSProperties = {
+    backgroundColor: colors.footerBg,
+    borderTop: `1px solid ${colors.headerBorder}`,
+    marginTop: 'auto',
+  }
+
+  const navLinkStyles = getNavLinkStyles(colors)
+  const dividerStyles = getDividerStyles(colors)
+  const mobileMenuButtonStyles = getMobileMenuButtonStyles(colors)
+  const mobileMenuStyles = getMobileMenuStyles(colors)
+  const mobileNavLinkStyles = getMobileNavLinkStyles(colors)
 
   return (
     <div style={pageStyles} className={className}>

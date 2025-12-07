@@ -1329,7 +1329,37 @@ Add Tamagui-specific guidelines:
 - Theme values for colors, not hardcoded
 ```
 
-#### 9.6 Final Test Suite
+#### 9.6 Fix Button Styling (Deferred from Phase 6)
+**Known Issue:** Buttons in migrated components use hardcoded colors instead of theme tokens.
+
+**Files to update:**
+- `GameControls.tsx` - PrimaryButton, SecondaryButton use hardcoded `#2563eb`, `#4b5563`
+- `GameResults.tsx` - PrimaryButton, SecondaryButton use hardcoded colors
+- `QuestionDetailModal.tsx` - PrimaryButton uses hardcoded colors
+- `StateSelector.tsx` - DetectButton uses hardcoded colors
+
+**Fix approach:**
+1. Replace hardcoded colors with theme tokens (`$primary`, `$secondary`)
+2. Ensure buttons respond to theme changes (light/dark)
+3. Verify hover/press states use theme-appropriate colors
+
+**Example fix:**
+```typescript
+// Before (hardcoded)
+const PrimaryButton = styled(Button, {
+  backgroundColor: '#2563eb', // hardcoded blue
+})
+
+// After (theme-aware)
+const PrimaryButton = styled(Button, {
+  backgroundColor: '$primary',
+  hoverStyle: {
+    backgroundColor: '$primaryHover',
+  },
+})
+```
+
+#### 9.7 Final Test Suite
 ```bash
 npm run clean
 npm install
@@ -1338,7 +1368,7 @@ npm run test
 npm run test:coverage
 ```
 
-#### 9.7 Create Migration Report
+#### 9.8 Create Migration Report
 Create `/website/docs/tamagui-migration-report.md`:
 
 ```markdown
