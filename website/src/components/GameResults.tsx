@@ -25,10 +25,10 @@ const IconCircle = styled(YStack, {
   variants: {
     variant: {
       success: {
-        backgroundColor: '#dcfce7', // green-100
+        backgroundColor: '$green2',
       },
       failure: {
-        backgroundColor: '#fee2e2', // red-100
+        backgroundColor: '$error1',
       },
     },
   } as const,
@@ -54,7 +54,7 @@ const StatCardsContainer = styled(XStack, {
 })
 
 const StatCard = styled(YStack, {
-  backgroundColor: '#f9fafb', // gray-50
+  backgroundColor: '$backgroundHover',
   borderRadius: '$3',
   padding: '$4',
   alignItems: 'center',
@@ -69,7 +69,7 @@ const StatValue = styled(Text, {
 
 const StatLabel = styled(Text, {
   fontSize: '$2',
-  color: '#4b5563', // gray-600
+  color: '$placeholderColor',
   marginTop: '$1',
 })
 
@@ -79,7 +79,7 @@ const ProgressContainer = styled(YStack, {
 })
 
 const ProgressTrack = styled(YStack, {
-  backgroundColor: '#e5e7eb', // gray-200
+  backgroundColor: '$borderColor',
   borderRadius: 6,
   height: 12,
   width: '100%',
@@ -94,10 +94,10 @@ const ProgressBar = styled(YStack, {
   variants: {
     variant: {
       success: {
-        backgroundColor: '#22c55e', // green-500
+        backgroundColor: '$success',
       },
       failure: {
-        backgroundColor: '#ef4444', // red-500
+        backgroundColor: '$error',
       },
     },
   } as const,
@@ -105,14 +105,14 @@ const ProgressBar = styled(YStack, {
 
 const ProgressText = styled(Text, {
   fontSize: '$2',
-  color: '#4b5563', // gray-600
+  color: '$placeholderColor',
   textAlign: 'center',
 })
 
 const AchievementBanner = styled(XStack, {
-  backgroundColor: '#fefce8', // yellow-50
+  backgroundColor: '$warning1',
   borderWidth: 1,
-  borderColor: '#fde68a', // yellow-200
+  borderColor: '$warning2',
   borderRadius: '$3',
   padding: '$4',
   marginBottom: '$4',
@@ -121,7 +121,7 @@ const AchievementBanner = styled(XStack, {
 
 const AchievementText = styled(Text, {
   fontSize: '$2',
-  color: '#854d0e', // yellow-800
+  color: '$warning6',
 })
 
 const ButtonContainer = styled(XStack, {
@@ -130,13 +130,13 @@ const ButtonContainer = styled(XStack, {
 })
 
 const PrimaryButton = styled(Button, {
-  backgroundColor: '#2563eb', // blue-600
+  backgroundColor: '$primary',
   paddingVertical: '$3',
   paddingHorizontal: '$5',
   borderRadius: '$3',
 
   hoverStyle: {
-    backgroundColor: '#1d4ed8', // blue-700
+    backgroundColor: '$primaryHover',
   },
 
   pressStyle: {
@@ -145,13 +145,13 @@ const PrimaryButton = styled(Button, {
 })
 
 const SecondaryButton = styled(Button, {
-  backgroundColor: '#4b5563', // gray-600
+  backgroundColor: '$backgroundPress',
   paddingVertical: '$3',
   paddingHorizontal: '$5',
   borderRadius: '$3',
 
   hoverStyle: {
-    backgroundColor: '#374151', // gray-700
+    backgroundColor: '$backgroundHover',
   },
 
   pressStyle: {
@@ -168,14 +168,14 @@ const Footer = styled(YStack, {
   marginTop: '$4',
   paddingTop: '$4',
   borderTopWidth: 1,
-  borderTopColor: '#e5e7eb', // gray-200
+  borderTopColor: '$borderColor',
   width: '100%',
   alignItems: 'center',
 })
 
 const FooterText = styled(Text, {
   fontSize: '$1',
-  color: '#6b7280', // gray-500
+  color: '$placeholderColor',
 })
 
 export default function GameResults({ result, onPlayAgain, onViewHistory }: GameResultsProps) {

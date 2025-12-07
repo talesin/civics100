@@ -13,13 +13,13 @@ interface GameControlsProps {
 
 const PrimaryButton = styled(Button, {
   flex: 1,
-  backgroundColor: '#2563eb', // blue-600
+  backgroundColor: '$primary',
   paddingVertical: '$2',
   paddingHorizontal: '$4',
   borderRadius: '$3',
 
   hoverStyle: {
-    backgroundColor: '#1d4ed8', // blue-700
+    backgroundColor: '$primaryHover',
   },
 
   pressStyle: {
@@ -28,13 +28,13 @@ const PrimaryButton = styled(Button, {
 })
 
 const SecondaryButton = styled(Button, {
-  backgroundColor: '#4b5563', // gray-600
+  backgroundColor: '$backgroundPress',
   paddingVertical: '$2',
   paddingHorizontal: '$4',
   borderRadius: '$3',
 
   hoverStyle: {
-    backgroundColor: '#374151', // gray-700
+    backgroundColor: '$backgroundHover',
   },
 
   pressStyle: {
@@ -50,14 +50,14 @@ const ButtonText = styled(Text, {
 const SuccessMessage = styled(YStack, {
   marginTop: '$4',
   padding: '$3',
-  backgroundColor: '#f0fdf4', // green-50
+  backgroundColor: '$green1',
   borderWidth: 1,
-  borderColor: '#bbf7d0', // green-200
+  borderColor: '$green2',
   borderRadius: '$3',
 })
 
 const SuccessText = styled(Text, {
-  color: '#166534', // green-800
+  color: '$green7',
   fontSize: '$3',
   fontWeight: '500',
 })

@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { QuestionStatistics } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 import { PairedQuestionNumber } from 'questionnaire'
 import { MASTERY_THRESHOLD, NEEDS_PRACTICE_THRESHOLD } from '@/services/StatisticsService'
 import { XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
+import { useThemeContext } from '@/components/TamaguiProvider'
 
 interface QuestionDetailModalProps {
   question: QuestionStatistics
@@ -27,24 +28,15 @@ const overlayStyles: React.CSSProperties = {
   padding: 16,
 }
 
-// Modal container styles - using native div for overflow control
-const modalContainerStyles: React.CSSProperties = {
-  backgroundColor: 'white',
-  borderRadius: 16,
-  maxWidth: 768,
-  width: '100%',
-  maxHeight: '90vh',
-  overflow: 'hidden',
-  display: 'flex',
-  flexDirection: 'column',
-}
+// Note: Modal container styles are now defined dynamically in the component
+// to support theme-aware colors
 
 const Header = styled(XStack, {
   // Note: sticky positioning handled via inline styles on web
   top: 0,
-  backgroundColor: 'white',
+  backgroundColor: '$background',
   borderBottomWidth: 1,
-  borderBottomColor: '#e5e7eb',
+  borderBottomColor: '$borderColor',
   paddingHorizontal: '$5',
   paddingVertical: '$4',
   justifyContent: 'space-between',
@@ -54,12 +46,12 @@ const Header = styled(XStack, {
 const HeaderTitle = styled(Text, {
   fontSize: '$6',
   fontWeight: '600',
-  color: '#111827',
+  color: '$color',
 })
 
 const HeaderSubtitle = styled(Text, {
   fontSize: '$2',
-  color: '#6b7280',
+  color: '$placeholderColor',
 })
 
 const CloseButton = styled(Button, {
@@ -80,22 +72,22 @@ const Content = styled(YStack, {
 const SectionLabel = styled(Text, {
   fontSize: '$2',
   fontWeight: '500',
-  color: '#6b7280',
+  color: '$placeholderColor',
   marginBottom: '$2',
 })
 
 const QuestionText = styled(Text, {
   fontSize: '$5',
-  color: '#111827',
+  color: '$color',
 })
 
 const AnswerText = styled(Text, {
-  color: '#15803d',
+  color: '$success',
   fontWeight: '500',
 })
 
 const StatsGrid = styled(XStack, {
-  backgroundColor: '#f9fafb',
+  backgroundColor: '$backgroundHover',
   borderRadius: '$3',
   padding: '$4',
   flexWrap: 'wrap',
@@ -109,7 +101,7 @@ const StatItem = styled(YStack, {
 
 const StatLabel = styled(Text, {
   fontSize: '$1',
-  color: '#6b7280',
+  color: '$placeholderColor',
   marginBottom: '$1',
 })
 
@@ -128,10 +120,10 @@ const PerformanceCircle = styled(YStack, {
   variants: {
     variant: {
       correct: {
-        backgroundColor: '#dcfce7',
+        backgroundColor: '$green2',
       },
       incorrect: {
-        backgroundColor: '#fee2e2',
+        backgroundColor: '$error1',
       },
     },
   } as const,
@@ -143,10 +135,10 @@ const PerformanceIcon = styled(Text, {
   variants: {
     variant: {
       correct: {
-        color: '#15803d',
+        color: '$success',
       },
       incorrect: {
-        color: '#b91c1c',
+        color: '$error',
       },
     },
   } as const,
@@ -155,22 +147,22 @@ const PerformanceIcon = styled(Text, {
 const Footer = styled(XStack, {
   // Note: sticky positioning handled via inline styles on web
   bottom: 0,
-  backgroundColor: '#f9fafb',
+  backgroundColor: '$backgroundHover',
   borderTopWidth: 1,
-  borderTopColor: '#e5e7eb',
+  borderTopColor: '$borderColor',
   paddingHorizontal: '$5',
   paddingVertical: '$4',
   justifyContent: 'flex-end',
 })
 
 const PrimaryButton = styled(Button, {
-  backgroundColor: '#2563eb',
+  backgroundColor: '$primary',
   paddingVertical: '$2',
   paddingHorizontal: '$4',
   borderRadius: '$3',
 
   hoverStyle: {
-    backgroundColor: '#1d4ed8',
+    backgroundColor: '$primaryHover',
   },
 })
 
@@ -188,16 +180,16 @@ const Badge = styled(XStack, {
   variants: {
     variant: {
       gray: {
-        backgroundColor: '#f3f4f6',
+        backgroundColor: '$backgroundPress',
       },
       green: {
-        backgroundColor: '#dcfce7',
+        backgroundColor: '$green2',
       },
       orange: {
-        backgroundColor: '#ffedd5',
+        backgroundColor: '$warning1',
       },
       blue: {
-        backgroundColor: '#dbeafe',
+        backgroundColor: '$blue2',
       },
     },
   } as const,
@@ -210,49 +202,32 @@ const BadgeText = styled(Text, {
   variants: {
     variant: {
       gray: {
-        color: '#1f2937',
+        color: '$color',
       },
       green: {
-        color: '#166534',
+        color: '$green7',
       },
       orange: {
-        color: '#9a3412',
+        color: '$warning6',
       },
       blue: {
-        color: '#1e40af',
+        color: '$blue7',
       },
     },
   } as const,
 })
 
 const EmptyText = styled(Text, {
-  color: '#6b7280',
+  color: '$placeholderColor',
   textAlign: 'center',
   paddingVertical: '$6',
 })
 
-// Table styles
+// Table styles - only the static base style; theme-aware styles are computed in component
 const tableStyles: React.CSSProperties = {
   minWidth: '100%',
   borderCollapse: 'separate',
   borderSpacing: 0,
-}
-
-const thStyles: React.CSSProperties = {
-  padding: '8px 16px',
-  textAlign: 'left',
-  fontSize: 12,
-  fontWeight: 500,
-  color: '#374151',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-  backgroundColor: '#f9fafb',
-}
-
-const tdStyles: React.CSSProperties = {
-  padding: '8px 16px',
-  fontSize: 14,
-  borderTop: '1px solid #e5e7eb',
 }
 
 export default function QuestionDetailModal({
@@ -260,7 +235,52 @@ export default function QuestionDetailModal({
   pairedAnswers,
   onClose
 }: QuestionDetailModalProps) {
+  const { theme } = useThemeContext()
+  const isDark = theme === 'dark'
   const history = pairedAnswers[PairedQuestionNumber(question.pairedQuestionNumber)] ?? []
+
+  // Theme-aware dynamic styles
+  const dynamicModalStyles = useMemo((): React.CSSProperties => ({
+    backgroundColor: isDark ? '#1a1a1a' : 'white',
+    borderRadius: 16,
+    maxWidth: 768,
+    width: '100%',
+    maxHeight: '90vh',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+  }), [isDark])
+
+  const dynamicThStyles = useMemo((): React.CSSProperties => ({
+    padding: '8px 16px',
+    textAlign: 'left',
+    fontSize: 12,
+    fontWeight: 500,
+    color: isDark ? '#d1d5db' : '#374151',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    backgroundColor: isDark ? '#262626' : '#f9fafb',
+  }), [isDark])
+
+  const dynamicTdStyles = useMemo((): React.CSSProperties => ({
+    padding: '8px 16px',
+    fontSize: 14,
+    borderTop: `1px solid ${isDark ? '#404040' : '#e5e7eb'}`,
+  }), [isDark])
+
+  const dynamicColors = useMemo(() => ({
+    text: isDark ? '#e5e5e5' : '#111827',
+    muted: isDark ? '#a1a1aa' : '#6b7280',
+    success: isDark ? '#22c55e' : '#16a34a',
+    primary: isDark ? '#60a5fa' : '#2563eb',
+    purple: isDark ? '#a78bfa' : '#9333ea',
+    successBg: isDark ? '#166534' : '#dcfce7',
+    successText: isDark ? '#bbf7d0' : '#166534',
+    errorBg: isDark ? '#7f1d1d' : '#fee2e2',
+    errorText: isDark ? '#fecaca' : '#991b1b',
+    border: isDark ? '#404040' : '#e5e7eb',
+    iconStroke: isDark ? '#a1a1aa' : '#9ca3af',
+  }), [isDark])
 
   // Handle ESC key
   useEffect(() => {
@@ -329,7 +349,7 @@ export default function QuestionDetailModal({
 
   return (
     <div style={overlayStyles} onClick={onClose}>
-      <div style={modalContainerStyles} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+      <div style={dynamicModalStyles} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
         {/* Header */}
         <Header>
           <YStack flex={1} paddingRight="$4">
@@ -344,7 +364,7 @@ export default function QuestionDetailModal({
             </HeaderSubtitle>
           </YStack>
           <CloseButton onPress={onClose}>
-            <svg width={24} height={24} fill="none" stroke="#9ca3af" viewBox="0 0 24 24">
+            <svg width={24} height={24} fill="none" stroke={dynamicColors.iconStroke} viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -372,21 +392,21 @@ export default function QuestionDetailModal({
           <StatsGrid>
             <StatItem>
               <StatLabel>Times Asked</StatLabel>
-              <StatValue color="#111827">{question.timesAsked}</StatValue>
+              <StatValue color={dynamicColors.text}>{question.timesAsked}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Correct</StatLabel>
-              <StatValue color="#16a34a">{question.timesCorrect}</StatValue>
+              <StatValue color={dynamicColors.success}>{question.timesCorrect}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Accuracy</StatLabel>
-              <StatValue color="#2563eb">
+              <StatValue color={dynamicColors.primary}>
                 {question.timesAsked > 0 ? `${Math.round(question.accuracy * 100)}%` : '-'}
               </StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Next Time %</StatLabel>
-              <StatValue color="#9333ea">{question.selectionProbability.toFixed(2)}%</StatValue>
+              <StatValue color={dynamicColors.purple}>{question.selectionProbability.toFixed(2)}%</StatValue>
             </StatItem>
           </StatsGrid>
 
@@ -415,28 +435,28 @@ export default function QuestionDetailModal({
             {history.length > 0 ? (
               <YStack
                 borderWidth={1}
-                borderColor="#e5e7eb"
+                borderColor={dynamicColors.border}
                 borderRadius="$3"
                 overflow="hidden"
               >
                 <table style={tableStyles}>
                   <thead>
                     <tr>
-                      <th style={thStyles}>#</th>
-                      <th style={thStyles}>Date & Time</th>
-                      <th style={thStyles}>Result</th>
+                      <th style={dynamicThStyles}>#</th>
+                      <th style={dynamicThStyles}>Date & Time</th>
+                      <th style={dynamicThStyles}>Result</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[...history].reverse().map((answer, index) => (
                       <tr key={index}>
-                        <td style={{ ...tdStyles, color: '#6b7280', whiteSpace: 'nowrap' }}>
+                        <td style={{ ...dynamicTdStyles, color: dynamicColors.muted, whiteSpace: 'nowrap' }}>
                           {history.length - index}
                         </td>
-                        <td style={{ ...tdStyles, color: '#111827', whiteSpace: 'nowrap' }}>
+                        <td style={{ ...dynamicTdStyles, color: dynamicColors.text, whiteSpace: 'nowrap' }}>
                           {formatDate(answer.ts)}
                         </td>
-                        <td style={tdStyles}>
+                        <td style={dynamicTdStyles}>
                           {answer.correct === true ? (
                             <span style={{
                               display: 'inline-flex',
@@ -445,8 +465,8 @@ export default function QuestionDetailModal({
                               borderRadius: 9999,
                               fontSize: 12,
                               fontWeight: 500,
-                              backgroundColor: '#dcfce7',
-                              color: '#166534',
+                              backgroundColor: dynamicColors.successBg,
+                              color: dynamicColors.successText,
                             }}>
                               Correct
                             </span>
@@ -458,8 +478,8 @@ export default function QuestionDetailModal({
                               borderRadius: 9999,
                               fontSize: 12,
                               fontWeight: 500,
-                              backgroundColor: '#fee2e2',
-                              color: '#991b1b',
+                              backgroundColor: dynamicColors.errorBg,
+                              color: dynamicColors.errorText,
                             }}>
                               Incorrect
                             </span>

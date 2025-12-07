@@ -21,7 +21,7 @@ const stateOptions = Object.values(StatesByAbbreviation)
 
 const DetectButton = styled(XStack, {
   tag: 'button',
-  backgroundColor: '#eff6ff', // blue-50
+  backgroundColor: '$blue1',
   paddingHorizontal: '$3',
   paddingVertical: '$1',
   borderRadius: '$2',
@@ -31,7 +31,7 @@ const DetectButton = styled(XStack, {
   borderWidth: 0,
 
   hoverStyle: {
-    backgroundColor: '#dbeafe', // blue-100
+    backgroundColor: '$blue2',
   },
 
   pressStyle: {
@@ -41,11 +41,11 @@ const DetectButton = styled(XStack, {
 
 const DetectButtonText = styled(Text, {
   fontSize: '$2',
-  color: '#1d4ed8', // blue-700
+  color: '$primary',
 })
 
 const InfoBox = styled(XStack, {
-  backgroundColor: '#f9fafb', // gray-50
+  backgroundColor: '$backgroundHover',
   paddingHorizontal: '$3',
   paddingVertical: '$2',
   borderRadius: '$2',
@@ -54,12 +54,12 @@ const InfoBox = styled(XStack, {
 
 const InfoText = styled(Text, {
   fontSize: '$2',
-  color: '#4b5563', // gray-600
+  color: '$placeholderColor',
 })
 
 const HelperText = styled(Text, {
   fontSize: '$2',
-  color: '#6b7280', // gray-500
+  color: '$placeholderColor',
 })
 
 const Label = styled(Text, {
@@ -188,7 +188,7 @@ export default function StateSelector({
                 </>
               ) : (
                 <>
-                  <svg width={12} height={12} fill="none" stroke="#1d4ed8" viewBox="0 0 24 24">
+                  <svg width={12} height={12} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"

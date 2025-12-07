@@ -31,23 +31,37 @@ export function TamaguiProvider({ children }: { children: React.ReactNode }) {
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     setMounted(true)
+    let initialTheme: ThemeName = 'light'
     try {
       const savedTheme = localStorage.getItem('theme')
       if (savedTheme === 'dark' || savedTheme === 'light') {
-        setThemeState(savedTheme)
+        initialTheme = savedTheme
       } else {
         const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        setThemeState(systemDark ? 'dark' : 'light')
+        initialTheme = systemDark ? 'dark' : 'light'
       }
     } catch {
       // Fallback to system preference if localStorage fails
       const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setThemeState(systemDark ? 'dark' : 'light')
+      initialTheme = systemDark ? 'dark' : 'light'
+    }
+    setThemeState(initialTheme)
+    // Sync html.dark class for CSS-based styling
+    if (initialTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
     }
   }, [])
 
   const setTheme = useCallback((newTheme: ThemeName) => {
     setThemeState(newTheme)
+    // Sync html.dark class for CSS-based styling
+    if (newTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
     try {
       localStorage.setItem('theme', newTheme)
     } catch {
