@@ -4,6 +4,7 @@ import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { Card, XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
+import { useThemeContext } from '@/components/TamaguiProvider'
 
 interface GameQuestionProps {
   question: GameQuestionType
@@ -13,26 +14,6 @@ interface GameQuestionProps {
 
 const QuestionCard = styled(Card, {
   padding: '$6',
-})
-
-const ProgressText = styled(Text, {
-  fontSize: '$2',
-  fontWeight: '500',
-  color: '#6b7280', // gray-500
-})
-
-const ProgressTrack = styled(YStack, {
-  width: '100%',
-  backgroundColor: '#e5e7eb', // gray-200
-  borderRadius: 6,
-  height: 12,
-  overflow: 'hidden',
-})
-
-const ProgressBar = styled(YStack, {
-  height: 12,
-  borderRadius: 6,
-  backgroundColor: '#3b82f6', // blue-500
 })
 
 const QuestionTitle = styled(Text, {
@@ -45,24 +26,24 @@ const QuestionTitle = styled(Text, {
 
 const MultipleChoiceHint = styled(Text, {
   fontSize: '$2',
-  color: '#2563eb', // blue-600
+  color: '$primary',
   fontWeight: '500',
   marginBottom: '$3',
 })
 
 const KeyboardHintBox = styled(XStack, {
-  marginTop: '$3',
-  padding: '$3',
-  backgroundColor: '#eff6ff', // blue-50
+  marginTop: '$4',
+  padding: '$4',
+  backgroundColor: '$backgroundHover',
   borderRadius: '$3',
   borderWidth: 1,
-  borderColor: '#bfdbfe', // blue-200
+  borderColor: '$borderColor',
   justifyContent: 'center',
 })
 
 const KeyboardHintText = styled(Text, {
-  fontSize: '$1',
-  color: '#1d4ed8', // blue-700
+  fontSize: '$3',
+  color: '$placeholderColor',
   textAlign: 'center',
 })
 
@@ -73,18 +54,18 @@ const FeedbackContainer = styled(YStack, {
 })
 
 const CorrectFeedback = styled(XStack, {
-  backgroundColor: '#f0fdf4', // green-50
+  backgroundColor: '$green1',
   borderWidth: 1,
-  borderColor: '#bbf7d0', // green-200
+  borderColor: '$green2',
   padding: '$4',
   borderRadius: '$3',
   alignItems: 'center',
 })
 
 const IncorrectFeedback = styled(YStack, {
-  backgroundColor: '#fef2f2', // red-50
+  backgroundColor: '$error1',
   borderWidth: 1,
-  borderColor: '#fecaca', // red-200
+  borderColor: '$error2',
   padding: '$4',
   borderRadius: '$3',
 })
@@ -100,34 +81,35 @@ const FeedbackIconCircle = styled(YStack, {
   variants: {
     variant: {
       success: {
-        backgroundColor: '#22c55e', // green-500
+        backgroundColor: '$success',
       },
       error: {
-        backgroundColor: '#ef4444', // red-500
+        backgroundColor: '$error',
       },
     },
   } as const,
 })
 
 const FeedbackText = styled(Text, {
+  fontSize: '$5',
   fontWeight: '600',
 
   variants: {
     variant: {
       success: {
-        color: '#166534', // green-800
+        color: '$green7',
       },
       error: {
-        color: '#991b1b', // red-800
+        color: '$error',
       },
     },
   } as const,
 })
 
 const FeedbackDetail = styled(Text, {
-  fontSize: '$2',
-  color: '#b91c1c', // red-700
-  marginTop: '$1',
+  fontSize: '$4',
+  color: '$error',
+  marginTop: '$2',
 })
 
 /**
@@ -159,6 +141,40 @@ const validateAnswerSelection = (
   return selectedArray.every((answer) => correctArray.includes(answer))
 }
 
+// Theme-aware answer button color definitions
+const getAnswerButtonColors = (isDark: boolean) => ({
+  // Default state (not answered, not selected)
+  default: {
+    border: isDark ? '#404040' : '#d1d5db',
+    bg: isDark ? '#262626' : 'white',
+    text: isDark ? '#e5e5e5' : '#1f2937',
+  },
+  // Selected state (multiple choice, before submit)
+  selected: {
+    border: isDark ? '#60a5fa' : '#3b82f6',
+    bg: isDark ? '#1e3a5f' : '#eff6ff',
+    text: isDark ? '#93c5fd' : '#1e40af',
+  },
+  // Correct answer (after submit)
+  correct: {
+    border: isDark ? '#4ade80' : '#22c55e',
+    bg: isDark ? '#14532d' : '#f0fdf4',
+    text: isDark ? '#86efac' : '#166534',
+  },
+  // Incorrect answer (after submit, user selected wrong)
+  incorrect: {
+    border: isDark ? '#f87171' : '#ef4444',
+    bg: isDark ? '#7f1d1d' : '#fef2f2',
+    text: isDark ? '#fecaca' : '#991b1b',
+  },
+  // Disabled/dimmed state (other options after answering)
+  disabled: {
+    border: isDark ? '#404040' : '#d1d5db',
+    bg: isDark ? '#1a1a1a' : '#f3f4f6',
+    text: isDark ? '#71717a' : '#6b7280',
+  },
+})
+
 // Button styles as React.CSSProperties
 const getAnswerButtonStyles = (
   answerIndex: number,
@@ -166,8 +182,11 @@ const getAnswerButtonStyles = (
   hasAnswered: boolean,
   disabled: boolean,
   isMultipleChoice: boolean,
-  correctIndices: number[]
+  correctIndices: number[],
+  isDark: boolean
 ): React.CSSProperties => {
+  const colors = getAnswerButtonColors(isDark)
+
   const baseStyles: React.CSSProperties = {
     width: '100%',
     textAlign: 'left',
@@ -187,15 +206,16 @@ const getAnswerButtonStyles = (
     if (isSelected && isMultipleChoice) {
       return {
         ...baseStyles,
-        borderColor: '#3b82f6', // blue-500
-        backgroundColor: '#eff6ff', // blue-50
-        color: '#1e40af', // blue-800
+        borderColor: colors.selected.border,
+        backgroundColor: colors.selected.bg,
+        color: colors.selected.text,
       }
     }
     return {
       ...baseStyles,
-      borderColor: '#d1d5db', // gray-300
-      backgroundColor: 'white',
+      borderColor: colors.default.border,
+      backgroundColor: colors.default.bg,
+      color: colors.default.text,
     }
   }
 
@@ -203,32 +223,32 @@ const getAnswerButtonStyles = (
     if (isCorrectAnswer) {
       return {
         ...baseStyles,
-        borderColor: '#22c55e', // green-500
-        backgroundColor: '#f0fdf4', // green-50
-        color: '#166534', // green-800
+        borderColor: colors.correct.border,
+        backgroundColor: colors.correct.bg,
+        color: colors.correct.text,
       }
     } else if (isSelected) {
       return {
         ...baseStyles,
-        borderColor: '#ef4444', // red-500
-        backgroundColor: '#fef2f2', // red-50
-        color: '#991b1b', // red-800
+        borderColor: colors.incorrect.border,
+        backgroundColor: colors.incorrect.bg,
+        color: colors.incorrect.text,
       }
     } else {
       return {
         ...baseStyles,
-        borderColor: '#d1d5db', // gray-300
-        backgroundColor: '#f3f4f6', // gray-100
-        color: '#6b7280', // gray-500
+        borderColor: colors.disabled.border,
+        backgroundColor: colors.disabled.bg,
+        color: colors.disabled.text,
       }
     }
   }
 
   return {
     ...baseStyles,
-    borderColor: '#d1d5db', // gray-300
-    backgroundColor: '#f3f4f6', // gray-100
-    color: '#6b7280', // gray-500
+    borderColor: colors.disabled.border,
+    backgroundColor: colors.disabled.bg,
+    color: colors.disabled.text,
   }
 }
 
@@ -236,6 +256,8 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([])
   const [hasAnswered, setHasAnswered] = useState(false)
   const { playCorrect, playIncorrect } = useGameSounds()
+  const { theme } = useThemeContext()
+  const isDark = theme === 'dark'
 
   const isMultipleChoice = (question.expectedAnswers ?? 1) > 1
   const expectedCount = question.expectedAnswers ?? 1
@@ -323,29 +345,8 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
 
   return (
     <QuestionCard elevated>
-      {/* Progress and Question Number */}
+      {/* Question Text */}
       <YStack marginBottom="$4">
-        <XStack
-          flexDirection="column"
-          marginBottom="$4"
-          gap="$2"
-          $sm={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}
-        >
-          <ProgressText>
-            Question {question.questionNumber} of {question.totalQuestions}
-          </ProgressText>
-          <ProgressTrack>
-            <ProgressBar
-              width={`${(question.questionNumber / question.totalQuestions) * 100}%`}
-              role="progressbar"
-              aria-valuenow={question.questionNumber}
-              aria-valuemin={1}
-              aria-valuemax={question.totalQuestions}
-              aria-label={`Question ${question.questionNumber} of ${question.totalQuestions}`}
-            />
-          </ProgressTrack>
-        </XStack>
-
         <QuestionTitle>
           {question.questionText}
         </QuestionTitle>
@@ -370,7 +371,7 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
             key={index}
             onClick={() => handleAnswerSelect(index)}
             disabled={hasAnswered || disabled}
-            style={getAnswerButtonStyles(index, selectedAnswers, hasAnswered, disabled, isMultipleChoice, correctIndices)}
+            style={getAnswerButtonStyles(index, selectedAnswers, hasAnswered, disabled, isMultipleChoice, correctIndices, isDark)}
             role={isMultipleChoice ? "checkbox" : "radio"}
             aria-checked={selectedAnswers.includes(index)}
             aria-describedby={hasAnswered ? 'answer-feedback' : undefined}

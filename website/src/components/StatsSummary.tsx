@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { GameStats } from '@/types'
 import { Card, XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
+import { useThemeContext } from '@/components/TamaguiProvider'
 
 interface StatsSummaryProps {
   stats: GameStats
@@ -23,91 +24,26 @@ const StatCard = styled(YStack, {
   minWidth: 0,
   flex: 1,
   alignItems: 'center',
-
-  variants: {
-    variant: {
-      blue: {
-        backgroundColor: '#eff6ff', // blue-50
-        borderColor: '#dbeafe', // blue-100
-      },
-      green: {
-        backgroundColor: '#f0fdf4', // green-50
-        borderColor: '#dcfce7', // green-100
-      },
-      purple: {
-        backgroundColor: '#faf5ff', // purple-50
-        borderColor: '#f3e8ff', // purple-100
-      },
-      yellow: {
-        backgroundColor: '#fefce8', // yellow-50
-        borderColor: '#fef9c3', // yellow-100
-      },
-      orange: {
-        backgroundColor: '#fff7ed', // orange-50
-        borderColor: '#ffedd5', // orange-100
-      },
-    },
-  },
-} as const)
+})
 
 const StatValue = styled(Text, {
-  fontSize: '$8', // text-2xl
+  fontSize: '$8',
   fontWeight: 'bold',
   marginBottom: '$1',
 
   '$sm': {
-    fontSize: '$9', // text-3xl on sm+
+    fontSize: '$9',
   },
-
-  variants: {
-    variant: {
-      blue: {
-        color: '#2563eb', // blue-600
-      },
-      green: {
-        color: '#16a34a', // green-600
-      },
-      purple: {
-        color: '#9333ea', // purple-600
-      },
-      yellow: {
-        color: '#ca8a04', // yellow-600
-      },
-      orange: {
-        color: '#ea580c', // orange-600
-      },
-    },
-  },
-} as const)
+})
 
 const StatLabel = styled(Text, {
-  fontSize: '$2', // text-xs
+  fontSize: '$2',
   fontWeight: '500',
 
   '$sm': {
-    fontSize: '$3', // text-sm on sm+
+    fontSize: '$3',
   },
-
-  variants: {
-    variant: {
-      blue: {
-        color: '#1d4ed8', // blue-700
-      },
-      green: {
-        color: '#15803d', // green-700
-      },
-      purple: {
-        color: '#7e22ce', // purple-700
-      },
-      yellow: {
-        color: '#a16207', // yellow-700
-      },
-      orange: {
-        color: '#c2410c', // orange-700
-      },
-    },
-  },
-} as const)
+})
 
 const AchievementBadge = styled(XStack, {
   padding: '$4',
@@ -115,20 +51,7 @@ const AchievementBadge = styled(XStack, {
   borderWidth: 1,
   alignItems: 'center',
   animation: 'fast',
-
-  variants: {
-    variant: {
-      green: {
-        backgroundColor: '#f0fdf4', // green-50
-        borderColor: '#bbf7d0', // green-200
-      },
-      yellow: {
-        backgroundColor: '#fefce8', // yellow-50
-        borderColor: '#fef08a', // yellow-200
-      },
-    },
-  },
-} as const)
+})
 
 const BadgeIcon = styled(YStack, {
   width: 24,
@@ -137,36 +60,69 @@ const BadgeIcon = styled(YStack, {
   alignItems: 'center',
   justifyContent: 'center',
   marginRight: '$3',
-
-  variants: {
-    variant: {
-      green: {
-        backgroundColor: '#22c55e', // green-500
-      },
-      yellow: {
-        backgroundColor: '#eab308', // yellow-500
-      },
-    },
-  },
-} as const)
+})
 
 const BadgeText = styled(Text, {
   fontSize: '$3',
   fontWeight: '500',
+})
 
-  variants: {
-    variant: {
-      green: {
-        color: '#166534', // green-800
-      },
-      yellow: {
-        color: '#854d0e', // yellow-800
-      },
-    },
+// Theme-aware color definitions - muted, subtle palette
+const getStatCardColors = (isDark: boolean) => ({
+  blue: {
+    bg: isDark ? '#1e293b' : '#f1f5f9',
+    border: isDark ? '#334155' : '#e2e8f0',
+    value: isDark ? '#7dd3fc' : '#0369a1',
+    label: isDark ? '#94a3b8' : '#475569',
   },
-} as const)
+  green: {
+    bg: isDark ? '#1a2e1a' : '#f1f8f1',
+    border: isDark ? '#2d4a2d' : '#d4e7d4',
+    value: isDark ? '#86efac' : '#15803d',
+    label: isDark ? '#94a3b8' : '#475569',
+  },
+  purple: {
+    bg: isDark ? '#2d2438' : '#f5f3ff',
+    border: isDark ? '#3d3252' : '#e4e0f0',
+    value: isDark ? '#c4b5fd' : '#7c3aed',
+    label: isDark ? '#94a3b8' : '#475569',
+  },
+  yellow: {
+    bg: isDark ? '#2d2a1a' : '#fefce8',
+    border: isDark ? '#4a4528' : '#fef3c7',
+    value: isDark ? '#fde047' : '#a16207',
+    label: isDark ? '#94a3b8' : '#475569',
+  },
+  orange: {
+    bg: isDark ? '#2d221a' : '#fff7ed',
+    border: isDark ? '#4a3628' : '#fed7aa',
+    value: isDark ? '#fdba74' : '#c2410c',
+    label: isDark ? '#94a3b8' : '#475569',
+  },
+})
+
+const getAchievementColors = (isDark: boolean) => ({
+  green: {
+    bg: isDark ? '#1a2e1a' : '#f0fdf4',
+    border: isDark ? '#2d4a2d' : '#bbf7d0',
+    icon: isDark ? '#4ade80' : '#22c55e',
+    text: isDark ? '#a3e4a3' : '#166534',
+  },
+  yellow: {
+    bg: isDark ? '#2d2a1a' : '#fefce8',
+    border: isDark ? '#4a4528' : '#fef08a',
+    icon: isDark ? '#facc15' : '#eab308',
+    text: isDark ? '#fde68a' : '#854d0e',
+  },
+})
 
 export default function StatsSummary({ stats }: StatsSummaryProps) {
+  const { theme } = useThemeContext()
+  const isDark = theme === 'dark'
+
+  const colors = useMemo(() => getStatCardColors(isDark), [isDark])
+  const achievementColors = useMemo(() => getAchievementColors(isDark), [isDark])
+
   if (stats.totalGames === 0) {
     return (
       <Card elevated padding="$6">
@@ -213,37 +169,40 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
       </XStack>
 
       <XStack flexWrap="wrap" gap="$4" $sm={{ gap: '$6' }}>
-        <StatCard variant="blue">
-          <StatValue variant="blue">{stats.totalGames}</StatValue>
-          <StatLabel variant="blue">Games Played</StatLabel>
+        <StatCard backgroundColor={colors.blue.bg} borderColor={colors.blue.border}>
+          <StatValue color={colors.blue.value}>{stats.totalGames}</StatValue>
+          <StatLabel color={colors.blue.label}>Games Played</StatLabel>
         </StatCard>
 
-        <StatCard variant="green">
-          <StatValue variant="green">{stats.averageScore}%</StatValue>
-          <StatLabel variant="green">Average Score</StatLabel>
+        <StatCard backgroundColor={colors.green.bg} borderColor={colors.green.border}>
+          <StatValue color={colors.green.value}>{stats.averageScore}%</StatValue>
+          <StatLabel color={colors.green.label}>Average Score</StatLabel>
         </StatCard>
 
-        <StatCard variant="purple">
-          <StatValue variant="purple">{stats.bestScore}%</StatValue>
-          <StatLabel variant="purple">Best Score</StatLabel>
+        <StatCard backgroundColor={colors.purple.bg} borderColor={colors.purple.border}>
+          <StatValue color={colors.purple.value}>{stats.bestScore}%</StatValue>
+          <StatLabel color={colors.purple.label}>Best Score</StatLabel>
         </StatCard>
 
-        <StatCard variant="yellow">
-          <StatValue variant="yellow">{stats.earlyWins}</StatValue>
-          <StatLabel variant="yellow">Early Wins</StatLabel>
+        <StatCard backgroundColor={colors.yellow.bg} borderColor={colors.yellow.border}>
+          <StatValue color={colors.yellow.value}>{stats.earlyWins}</StatValue>
+          <StatLabel color={colors.yellow.label}>Early Wins</StatLabel>
         </StatCard>
 
-        <StatCard variant="orange">
-          <StatValue variant="orange">{stats.earlyFailures}</StatValue>
-          <StatLabel variant="orange">Early Failures</StatLabel>
+        <StatCard backgroundColor={colors.orange.bg} borderColor={colors.orange.border}>
+          <StatValue color={colors.orange.value}>{stats.earlyFailures}</StatValue>
+          <StatLabel color={colors.orange.label}>Early Failures</StatLabel>
         </StatCard>
       </XStack>
 
       {(stats.averageScore >= 60 || stats.bestScore === 100) === true ? (
         <YStack marginTop="$6" gap="$3">
           {(stats.averageScore >= 60) === true ? (
-            <AchievementBadge variant="green">
-              <BadgeIcon variant="green">
+            <AchievementBadge
+              backgroundColor={achievementColors.green.bg}
+              borderColor={achievementColors.green.border}
+            >
+              <BadgeIcon backgroundColor={achievementColors.green.icon}>
                 <svg width={16} height={16} fill="none" stroke="white" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -253,15 +212,18 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
                   />
                 </svg>
               </BadgeIcon>
-              <BadgeText variant="green">
+              <BadgeText color={achievementColors.green.text}>
                 🎯 Great job! You&apos;re consistently passing the civics test.
               </BadgeText>
             </AchievementBadge>
           ) : null}
 
           {(stats.bestScore === 100) === true ? (
-            <AchievementBadge variant="yellow">
-              <BadgeIcon variant="yellow">
+            <AchievementBadge
+              backgroundColor={achievementColors.yellow.bg}
+              borderColor={achievementColors.yellow.border}
+            >
+              <BadgeIcon backgroundColor={achievementColors.yellow.icon}>
                 <svg width={16} height={16} fill="none" stroke="white" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -271,7 +233,7 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
                   />
                 </svg>
               </BadgeIcon>
-              <BadgeText variant="yellow">
+              <BadgeText color={achievementColors.yellow.text}>
                 🏆 Perfect score achieved! You&apos;re a civics expert!
               </BadgeText>
             </AchievementBadge>

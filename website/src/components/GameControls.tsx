@@ -42,8 +42,13 @@ const SecondaryButton = styled(Button, {
   },
 })
 
-const ButtonText = styled(Text, {
+const PrimaryButtonText = styled(Text, {
   color: 'white',
+  fontWeight: '500',
+})
+
+const SecondaryButtonText = styled(Text, {
+  color: '$color',
   fontWeight: '500',
 })
 
@@ -83,17 +88,17 @@ export default function GameControls({
       <XStack gap="$3">
         {showNext === true && onNext !== undefined ? (
           <PrimaryButton onPress={onNext}>
-            <ButtonText>
+            <PrimaryButtonText>
               {session.currentQuestionIndex >= session.questions.length - 1
                 ? 'Finish'
                 : 'Next Question'}
-            </ButtonText>
+            </PrimaryButtonText>
           </PrimaryButton>
         ) : null}
 
         {showRestart === true && onRestart !== undefined ? (
           <SecondaryButton onPress={onRestart}>
-            <ButtonText>Restart Game</ButtonText>
+            <SecondaryButtonText>Restart Game</SecondaryButtonText>
           </SecondaryButton>
         ) : null}
       </XStack>
