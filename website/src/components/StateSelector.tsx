@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { StateAbbreviation } from 'civics2json'
 import { StatesByAbbreviation } from 'civics2json'
+import { XStack, YStack, Text } from '@/components/tamagui'
+import { styled } from 'tamagui'
 
 interface StateSelectorProps {
   selectedState: StateAbbreviation
@@ -16,6 +18,55 @@ const stateOptions = Object.values(StatesByAbbreviation)
     label: state.name,
     isTerritory: ['AS', 'GU', 'MP', 'PR', 'VI'].includes(state.abbreviation)
   }))
+
+const DetectButton = styled(XStack, {
+  tag: 'button',
+  backgroundColor: '#eff6ff', // blue-50
+  paddingHorizontal: '$3',
+  paddingVertical: '$1',
+  borderRadius: '$2',
+  alignItems: 'center',
+  gap: '$1',
+  cursor: 'pointer',
+  borderWidth: 0,
+
+  hoverStyle: {
+    backgroundColor: '#dbeafe', // blue-100
+  },
+
+  pressStyle: {
+    opacity: 0.9,
+  },
+})
+
+const DetectButtonText = styled(Text, {
+  fontSize: '$2',
+  color: '#1d4ed8', // blue-700
+})
+
+const InfoBox = styled(XStack, {
+  backgroundColor: '#f9fafb', // gray-50
+  paddingHorizontal: '$3',
+  paddingVertical: '$2',
+  borderRadius: '$2',
+  flexWrap: 'wrap',
+})
+
+const InfoText = styled(Text, {
+  fontSize: '$2',
+  color: '#4b5563', // gray-600
+})
+
+const HelperText = styled(Text, {
+  fontSize: '$2',
+  color: '#6b7280', // gray-500
+})
+
+const Label = styled(Text, {
+  fontSize: '$3',
+  fontWeight: '500',
+  color: '$color',
+})
 
 export default function StateSelector({
   selectedState,
@@ -102,28 +153,25 @@ export default function StateSelector({
   }
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      <div className="flex items-center justify-between">
-        <label
-          htmlFor="state-selector"
-          className="text-sm font-medium text-gray-700 dark:text-gray-300"
-        >
+    <YStack gap="$3" className={className}>
+      <XStack alignItems="center" justifyContent="space-between">
+        <Label tag="label" htmlFor="state-selector">
           Select your state:
-        </label>
+        </Label>
 
         {typeof navigator !== 'undefined' &&
           typeof navigator.geolocation !== 'undefined' &&
           hasLocationPermission !== false ? (
-            <button
-              onClick={detectLocation}
+            <DetectButton
+              onPress={detectLocation}
               disabled={isDetectingLocation}
-              className="text-xs bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-md transition-colors duration-200 disabled:opacity-50"
+              opacity={isDetectingLocation ? 0.5 : 1}
             >
               {isDetectingLocation ? (
-                <span className="flex items-center gap-1">
-                  <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                <>
+                  <svg width={12} height={12} fill="none" viewBox="0 0 24 24" style={{ animation: 'spin 1s linear infinite' }}>
                     <circle
-                      className="opacity-25"
+                      opacity={0.25}
                       cx="12"
                       cy="12"
                       r="10"
@@ -131,16 +179,16 @@ export default function StateSelector({
                       strokeWidth="4"
                     ></circle>
                     <path
-                      className="opacity-75"
+                      opacity={0.75}
                       fill="currentColor"
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                     ></path>
                   </svg>
-                  Detecting...
-                </span>
+                  <DetectButtonText>Detecting...</DetectButtonText>
+                </>
               ) : (
-                <span className="flex items-center gap-1">
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <>
+                  <svg width={12} height={12} fill="none" stroke="#1d4ed8" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -154,19 +202,29 @@ export default function StateSelector({
                       d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
                     />
                   </svg>
-                  Auto-detect
-                </span>
+                  <DetectButtonText>Auto-detect</DetectButtonText>
+                </>
               )}
-            </button>
+            </DetectButton>
           ) : null}
-      </div>
+      </XStack>
 
-      <div className="relative">
+      <YStack position="relative">
         <select
           id="state-selector"
           value={selectedState}
           onChange={handleStateChange}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+          style={{
+            width: '100%',
+            padding: '8px 12px',
+            borderWidth: 1,
+            borderStyle: 'solid',
+            borderColor: '#d1d5db',
+            borderRadius: 6,
+            backgroundColor: 'white',
+            fontSize: 14,
+            outline: 'none',
+          }}
         >
           {stateOptions.map((option) => (
             <option key={option.value} value={option.value}>
@@ -174,39 +232,25 @@ export default function StateSelector({
             </option>
           ))}
         </select>
-
-        <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-          <svg
-            className="w-5 h-5 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-            />
-          </svg>
-        </div>
-      </div>
+      </YStack>
 
       {selectedStateInfo !== undefined ? (
-        <div className="text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 px-3 py-2 rounded-md">
-          <span className="font-medium">Selected:</span> {selectedStateInfo.name}
-          {selectedStateInfo.capital !== 'D.C. is not a state and does not have a capital' ? (
-            <span className="ml-2">
-              <span className="font-medium">Capital:</span> {selectedStateInfo.capital}
-            </span>
-          ) : null}
-        </div>
+        <InfoBox>
+          <InfoText>
+            <Text fontWeight="500">Selected:</Text> {selectedStateInfo.name}
+            {selectedStateInfo.capital !== 'D.C. is not a state and does not have a capital' ? (
+              <Text marginLeft="$2">
+                <Text fontWeight="500">Capital:</Text> {selectedStateInfo.capital}
+              </Text>
+            ) : null}
+          </InfoText>
+        </InfoBox>
       ) : null}
 
-      <div className="text-xs text-gray-500 dark:text-gray-400">
+      <HelperText>
         Questions will be customized based on your selected state&apos;s representatives, senators,
         and governor.
-      </div>
-    </div>
+      </HelperText>
+    </YStack>
   )
 }
