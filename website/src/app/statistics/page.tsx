@@ -9,8 +9,37 @@ import { LocalStorageService } from '@/services/LocalStorageService'
 import { StatisticsService } from '@/services/StatisticsService'
 import { runWithServicesAndErrorHandling } from '@/services/ServiceProvider'
 import { QuestionStatistics, QuestionFilter, QuestionSortField } from '@/types'
+import { useThemeContext } from '@/components/TamaguiProvider'
 import type { PairedAnswers } from 'questionnaire'
 import { loadQuestions, civicsQuestionsWithDistractors } from 'questionnaire'
+
+// Theme-aware colors
+const themeColors = {
+  light: {
+    text: '#111827',
+    textMuted: '#4b5563',
+    textLight: '#6b7280',
+    cardBg: '#ffffff',
+    inputBg: '#ffffff',
+    inputBorder: '#d1d5db',
+    blueText: '#2563eb',
+    purpleText: '#9333ea',
+    greenText: '#16a34a',
+    orangeText: '#ea580c',
+  },
+  dark: {
+    text: '#ffffff',
+    textMuted: '#9ca3af',
+    textLight: '#9ca3af',
+    cardBg: '#1f2937',
+    inputBg: '#374151',
+    inputBorder: '#4b5563',
+    blueText: '#60a5fa',
+    purpleText: '#c084fc',
+    greenText: '#4ade80',
+    orangeText: '#fb923c',
+  },
+}
 
 export default function Statistics() {
   const [statistics, setStatistics] = useState<QuestionStatistics[]>([])
@@ -28,6 +57,8 @@ export default function Statistics() {
     questionsMastered: 0,
     questionsNeedingPractice: 0
   })
+  const { theme } = useThemeContext()
+  const colors = themeColors[theme]
 
   useEffect(() => {
     loadData()
@@ -113,13 +144,40 @@ export default function Statistics() {
     }
   }
 
+  const cardStyles: React.CSSProperties = {
+    backgroundColor: colors.cardBg,
+    borderRadius: 8,
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
+    padding: 24,
+  }
+
+  const inputStyles: React.CSSProperties = {
+    width: '100%',
+    padding: '8px 12px',
+    border: `1px solid ${colors.inputBorder}`,
+    borderRadius: 6,
+    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    backgroundColor: colors.inputBg,
+    color: colors.text,
+    fontSize: 14,
+    outline: 'none',
+  }
+
   if (isLoading) {
     return (
       <Layout title="Loading Statistics...">
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-300">Loading question statistics...</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              border: '2px solid transparent',
+              borderBottomColor: '#2563eb',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }} />
+            <p style={{ color: colors.textMuted }}>Loading question statistics...</p>
           </div>
         </div>
       </Layout>
@@ -128,72 +186,87 @@ export default function Statistics() {
 
   return (
     <Layout title="Question Statistics">
-      <div className="space-y-6">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>
             Question Statistics
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p style={{ color: colors.textLight }}>
             Detailed breakdown of your performance on each question
           </p>
         </div>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 16
+        }}>
+          <div style={cardStyles}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, marginBottom: 4 }}>
               Total Questions
             </div>
-            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+            <div style={{ fontSize: 30, fontWeight: 'bold', color: colors.blueText }}>
               {summary.totalQuestions}
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+          <div style={cardStyles}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, marginBottom: 4 }}>
               Questions Attempted
             </div>
-            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+            <div style={{ fontSize: 30, fontWeight: 'bold', color: colors.purpleText }}>
               {summary.questionsAttempted}
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+          <div style={cardStyles}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, marginBottom: 4 }}>
               Mastered
             </div>
-            <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+            <div style={{ fontSize: 30, fontWeight: 'bold', color: colors.greenText }}>
               {summary.questionsMastered}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            <div style={{ fontSize: 12, color: colors.textMuted, marginTop: 4 }}>
               3+ consecutive correct
             </div>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-            <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">
+          <div style={cardStyles}>
+            <div style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, marginBottom: 4 }}>
               Need Practice
             </div>
-            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">
+            <div style={{ fontSize: 30, fontWeight: 'bold', color: colors.orangeText }}>
               {summary.questionsNeedingPractice}
             </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">&lt;60% accuracy</div>
+            <div style={{ fontSize: 12, color: colors.textMuted, marginTop: 4 }}>&lt;60% accuracy</div>
           </div>
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4">
-          <div className="flex flex-col sm:flex-row gap-4">
+        <div style={{
+          backgroundColor: colors.cardBg,
+          borderRadius: 8,
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          padding: 16
+        }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
             {/* Filter Dropdown */}
-            <div className="flex-shrink-0">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <div style={{ flexShrink: 0 }}>
+              <label style={{
+                display: 'block',
+                fontSize: 14,
+                fontWeight: 500,
+                color: colors.textMuted,
+                marginBottom: 4
+              }}>
                 Filter
               </label>
               <select
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as QuestionFilter)}
-                className="block w-full sm:w-48 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                style={{ ...inputStyles, width: 192 }}
               >
                 <option value={QuestionFilter.All}>All Questions</option>
                 <option value={QuestionFilter.Mastered}>Mastered</option>
@@ -203,8 +276,14 @@ export default function Statistics() {
             </div>
 
             {/* Search Input */}
-            <div className="flex-grow">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <div style={{ flexGrow: 1, minWidth: 200 }}>
+              <label style={{
+                display: 'block',
+                fontSize: 14,
+                fontWeight: 500,
+                color: colors.textMuted,
+                marginBottom: 4
+              }}>
                 Search
               </label>
               <input
@@ -212,20 +291,25 @@ export default function Statistics() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search questions..."
-                className="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                style={inputStyles}
               />
             </div>
           </div>
 
           {/* Results count */}
-          <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+          <div style={{ marginTop: 12, fontSize: 14, color: colors.textLight }}>
             Showing {filteredStatistics.length} of {statistics.length} questions
           </div>
         </div>
 
         {/* Statistics Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-          <div className="overflow-y-auto max-h-[calc(100vh-27.5rem)] sm:max-h-[calc(100vh-23rem)] lg:max-h-[calc(100vh-20rem)]">
+        <div style={{
+          backgroundColor: colors.cardBg,
+          borderRadius: 8,
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          overflow: 'hidden'
+        }}>
+          <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 28rem)' }}>
             <QuestionStatisticsTable
               statistics={filteredStatistics}
               sortField={sortField}

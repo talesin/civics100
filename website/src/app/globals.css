@@ -1,8 +1,4 @@
-@import 'tailwindcss';
 @import '../styles/design-tokens.css';
-
-/* Configure Tailwind CSS v4 dark mode */
-@variant dark (.dark &);
 
 :root {
   --background: #ffffff;

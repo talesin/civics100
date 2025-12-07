@@ -12,6 +12,7 @@ import { QuestionDataService } from '@/services/QuestionDataService'
 import { runWithServicesAndErrorHandling } from '@/services/ServiceProvider'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
+import { useThemeContext } from '@/components/TamaguiProvider'
 import {
   DEFAULT_GAME_SETTINGS,
   GameSession,
@@ -23,6 +24,40 @@ import {
 
 type GameState = 'loading' | 'playing' | 'answered' | 'transitioning' | 'completed'
 
+// Theme-aware colors
+const themeColors = {
+  light: {
+    text: '#111827',
+    textMuted: '#4b5563',
+    cardBg: '#ffffff',
+    iconBgBlue: '#dbeafe',
+    iconBlue: '#2563eb',
+    iconBgRed: '#fee2e2',
+    iconRed: '#dc2626',
+    successBg: 'linear-gradient(to right, #f0fdf4, #eff6ff)',
+    successBorder: '#bbf7d0',
+    successText: '#166534',
+    successTextLight: '#15803d',
+    modalBg: 'rgba(0, 0, 0, 0.5)',
+    keyboardBg: '#f3f4f6',
+  },
+  dark: {
+    text: '#ffffff',
+    textMuted: '#d1d5db',
+    cardBg: '#1f2937',
+    iconBgBlue: 'rgba(30, 64, 175, 0.3)',
+    iconBlue: '#60a5fa',
+    iconBgRed: 'rgba(185, 28, 28, 0.3)',
+    iconRed: '#f87171',
+    successBg: 'linear-gradient(to right, rgba(21, 128, 61, 0.2), rgba(30, 64, 175, 0.2))',
+    successBorder: '#166534',
+    successText: '#86efac',
+    successTextLight: '#bbf7d0',
+    modalBg: 'rgba(0, 0, 0, 0.7)',
+    keyboardBg: '#374151',
+  },
+}
+
 export default function Game() {
   const [gameState, setGameState] = useState<GameState>('loading')
   const [session, setSession] = useState<GameSession | null>(null)
@@ -33,6 +68,8 @@ export default function Game() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [gameSettings, setGameSettings] = useState<WebsiteGameSettings>(DEFAULT_GAME_SETTINGS)
 
+  const { theme } = useThemeContext()
+  const colors = themeColors[theme]
   const { playComplete, playEarlyWin } = useGameSounds()
 
   const initializeGame = useCallback(() => {
@@ -229,10 +266,18 @@ export default function Game() {
   if (gameState === 'loading') {
     return (
       <Layout title="Loading Game...">
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-300">Preparing your civics test...</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              border: '2px solid transparent',
+              borderBottomColor: '#2563eb',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }} />
+            <p style={{ color: colors.textMuted }}>Preparing your civics test...</p>
           </div>
         </div>
       </Layout>
@@ -243,12 +288,21 @@ export default function Game() {
   if (gameState === 'transitioning') {
     return (
       <Layout title="Loading Next Question...">
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <div className="animate-pulse">
-              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
+              <div style={{
+                width: 64,
+                height: 64,
+                backgroundColor: colors.iconBgBlue,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
                 <svg
-                  className="w-8 h-8 text-blue-600 dark:text-blue-400"
+                  style={{ width: 32, height: 32, color: colors.iconBlue }}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -262,7 +316,7 @@ export default function Game() {
                 </svg>
               </div>
             </div>
-            <p className="text-gray-600 dark:text-gray-300">Loading next question...</p>
+            <p style={{ color: colors.textMuted }}>Loading next question...</p>
           </div>
         </div>
       </Layout>
@@ -286,10 +340,19 @@ export default function Game() {
   if (session === null || currentQuestion === undefined || questions.length === 0) {
     return (
       <Layout title="Game Error">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: 64,
+            height: 64,
+            backgroundColor: colors.iconBgRed,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px'
+          }}>
             <svg
-              className="w-8 h-8 text-red-600 dark:text-red-400"
+              style={{ width: 32, height: 32, color: colors.iconRed }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -302,13 +365,24 @@ export default function Game() {
               />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Game Error</h2>
-          <p className="text-red-600 dark:text-red-400 mb-6">
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: colors.text, marginBottom: 8 }}>Game Error</h2>
+          <p style={{ color: colors.iconRed, marginBottom: 24 }}>
             There was an error loading the game. Please try again.
           </p>
           <button
             onClick={handleRestart}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+            style={{
+              backgroundColor: '#2563eb',
+              color: 'white',
+              fontWeight: 500,
+              padding: '8px 16px',
+              borderRadius: 8,
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
           >
             Restart Game
           </button>
@@ -326,12 +400,14 @@ export default function Game() {
 
   return (
     <Layout title={`Question ${currentQuestionIndex + 1} of ${questions.length}`}>
-      <div className="space-y-6">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Question Component with Animation */}
         <div
-          className={`transition-all duration-300 ${
-            gameState === 'playing' ? 'opacity-100 transform translate-y-0' : 'opacity-75'
-          }`}
+          style={{
+            transition: 'all 0.3s',
+            opacity: gameState === 'playing' ? 1 : 0.75,
+            transform: gameState === 'playing' ? 'translateY(0)' : undefined
+          }}
         >
           <GameQuestion
             question={currentQuestion}
@@ -342,25 +418,52 @@ export default function Game() {
 
         {/* Early Win Option */}
         {showEarlyWinOption === true && gameState === 'answered' ? (
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 animate-fade-in">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-2">
+          <div className="animate-fade-in" style={{
+            background: colors.successBg,
+            border: `1px solid ${colors.successBorder}`,
+            borderRadius: 8,
+            padding: 24
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, color: colors.successText, marginBottom: 8 }}>
                 🎉 Congratulations! You can pass now!
               </h3>
-              <p className="text-green-700 dark:text-green-300 mb-4 text-sm">
+              <p style={{ color: colors.successTextLight, marginBottom: 16, fontSize: 14 }}>
                 You&apos;ve answered {session.correctAnswers} out of {gameSettings.winThreshold} questions correctly to pass. You can finish
                 now or continue to answer all {questions.length} questions.
               </p>
-              <div className="flex space-x-3 justify-center">
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
                 <button
                   onClick={handleEarlyFinish}
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                  style={{
+                    backgroundColor: '#16a34a',
+                    color: 'white',
+                    fontWeight: 500,
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#15803d'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
                 >
                   Finish Now
                 </button>
                 <button
                   onClick={handleNext}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                  style={{
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    fontWeight: 500,
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
                 >
                   Continue
                 </button>
@@ -380,34 +483,64 @@ export default function Game() {
 
         {/* Keyboard Help */}
         {showKeyboardHelp === true ? (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 animate-fade-in">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md mx-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          <div className="animate-fade-in" style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: colors.modalBg,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 50
+          }}>
+            <div style={{
+              backgroundColor: colors.cardBg,
+              borderRadius: 8,
+              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+              padding: 24,
+              maxWidth: 448,
+              margin: 16
+            }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, color: colors.text, marginBottom: 16 }}>
                 ⌨️ Keyboard Shortcuts
               </h3>
-              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-300 mb-6">
-                <div className="flex justify-between">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14, color: colors.textMuted, marginBottom: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Select answers:</span>
-                  <span className="font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                  <span style={{ fontFamily: 'monospace', backgroundColor: colors.keyboardBg, padding: '4px 8px', borderRadius: 4 }}>
                     1-4 or A-D
                   </span>
                 </div>
-                <div className="flex justify-between">
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Next question:</span>
-                  <span className="font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                  <span style={{ fontFamily: 'monospace', backgroundColor: colors.keyboardBg, padding: '4px 8px', borderRadius: 4 }}>
                     Enter or Space
                   </span>
                 </div>
-                <div className="flex justify-between">
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Restart game:</span>
-                  <span className="font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                  <span style={{ fontFamily: 'monospace', backgroundColor: colors.keyboardBg, padding: '4px 8px', borderRadius: 4 }}>
                     R
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setShowKeyboardHelp(false)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                style={{
+                  width: '100%',
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  fontWeight: 500,
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
               >
                 Got it!
               </button>
@@ -418,10 +551,25 @@ export default function Game() {
         {/* Keyboard Help Toggle */}
         <button
           onClick={() => setShowKeyboardHelp(true)}
-          className="fixed bottom-4 right-4 bg-gray-600 hover:bg-gray-700 text-white p-3 rounded-full shadow-lg transition-colors duration-200 z-40"
           title="Show keyboard shortcuts"
+          style={{
+            position: 'fixed',
+            bottom: 16,
+            right: 16,
+            backgroundColor: '#4b5563',
+            color: 'white',
+            padding: 12,
+            borderRadius: '50%',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+            transition: 'background-color 0.2s',
+            zIndex: 40
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#374151'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
