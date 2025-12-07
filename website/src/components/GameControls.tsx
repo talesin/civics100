@@ -1,5 +1,7 @@
 import React from 'react'
 import { GameSession } from '@/types'
+import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
+import { styled } from 'tamagui'
 
 interface GameControlsProps {
   session: GameSession
@@ -9,6 +11,57 @@ interface GameControlsProps {
   showRestart: boolean
 }
 
+const PrimaryButton = styled(Button, {
+  flex: 1,
+  backgroundColor: '#2563eb', // blue-600
+  paddingVertical: '$2',
+  paddingHorizontal: '$4',
+  borderRadius: '$3',
+
+  hoverStyle: {
+    backgroundColor: '#1d4ed8', // blue-700
+  },
+
+  pressStyle: {
+    opacity: 0.9,
+  },
+})
+
+const SecondaryButton = styled(Button, {
+  backgroundColor: '#4b5563', // gray-600
+  paddingVertical: '$2',
+  paddingHorizontal: '$4',
+  borderRadius: '$3',
+
+  hoverStyle: {
+    backgroundColor: '#374151', // gray-700
+  },
+
+  pressStyle: {
+    opacity: 0.9,
+  },
+})
+
+const ButtonText = styled(Text, {
+  color: 'white',
+  fontWeight: '500',
+})
+
+const SuccessMessage = styled(YStack, {
+  marginTop: '$4',
+  padding: '$3',
+  backgroundColor: '#f0fdf4', // green-50
+  borderWidth: 1,
+  borderColor: '#bbf7d0', // green-200
+  borderRadius: '$3',
+})
+
+const SuccessText = styled(Text, {
+  color: '#166534', // green-800
+  fontSize: '$3',
+  fontWeight: '500',
+})
+
 export default function GameControls({
   session,
   onNext,
@@ -17,45 +70,41 @@ export default function GameControls({
   showRestart = false
 }: GameControlsProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-      <div className="flex justify-between items-center mb-4">
-        <div className="text-sm text-gray-600 dark:text-gray-300">
-          <span className="font-medium">Progress:</span> {session.totalAnswered} answered
-        </div>
-        <div className="text-sm text-gray-600 dark:text-gray-300">
-          <span className="font-medium">Correct:</span> {session.correctAnswers}
-        </div>
-      </div>
+    <Card elevated padding="$6">
+      <XStack justifyContent="space-between" alignItems="center" marginBottom="$4">
+        <Text fontSize="$3" color="$color" opacity={0.8}>
+          <Text fontWeight="500">Progress:</Text> {session.totalAnswered} answered
+        </Text>
+        <Text fontSize="$3" color="$color" opacity={0.8}>
+          <Text fontWeight="500">Correct:</Text> {session.correctAnswers}
+        </Text>
+      </XStack>
 
-      <div className="flex space-x-3">
+      <XStack gap="$3">
         {showNext === true && onNext !== undefined ? (
-          <button
-            onClick={onNext}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
-          >
-            {session.currentQuestionIndex >= session.questions.length - 1
-              ? 'Finish'
-              : 'Next Question'}
-          </button>
+          <PrimaryButton onPress={onNext}>
+            <ButtonText>
+              {session.currentQuestionIndex >= session.questions.length - 1
+                ? 'Finish'
+                : 'Next Question'}
+            </ButtonText>
+          </PrimaryButton>
         ) : null}
 
         {showRestart === true && onRestart !== undefined ? (
-          <button
-            onClick={onRestart}
-            className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
-          >
-            Restart Game
-          </button>
+          <SecondaryButton onPress={onRestart}>
+            <ButtonText>Restart Game</ButtonText>
+          </SecondaryButton>
         ) : null}
-      </div>
+      </XStack>
 
       {session.correctAnswers >= session.settings.winThreshold && session.isCompleted === false ? (
-        <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <p className="text-green-800 dark:text-green-200 text-sm font-medium">
+        <SuccessMessage>
+          <SuccessText>
             🎉 You&apos;ve reached {session.settings.winThreshold} correct answers! You can continue or finish now.
-          </p>
-        </div>
+          </SuccessText>
+        </SuccessMessage>
       ) : null}
-    </div>
+    </Card>
   )
 }
