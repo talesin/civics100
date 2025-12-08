@@ -122,7 +122,7 @@ npx tsx src/index.ts updates parse [--force]          # Parse updates
 - Keep the codebase simple and easy to understand
 - Focus only on areas relevant to the task at hand
 - Write thorough tests for all code
-- Read .windsurf/rules/code-style-guide.md for more information
+- Read @./coding-style-guide.md for more information
 
 ### TypeScript/Effect-TS Specific
 
@@ -152,3 +152,56 @@ npx tsx src/index.ts updates parse [--force]          # Parse updates
 
 - All temporary working scripts or files should start with 'temp\_'
 - Record plans to 'plans/' in markdown
+
+## Website Styling (Tamagui)
+
+The website uses Tamagui for styling with a theme-aware approach:
+
+### Theme System
+- Theme context is provided via `TamaguiProvider` and accessed with `useThemeContext()`
+- Theme state is persisted to localStorage
+- Supports 'light' and 'dark' themes
+
+### Styling Pattern
+Components and pages use inline styles with theme-aware color maps:
+```typescript
+const themeColors = {
+  light: {
+    text: '#111827',
+    cardBg: '#ffffff',
+    // ... other colors
+  },
+  dark: {
+    text: '#ffffff',
+    cardBg: '#1f2937',
+    // ... other colors
+  },
+}
+
+// In component:
+const { theme } = useThemeContext()
+const colors = themeColors[theme]
+
+// Usage:
+<div style={{ color: colors.text, backgroundColor: colors.cardBg }}>
+```
+
+### CSS Classes (from design-tokens.css)
+These CSS classes are available and should be preserved:
+- `card`, `card-elevated`, `card-interactive` - Card styling
+- `btn-primary`, `btn-secondary`, `btn-success`, `btn-error` - Button variants
+- `focus-ring` - Focus state styling
+- `animate-fade-in`, `animate-bounce-in`, etc. - Animations
+- `text-gradient`, `text-balance` - Text utilities
+- `hidden`, `md:flex`, `md:hidden` - Responsive utilities
+
+### Tamagui Components (in /src/components/tamagui/)
+Base Tamagui components are available but most UI uses inline styles:
+- `Button`, `Card`, `Text`, `Heading`, `Paragraph`
+- Re-exports: `Stack`, `XStack`, `YStack`, `ZStack`
+
+### Important Notes
+- Tailwind CSS has been removed; do not add Tailwind classes
+- Use design tokens from CSS variables when possible
+- Always test both light and dark themes when modifying styles
+

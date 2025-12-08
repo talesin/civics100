@@ -5,7 +5,54 @@ import { Effect } from 'effect'
 import Layout from '@/components/Layout'
 import StatsSummary from '@/components/StatsSummary'
 import { LocalStorageService } from '@/services/LocalStorageService'
+import { useThemeContext } from '@/components/TamaguiProvider'
 import { GameResult, GameStats } from '@/types'
+
+// Theme-aware colors
+const themeColors = {
+  light: {
+    text: '#111827',
+    textMuted: '#4b5563',
+    textLight: '#6b7280',
+    cardBg: '#ffffff',
+    cardBorder: '#e5e7eb',
+    iconBg: '#f3f4f6',
+    badgeOrangeBg: '#ffedd5',
+    badgeOrangeText: '#9a3412',
+    badgeYellowBg: '#fef9c3',
+    badgeYellowText: '#854d0e',
+    badgeGreenBg: '#dcfce7',
+    badgeGreenText: '#166534',
+    badgeRedBg: '#fee2e2',
+    badgeRedText: '#991b1b',
+    scoreGreen: '#16a34a',
+    scoreBlue: '#2563eb',
+    scoreRed: '#dc2626',
+    hoverBg: '#f9fafb',
+    circleStroke: '#e5e7eb',
+  },
+  dark: {
+    text: '#ffffff',
+    textMuted: '#d1d5db',
+    textLight: '#9ca3af',
+    cardBg: '#1f2937',
+    cardBorder: '#374151',
+    iconBg: '#374151',
+    badgeOrangeBg: 'rgba(154, 52, 18, 0.3)',
+    badgeOrangeText: '#fed7aa',
+    badgeYellowBg: 'rgba(133, 77, 14, 0.3)',
+    badgeYellowText: '#fef08a',
+    badgeGreenBg: 'rgba(22, 101, 52, 0.3)',
+    badgeGreenText: '#86efac',
+    badgeRedBg: 'rgba(153, 27, 27, 0.3)',
+    badgeRedText: '#fecaca',
+    scoreGreen: '#4ade80',
+    scoreBlue: '#60a5fa',
+    scoreRed: '#f87171',
+    hoverBg: '#374151',
+    circleStroke: '#4b5563',
+  },
+}
 
 export default function Results() {
   const [results, setResults] = useState<GameResult[]>([])
@@ -17,6 +64,8 @@ export default function Results() {
     earlyFailures: 0
   })
   const [isLoading, setIsLoading] = useState(true)
+  const { theme } = useThemeContext()
+  const colors = themeColors[theme]
 
   useEffect(() => {
     loadData()
@@ -59,45 +108,36 @@ export default function Results() {
     }
   }
 
-  const getResultBadge = (result: GameResult) => {
+  const getBadgeStyles = (result: GameResult): { bg: string; text: string; label: string } => {
     if (result.isEarlyFail === true) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200">
-          Early Fail
-        </span>
-      )
+      return { bg: colors.badgeOrangeBg, text: colors.badgeOrangeText, label: 'Early Fail' }
     } else if (result.isEarlyWin === true) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
-          Early Win
-        </span>
-      )
+      return { bg: colors.badgeYellowBg, text: colors.badgeYellowText, label: 'Early Win' }
     } else if (result.percentage >= 60) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-          Passed
-        </span>
-      )
+      return { bg: colors.badgeGreenBg, text: colors.badgeGreenText, label: 'Passed' }
     } else {
-      return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
-          Failed
-        </span>
-      )
+      return { bg: colors.badgeRedBg, text: colors.badgeRedText, label: 'Failed' }
     }
   }
 
   const getScoreColor = (percentage: number) => {
-    if (percentage >= 80) return 'text-green-600 dark:text-green-400'
-    if (percentage >= 60) return 'text-blue-600 dark:text-blue-400'
-    return 'text-red-600 dark:text-red-400'
+    if (percentage >= 80) return colors.scoreGreen
+    if (percentage >= 60) return colors.scoreBlue
+    return colors.scoreRed
   }
 
   if (isLoading) {
     return (
       <Layout title="Loading Results...">
-        <div className="flex items-center justify-center min-h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
+          <div style={{
+            width: 48,
+            height: 48,
+            borderRadius: '50%',
+            border: '2px solid transparent',
+            borderBottomColor: '#2563eb',
+            animation: 'spin 1s linear infinite'
+          }} />
         </div>
       </Layout>
     )
@@ -105,26 +145,59 @@ export default function Results() {
 
   return (
     <Layout title="Test Results">
-      <div className="space-y-8">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Your Test Results</h1>
-          <div className="flex space-x-3">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+          <h1 style={{ fontSize: 30, fontWeight: 'bold', color: colors.text }}>Your Test Results</h1>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <button
               onClick={() => (window.location.href = '/statistics')}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+              style={{
+                backgroundColor: '#9333ea',
+                color: 'white',
+                fontWeight: 500,
+                padding: '8px 16px',
+                borderRadius: 8,
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#7c3aed'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#9333ea'}
             >
               View Question Stats
             </button>
             <button
               onClick={() => (window.location.href = '/game')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+              style={{
+                backgroundColor: '#2563eb',
+                color: 'white',
+                fontWeight: 500,
+                padding: '8px 16px',
+                borderRadius: 8,
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
             >
               Take New Test
             </button>
             {(results.length > 0) === true ? (
               <button
                 onClick={handleClearData}
-                className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200"
+                style={{
+                  backgroundColor: '#dc2626',
+                  color: 'white',
+                  fontWeight: 500,
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#b91c1c'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#dc2626'}
               >
                 Clear All Data
               </button>
@@ -135,10 +208,25 @@ export default function Results() {
         <StatsSummary stats={stats} />
 
         {results.length === 0 ? (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div style={{
+            backgroundColor: colors.cardBg,
+            borderRadius: 8,
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            padding: 32,
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: 64,
+              height: 64,
+              backgroundColor: colors.iconBg,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px'
+            }}>
               <svg
-                className="w-8 h-8 text-gray-400"
+                style={{ width: 32, height: 32, color: '#9ca3af' }}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -151,81 +239,132 @@ export default function Results() {
                 />
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <h3 style={{ fontSize: 20, fontWeight: 600, color: colors.text, marginBottom: 8 }}>
               No Test Results Yet
             </h3>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
+            <p style={{ color: colors.textMuted, marginBottom: 24 }}>
               You haven&apos;t taken any civics tests yet. Take your first test to see your results
               here.
             </p>
             <button
               onClick={() => (window.location.href = '/game')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
+              style={{
+                backgroundColor: '#2563eb',
+                color: 'white',
+                fontWeight: 500,
+                padding: '12px 24px',
+                borderRadius: 8,
+                border: 'none',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
             >
               Take Your First Test
             </button>
           </div>
         ) : (
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div style={{
+            backgroundColor: colors.cardBg,
+            borderRadius: 8,
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              padding: '16px 24px',
+              borderBottom: `1px solid ${colors.cardBorder}`
+            }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>
                 Test History ({results.length} tests)
               </h3>
             </div>
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {results.map((result, index) => (
-                <div
-                  key={result.sessionId}
-                  className="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <span className="text-sm font-medium text-gray-900 dark:text-white">
-                          Test #{results.length - index}
-                        </span>
-                        {getResultBadge(result)}
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {result.completedAt.toLocaleDateString()} at{' '}
-                          {result.completedAt.toLocaleTimeString()}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-6 text-sm">
-                        <span className={`font-semibold ${getScoreColor(result.percentage)}`}>
-                          {result.percentage}%
-                        </span>
-                        <span className="text-gray-600 dark:text-gray-300">
-                          {result.correctAnswers}/{result.totalQuestions} correct
-                        </span>
-                        {result.isEarlyWin === true ? (
-                          <span className="text-yellow-600 dark:text-yellow-400 text-xs">
-                            ⭐ Early completion
+            <div>
+              {results.map((result, index) => {
+                const badge = getBadgeStyles(result)
+                return (
+                  <div
+                    key={result.sessionId}
+                    style={{
+                      padding: '16px 24px',
+                      borderBottom: index < results.length - 1 ? `1px solid ${colors.cardBorder}` : undefined,
+                      transition: 'background-color 0.15s'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = colors.hoverBg}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: 14, fontWeight: 500, color: colors.text }}>
+                            Test #{results.length - index}
                           </span>
-                        ) : null}
+                          <span style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            padding: '2px 10px',
+                            borderRadius: 9999,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            backgroundColor: badge.bg,
+                            color: badge.text
+                          }}>
+                            {badge.label}
+                          </span>
+                          <span style={{ fontSize: 12, color: colors.textLight }}>
+                            {result.completedAt.toLocaleDateString()} at{' '}
+                            {result.completedAt.toLocaleTimeString()}
+                          </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 24, fontSize: 14 }}>
+                          <span style={{ fontWeight: 600, color: getScoreColor(result.percentage) }}>
+                            {result.percentage}%
+                          </span>
+                          <span style={{ color: colors.textMuted }}>
+                            {result.correctAnswers}/{result.totalQuestions} correct
+                          </span>
+                          {result.isEarlyWin === true ? (
+                            <span style={{ color: theme === 'dark' ? '#facc15' : '#ca8a04', fontSize: 12 }}>
+                              ⭐ Early completion
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <div className="w-16 h-16 rounded-full border-4 border-gray-200 dark:border-gray-600 flex items-center justify-center relative">
-                        <svg className="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
-                          <path
-                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            strokeDasharray={`${result.percentage}, 100`}
-                            className={result.percentage >= 60 ? 'text-green-500' : 'text-red-500'}
-                          />
-                        </svg>
-                        <span
-                          className={`absolute text-xs font-bold ${getScoreColor(result.percentage)}`}
-                        >
-                          {result.percentage}%
-                        </span>
+                      <div style={{ flexShrink: 0 }}>
+                        <div style={{
+                          width: 64,
+                          height: 64,
+                          borderRadius: '50%',
+                          border: `4px solid ${colors.circleStroke}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          position: 'relative'
+                        }}>
+                          <svg style={{ width: 64, height: 64, transform: 'rotate(-90deg)', position: 'absolute' }} viewBox="0 0 36 36">
+                            <path
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                              fill="none"
+                              stroke={result.percentage >= 60 ? '#22c55e' : '#ef4444'}
+                              strokeWidth="3"
+                              strokeDasharray={`${result.percentage}, 100`}
+                            />
+                          </svg>
+                          <span style={{
+                            fontSize: 12,
+                            fontWeight: 'bold',
+                            color: getScoreColor(result.percentage),
+                            position: 'relative',
+                            zIndex: 1
+                          }}>
+                            {result.percentage}%
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

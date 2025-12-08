@@ -1,59 +1,66 @@
 import React, { useState, useEffect } from 'react'
+import { Stack } from '@/components/tamagui'
+import { useThemeContext } from '@/components/TamaguiProvider'
+import { styled } from 'tamagui'
+
+const ThemeButton = styled(Stack, {
+  tag: 'button',
+  padding: '$2',
+  borderRadius: '$2',
+  cursor: 'pointer',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'transparent',
+  borderWidth: 0,
+
+  hoverStyle: {
+    backgroundColor: '$backgroundHover',
+  },
+
+  focusStyle: {
+    outlineWidth: 2,
+    outlineColor: '$borderColorFocus',
+    outlineStyle: 'solid',
+  },
+
+  pressStyle: {
+    opacity: 0.8,
+  },
+})
+
+const LoadingSkeleton = styled(Stack, {
+  width: 20,
+  height: 20,
+  backgroundColor: '$borderColor',
+  borderRadius: '$1',
+})
 
 export default function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false)
+  const { theme, toggleTheme } = useThemeContext()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
-    // Check for saved theme preference or default to system preference
-    try {
-      const savedTheme = localStorage.getItem('theme')
-      if (savedTheme !== null) {
-        setIsDark(savedTheme === 'dark')
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark')
-      } else {
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-        setIsDark(systemDark)
-        document.documentElement.classList.toggle('dark', systemDark)
-      }
-    } catch {
-      // Fallback to system preference if localStorage fails
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      setIsDark(systemDark)
-      document.documentElement.classList.toggle('dark', systemDark)
-    }
   }, [])
 
-  const toggleTheme = () => {
-    const newTheme = !isDark
-    setIsDark(newTheme)
-    try {
-      localStorage.setItem('theme', newTheme ? 'dark' : 'light')
-    } catch {
-      // Silently fail if localStorage is unavailable
-    }
-    document.documentElement.classList.toggle('dark', newTheme)
-  }
+  const isDark = theme === 'dark'
 
   // Don't render until mounted to avoid hydration mismatch
   if (!mounted) {
     return (
-      <button className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus-ring">
-        <div className="w-5 h-5 bg-gray-300 dark:bg-gray-600 rounded animate-pulse" />
-      </button>
+      <ThemeButton>
+        <LoadingSkeleton />
+      </ThemeButton>
     )
   }
 
   return (
-    <button
-      onClick={toggleTheme}
-      className="p-2 rounded-md text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus-ring transition-colors"
-      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-      title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+    <ThemeButton
+      onPress={toggleTheme}
+      accessibilityLabel={`Switch to ${isDark ? 'light' : 'dark'} mode`}
     >
       {isDark ? (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -62,7 +69,7 @@ export default function ThemeToggle() {
           />
         </svg>
       ) : (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg width={20} height={20} fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -71,6 +78,6 @@ export default function ThemeToggle() {
           />
         </svg>
       )}
-    </button>
+    </ThemeButton>
   )
 }

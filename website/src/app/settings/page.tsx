@@ -6,13 +6,46 @@ import { StateAbbreviation } from 'civics2json'
 import Layout from '@/components/Layout'
 import StateSelector from '@/components/StateSelector'
 import DistrictSelector from '@/components/DistrictSelector'
+import { useThemeContext } from '@/components/TamaguiProvider'
 import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings, WIN_THRESHOLD_PERCENTAGE } from '@/types'
+
+// Theme-aware colors
+const themeColors = {
+  light: {
+    text: '#111827',
+    textMuted: '#4b5563',
+    textLight: '#6b7280',
+    textXLight: '#9ca3af',
+    linkText: '#2563eb',
+    linkHover: '#1e40af',
+    borderColor: '#e5e7eb',
+    inputBg: '#ffffff',
+    inputBorder: '#d1d5db',
+    checkboxBg: '#f3f4f6',
+    amberText: '#d97706',
+  },
+  dark: {
+    text: '#ffffff',
+    textMuted: '#d1d5db',
+    textLight: '#9ca3af',
+    textXLight: '#9ca3af',
+    linkText: '#60a5fa',
+    linkHover: '#93c5fd',
+    borderColor: '#374151',
+    inputBg: '#1f2937',
+    inputBorder: '#4b5563',
+    checkboxBg: '#374151',
+    amberText: '#fbbf24',
+  },
+}
 
 export default function Settings() {
   const router = useRouter()
   const [settings, setSettings] = useState<WebsiteGameSettings>(DEFAULT_GAME_SETTINGS)
   const [isLoading, setIsLoading] = useState(true)
   const [hasChanges, setHasChanges] = useState(false)
+  const { theme, setTheme } = useThemeContext()
+  const colors = themeColors[theme]
 
   // Load settings from localStorage on component mount
   useEffect(() => {
@@ -69,12 +102,8 @@ export default function Settings() {
     setSettings((prev) => ({ ...prev, darkMode: value }))
     setHasChanges(true)
 
-    // Apply dark mode immediately
-    if (value) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+    // Apply dark mode via theme context
+    setTheme(value ? 'dark' : 'light')
   }
 
   const handleStartGame = () => {
@@ -88,52 +117,69 @@ export default function Settings() {
     setSettings(DEFAULT_GAME_SETTINGS)
     setHasChanges(true)
 
-    // Reset dark mode
-    if (DEFAULT_GAME_SETTINGS.darkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+    // Reset dark mode via theme context
+    setTheme(DEFAULT_GAME_SETTINGS.darkMode ? 'dark' : 'light')
   }
 
   if (isLoading) {
     return (
       <Layout title="Game Settings">
-        <div className="flex items-center justify-center min-h-96">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-300">Loading settings...</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              border: '2px solid transparent',
+              borderBottomColor: '#2563eb',
+              animation: 'spin 1s linear infinite',
+              margin: '0 auto 16px'
+            }} />
+            <p style={{ color: colors.textMuted }}>Loading settings...</p>
           </div>
         </div>
       </Layout>
     )
   }
 
+  const selectStyles: React.CSSProperties = {
+    width: '100%',
+    padding: '8px 12px',
+    border: `1px solid ${colors.inputBorder}`,
+    borderRadius: 6,
+    backgroundColor: colors.inputBg,
+    color: colors.text,
+    fontSize: 14,
+    outline: 'none',
+  }
+
   return (
     <Layout title="Game Settings">
-      <div className="max-w-2xl mx-auto space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Game Settings</h1>
-          <p className="text-gray-600 dark:text-gray-300">Customize your civics test experience</p>
+      <div style={{ maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>Game Settings</h1>
+          <p style={{ color: colors.textMuted }}>Customize your civics test experience</p>
         </div>
 
-        <div className="card card-elevated space-y-6">
+        <div className="card card-elevated" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {/* State Selection */}
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>
               Location Settings
             </h2>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Select your state and congressional district to get personalized questions about your 
+            <p style={{ fontSize: 14, color: colors.textLight }}>
+              Select your state and congressional district to get personalized questions about your
               specific representative, senators, and governor.
             </p>
-            <div className="text-sm text-blue-600 dark:text-blue-400">
+            <div style={{ fontSize: 14, color: colors.linkText }}>
               Don&apos;t know your congressional district?{' '}
               <a
                 href="https://www.govtrack.us/congress/members/map"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="underline hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
+                style={{ textDecoration: 'underline', transition: 'color 0.2s' }}
+                onMouseOver={(e) => e.currentTarget.style.color = colors.linkHover}
+                onMouseOut={(e) => e.currentTarget.style.color = colors.linkText}
               >
                 Find your district on GovTrack →
               </a>
@@ -151,17 +197,17 @@ export default function Settings() {
             />
           </div>
 
-          <hr className="border-gray-200 dark:border-gray-700" />
+          <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
 
           {/* Game Settings */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Game Settings</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>Game Settings</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label
                   htmlFor="max-questions"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted }}
                 >
                   Questions per game:
                 </label>
@@ -169,7 +215,7 @@ export default function Settings() {
                   id="max-questions"
                   value={settings.maxQuestions}
                   onChange={handleMaxQuestionsChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={selectStyles}
                 >
                   <option value={20}>20 questions (Official 2025 minimum)</option>
                   <option value={50}>50 questions</option>
@@ -177,10 +223,10 @@ export default function Settings() {
                 </select>
               </div>
 
-              <div className="space-y-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label
                   htmlFor="win-threshold"
-                  className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                  style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted }}
                 >
                   Pass threshold:
                 </label>
@@ -188,7 +234,7 @@ export default function Settings() {
                   id="win-threshold"
                   value={settings.winThreshold}
                   onChange={handleWinThresholdChange}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={selectStyles}
                 >
                   <option value={Math.ceil(settings.maxQuestions * WIN_THRESHOLD_PERCENTAGE)}>
                     {Math.ceil(settings.maxQuestions * WIN_THRESHOLD_PERCENTAGE)} correct (60%)
@@ -209,28 +255,33 @@ export default function Settings() {
               </div>
             </div>
 
-            <div className="text-xs text-gray-500 dark:text-gray-400">
+            <div style={{ fontSize: 12, color: colors.textXLight }}>
               The game ends when you reach the pass threshold (early win), answer 9 questions incorrectly (early fail), or complete all questions. This matches the 2025 USCIS Civics Test format.
             </div>
           </div>
 
-          <hr className="border-gray-200 dark:border-gray-700" />
+          <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
 
           {/* Appearance Settings */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Appearance</h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>Appearance</h2>
 
-            <div className="flex items-center space-x-3">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <input
                 type="checkbox"
                 id="dark-mode"
                 checked={settings.darkMode}
                 onChange={handleDarkModeChange}
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                style={{
+                  width: 16,
+                  height: 16,
+                  accentColor: '#2563eb',
+                  cursor: 'pointer'
+                }}
               />
               <label
                 htmlFor="dark-mode"
-                className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, cursor: 'pointer' }}
               >
                 Enable dark mode
               </label>
@@ -239,34 +290,46 @@ export default function Settings() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-between">
-          <button
-            onClick={resetToDefaults}
-            className="btn-secondary px-6 py-3 rounded-lg font-medium transition-colors duration-200"
-          >
-            Reset to Defaults
-          </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'space-between' }}>
+            <button
+              onClick={resetToDefaults}
+              className="btn-secondary focus-ring"
+              style={{ padding: '12px 24px', borderRadius: 8, fontWeight: 500, transition: 'all 0.2s' }}
+            >
+              Reset to Defaults
+            </button>
 
-          <div className="flex gap-3">
-            <button
-              onClick={saveSettings}
-              disabled={!hasChanges}
-              className="btn-secondary px-6 py-3 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Save Settings
-            </button>
-            <button
-              onClick={handleStartGame}
-              className="btn-primary px-6 py-3 rounded-lg font-medium transition-colors duration-200"
-            >
-              Start Game
-            </button>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                onClick={saveSettings}
+                disabled={!hasChanges}
+                className="btn-secondary focus-ring"
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: 8,
+                  fontWeight: 500,
+                  transition: 'all 0.2s',
+                  opacity: hasChanges ? 1 : 0.5,
+                  cursor: hasChanges ? 'pointer' : 'not-allowed'
+                }}
+              >
+                Save Settings
+              </button>
+              <button
+                onClick={handleStartGame}
+                className="btn-primary focus-ring"
+                style={{ padding: '12px 24px', borderRadius: 8, fontWeight: 500, transition: 'all 0.2s' }}
+              >
+                Start Game
+              </button>
+            </div>
           </div>
         </div>
 
         {hasChanges === true ? (
-          <div className="text-center">
-            <p className="text-sm text-amber-600 dark:text-amber-400">
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontSize: 14, color: colors.amberText }}>
               You have unsaved changes. Click &quot;Save Settings&quot; to persist them.
             </p>
           </div>

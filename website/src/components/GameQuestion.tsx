@@ -2,12 +2,115 @@ import React, { useState, useEffect } from 'react'
 import { QuestionDisplay as GameQuestionType, QuestionAnswer } from '@/types'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
+import { Card, XStack, YStack, Text } from '@/components/tamagui'
+import { styled } from 'tamagui'
+import { useThemeContext } from '@/components/TamaguiProvider'
 
 interface GameQuestionProps {
   question: GameQuestionType
   onAnswer: (answer: QuestionAnswer) => void
   disabled?: boolean
 }
+
+const QuestionCard = styled(Card, {
+  padding: '$6',
+})
+
+const QuestionTitle = styled(Text, {
+  fontSize: '$6',
+  fontWeight: 'bold',
+  color: '$color',
+  marginBottom: '$2',
+  lineHeight: 28,
+})
+
+const MultipleChoiceHint = styled(Text, {
+  fontSize: '$2',
+  color: '$primary',
+  fontWeight: '500',
+  marginBottom: '$3',
+})
+
+const KeyboardHintBox = styled(XStack, {
+  marginTop: '$4',
+  padding: '$4',
+  backgroundColor: '$backgroundHover',
+  borderRadius: '$3',
+  borderWidth: 1,
+  borderColor: '$borderColor',
+  justifyContent: 'center',
+})
+
+const KeyboardHintText = styled(Text, {
+  fontSize: '$3',
+  color: '$placeholderColor',
+  textAlign: 'center',
+})
+
+const FeedbackContainer = styled(YStack, {
+  marginTop: '$4',
+  padding: '$4',
+  borderRadius: '$3',
+})
+
+const CorrectFeedback = styled(XStack, {
+  backgroundColor: '$green1',
+  borderWidth: 1,
+  borderColor: '$green2',
+  padding: '$4',
+  borderRadius: '$3',
+  alignItems: 'center',
+})
+
+const IncorrectFeedback = styled(YStack, {
+  backgroundColor: '$error1',
+  borderWidth: 1,
+  borderColor: '$error2',
+  padding: '$4',
+  borderRadius: '$3',
+})
+
+const FeedbackIconCircle = styled(YStack, {
+  width: 24,
+  height: 24,
+  borderRadius: 12,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: '$3',
+
+  variants: {
+    variant: {
+      success: {
+        backgroundColor: '$success',
+      },
+      error: {
+        backgroundColor: '$error',
+      },
+    },
+  } as const,
+})
+
+const FeedbackText = styled(Text, {
+  fontSize: '$5',
+  fontWeight: '600',
+
+  variants: {
+    variant: {
+      success: {
+        color: '$green7',
+      },
+      error: {
+        color: '$error',
+      },
+    },
+  } as const,
+})
+
+const FeedbackDetail = styled(Text, {
+  fontSize: '$4',
+  color: '$error',
+  marginTop: '$2',
+})
 
 /**
  * Validate user answer selection against question requirements
@@ -38,11 +141,124 @@ const validateAnswerSelection = (
   return selectedArray.every((answer) => correctArray.includes(answer))
 }
 
+// Theme-aware answer button color definitions
+const getAnswerButtonColors = (isDark: boolean) => ({
+  // Default state (not answered, not selected)
+  default: {
+    border: isDark ? '#404040' : '#d1d5db',
+    bg: isDark ? '#262626' : 'white',
+    text: isDark ? '#e5e5e5' : '#1f2937',
+  },
+  // Selected state (multiple choice, before submit)
+  selected: {
+    border: isDark ? '#60a5fa' : '#3b82f6',
+    bg: isDark ? '#1e3a5f' : '#eff6ff',
+    text: isDark ? '#93c5fd' : '#1e40af',
+  },
+  // Correct answer (after submit)
+  correct: {
+    border: isDark ? '#4ade80' : '#22c55e',
+    bg: isDark ? '#14532d' : '#f0fdf4',
+    text: isDark ? '#86efac' : '#166534',
+  },
+  // Incorrect answer (after submit, user selected wrong)
+  incorrect: {
+    border: isDark ? '#f87171' : '#ef4444',
+    bg: isDark ? '#7f1d1d' : '#fef2f2',
+    text: isDark ? '#fecaca' : '#991b1b',
+  },
+  // Disabled/dimmed state (other options after answering)
+  disabled: {
+    border: isDark ? '#404040' : '#d1d5db',
+    bg: isDark ? '#1a1a1a' : '#f3f4f6',
+    text: isDark ? '#71717a' : '#6b7280',
+  },
+})
+
+// Button styles as React.CSSProperties
+const getAnswerButtonStyles = (
+  answerIndex: number,
+  selectedAnswers: number[],
+  hasAnswered: boolean,
+  disabled: boolean,
+  isMultipleChoice: boolean,
+  correctIndices: number[],
+  isDark: boolean
+): React.CSSProperties => {
+  const colors = getAnswerButtonColors(isDark)
+
+  const baseStyles: React.CSSProperties = {
+    width: '100%',
+    textAlign: 'left',
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    transition: 'all 200ms',
+    cursor: hasAnswered || disabled ? 'default' : 'pointer',
+    display: 'block',
+  }
+
+  const isSelected = selectedAnswers.includes(answerIndex)
+  const isCorrectAnswer = correctIndices.includes(answerIndex)
+
+  if (!hasAnswered && !disabled) {
+    if (isSelected && isMultipleChoice) {
+      return {
+        ...baseStyles,
+        borderColor: colors.selected.border,
+        backgroundColor: colors.selected.bg,
+        color: colors.selected.text,
+      }
+    }
+    return {
+      ...baseStyles,
+      borderColor: colors.default.border,
+      backgroundColor: colors.default.bg,
+      color: colors.default.text,
+    }
+  }
+
+  if (hasAnswered) {
+    if (isCorrectAnswer) {
+      return {
+        ...baseStyles,
+        borderColor: colors.correct.border,
+        backgroundColor: colors.correct.bg,
+        color: colors.correct.text,
+      }
+    } else if (isSelected) {
+      return {
+        ...baseStyles,
+        borderColor: colors.incorrect.border,
+        backgroundColor: colors.incorrect.bg,
+        color: colors.incorrect.text,
+      }
+    } else {
+      return {
+        ...baseStyles,
+        borderColor: colors.disabled.border,
+        backgroundColor: colors.disabled.bg,
+        color: colors.disabled.text,
+      }
+    }
+  }
+
+  return {
+    ...baseStyles,
+    borderColor: colors.disabled.border,
+    backgroundColor: colors.disabled.bg,
+    color: colors.disabled.text,
+  }
+}
+
 export default function GameQuestion({ question, onAnswer, disabled = false }: GameQuestionProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([])
   const [hasAnswered, setHasAnswered] = useState(false)
   const { playCorrect, playIncorrect } = useGameSounds()
-  
+  const { theme } = useThemeContext()
+  const isDark = theme === 'dark'
+
   const isMultipleChoice = (question.expectedAnswers ?? 1) > 1
   const expectedCount = question.expectedAnswers ?? 1
 
@@ -54,14 +270,14 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
       const newSelection = selectedAnswers.includes(answerIndex)
         ? selectedAnswers.filter(i => i !== answerIndex)
         : [...selectedAnswers, answerIndex]
-      
+
       setSelectedAnswers(newSelection)
-      
+
       // Don't submit until we have the expected number of answers
       if (newSelection.length !== expectedCount) {
         return
       }
-      
+
       submitAnswer(newSelection)
     } else {
       // Handle single choice selection
@@ -69,15 +285,15 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
       submitAnswer([answerIndex])
     }
   }
-  
+
   const submitAnswer = (selectedIndices: number[]) => {
     setHasAnswered(true)
-    
+
     // Validate answer using proper multi-answer validation logic
-    const correctIndices = Array.isArray(question.correctAnswerIndex) 
-      ? question.correctAnswerIndex 
+    const correctIndices = Array.isArray(question.correctAnswerIndex)
+      ? question.correctAnswerIndex
       : [question.correctAnswerIndex]
-    
+
     const isCorrect = validateAnswerSelection(
       selectedIndices,
       correctIndices,
@@ -117,180 +333,123 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
     disabled: disabled || hasAnswered
   })
 
-  const getAnswerButtonClass = (answerIndex: number) => {
-    const baseClass =
-      'answer-button w-full text-left p-4 rounded-lg border transition-all duration-200 '
-    
-    const isSelected = selectedAnswers.includes(answerIndex)
-    const correctIndices = Array.isArray(question.correctAnswerIndex) 
-      ? question.correctAnswerIndex 
-      : [question.correctAnswerIndex]
-    const isCorrectAnswer = correctIndices.includes(answerIndex)
+  const correctIndices = Array.isArray(question.correctAnswerIndex)
+    ? question.correctAnswerIndex
+    : [question.correctAnswerIndex]
 
-    if (!hasAnswered && !disabled) {
-      if (isSelected && isMultipleChoice) {
-        return (
-          baseClass +
-          'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200'
-        )
-      }
-      return (
-        baseClass +
-        'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 hover:shadow-md'
-      )
-    }
-
-    if (hasAnswered) {
-      if (isCorrectAnswer === true) {
-        return (
-          baseClass +
-          'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 animate-pulse-success'
-        )
-      } else if (isSelected) {
-        return (
-          baseClass +
-          'border-red-500 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 animate-pulse-error'
-        )
-      } else {
-        return (
-          baseClass +
-          'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-        )
-      }
-    }
-
-    return (
-      baseClass +
-      'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
-    )
-  }
+  const isCorrect = hasAnswered && validateAnswerSelection(
+    selectedAnswers,
+    correctIndices,
+    question.expectedAnswers
+  )
 
   return (
-    <div className="card card-elevated">
-      {/* Progress and Question Number */}
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-2">
-          <span className="text-sm font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">
-            Question {question.questionNumber} of {question.totalQuestions}
-          </span>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-            <div
-              className="progress-bar h-3 rounded-full transition-all duration-500"
-              style={{
-                width: `${(question.questionNumber / question.totalQuestions) * 100}%`
-              }}
-              role="progressbar"
-              aria-valuenow={question.questionNumber}
-              aria-valuemin={1}
-              aria-valuemax={question.totalQuestions}
-              aria-label={`Question ${question.questionNumber} of ${question.totalQuestions}`}
-            />
-          </div>
-        </div>
-
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-2 text-balance leading-tight">
+    <QuestionCard elevated>
+      {/* Question Text */}
+      <YStack marginBottom="$4">
+        <QuestionTitle>
           {question.questionText}
-        </h2>
-        
+        </QuestionTitle>
+
         {/* Multiple choice instruction */}
         {isMultipleChoice === true ? (
-          <p className="text-sm text-blue-600 dark:text-blue-400 mb-4 font-medium">
+          <MultipleChoiceHint>
             Select {expectedCount} answer{expectedCount > 1 ? 's' : ''} ({selectedAnswers.length}/{expectedCount} selected)
-          </p>
+          </MultipleChoiceHint>
         ) : null}
-      </div>
+      </YStack>
 
       {/* Answer Options */}
-      <div
-        className="space-y-3"
+      <YStack
+        gap="$3"
         role={isMultipleChoice ? "group" : "radiogroup"}
         aria-labelledby="question-text"
-        aria-required="true"
+        aria-required={true}
       >
         {question.answers.map((answer, index) => (
           <button
             key={index}
             onClick={() => handleAnswerSelect(index)}
             disabled={hasAnswered || disabled}
-            className={getAnswerButtonClass(index)}
+            style={getAnswerButtonStyles(index, selectedAnswers, hasAnswered, disabled, isMultipleChoice, correctIndices, isDark)}
             role={isMultipleChoice ? "checkbox" : "radio"}
             aria-checked={selectedAnswers.includes(index)}
             aria-describedby={hasAnswered ? 'answer-feedback' : undefined}
             data-answer-index={index}
           >
-            <div className="flex items-start sm:items-center gap-3">
-              <span className={`flex-shrink-0 w-8 h-8 ${isMultipleChoice ? 'rounded-md' : 'rounded-full'} border-2 border-current flex items-center justify-center text-sm font-bold transition-all duration-200`}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+              <span style={{
+                flexShrink: 0,
+                width: 32,
+                height: 32,
+                borderRadius: isMultipleChoice ? 6 : 16,
+                borderWidth: 2,
+                borderStyle: 'solid',
+                borderColor: 'currentColor',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 14,
+                fontWeight: 'bold',
+              }}>
                 {isMultipleChoice && selectedAnswers.includes(index) ? '✓' : String.fromCharCode(65 + index)}
               </span>
-              <span className="text-sm sm:text-base text-left leading-relaxed flex-1">
+              <span style={{ fontSize: 14, textAlign: 'left', lineHeight: 1.5, flex: 1 }}>
                 {answer}
               </span>
             </div>
           </button>
         ))}
-      </div>
+      </YStack>
 
       {/* Keyboard Hint */}
       {hasAnswered === false && disabled === false ? (
-        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <p className="text-xs text-blue-700 dark:text-blue-300 text-center">
-            💡 Use keyboard:{' '}
-            <kbd className="bg-white dark:bg-gray-700 px-1 rounded text-xs">1-4</kbd> or{' '}
-            <kbd className="bg-white dark:bg-gray-700 px-1 rounded text-xs">A-D</kbd> to {isMultipleChoice === true ? 'toggle' : 'select'} answers
+        <KeyboardHintBox>
+          <KeyboardHintText>
+            Use keyboard: 1-4 or A-D to {isMultipleChoice === true ? 'toggle' : 'select'} answers
             {isMultipleChoice === true ? ` (need ${expectedCount - selectedAnswers.length} more)` : ''}
-          </p>
-        </div>
+          </KeyboardHintText>
+        </KeyboardHintBox>
       ) : null}
 
       {/* Answer Feedback */}
       {hasAnswered === true ? (
-        <div
+        <FeedbackContainer
           id="answer-feedback"
-          className="mt-6 p-4 rounded-lg animate-fade-in"
           role="status"
           aria-live="polite"
         >
-          {(() => {
-            const correctIndices = Array.isArray(question.correctAnswerIndex) 
-              ? question.correctAnswerIndex 
-              : [question.correctAnswerIndex]
-            const isCorrect = validateAnswerSelection(
-              selectedAnswers,
-              correctIndices,
-              question.expectedAnswers
-            )
-            return isCorrect
-          })() ? (
-            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 p-4 rounded-lg">
-              <div className="flex items-center">
-                <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center mr-3">
-                  <svg
-                    className="w-4 h-4 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                </div>
-                <span className="text-green-800 dark:text-green-200 font-semibold">
-                  Correct! Well done!
-                </span>
-              </div>
-            </div>
+          {isCorrect ? (
+            <CorrectFeedback>
+              <FeedbackIconCircle variant="success">
+                <svg
+                  width={16}
+                  height={16}
+                  fill="none"
+                  stroke="white"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </FeedbackIconCircle>
+              <FeedbackText variant="success">
+                Correct! Well done!
+              </FeedbackText>
+            </CorrectFeedback>
           ) : (
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 rounded-lg">
-              <div className="flex items-start">
-                <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center mr-3 mt-0.5">
+            <IncorrectFeedback>
+              <XStack alignItems="flex-start">
+                <FeedbackIconCircle variant="error" marginTop={2}>
                   <svg
-                    className="w-4 h-4 text-white"
+                    width={16}
+                    height={16}
                     fill="none"
-                    stroke="currentColor"
+                    stroke="white"
                     viewBox="0 0 24 24"
                   >
                     <path
@@ -300,29 +459,23 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
                       d="M6 18L18 6M6 6l12 12"
                     />
                   </svg>
-                </div>
-                <div>
-                  <span className="text-red-800 dark:text-red-200 font-semibold block">
+                </FeedbackIconCircle>
+                <YStack>
+                  <FeedbackText variant="error">
                     Incorrect
-                  </span>
-                  <span className="text-red-700 dark:text-red-300 text-sm">
-                    {(() => {
-                      const correctIndices = Array.isArray(question.correctAnswerIndex) 
-                        ? question.correctAnswerIndex 
-                        : [question.correctAnswerIndex]
-                      const correctAnswers = correctIndices.map(i => question.answers[i]).join(', ')
-                      return isMultipleChoice 
-                        ? `The correct answers are: ${correctAnswers}`
-                        : `The correct answer is: ${correctAnswers}`
-                    })()
+                  </FeedbackText>
+                  <FeedbackDetail>
+                    {isMultipleChoice
+                      ? `The correct answers are: ${correctIndices.map(i => question.answers[i]).join(', ')}`
+                      : `The correct answer is: ${correctIndices.map(i => question.answers[i]).join(', ')}`
                     }
-                  </span>
-                </div>
-              </div>
-            </div>
+                  </FeedbackDetail>
+                </YStack>
+              </XStack>
+            </IncorrectFeedback>
           )}
-        </div>
+        </FeedbackContainer>
       ) : null}
-    </div>
+    </QuestionCard>
   )
 }

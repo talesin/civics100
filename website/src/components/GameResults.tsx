@@ -1,11 +1,182 @@
 import React from 'react'
 import { GameResult } from '@/types'
+import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
+import { styled } from 'tamagui'
 
 interface GameResultsProps {
   result: GameResult
   onPlayAgain: () => void
   onViewHistory: () => void
 }
+
+const ResultCard = styled(Card, {
+  padding: '$6',
+  alignItems: 'center',
+})
+
+const IconCircle = styled(YStack, {
+  width: 80,
+  height: 80,
+  borderRadius: 40,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: '$4',
+
+  variants: {
+    variant: {
+      success: {
+        backgroundColor: '$green2',
+      },
+      failure: {
+        backgroundColor: '$error1',
+      },
+    },
+  } as const,
+})
+
+const Title = styled(Text, {
+  fontSize: '$7',
+  fontWeight: 'bold',
+  color: '$color',
+  marginBottom: '$2',
+})
+
+const ResultMessage = styled(Text, {
+  fontSize: '$5',
+  fontWeight: '500',
+})
+
+const StatCardsContainer = styled(XStack, {
+  gap: '$4',
+  marginBottom: '$6',
+  width: '100%',
+  justifyContent: 'center',
+})
+
+const StatCard = styled(YStack, {
+  backgroundColor: '$backgroundHover',
+  borderRadius: '$3',
+  padding: '$4',
+  alignItems: 'center',
+  flex: 1,
+  maxWidth: 160,
+})
+
+const StatValue = styled(Text, {
+  fontSize: '$8',
+  fontWeight: 'bold',
+})
+
+const StatLabel = styled(Text, {
+  fontSize: '$2',
+  color: '$placeholderColor',
+  marginTop: '$1',
+})
+
+const ProgressContainer = styled(YStack, {
+  width: '100%',
+  marginBottom: '$4',
+})
+
+const ProgressTrack = styled(YStack, {
+  backgroundColor: '$borderColor',
+  borderRadius: 6,
+  height: 12,
+  width: '100%',
+  marginBottom: '$2',
+  overflow: 'hidden',
+})
+
+const ProgressBar = styled(YStack, {
+  height: 12,
+  borderRadius: 6,
+
+  variants: {
+    variant: {
+      success: {
+        backgroundColor: '$success',
+      },
+      failure: {
+        backgroundColor: '$error',
+      },
+    },
+  } as const,
+})
+
+const ProgressText = styled(Text, {
+  fontSize: '$2',
+  color: '$placeholderColor',
+  textAlign: 'center',
+})
+
+const AchievementBanner = styled(XStack, {
+  backgroundColor: '$warning1',
+  borderWidth: 1,
+  borderColor: '$warning2',
+  borderRadius: '$3',
+  padding: '$4',
+  marginBottom: '$4',
+  width: '100%',
+})
+
+const AchievementText = styled(Text, {
+  fontSize: '$2',
+  color: '$warning6',
+})
+
+const ButtonContainer = styled(XStack, {
+  gap: '$4',
+  justifyContent: 'center',
+})
+
+const PrimaryButton = styled(Button, {
+  backgroundColor: '$primary',
+  paddingVertical: '$3',
+  paddingHorizontal: '$5',
+  borderRadius: '$3',
+
+  hoverStyle: {
+    backgroundColor: '$primaryHover',
+  },
+
+  pressStyle: {
+    opacity: 0.9,
+  },
+})
+
+const SecondaryButton = styled(Button, {
+  backgroundColor: '$backgroundPress',
+  paddingVertical: '$3',
+  paddingHorizontal: '$5',
+  borderRadius: '$3',
+
+  hoverStyle: {
+    backgroundColor: '$backgroundHover',
+  },
+
+  pressStyle: {
+    opacity: 0.9,
+  },
+})
+
+const ButtonText = styled(Text, {
+  color: 'white',
+  fontWeight: '500',
+})
+
+const Footer = styled(YStack, {
+  marginTop: '$4',
+  paddingTop: '$4',
+  borderTopWidth: 1,
+  borderTopColor: '$borderColor',
+  width: '100%',
+  alignItems: 'center',
+})
+
+const FooterText = styled(Text, {
+  fontSize: '$1',
+  color: '$placeholderColor',
+})
 
 export default function GameResults({ result, onPlayAgain, onViewHistory }: GameResultsProps) {
   const getResultMessage = () => {
@@ -20,125 +191,117 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
     }
   }
 
-  const getResultColor = () => {
+  const getResultColor = (): string => {
     if (result.isEarlyFail === true) {
-      return 'text-red-600 dark:text-red-400'
+      return '#dc2626' // red-600
     } else if (result.isEarlyWin === true || result.percentage >= 60) {
-      return 'text-green-600 dark:text-green-400'
+      return '#16a34a' // green-600
     } else {
-      return 'text-red-600 dark:text-red-400'
+      return '#dc2626' // red-600
     }
   }
 
-  const getScoreColor = () => {
-    if (result.percentage >= 80) return 'text-green-600 dark:text-green-400'
-    if (result.percentage >= 60) return 'text-blue-600 dark:text-blue-400'
-    return 'text-red-600 dark:text-red-400'
+  const getScoreColor = (): string => {
+    if (result.percentage >= 80) return '#16a34a' // green-600
+    if (result.percentage >= 60) return '#2563eb' // blue-600
+    return '#dc2626' // red-600
   }
 
+  const isSuccess = result.isEarlyFail !== true && (result.isEarlyWin === true || result.percentage >= 60)
+
   return (
-    <div className="result-card bg-white dark:bg-gray-800 rounded-lg shadow-md p-8 text-center">
-      <div className="mb-6">
-        <div className="animate-bounce-in">
-          {result.isEarlyFail !== true && (result.isEarlyWin === true || result.percentage >= 60) ? (
-            <div data-testid="result-icon-success" className="w-20 h-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-10 h-10 text-green-600 dark:text-green-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-          ) : (
-            <div data-testid="result-icon-failure" className="w-20 h-20 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-10 h-10 text-red-600 dark:text-red-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </div>
-          )}
-        </div>
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 animate-fade-in">
-          Game Complete!
-        </h2>
-        <p className={`text-lg font-medium ${getResultColor()} animate-slide-in-right`}>
+    <ResultCard elevated>
+      <YStack marginBottom="$4" alignItems="center">
+        {isSuccess ? (
+          <IconCircle variant="success" data-testid="result-icon-success">
+            <svg
+              width={40}
+              height={40}
+              fill="none"
+              stroke="#16a34a"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </IconCircle>
+        ) : (
+          <IconCircle variant="failure" data-testid="result-icon-failure">
+            <svg
+              width={40}
+              height={40}
+              fill="none"
+              stroke="#dc2626"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </IconCircle>
+        )}
+        <Title>Game Complete!</Title>
+        <ResultMessage color={getResultColor()}>
           {getResultMessage()}
-        </p>
-      </div>
+        </ResultMessage>
+      </YStack>
 
-      <div className="grid grid-cols-2 gap-6 mb-8">
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <div className={`text-3xl font-bold ${getScoreColor()}`}>{result.percentage}%</div>
-          <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">Final Score</div>
-        </div>
+      <StatCardsContainer>
+        <StatCard>
+          <StatValue color={getScoreColor()}>{result.percentage}%</StatValue>
+          <StatLabel>Final Score</StatLabel>
+        </StatCard>
 
-        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-          <div className="text-3xl font-bold text-gray-900 dark:text-white">
+        <StatCard>
+          <StatValue color="$color">
             {result.correctAnswers}/{result.totalQuestions}
-          </div>
-          <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">Correct Answers</div>
-        </div>
-      </div>
+          </StatValue>
+          <StatLabel>Correct Answers</StatLabel>
+        </StatCard>
+      </StatCardsContainer>
 
-      <div className="mb-6">
-        <div className="bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
-          <div
+      <ProgressContainer>
+        <ProgressTrack>
+          <ProgressBar
             data-testid="progress-bar"
-            className={`h-3 rounded-full transition-all duration-500 ${
-              result.percentage >= 60 ? 'bg-green-500' : 'bg-red-500'
-            }`}
-            style={{ width: `${Math.min(result.percentage, 100)}%` }}
+            variant={result.percentage >= 60 ? 'success' : 'failure'}
+            width={`${Math.min(result.percentage, 100)}%`}
           />
-        </div>
-        <p className="text-sm text-gray-600 dark:text-gray-300">
+        </ProgressTrack>
+        <ProgressText>
           Passing score: 60% • You scored: {result.percentage}%
-        </p>
-      </div>
+        </ProgressText>
+      </ProgressContainer>
 
       {result.isEarlyWin === true ? (
-        <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-          <p className="text-yellow-800 dark:text-yellow-200 text-sm">
+        <AchievementBanner>
+          <AchievementText>
             🌟 Early Win Achievement! You answered {result.correctAnswers} questions correctly and chose to finish early.
-          </p>
-        </div>
+          </AchievementText>
+        </AchievementBanner>
       ) : null}
 
-      <div className="flex space-x-4 justify-center">
-        <button
-          onClick={onPlayAgain}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
-        >
-          Play Again
-        </button>
-        <button
-          onClick={onViewHistory}
-          className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200"
-        >
-          View History
-        </button>
-      </div>
+      <ButtonContainer>
+        <PrimaryButton onPress={onPlayAgain}>
+          <ButtonText>Play Again</ButtonText>
+        </PrimaryButton>
+        <SecondaryButton onPress={onViewHistory}>
+          <ButtonText>View History</ButtonText>
+        </SecondaryButton>
+      </ButtonContainer>
 
-      <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-        <p className="text-xs text-gray-500 dark:text-gray-400">
+      <Footer>
+        <FooterText>
           Session completed at {result.completedAt.toLocaleString()}
-        </p>
-      </div>
-    </div>
+        </FooterText>
+      </Footer>
+    </ResultCard>
   )
 }

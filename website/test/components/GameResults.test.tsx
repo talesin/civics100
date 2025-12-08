@@ -2,6 +2,11 @@ import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
 import GameResults from '@/components/GameResults'
 import { GameResult } from '@/types'
+import { TamaguiProvider } from '@/components/TamaguiProvider'
+
+const renderWithProvider = (ui: React.ReactElement) => {
+  return render(<TamaguiProvider>{ui}</TamaguiProvider>)
+}
 
 describe('GameResults', () => {
   const mockOnPlayAgain = jest.fn()
@@ -22,7 +27,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -47,7 +52,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -72,7 +77,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -97,7 +102,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -121,7 +126,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -145,7 +150,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -167,7 +172,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -190,7 +195,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { getByTestId } = render(
+    const { getByTestId } = renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -213,7 +218,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { getByTestId } = render(
+    const { getByTestId } = renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -236,7 +241,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { getByTestId } = render(
+    const { getByTestId } = renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -259,7 +264,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -282,7 +287,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -306,7 +311,7 @@ describe('GameResults', () => {
       completedAt
     }
 
-    render(
+    renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -330,7 +335,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { getByTestId } = render(
+    const { getByTestId } = renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -354,7 +359,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { getByTestId } = render(
+    const { getByTestId } = renderWithProvider(
       <GameResults
         result={result}
         onPlayAgain={mockOnPlayAgain}
@@ -378,7 +383,7 @@ describe('GameResults', () => {
       completedAt: new Date()
     }
 
-    const { rerender } = render(
+    const { rerender } = renderWithProvider(
       <GameResults
         result={earlyWinResult}
         onPlayAgain={mockOnPlayAgain}
@@ -395,11 +400,13 @@ describe('GameResults', () => {
     }
 
     rerender(
-      <GameResults
-        result={regularResult}
-        onPlayAgain={mockOnPlayAgain}
-        onViewHistory={mockOnViewHistory}
-      />
+      <TamaguiProvider>
+        <GameResults
+          result={regularResult}
+          onPlayAgain={mockOnPlayAgain}
+          onViewHistory={mockOnViewHistory}
+        />
+      </TamaguiProvider>
     )
 
     expect(screen.queryByText(/Early Win Achievement!/)).not.toBeInTheDocument()

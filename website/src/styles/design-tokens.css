@@ -293,3 +293,23 @@ html.dark {
 .skip-link:focus {
   top: 6px;
 }
+
+/* Responsive utilities (replacing Tailwind) */
+.hidden {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .md\:flex {
+    display: flex !important;
+  }
+  .md\:hidden {
+    display: none !important;
+  }
+}
+
+@media (max-width: 767px) {
+  .hidden.md\:flex {
+    display: none;
+  }
+}

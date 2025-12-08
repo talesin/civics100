@@ -7,7 +7,14 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true
   },
-  transpilePackages: ['civics2json', 'questionnaire']
+  // Add Tamagui packages to transpilation
+  transpilePackages: [
+    'civics2json',
+    'questionnaire',
+    'tamagui',
+    '@tamagui/core',
+    '@tamagui/animations-css',
+  ]
 }
 
 export default nextConfig
