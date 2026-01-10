@@ -1570,18 +1570,18 @@ declare module 'tamagui' {
 
 ## Timeline Estimate
 
-| Phase | Duration | Cumulative |
-|-------|----------|------------|
-| 0: Preparation | 30 min | 30 min |
-| 1: Install | 15 min | 45 min |
-| 2: Config | 45 min | 1.5 hr |
-| 3: Next.js Plugin | 30 min | 2 hr |
-| 4: Provider | 45 min | 2.75 hr |
-| 5: Base Components | 60 min | 3.75 hr |
-| 6: Migration (18 components × 20 min avg) | 6 hr | 9.75 hr |
-| 7: Remove Tailwind | 30 min | 10.25 hr |
-| 8: Optimizations | 30 min | 10.75 hr |
-| 9: Cleanup | 30 min | 11.25 hr |
+| Phase                                     | Duration | Cumulative |
+| ----------------------------------------- | -------- | ---------- |
+| 0: Preparation                            | 30 min   | 30 min     |
+| 1: Install                                | 15 min   | 45 min     |
+| 2: Config                                 | 45 min   | 1.5 hr     |
+| 3: Next.js Plugin                         | 30 min   | 2 hr       |
+| 4: Provider                               | 45 min   | 2.75 hr    |
+| 5: Base Components                        | 60 min   | 3.75 hr    |
+| 6: Migration (18 components × 20 min avg) | 6 hr     | 9.75 hr    |
+| 7: Remove Tailwind                        | 30 min   | 10.25 hr   |
+| 8: Optimizations                          | 30 min   | 10.75 hr   |
+| 9: Cleanup                                | 30 min   | 11.25 hr   |
 
 **Total: 11-12 hours** (assuming no major issues)
 

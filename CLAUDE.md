@@ -1,207 +1,96 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Guidance for Claude Code when working in this repository.
+
+## Quick Reference
+
+| Task               | Guide                                                                              |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| Coding standards   | [docs/index.md](./docs/index.md)                                                   |
+| Effect-TS patterns | [docs/effect-ts-guide.md](./docs/effect-ts-guide.md)                               |
+| Error handling     | [docs/effect-ts-guide.md#error-handling](./docs/effect-ts-guide.md#error-handling) |
+| Type design        | [docs/type-design.md](./docs/type-design.md)                                       |
+| Testing            | [docs/testing-guide.md](./docs/testing-guide.md)                                   |
+| React/Tamagui      | [docs/react-guide.md](./docs/react-guide.md)                                       |
 
 ## Project Overview
 
-This is a monorepo containing tools for parsing and processing U.S. Citizenship and Immigration Services (USCIS) Civics Test data. The project uses npm workspaces to manage two main packages:
+Monorepo for parsing and processing U.S. Citizenship and Immigration Services (USCIS) Civics Test data.
 
-- **civics2json**: Core tool that downloads and converts USCIS Civics Test data to JSON format
-- **distractions**: Secondary workspace (appears to be in development)
+**Workspaces:**
+- **civics2json**: Core tool - downloads and converts USCIS Civics Test data to JSON
+- **distractions**: Secondary workspace (in development)
 
-## Architecture
+**Tech Stack:**
+- Effect-TS for functional programming and composability
+- @effect/cli for command-line interface
+- Effect Schema for runtime type validation
 
-### civics2json Architecture
+## Key Files
 
-The civics2json package is built with:
+| File                                           | Purpose                   |
+| ---------------------------------------------- | ------------------------- |
+| `packages/civics2json/src/index.ts`            | CLI entry point           |
+| `packages/civics2json/src/QuestionsManager.ts` | Main orchestration        |
+| `packages/civics2json/src/types.ts`            | State/question types      |
+| `packages/civics2json/src/schema.ts`           | Effect Schema definitions |
 
-- **Effect-TS**: Functional programming library for composable, type-safe effects
-- **CLI Framework**: Uses @effect/cli for command-line interface
-- **Data Processing Pipeline**: Fetches, parses, and constructs civics questions from multiple sources
-
-#### Key Components
-
-- **QuestionsManager**: Central coordinator that orchestrates data fetching and processing
-- **Client Services**: Separate clients for different data sources:
-  - CivicsQuestionsClient: Fetches main civics questions
-  - SenatorsClient: Fetches senator data
-  - RepresentativesClient: Fetches representative data
-  - GovernorsClient: Fetches governor data
-  - Updates: Handles question updates
-- **Data Types**: Comprehensive TypeScript types for all US states/territories and question formats
-- **Schema Validation**: Uses Effect Schema for runtime type validation
-
-#### Data Flow
+## Data Flow
 
 1. Fetch raw data from USCIS and government sources
 2. Parse HTML/XML into structured data
-3. Construct questions with dynamic state-specific answers (senators, representatives, governors, capitals)
-4. Output JSON with both static civics questions and dynamic political data
+3. Construct questions with dynamic state-specific answers
+4. Output JSON with static civics questions and dynamic political data
 
-### Key Files
-
-- `src/index.ts`: CLI entry point with command definitions
-- `src/QuestionsManager.ts`: Main orchestration logic
-- `src/types.ts`: Core TypeScript definitions for states and questions
-- `src/schema.ts`: Effect Schema definitions for validation
-- `src/config.ts`: Configuration management
-
-## Development Commands
+## Commands
 
 ### Root Level
-
 ```bash
 npm test                    # Run tests across all workspaces
 ```
 
-### civics2json Workspace
-
+### civics2json
 ```bash
-npm run clean              # Clean build artifacts and dependencies
+npm run clean              # Clean build artifacts
 npm run lint               # Run ESLint
-npm run lint:fix           # Run ESLint with auto-fix
-npm run build              # Build for distribution using tsup
-npm run package            # Full build pipeline: clean, install, lint, construct, build
+npm run build              # Build for distribution
+npm run package            # Full build pipeline
 npm test                   # Run Jest tests
 ```
 
-### distractions Workspace
-
+### CLI Usage
 ```bash
-npm run clean              # Clean build artifacts and dependencies
-npm run lint               # Run ESLint
-npm run lint:fix           # Run ESLint with auto-fix
-npm run build              # Build TypeScript using tsc
-npm test                   # Run Jest tests
-```
-
-## CLI Usage
-
-The civics2json tool provides a comprehensive CLI for data management:
-
-```bash
-# Main commands
 npx tsx src/index.ts questions fetch      # Fetch civics questions
 npx tsx src/index.ts questions parse      # Parse civics questions
 npx tsx src/index.ts questions construct  # Construct final questions
-
 npx tsx src/index.ts senators fetch       # Fetch senator data
 npx tsx src/index.ts senators parse       # Parse senator data
-
-npx tsx src/index.ts representatives fetch [--force]  # Fetch representatives
-npx tsx src/index.ts representatives parse [--force]  # Parse representatives
-
-npx tsx src/index.ts governors fetch [--force]        # Fetch governors
-
-npx tsx src/index.ts updates fetch [--force]          # Fetch updates
-npx tsx src/index.ts updates parse [--force]          # Parse updates
+npx tsx src/index.ts representatives fetch [--force]
+npx tsx src/index.ts governors fetch [--force]
 ```
 
-## Testing
+## Essential Rules
 
-- **Framework**: Jest with ts-jest preset
-- **Configuration**: Both workspaces use similar Jest setups with TypeScript support
-- **Test Files**: Located in `test/` directories with `.test.ts` extension
-- **Coverage**: Tests cover core functionality including parsing, data fetching, and question construction
-
-## Code Quality
-
-- **TypeScript**: Strict configuration with comprehensive type checking
-- **ESLint**: Enforces code quality with TypeScript-specific rules
-- **Prettier**: Code formatting integrated with ESLint
-- **Effect-TS**: Functional programming patterns for error handling and composability
-
-## Coding Standards
-
-### General Principles
-
-- Use descriptive names for files, variables, functions, and classes—no abbreviations
-- Always check for existing code before writing new implementations
-- Do not drastically change existing patterns; iterate on them first
-- Prefer simple solutions and avoid code duplication
-- Keep the codebase simple and easy to understand
-- Focus only on areas relevant to the task at hand
-- Write thorough tests for all code
-- Read @./coding-style-guide.md for more information
-
-### TypeScript/Effect-TS Specific
-
-- **Effect Schemas**: Use Effect schemas for all JSON validation
-- **Pure Functions**: Prefer pure functions and immutability
-- **Error Handling**: Wrap all non-local or unsafe code in `Effect.try` or `Effect.tryPromise` instead of try/catch
-- **Null Handling**: Avoid returning null; prefer undefined and tagged union types
-- **Null Coalescing**: Use `??` instead of `||` when checking for null or undefined
-- **Boolean Expressions**: Do not use implicit boolean expressions
-- **State Management**: Avoid external state libraries (no Redux or Zustand)
-- **Effect Scope**: Keep `Effect.try` and `Effect.tryPromise` to the specific line that may throw
-
-### Important Notes
-
-- Do not fix linting errors automatically; let maintainer address them first
-- Never overwrite `.envrc` file
-- Refer to README.md and PLAN.md files for context
-
-## Important Notes
-
-- The project processes government data and maintains strict typing for state information
-- Variable questions (senators, representatives, governors, capitals) are dynamically populated
-- The tool is designed to handle both static civics questions and dynamic political data
-- All data sources are fetched from official government websites
-
-## Claude Specific
-
-- All temporary working scripts or files should start with 'temp\_'
-- Record plans to 'plans/' in markdown
+- **Temporary files**: Prefix with `temp_`, delete after use
+- **Plans**: Save to `plans/` directory in markdown
+- **Never overwrite**: `.envrc` file
+- **Linting**: Do not auto-fix; let maintainer address
+- **Coding standards**: See [docs/index.md](./docs/index.md)
 
 ## Website Styling (Tamagui)
 
-The website uses Tamagui for styling with a theme-aware approach:
-
-### Theme System
-- Theme context is provided via `TamaguiProvider` and accessed with `useThemeContext()`
-- Theme state is persisted to localStorage
-- Supports 'light' and 'dark' themes
-
-### Styling Pattern
-Components and pages use inline styles with theme-aware color maps:
+### Theme Context
 ```typescript
-const themeColors = {
-  light: {
-    text: '#111827',
-    cardBg: '#ffffff',
-    // ... other colors
-  },
-  dark: {
-    text: '#ffffff',
-    cardBg: '#1f2937',
-    // ... other colors
-  },
-}
-
-// In component:
-const { theme } = useThemeContext()
-const colors = themeColors[theme]
-
-// Usage:
-<div style={{ color: colors.text, backgroundColor: colors.cardBg }}>
+const { theme } = useThemeContext();  // 'light' | 'dark'
+const colors = themeColors[theme];
 ```
 
-### CSS Classes (from design-tokens.css)
-These CSS classes are available and should be preserved:
-- `card`, `card-elevated`, `card-interactive` - Card styling
-- `btn-primary`, `btn-secondary`, `btn-success`, `btn-error` - Button variants
-- `focus-ring` - Focus state styling
-- `animate-fade-in`, `animate-bounce-in`, etc. - Animations
-- `text-gradient`, `text-balance` - Text utilities
-- `hidden`, `md:flex`, `md:hidden` - Responsive utilities
+### Available CSS Classes
+- Cards: `card`, `card-elevated`, `card-interactive`
+- Buttons: `btn-primary`, `btn-secondary`, `btn-success`, `btn-error`
+- Utilities: `focus-ring`, `animate-fade-in`, `text-gradient`
+- Responsive: `hidden`, `md:flex`, `md:hidden`
 
-### Tamagui Components (in /src/components/tamagui/)
-Base Tamagui components are available but most UI uses inline styles:
-- `Button`, `Card`, `Text`, `Heading`, `Paragraph`
-- Re-exports: `Stack`, `XStack`, `YStack`, `ZStack`
-
-### Important Notes
-- Tailwind CSS has been removed; do not add Tailwind classes
-- Use design tokens from CSS variables when possible
-- Always test both light and dark themes when modifying styles
-
+### Notes
+- Tailwind CSS removed - do not add Tailwind classes
+- Test both light and dark themes when modifying styles

@@ -137,22 +137,22 @@ App (layout.tsx)
 
 ### Frontend Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Next.js** | 15.3.5 | React framework with App Router |
-| **React** | 19.0.0 | UI library with concurrent features |
-| **TypeScript** | 5.x | Type safety and developer experience |
-| **Tailwind CSS** | 4.x | Utility-first CSS framework |
-| **Effect-TS** | 3.16.13 | Functional programming and effect management |
+| Technology       | Version | Purpose                                      |
+| ---------------- | ------- | -------------------------------------------- |
+| **Next.js**      | 15.3.5  | React framework with App Router              |
+| **React**        | 19.0.0  | UI library with concurrent features          |
+| **TypeScript**   | 5.x     | Type safety and developer experience         |
+| **Tailwind CSS** | 4.x     | Utility-first CSS framework                  |
+| **Effect-TS**    | 3.16.13 | Functional programming and effect management |
 
 ### Development Tools
 
-| Tool | Purpose |
-|------|---------|
-| **Jest** | Unit and integration testing |
-| **ESLint** | Code linting and formatting |
-| **Prettier** | Code formatting |
-| **GitHub Actions** | CI/CD pipeline |
+| Tool               | Purpose                      |
+| ------------------ | ---------------------------- |
+| **Jest**           | Unit and integration testing |
+| **ESLint**         | Code linting and formatting  |
+| **Prettier**       | Code formatting              |
+| **GitHub Actions** | CI/CD pipeline               |
 
 ### Browser APIs
 
