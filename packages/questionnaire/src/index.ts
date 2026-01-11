@@ -7,12 +7,27 @@ export type {
   SelectionWeights,
   GameSettings,
   GameSession,
+  InProgressSession,
+  CompletedNormalSession,
+  EarlyWinSession,
+  EarlyFailSession,
   UserAnswer,
   GameResult,
   QuestionDisplay
 } from './types'
 
-export { QuestionNumber, PairedQuestionNumber } from './types'
+export {
+  QuestionNumber,
+  PairedQuestionNumber,
+  // Session state type guards
+  isSessionInProgress,
+  isSessionCompleted,
+  isSessionEarlyWin,
+  isSessionEarlyFail,
+  isSessionCompletedNormal,
+  getSessionCompletedAt,
+  getSessionFlags
+} from './types'
 
 export { QuestionSelector, TestQuestionSelectorLayer } from './services/QuestionSelector'
 

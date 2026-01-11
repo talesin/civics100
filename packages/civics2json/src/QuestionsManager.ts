@@ -23,6 +23,22 @@ import { GovernorsClient } from './Governors'
 import { ParseHTMLError } from './utils'
 
 /**
+ * Tagged error for when a variable question cannot be found
+ */
+export class QuestionNotFoundError extends Data.TaggedError('QuestionNotFoundError')<{
+  readonly questionType: 'senator' | 'representative' | 'governor' | 'capital'
+  readonly expectedQuestion: string
+}> {}
+
+/**
+ * Tagged error for invalid update data
+ */
+export class InvalidUpdateError extends Data.TaggedError('InvalidUpdateError')<{
+  readonly reason: 'missing_question' | 'missing_answers'
+  readonly partialData: unknown
+}> {}
+
+/**
  * The variable questions that are used to identify the senator, representative, and governor questions in the civics questions set.
  */
 export const VARIABLE_QUESTIONS = {
@@ -161,13 +177,23 @@ export const getSenatorsQuestion = (
   fs: FileSystem.FileSystem,
   sc: SenatorsClient,
   c: CivicsConfig
-): ((questionMap: Record<string, Question>) => Effect.Effect<Question, Error>) =>
+): ((
+  questionMap: Record<string, Question>
+) => Effect.Effect<
+  Question,
+  QuestionNotFoundError | HttpClientError | PlatformError | UnknownException | ParseError
+>) =>
   Effect.fn(function* (questionMap: Record<string, Question>) {
     const senatorsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_SENATORS]
 
     // fail if we cannot find the senators question
     if (senatorsQuestion === undefined) {
-      return yield* Effect.fail(new Error('State senators question not found'))
+      return yield* Effect.fail(
+        new QuestionNotFoundError({
+          questionType: 'senator',
+          expectedQuestion: VARIABLE_QUESTIONS.STATE_SENATORS
+        })
+      )
     }
     const senators = (yield* fetchAndParseSenators(fs, sc, c)()).map((s) => ({
       senator: `${s.first_name} ${s.last_name}`,
@@ -185,13 +211,23 @@ export const getRepresentativesQuestions = (
   fs: FileSystem.FileSystem,
   rc: RepresentativesClient,
   c: CivicsConfig
-): ((questionMap: Record<string, Question>) => Effect.Effect<Question, Error>) =>
+): ((
+  questionMap: Record<string, Question>
+) => Effect.Effect<
+  Question,
+  QuestionNotFoundError | HttpClientError | PlatformError | UnknownException | ParseError
+>) =>
   Effect.fn(function* (questionMap: Record<string, Question>) {
     const representativesQuestion = questionMap[VARIABLE_QUESTIONS.STATE_REPRESENTATIVES]
 
     // fail if we cannot find the representatives question
     if (representativesQuestion === undefined) {
-      return yield* Effect.fail(new Error('State representatives question not found'))
+      return yield* Effect.fail(
+        new QuestionNotFoundError({
+          questionType: 'representative',
+          expectedQuestion: VARIABLE_QUESTIONS.STATE_REPRESENTATIVES
+        })
+      )
     }
     const representatives = (yield* fetchAndParseRepresentatives(fs, rc, c)()).map((r) => ({
       representative: `${r.name}`,
@@ -358,13 +394,23 @@ export const getGovernorsQuestions = (
   fs: FileSystem.FileSystem,
   gc: GovernorsClient,
   c: CivicsConfig
-): ((questionMap: Record<string, Question>) => Effect.Effect<Question, Error>) =>
+): ((
+  questionMap: Record<string, Question>
+) => Effect.Effect<
+  Question,
+  QuestionNotFoundError | HttpClientError | PlatformError | UnknownException | ParseError
+>) =>
   Effect.fn(function* (questionMap: Record<string, Question>) {
     const governorsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_GOVERNORS]
 
     // fail if we cannot find the governors question
     if (governorsQuestion === undefined) {
-      return yield* Effect.fail(new Error('State governors question not found'))
+      return yield* Effect.fail(
+        new QuestionNotFoundError({
+          questionType: 'governor',
+          expectedQuestion: VARIABLE_QUESTIONS.STATE_GOVERNORS
+        })
+      )
     }
 
     // Check if governors.json exists and has data
@@ -404,12 +450,17 @@ export const getGovernorsQuestions = (
 
 export const getStateCapitalsQuestions: (
   questionMap: Record<string, Question>
-) => Effect.Effect<Question, Error> = Effect.fn(function* (questionMap: Record<string, Question>) {
+) => Effect.Effect<Question, QuestionNotFoundError> = Effect.fn(function* (questionMap: Record<string, Question>) {
   const capitalsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_CAPITALS]
 
-  // fail if we cannot find the governors question
+  // fail if we cannot find the capitals question
   if (capitalsQuestion === undefined) {
-    return yield* Effect.fail(new Error('State capitals question not found'))
+    return yield* Effect.fail(
+      new QuestionNotFoundError({
+        questionType: 'capital',
+        expectedQuestion: VARIABLE_QUESTIONS.STATE_CAPITALS
+      })
+    )
   }
   const capitals = Object.values(StatesByAbbreviation).map((state) => ({
     capital: state.capital,
@@ -459,10 +510,6 @@ export const fetchAndParseUpdates = (
     return updates
   })
 
-export class UpdatedQuestionNotFoundError extends Data.TaggedError('UpdatedQuestionNotFoundError')<{
-  readonly question: string
-}> {}
-
 /**
  * Normalizes question text for comparison by handling asterisk formatting variations.
  * Removes spaces before asterisks, trailing asterisks, normalizes apostrophes, and converts to lowercase.
@@ -485,7 +532,7 @@ export const getUpdatedQuestions = (
   questionMap: Record<string, Question>
 ) => Effect.Effect<
   Question[],
-  UpdatedQuestionNotFoundError | PlatformError | HttpClientError | ParseHTMLError
+  InvalidUpdateError | PlatformError | HttpClientError | ParseHTMLError
 >) =>
   Effect.fn(function* (questionMap: Record<string, Question>) {
     const updatedQuestionPartials = yield* fetchAndParseUpdates(fs, config, updatesClient)()
@@ -499,8 +546,12 @@ export const getUpdatedQuestions = (
     const results = yield* Effect.forEach(updatedQuestionPartials, (partial) =>
       Effect.gen(function* () {
         if (partial.question === undefined || partial.question.length === 0) {
-          // This should not be reachable if parseUpdates is correct
-          return yield* Effect.die(new Error('Partial question missing question text'))
+          return yield* Effect.fail(
+            new InvalidUpdateError({
+              reason: 'missing_question',
+              partialData: partial
+            })
+          )
         }
 
         // Try exact match first, then normalized match
@@ -520,7 +571,12 @@ export const getUpdatedQuestions = (
         }
 
         if (partial.answers === undefined) {
-          return yield* Effect.die(new Error(`Partial question missing answers for: ${partial.question}`))
+          return yield* Effect.fail(
+            new InvalidUpdateError({
+              reason: 'missing_answers',
+              partialData: partial
+            })
+          )
         }
 
         // The partial from parseUpdates has `question`, `questionNumber`, and `answers`.
@@ -613,7 +669,7 @@ export const constructQuestions = (
  * It provides methods for fetching, parsing, and writing civics questions,
  * as well as fetching and parsing senators.
  */
-export class QuestionsManager extends Effect.Service<QuestionsManager>()('QuestionsManager', {
+export class QuestionsManager extends Effect.Service<QuestionsManager>()('civics2json/QuestionsManager', {
   effect: Effect.gen(function* () {
     const fs = yield* FileSystem.FileSystem
     const config = yield* CivicsConfig

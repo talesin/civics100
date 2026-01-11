@@ -1,7 +1,7 @@
 import { Effect, Layer } from 'effect'
 import { QuestionDisplay, WebsiteGameSettings } from '@/types'
 import type { GameSession, GameResult, UserAnswer, GameSettings } from 'questionnaire'
-import { GameService, GameServiceDefault } from 'questionnaire'
+import { GameService, GameServiceDefault, isSessionCompleted } from 'questionnaire'
 
 /**
  * Convert website GameSettings to questionnaire GameSettings
@@ -35,7 +35,7 @@ export const createNewSession = (gameService: GameService) =>
 const processAnswer =
   (gameService: GameService) =>
   (session: GameSession, answer: UserAnswer): GameSession => {
-    return gameService.processGameAnswer(session, answer)
+    return Effect.runSync(gameService.processGameAnswer(session, answer))
   }
 
 /**
@@ -44,7 +44,7 @@ const processAnswer =
 const calculateResult =
   (gameService: GameService) =>
   (session: GameSession): GameResult => {
-    return gameService.calculateGameResult(session)
+    return Effect.runSync(gameService.calculateGameResult(session))
   }
 
 /**
@@ -62,7 +62,7 @@ const getCurrentQuestion = (
  */
 const canContinue = (session: GameSession): boolean => {
   return (
-    session.isCompleted === false &&
+    !isSessionCompleted(session) &&
     session.currentQuestionIndex < session.questions.length &&
     session.correctAnswers < session.settings.winThreshold
   )
@@ -78,7 +78,7 @@ export class SessionService extends Effect.Service<SessionService>()('SessionSer
       calculateResult: calculateResult(gameService),
       getCurrentQuestion,
       canContinue,
-      generateSessionId: () => gameService.generateSessionId()
+      generateSessionId: gameService.generateSessionId
     }
   }),
   dependencies: [GameServiceDefault]
@@ -100,15 +100,13 @@ export const TestSessionServiceLayer = (fn?: {
         fn?.createNewSession ??
         (() =>
           Effect.succeed({
+            _tag: 'InProgress' as const,
             id: 'test-session',
             questions: [],
             currentQuestionIndex: 0,
             correctAnswers: 0,
             incorrectAnswers: 0,
             totalAnswered: 0,
-            isCompleted: false,
-            isEarlyWin: false,
-            isEarlyFail: false,
             startedAt: new Date(),
             pairedAnswers: {},
             settings: {
@@ -132,6 +130,6 @@ export const TestSessionServiceLayer = (fn?: {
         })),
       getCurrentQuestion: fn?.getCurrentQuestion ?? (() => undefined),
       canContinue: fn?.canContinue ?? (() => false),
-      generateSessionId: fn?.generateSessionId ?? (() => 'test-id')
+      generateSessionId: fn?.generateSessionId ?? Effect.succeed('test-id')
     })
   )

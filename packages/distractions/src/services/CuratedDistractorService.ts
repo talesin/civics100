@@ -10,16 +10,7 @@ export const getDistractorsForQuestion =
   (question: Question): readonly string[] => {
     const questionKey = question.questionNumber.toString()
     const entry = curatedDatabase[questionKey]
-
-    if (entry !== undefined) {
-      console.log(
-        `Found curated distractors for question ${questionKey}: ${entry.curatedDistractors.join(', ')}`
-      )
-      return entry.curatedDistractors
-    }
-
-    console.log(`No curated distractors for question ${questionKey}`)
-    return []
+    return entry?.curatedDistractors ?? []
   }
 
 export const hasDistractorsForQuestion =

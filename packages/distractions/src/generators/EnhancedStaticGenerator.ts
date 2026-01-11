@@ -79,7 +79,7 @@
  * ```
  */
 
-import { Effect, Layer, Schedule } from 'effect'
+import { Chunk, Effect, Layer, Schedule, Random } from 'effect'
 import * as Metric from 'effect/Metric'
 import type { Question } from 'civics2json'
 import { QuestionsDataService } from '../data/QuestionsDataService'
@@ -232,9 +232,11 @@ export const generateFromStaticPools = (
       )
   )
 
-  // Simple random shuffle (will be replaced with weighted selection in Phase 2)
-  const shuffled = candidates.sort(() => Math.random() - 0.5)
-  return Effect.succeed(shuffled.slice(0, targetCount))
+  // Random shuffle using Effect's Random for testability
+  return Effect.gen(function* () {
+    const shuffled = yield* Random.shuffle(candidates)
+    return Chunk.toReadonlyArray(shuffled).slice(0, targetCount)
+  })
 }
 
 // Section-based fallback generation (following coding guide)
@@ -607,7 +609,7 @@ export const generateEnhanced =
             similarityService
           )(question, [...allQuestions], options)
         ),
-        { concurrency: 'unbounded' }
+        { concurrency: options.batchSize ?? 10 }
       )
 
       return results.map((result) =>

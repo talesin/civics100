@@ -1,5 +1,5 @@
 import React from 'react'
-import { GameSession } from '@/types'
+import { GameSession, isSessionCompleted } from '@/types'
 import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
 
@@ -103,7 +103,7 @@ export default function GameControls({
         ) : null}
       </XStack>
 
-      {session.correctAnswers >= session.settings.winThreshold && session.isCompleted === false ? (
+      {session.correctAnswers >= session.settings.winThreshold && !isSessionCompleted(session) ? (
         <SuccessMessage>
           <SuccessText>
             🎉 You&apos;ve reached {session.settings.winThreshold} correct answers! You can continue or finish now.

@@ -122,7 +122,11 @@ export type StateName =
   | 'Puerto Rico'
   | 'U.S. Virgin Islands'
 
-export type State = { abbreviation: StateAbbreviation; name: StateName; capital: string }
+export type State = {
+  readonly abbreviation: StateAbbreviation
+  readonly name: StateName
+  readonly capital: string
+}
 
 /**
  * Record of all U.S. states and territories by their abbreviation.

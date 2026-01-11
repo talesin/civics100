@@ -19,7 +19,9 @@ import {
   QuestionAnswer,
   GameResult,
   QuestionDisplay as GameQuestionType,
-  WebsiteGameSettings
+  WebsiteGameSettings,
+  isSessionEarlyWin,
+  isSessionCompleted
 } from '@/types'
 
 type GameState = 'loading' | 'playing' | 'answered' | 'transitioning' | 'completed'
@@ -118,7 +120,7 @@ export default function Game() {
           yield* storageService.savePairedAnswers(finalSession.pairedAnswers)
 
           // Play completion sound
-          if (finalSession.isEarlyWin === true) {
+          if (isSessionEarlyWin(finalSession)) {
             playEarlyWin()
           } else {
             playComplete()
@@ -133,17 +135,16 @@ export default function Game() {
     [playComplete, playEarlyWin]
   )
 
-  // Load game settings from localStorage
+  // Load game settings from LocalStorageService
   useEffect(() => {
-    try {
-      const savedSettings = localStorage.getItem('civics-game-settings')
-      if (savedSettings !== null) {
-        const parsed = JSON.parse(savedSettings) as WebsiteGameSettings
-        setGameSettings(parsed)
-      }
-    } catch (error) {
-      console.error('Failed to load game settings:', error)
-    }
+    runWithServicesAndErrorHandling(
+      Effect.gen(function* () {
+        const localStorage = yield* LocalStorageService
+        const savedSettings = yield* localStorage.getGameSettings()
+        setGameSettings(savedSettings)
+      }),
+      console.error
+    )
   }, [])
 
   useEffect(() => {
@@ -165,13 +166,13 @@ export default function Game() {
           // Check for early win condition
           if (
             updatedSession.correctAnswers >= gameSettings.winThreshold &&
-            updatedSession.isCompleted === false
+            !isSessionCompleted(updatedSession)
           ) {
             setShowEarlyWinOption(true)
           }
 
           // Auto-complete if all questions answered or early win achieved
-          if (updatedSession.isCompleted === true) {
+          if (isSessionCompleted(updatedSession)) {
             completeGame(updatedSession)
           }
         }),

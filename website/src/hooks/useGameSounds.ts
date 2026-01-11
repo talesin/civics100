@@ -12,12 +12,10 @@ export const useGameSounds = (): GameSounds => {
 
   const getAudioContext = useCallback(() => {
     if (audioContextRef.current === null) {
-      const AudioContextClass = window.AudioContext
-      const webkitAudioContext =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).webkitAudioContext
-      const FinalAudioContext = AudioContextClass ?? webkitAudioContext
-      audioContextRef.current = new FinalAudioContext()
+      const FinalAudioContext = window.AudioContext ?? window.webkitAudioContext
+      if (FinalAudioContext !== undefined) {
+        audioContextRef.current = new FinalAudioContext()
+      }
     }
     return audioContextRef.current
   }, [])
@@ -26,6 +24,8 @@ export const useGameSounds = (): GameSounds => {
     (frequency: number, duration: number, type: OscillatorType = 'sine') => {
       try {
         const audioContext = getAudioContext()
+        if (audioContext === null) return
+
         const oscillator = audioContext.createOscillator()
         const gainNode = audioContext.createGain()
 

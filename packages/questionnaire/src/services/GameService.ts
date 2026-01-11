@@ -1,4 +1,4 @@
-import { Effect, Option, Layer } from 'effect'
+import { Chunk, Effect, Option, Layer, Random, Clock } from 'effect'
 import questionsWithDistractors from 'distractions'
 import {
   PairedQuestionNumber,
@@ -9,17 +9,22 @@ import {
   type UserAnswer,
   type GameResult,
   type QuestionDisplay,
-  type QuestionArray
+  type QuestionArray,
+  isSessionEarlyWin,
+  isSessionEarlyFail,
+  getSessionCompletedAt
 } from '../types'
 import { QuestionSelector } from './QuestionSelector'
 import { QuestionDataService } from './QuestionDataService'
 
 /**
- * Generate a unique session ID for  games
+ * Generate a unique session ID for games using Effect's Clock and Random services
  */
-const generateSessionId = (): string => {
-  return `session_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
-}
+const generateSessionId = Effect.gen(function* () {
+  const timestamp = yield* Clock.currentTimeMillis
+  const random = yield* Random.nextIntBetween(0, 1_000_000_000)
+  return `session_${timestamp}_${random.toString(36).slice(2, 11)}`
+})
 
 /**
  * Create a new  game session with selected questions
@@ -42,19 +47,20 @@ const createGameSession = (
             settings.maxQuestions,
             existingPairedAnswers
           )
-        : selectRandomQuestions(questions, settings.maxQuestions)
+        : yield* selectRandomQuestions(questions, settings.maxQuestions)
+
+    const sessionId = yield* generateSessionId
+    const startTimestamp = yield* Clock.currentTimeMillis
 
     const session: GameSession = {
-      id: generateSessionId(),
+      _tag: 'InProgress',
+      id: sessionId,
       questions: selectedQuestions.map((q) => q.pairedQuestionNumber),
       currentQuestionIndex: 0,
       correctAnswers: 0,
       incorrectAnswers: 0,
       totalAnswered: 0,
-      isCompleted: false,
-      isEarlyWin: false,
-      isEarlyFail: false,
-      startedAt: new Date(),
+      startedAt: new Date(startTimestamp),
       pairedAnswers: existingPairedAnswers ?? {},
       settings
     }
@@ -115,96 +121,110 @@ const selectAdaptiveQuestions = (questionSelector: QuestionSelector) =>
 
 /**
  * Select random questions for games without answer history
+ * Uses Effect's Random service for testability
  */
 const selectRandomQuestions = (
   allQuestions: QuestionArray,
   questionCount: number
-): QuestionArray => {
-  const shuffled = [...allQuestions]
-  // Simple Fisher-Yates shuffle
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    const temp = shuffled[i]
-    const swapValue = shuffled[j]
-    if (temp !== undefined && swapValue !== undefined) {
-      shuffled[i] = swapValue
-      shuffled[j] = temp
-    }
-  }
-  return shuffled.slice(0, questionCount)
-}
+): Effect.Effect<QuestionArray, never, never> =>
+  Effect.gen(function* () {
+    const shuffled = yield* Random.shuffle([...allQuestions])
+    return Chunk.toReadonlyArray(shuffled).slice(0, questionCount)
+  })
 
 /**
  * Process a user's answer and update the session
+ * Uses Clock service for completedAt timestamp
+ * Returns appropriate session state based on game outcome
  */
 const processGameAnswer =
   (questionSelector: QuestionSelector) =>
-  (session: GameSession, answer: UserAnswer): GameSession => {
-    const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0)
-    const newIncorrectAnswers = session.incorrectAnswers + (answer.isCorrect ? 0 : 1)
-    const newTotalAnswered = session.totalAnswered + 1
-    const newCurrentIndex = session.currentQuestionIndex + 1
+  (session: GameSession, answer: UserAnswer): Effect.Effect<GameSession, never, never> =>
+    Effect.gen(function* () {
+      const newCorrectAnswers = session.correctAnswers + (answer.isCorrect ? 1 : 0)
+      const newIncorrectAnswers = session.incorrectAnswers + (answer.isCorrect ? 0 : 1)
+      const newTotalAnswered = session.totalAnswered + 1
+      const newCurrentIndex = session.currentQuestionIndex + 1
 
-    // Record the answer in paired answers for adaptive learning
-    const updatedPairedAnswers = questionSelector.recordPairedAnswer(
-      answer.questionId as PairedQuestionNumber,
-      answer.isCorrect,
-      session.pairedAnswers
-    )
+      // Record the answer in paired answers for adaptive learning
+      const updatedPairedAnswers = questionSelector.recordPairedAnswer(
+        PairedQuestionNumber(answer.questionId),
+        answer.isCorrect,
+        session.pairedAnswers
+      )
 
-    // Check for early failure (9 incorrect answers)
-    const isEarlyFail = newIncorrectAnswers >= 9
+      // Base session data for all states
+      const baseData = {
+        id: session.id,
+        questions: session.questions,
+        currentQuestionIndex: newCurrentIndex,
+        correctAnswers: newCorrectAnswers,
+        incorrectAnswers: newIncorrectAnswers,
+        totalAnswered: newTotalAnswered,
+        startedAt: session.startedAt,
+        pairedAnswers: updatedPairedAnswers,
+        settings: session.settings
+      }
 
-    // Check for early win (only if not already failed)
-    const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold && !isEarlyFail
+      // Check for early failure (9 incorrect answers)
+      const hasEarlyFail = newIncorrectAnswers >= 9
 
-    // Game completes if: early fail, early win, or all questions answered
-    const isCompleted = isEarlyFail || isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
+      // Check for early win (only if not already failed)
+      const hasEarlyWin = newCorrectAnswers >= session.settings.winThreshold && !hasEarlyFail
 
-    const updatedSession: GameSession = {
-      ...session,
-      currentQuestionIndex: newCurrentIndex,
-      correctAnswers: newCorrectAnswers,
-      incorrectAnswers: newIncorrectAnswers,
-      totalAnswered: newTotalAnswered,
-      isCompleted,
-      isEarlyWin,
-      isEarlyFail,
-      pairedAnswers: updatedPairedAnswers
-    }
+      // Game completes if: early fail, early win, or all questions answered
+      const hasCompletedNormal = newTotalAnswered >= session.settings.maxQuestions
 
-    if (isCompleted) {
-      updatedSession.completedAt = new Date()
-    }
+      // Return appropriate session state
+      if (hasEarlyFail) {
+        const completedAt = new Date(yield* Clock.currentTimeMillis)
+        return { ...baseData, _tag: 'EarlyFail' as const, completedAt }
+      }
 
-    return updatedSession
-  }
+      if (hasEarlyWin) {
+        const completedAt = new Date(yield* Clock.currentTimeMillis)
+        return { ...baseData, _tag: 'EarlyWin' as const, completedAt }
+      }
+
+      if (hasCompletedNormal) {
+        const completedAt = new Date(yield* Clock.currentTimeMillis)
+        return { ...baseData, _tag: 'CompletedNormal' as const, completedAt }
+      }
+
+      // Still in progress
+      return { ...baseData, _tag: 'InProgress' as const }
+    })
 
 /**
  * Calculate final game result
+ * Uses Clock service for completedAt fallback timestamp
  */
-const calculateGameResult = (session: GameSession): GameResult => {
-  const percentage =
-    session.totalAnswered > 0
-      ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
-      : 0
+const calculateGameResult = (session: GameSession): Effect.Effect<GameResult, never, never> =>
+  Effect.gen(function* () {
+    const percentage =
+      session.totalAnswered > 0
+        ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
+        : 0
 
-  return {
-    sessionId: session.id,
-    totalQuestions: session.totalAnswered,
-    correctAnswers: session.correctAnswers,
-    incorrectAnswers: session.incorrectAnswers,
-    percentage,
-    isEarlyWin: session.isEarlyWin,
-    isEarlyFail: session.isEarlyFail,
-    completedAt: session.completedAt ?? new Date()
-  }
-}
+    const completedAt = getSessionCompletedAt(session) ?? new Date(yield* Clock.currentTimeMillis)
+
+    return {
+      sessionId: session.id,
+      totalQuestions: session.totalAnswered,
+      correctAnswers: session.correctAnswers,
+      incorrectAnswers: session.incorrectAnswers,
+      percentage,
+      isEarlyWin: isSessionEarlyWin(session),
+      isEarlyFail: isSessionEarlyFail(session),
+      completedAt
+    }
+  })
 
 /**
  * Validate user answer selection against question requirements
+ * Exported for testing
  */
-const validateAnswerSelection = (
+export const validateAnswerSelection = (
   selectedAnswers: number | ReadonlyArray<number>,
   correctAnswer: number | ReadonlyArray<number>,
   expectedAnswers?: number
@@ -252,22 +272,22 @@ const transformQuestionToDisplay = (
  * Core GameService for web/API game functionality
  * Contains only platform-agnostic game logic
  */
-export class GameService extends Effect.Service<GameService>()('GameService', {
+export class GameService extends Effect.Service<GameService>()('questionnaire/GameService', {
   effect: Effect.gen(function* () {
     const questionDataService = yield* QuestionDataService
     const questionSelector = yield* QuestionSelector
 
     return {
-      //  session management methods
+      // Session management methods
       createGameSession: createGameSession(questionDataService, questionSelector),
       processGameAnswer: processGameAnswer(questionSelector),
-      calculateGameResult: (session: GameSession) => calculateGameResult(session),
+      calculateGameResult,
       transformQuestionToDisplay: (
         question: Question,
         questionNumber: number,
         totalQuestions: number
       ) => transformQuestionToDisplay(question, questionNumber, totalQuestions),
-      generateSessionId: () => generateSessionId(),
+      generateSessionId,
       validateAnswerSelection: (
         selectedAnswers: number | ReadonlyArray<number>,
         correctAnswer: number | ReadonlyArray<number>,
@@ -282,7 +302,7 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
  * Test layer for GameService with mockable functions
  */
 export const TestGameServiceLayer = (fn?: {
-  //  session methods
+  // Session methods
   createGameSession?: GameService['createGameSession']
   processGameAnswer?: GameService['processGameAnswer']
   calculateGameResult?: GameService['calculateGameResult']
@@ -293,22 +313,20 @@ export const TestGameServiceLayer = (fn?: {
   Layer.succeed(
     GameService,
     GameService.of({
-      _tag: 'GameService',
-      //  session methods
+      _tag: 'questionnaire/GameService',
+      // Session methods
       createGameSession:
         fn?.createGameSession ??
         ((_settings, _pairedAnswers) =>
           Effect.succeed({
             session: {
+              _tag: 'InProgress' as const,
               id: 'test-session',
               questions: [],
               currentQuestionIndex: 0,
               correctAnswers: 0,
               incorrectAnswers: 0,
               totalAnswered: 0,
-              isCompleted: false,
-              isEarlyWin: false,
-              isEarlyFail: false,
               startedAt: new Date(),
               pairedAnswers: {},
               settings: {
@@ -319,19 +337,22 @@ export const TestGameServiceLayer = (fn?: {
             },
             questions: []
           })),
-      processGameAnswer: fn?.processGameAnswer ?? ((session) => session),
+      processGameAnswer:
+        fn?.processGameAnswer ??
+        ((session, _answer) => Effect.succeed(session)),
       calculateGameResult:
         fn?.calculateGameResult ??
-        ((_session) => ({
-          sessionId: 'test',
-          totalQuestions: 0,
-          correctAnswers: 0,
-          incorrectAnswers: 0,
-          percentage: 0,
-          isEarlyWin: false,
-          isEarlyFail: false,
-          completedAt: new Date()
-        })),
+        ((_session) =>
+          Effect.succeed({
+            sessionId: 'test',
+            totalQuestions: 0,
+            correctAnswers: 0,
+            incorrectAnswers: 0,
+            percentage: 0,
+            isEarlyWin: false,
+            isEarlyFail: false,
+            completedAt: new Date()
+          })),
       transformQuestionToDisplay:
         fn?.transformQuestionToDisplay ??
         ((_question, questionNumber, totalQuestions) => ({
@@ -342,7 +363,7 @@ export const TestGameServiceLayer = (fn?: {
           questionNumber,
           totalQuestions
         })),
-      generateSessionId: fn?.generateSessionId ?? (() => 'test-session-id'),
+      generateSessionId: fn?.generateSessionId ?? Effect.succeed('test-session-id'),
       validateAnswerSelection: fn?.validateAnswerSelection ?? validateAnswerSelection
     })
   )

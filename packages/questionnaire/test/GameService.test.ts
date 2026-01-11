@@ -1,45 +1,23 @@
 import { describe, it, expect } from '@jest/globals'
 import { Effect } from 'effect'
-import { GameService } from '../src/services/GameService'
+import { GameService, validateAnswerSelection } from '../src/services/GameService'
 import type { GameSession, UserAnswer, GameSettings } from '../src/types'
-
-// Direct test of validation logic without full service dependencies
-const validateAnswerSelection = (
-  selectedAnswers: number | ReadonlyArray<number>,
-  correctAnswer: number | ReadonlyArray<number>,
-  expectedAnswers?: number
-): boolean => {
-  // Handle legacy single answer format
-  if (typeof selectedAnswers === 'number' && typeof correctAnswer === 'number') {
-    return selectedAnswers === correctAnswer
-  }
-
-  // Handle multiple answer format
-  const selectedArray = Array.isArray(selectedAnswers) ? selectedAnswers : [selectedAnswers]
-  const correctArray = Array.isArray(correctAnswer) ? correctAnswer : [correctAnswer]
-
-  // Check if we have the expected number of answers
-  if (expectedAnswers !== undefined && selectedArray.length !== expectedAnswers) {
-    return false
-  }
-
-  // For multiple answers, check if all selected answers are correct
-  // Note: For questions with multiple correct options (like Cabinet positions),
-  // users only need to select the expected number of correct answers, not all correct answers
-  return selectedArray.every((answer) => correctArray.includes(answer))
-}
+import {
+  isSessionCompleted,
+  isSessionEarlyWin,
+  isSessionEarlyFail,
+  getSessionCompletedAt
+} from '../src/types'
 
 // Helper to create a test session
 const createTestSession = (settings: GameSettings): GameSession => ({
+  _tag: 'InProgress',
   id: 'test-session',
   questions: Array.from({ length: settings.maxQuestions }, (_, i) => `q-${i}`),
   currentQuestionIndex: 0,
   correctAnswers: 0,
   incorrectAnswers: 0,
   totalAnswered: 0,
-  isCompleted: false,
-  isEarlyWin: false,
-  isEarlyFail: false,
   startedAt: new Date(),
   pairedAnswers: {},
   settings
@@ -113,15 +91,15 @@ describe('GameService', () => {
             isCorrect: true,
             answeredAt: new Date()
           }
-          session = gameService.processGameAnswer(session, answer)
+          session = yield* gameService.processGameAnswer(session, answer)
         }
 
         expect(session.correctAnswers).toBe(12)
         expect(session.incorrectAnswers).toBe(0)
-        expect(session.isEarlyWin).toBe(true)
-        expect(session.isEarlyFail).toBe(false)
-        expect(session.isCompleted).toBe(true)
-        expect(session.completedAt).toBeInstanceOf(Date)
+        expect(isSessionEarlyWin(session)).toBe(true)
+        expect(isSessionEarlyFail(session)).toBe(false)
+        expect(isSessionCompleted(session)).toBe(true)
+        expect(getSessionCompletedAt(session)).toBeInstanceOf(Date)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -147,15 +125,15 @@ describe('GameService', () => {
             isCorrect: true,
             answeredAt: new Date()
           }
-          session = gameService.processGameAnswer(session, answer)
+          session = yield* gameService.processGameAnswer(session, answer)
         }
 
         expect(session.correctAnswers).toBe(30)
         expect(session.incorrectAnswers).toBe(0)
-        expect(session.isEarlyWin).toBe(true)
-        expect(session.isEarlyFail).toBe(false)
-        expect(session.isCompleted).toBe(true)
-        expect(session.completedAt).toBeInstanceOf(Date)
+        expect(isSessionEarlyWin(session)).toBe(true)
+        expect(isSessionEarlyFail(session)).toBe(false)
+        expect(isSessionCompleted(session)).toBe(true)
+        expect(getSessionCompletedAt(session)).toBeInstanceOf(Date)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -181,15 +159,15 @@ describe('GameService', () => {
             isCorrect: true,
             answeredAt: new Date()
           }
-          session = gameService.processGameAnswer(session, answer)
+          session = yield* gameService.processGameAnswer(session, answer)
         }
 
         expect(session.correctAnswers).toBe(60)
         expect(session.incorrectAnswers).toBe(0)
-        expect(session.isEarlyWin).toBe(true)
-        expect(session.isEarlyFail).toBe(false)
-        expect(session.isCompleted).toBe(true)
-        expect(session.completedAt).toBeInstanceOf(Date)
+        expect(isSessionEarlyWin(session)).toBe(true)
+        expect(isSessionEarlyFail(session)).toBe(false)
+        expect(isSessionCompleted(session)).toBe(true)
+        expect(getSessionCompletedAt(session)).toBeInstanceOf(Date)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -222,15 +200,15 @@ describe('GameService', () => {
               isCorrect: false,
               answeredAt: new Date()
             }
-            session = gameService.processGameAnswer(session, answer)
+            session = yield* gameService.processGameAnswer(session, answer)
           }
 
           expect(session.correctAnswers).toBe(0)
           expect(session.incorrectAnswers).toBe(9)
-          expect(session.isEarlyWin).toBe(false)
-          expect(session.isEarlyFail).toBe(true)
-          expect(session.isCompleted).toBe(true)
-          expect(session.completedAt).toBeInstanceOf(Date)
+          expect(isSessionEarlyWin(session)).toBe(false)
+          expect(isSessionEarlyFail(session)).toBe(true)
+          expect(isSessionCompleted(session)).toBe(true)
+          expect(getSessionCompletedAt(session)).toBeInstanceOf(Date)
         }
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
@@ -264,12 +242,12 @@ describe('GameService', () => {
               isCorrect: true,
               answeredAt: new Date()
             }
-            session = gameService.processGameAnswer(session, answer)
+            session = yield* gameService.processGameAnswer(session, answer)
           }
 
           expect(session.correctAnswers).toBe(earlyWinThreshold)
-          expect(session.isEarlyWin).toBe(false)
-          expect(session.isCompleted).toBe(false)
+          expect(isSessionEarlyWin(session)).toBe(false)
+          expect(isSessionCompleted(session)).toBe(false)
         }
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
@@ -296,12 +274,12 @@ describe('GameService', () => {
             isCorrect: false,
             answeredAt: new Date()
           }
-          session = gameService.processGameAnswer(session, answer)
+          session = yield* gameService.processGameAnswer(session, answer)
         }
 
         expect(session.incorrectAnswers).toBe(8)
-        expect(session.isEarlyFail).toBe(false)
-        expect(session.isCompleted).toBe(false)
+        expect(isSessionEarlyFail(session)).toBe(false)
+        expect(isSessionCompleted(session)).toBe(false)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -327,16 +305,16 @@ describe('GameService', () => {
             isCorrect: i < 5,
             answeredAt: new Date()
           }
-          session = gameService.processGameAnswer(session, answer)
+          session = yield* gameService.processGameAnswer(session, answer)
         }
 
         expect(session.correctAnswers).toBe(5)
         expect(session.incorrectAnswers).toBe(5)
         expect(session.totalAnswered).toBe(10)
-        expect(session.isEarlyWin).toBe(false)
-        expect(session.isEarlyFail).toBe(false)
-        expect(session.isCompleted).toBe(true)
-        expect(session.completedAt).toBeInstanceOf(Date)
+        expect(isSessionEarlyWin(session)).toBe(false)
+        expect(isSessionEarlyFail(session)).toBe(false)
+        expect(isSessionCompleted(session)).toBe(true)
+        expect(getSessionCompletedAt(session)).toBeInstanceOf(Date)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -371,13 +349,13 @@ describe('GameService', () => {
         ]
 
         for (const answer of answers) {
-          session = gameService.processGameAnswer(session, answer)
+          session = yield* gameService.processGameAnswer(session, answer)
         }
 
         // Early fail should take priority
-        expect(session.isEarlyWin).toBe(false)
-        expect(session.isEarlyFail).toBe(true)
-        expect(session.isCompleted).toBe(true)
+        expect(isSessionEarlyWin(session)).toBe(false)
+        expect(isSessionEarlyFail(session)).toBe(true)
+        expect(isSessionCompleted(session)).toBe(true)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -403,10 +381,10 @@ describe('GameService', () => {
             isCorrect: true,
             answeredAt: new Date()
           }
-          session = gameService.processGameAnswer(session, answer)
+          session = yield* gameService.processGameAnswer(session, answer)
         }
 
-        const result = gameService.calculateGameResult(session)
+        const result = yield* gameService.calculateGameResult(session)
 
         expect(result.totalQuestions).toBe(12)
         expect(result.correctAnswers).toBe(12)
@@ -439,10 +417,10 @@ describe('GameService', () => {
             isCorrect: false,
             answeredAt: new Date()
           }
-          session = gameService.processGameAnswer(session, answer)
+          session = yield* gameService.processGameAnswer(session, answer)
         }
 
-        const result = gameService.calculateGameResult(session)
+        const result = yield* gameService.calculateGameResult(session)
 
         expect(result.totalQuestions).toBe(9)
         expect(result.correctAnswers).toBe(0)
