@@ -129,7 +129,7 @@ export const parseGovernorInfo = (
 /**
  * GovernorsClient service for dependency injection.
  */
-export class GovernorsClient extends Effect.Service<GovernorsClient>()('GovernorsClient', {
+export class GovernorsClient extends Effect.Service<GovernorsClient>()('civics2json/GovernorsClient', {
   effect: Effect.gen(function* () {
     const httpClient = yield* HttpClient.HttpClient
     const config = yield* CivicsConfig
@@ -171,7 +171,7 @@ export const TestGovernorsClientLayer = (fn?: {
   Layer.succeed(
     GovernorsClient,
     GovernorsClient.of({
-      _tag: 'GovernorsClient',
+      _tag: 'civics2json/GovernorsClient',
       fetchGovernmentsIndex: fn?.fetchGovernmentsIndex ?? (() => Effect.succeed('<html></html>')),
       fetchGovernmentPage:
         fn?.fetchGovernmentPage ??

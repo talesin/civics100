@@ -79,7 +79,7 @@ export const fetchCivicsQuestions = (httpClient: HttpClient.HttpClient, config: 
  * const parsed = yield* cq.parse(questions)
  */
 export class CivicsQuestionsClient extends Effect.Service<CivicsQuestionsClient>()(
-  'CivicsQuestionsClient',
+  'civics2json/CivicsQuestionsClient',
   {
     effect: Effect.gen(function* () {
       const httpClient = yield* HttpClient.HttpClient
@@ -106,7 +106,7 @@ export const TestCivicsQuestionsClientLayer = (fn?: {
   Layer.succeed(
     CivicsQuestionsClient,
     CivicsQuestionsClient.of({
-      _tag: 'CivicsQuestionsClient',
+      _tag: 'civics2json/CivicsQuestionsClient',
       fetch: fn?.fetch ?? Effect.succeed(''),
       parse: fn?.parse ?? ((_text: string) => Effect.succeed([]))
     })

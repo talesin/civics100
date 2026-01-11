@@ -96,24 +96,93 @@ export type GameSettings = {
 }
 
 /**
- * Web/GUI game session state
- * Tracks session-based game progress with session ID and completion status
+ * Base session data shared across all game states
  */
-export type GameSession = {
-  id: string
-  questions: ReadonlyArray<string> // Question IDs
-  currentQuestionIndex: number
-  correctAnswers: number
-  incorrectAnswers: number
-  totalAnswered: number
-  isCompleted: boolean
-  isEarlyWin: boolean
-  isEarlyFail: boolean
-  startedAt: Date
-  completedAt?: Date
-  pairedAnswers: PairedAnswers
-  settings: GameSettings
+type BaseSessionData = {
+  readonly id: string
+  readonly questions: ReadonlyArray<string> // Question IDs
+  readonly currentQuestionIndex: number
+  readonly correctAnswers: number
+  readonly incorrectAnswers: number
+  readonly totalAnswered: number
+  readonly startedAt: Date
+  readonly pairedAnswers: PairedAnswers
+  readonly settings: GameSettings
 }
+
+/**
+ * Game session in progress - not yet completed
+ */
+export type InProgressSession = BaseSessionData & {
+  readonly _tag: 'InProgress'
+}
+
+/**
+ * Game session completed normally (all questions answered)
+ */
+export type CompletedNormalSession = BaseSessionData & {
+  readonly _tag: 'CompletedNormal'
+  readonly completedAt: Date
+}
+
+/**
+ * Game session ended early due to winning (reached threshold)
+ */
+export type EarlyWinSession = BaseSessionData & {
+  readonly _tag: 'EarlyWin'
+  readonly completedAt: Date
+}
+
+/**
+ * Game session ended early due to failing (9 incorrect answers)
+ */
+export type EarlyFailSession = BaseSessionData & {
+  readonly _tag: 'EarlyFail'
+  readonly completedAt: Date
+}
+
+/**
+ * Web/GUI game session state - discriminated union of all possible states
+ *
+ * States:
+ * - InProgress: Game is still ongoing
+ * - CompletedNormal: All questions answered
+ * - EarlyWin: Won by reaching win threshold
+ * - EarlyFail: Lost by accumulating 9 incorrect answers
+ */
+export type GameSession = InProgressSession | CompletedNormalSession | EarlyWinSession | EarlyFailSession
+
+// Type guards for GameSession states
+export const isSessionInProgress = (session: GameSession): session is InProgressSession =>
+  session._tag === 'InProgress'
+
+export const isSessionCompleted = (session: GameSession): session is CompletedNormalSession | EarlyWinSession | EarlyFailSession =>
+  session._tag !== 'InProgress'
+
+export const isSessionEarlyWin = (session: GameSession): session is EarlyWinSession =>
+  session._tag === 'EarlyWin'
+
+export const isSessionEarlyFail = (session: GameSession): session is EarlyFailSession =>
+  session._tag === 'EarlyFail'
+
+export const isSessionCompletedNormal = (session: GameSession): session is CompletedNormalSession =>
+  session._tag === 'CompletedNormal'
+
+/**
+ * Get completedAt date from a completed session, or undefined for in-progress
+ */
+export const getSessionCompletedAt = (session: GameSession): Date | undefined =>
+  isSessionCompleted(session) ? session.completedAt : undefined
+
+/**
+ * Legacy compatibility helpers - derive boolean flags from discriminated union
+ * @deprecated Use type guards instead (isSessionInProgress, isSessionCompleted, etc.)
+ */
+export const getSessionFlags = (session: GameSession) => ({
+  isCompleted: isSessionCompleted(session),
+  isEarlyWin: isSessionEarlyWin(session),
+  isEarlyFail: isSessionEarlyFail(session)
+})
 
 /**
  * User's answer to a specific question

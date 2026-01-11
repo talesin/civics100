@@ -89,7 +89,7 @@ export const parseUpdates: (html: string) => Effect.Effect<Partial<Question>[], 
 /**
  * Updates service class for dependency injection
  */
-export class Updates extends Effect.Service<Updates>()('Updates', {
+export class Updates extends Effect.Service<Updates>()('civics2json/Updates', {
   effect: Effect.gen(function* () {
     const httpClient = yield* HttpClient.HttpClient
     const config = yield* CivicsConfig
@@ -113,7 +113,7 @@ export const TestUpdatesClientLayer = (fn?: {
   Layer.succeed(
     Updates,
     Updates.of({
-      _tag: 'Updates',
+      _tag: 'civics2json/Updates',
       fetchUpdates: fn?.fetchUpdates ?? (() => Effect.succeed('')),
       parseUpdates: fn?.parseUpdates ?? ((_html: string) => Effect.succeed([]))
     })

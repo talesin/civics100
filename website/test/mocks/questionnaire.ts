@@ -30,21 +30,32 @@ export type GameSettings = {
   questionNumbers?: readonly number[]
 }
 
-export type GameSession = {
-  id: string
-  questions: ReadonlyArray<string>
-  currentQuestionIndex: number
-  correctAnswers: number
-  incorrectAnswers: number
-  totalAnswered: number
-  isCompleted: boolean
-  isEarlyWin: boolean
-  isEarlyFail: boolean
-  startedAt: Date
-  completedAt?: Date
-  pairedAnswers: PairedAnswers
-  settings: GameSettings
+// Base session data shared across all game states
+type BaseSessionData = {
+  readonly id: string
+  readonly questions: ReadonlyArray<string>
+  readonly currentQuestionIndex: number
+  readonly correctAnswers: number
+  readonly incorrectAnswers: number
+  readonly totalAnswered: number
+  readonly startedAt: Date
+  readonly pairedAnswers: PairedAnswers
+  readonly settings: GameSettings
 }
+
+export type InProgressSession = BaseSessionData & { readonly _tag: 'InProgress' }
+export type CompletedNormalSession = BaseSessionData & { readonly _tag: 'CompletedNormal'; readonly completedAt: Date }
+export type EarlyWinSession = BaseSessionData & { readonly _tag: 'EarlyWin'; readonly completedAt: Date }
+export type EarlyFailSession = BaseSessionData & { readonly _tag: 'EarlyFail'; readonly completedAt: Date }
+
+export type GameSession = InProgressSession | CompletedNormalSession | EarlyWinSession | EarlyFailSession
+
+// Type guards for GameSession states
+export const isSessionInProgress = (s: GameSession): s is InProgressSession => s._tag === 'InProgress'
+export const isSessionCompleted = (s: GameSession): s is CompletedNormalSession | EarlyWinSession | EarlyFailSession => s._tag !== 'InProgress'
+export const isSessionEarlyWin = (s: GameSession): s is EarlyWinSession => s._tag === 'EarlyWin'
+export const isSessionEarlyFail = (s: GameSession): s is EarlyFailSession => s._tag === 'EarlyFail'
+export const getSessionCompletedAt = (s: GameSession): Date | undefined => isSessionCompleted(s) ? s.completedAt : undefined
 
 export type UserAnswer = {
   questionId: string
@@ -70,15 +81,13 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
     createGameSession: (settings: GameSettings) =>
       Effect.succeed({
         session: {
+          _tag: 'InProgress' as const,
           id: 'test-session',
           questions: Array.from({ length: settings.maxQuestions }, (_, i) => `${i + 1}-0`),
           currentQuestionIndex: 0,
           correctAnswers: 0,
           incorrectAnswers: 0,
           totalAnswered: 0,
-          isCompleted: false,
-          isEarlyWin: false,
-          isEarlyFail: false,
           startedAt: new Date(),
           pairedAnswers: {},
           settings
@@ -97,40 +106,47 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
       const newIncorrectAnswers = session.incorrectAnswers + (answer.isCorrect ? 0 : 1)
       const newTotalAnswered = session.totalAnswered + 1
       const newCurrentIndex = session.currentQuestionIndex + 1
-      const isEarlyFail = newIncorrectAnswers >= 9
-      const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold && !isEarlyFail
-      const isCompleted = isEarlyFail || isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
+      const hasEarlyFail = newIncorrectAnswers >= 9
+      const hasEarlyWin = newCorrectAnswers >= session.settings.winThreshold && !hasEarlyFail
+      const hasCompletedNormal = newTotalAnswered >= session.settings.maxQuestions
 
-      const updatedSession = {
-        ...session,
+      const baseData = {
+        id: session.id,
+        questions: session.questions,
         currentQuestionIndex: newCurrentIndex,
         correctAnswers: newCorrectAnswers,
         incorrectAnswers: newIncorrectAnswers,
         totalAnswered: newTotalAnswered,
-        isCompleted,
-        isEarlyWin,
-        isEarlyFail
+        startedAt: session.startedAt,
+        pairedAnswers: session.pairedAnswers,
+        settings: session.settings
       }
 
-      if (isCompleted) {
-        updatedSession.completedAt = new Date()
+      if (hasEarlyFail) {
+        return Effect.succeed({ ...baseData, _tag: 'EarlyFail' as const, completedAt: new Date() })
       }
-
-      return updatedSession
+      if (hasEarlyWin) {
+        return Effect.succeed({ ...baseData, _tag: 'EarlyWin' as const, completedAt: new Date() })
+      }
+      if (hasCompletedNormal) {
+        return Effect.succeed({ ...baseData, _tag: 'CompletedNormal' as const, completedAt: new Date() })
+      }
+      return Effect.succeed({ ...baseData, _tag: 'InProgress' as const })
     },
-    calculateGameResult: (session: GameSession) => ({
-      sessionId: session.id,
-      totalQuestions: session.totalAnswered,
-      correctAnswers: session.correctAnswers,
-      incorrectAnswers: session.incorrectAnswers,
-      percentage:
-        session.totalAnswered > 0
-          ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
-          : 0,
-      isEarlyWin: session.isEarlyWin,
-      isEarlyFail: session.isEarlyFail,
-      completedAt: session.completedAt ?? new Date()
-    }),
+    calculateGameResult: (session: GameSession) =>
+      Effect.succeed({
+        sessionId: session.id,
+        totalQuestions: session.totalAnswered,
+        correctAnswers: session.correctAnswers,
+        incorrectAnswers: session.incorrectAnswers,
+        percentage:
+          session.totalAnswered > 0
+            ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
+            : 0,
+        isEarlyWin: isSessionEarlyWin(session),
+        isEarlyFail: isSessionEarlyFail(session),
+        completedAt: getSessionCompletedAt(session) ?? new Date()
+      }),
     transformQuestionToDisplay: (
       question: Question,
       questionNumber: number,
@@ -172,15 +188,13 @@ export const TestGameServiceLayer = (fn?: any) =>
         ((settings: GameSettings) =>
           Effect.succeed({
             session: {
+              _tag: 'InProgress' as const,
               id: 'test-session',
               questions: Array.from({ length: settings.maxQuestions }, (_, i) => `${i + 1}-0`),
               currentQuestionIndex: 0,
               correctAnswers: 0,
               incorrectAnswers: 0,
               totalAnswered: 0,
-              isCompleted: false,
-              isEarlyWin: false,
-              isEarlyFail: false,
               startedAt: new Date(),
               pairedAnswers: {},
               settings
@@ -206,42 +220,49 @@ export const TestGameServiceLayer = (fn?: any) =>
           const newIncorrectAnswers = session.incorrectAnswers + (answer.isCorrect ? 0 : 1)
           const newTotalAnswered = session.totalAnswered + 1
           const newCurrentIndex = session.currentQuestionIndex + 1
-          const isEarlyFail = newIncorrectAnswers >= 9
-          const isEarlyWin = newCorrectAnswers >= session.settings.winThreshold && !isEarlyFail
-          const isCompleted = isEarlyFail || isEarlyWin || newTotalAnswered >= session.settings.maxQuestions
+          const hasEarlyFail = newIncorrectAnswers >= 9
+          const hasEarlyWin = newCorrectAnswers >= session.settings.winThreshold && !hasEarlyFail
+          const hasCompletedNormal = newTotalAnswered >= session.settings.maxQuestions
 
-          const updatedSession = {
-            ...session,
+          const baseData = {
+            id: session.id,
+            questions: session.questions,
             currentQuestionIndex: newCurrentIndex,
             correctAnswers: newCorrectAnswers,
             incorrectAnswers: newIncorrectAnswers,
             totalAnswered: newTotalAnswered,
-            isCompleted,
-            isEarlyWin,
-            isEarlyFail
+            startedAt: session.startedAt,
+            pairedAnswers: session.pairedAnswers,
+            settings: session.settings
           }
 
-          if (isCompleted) {
-            updatedSession.completedAt = new Date()
+          if (hasEarlyFail) {
+            return Effect.succeed({ ...baseData, _tag: 'EarlyFail' as const, completedAt: new Date() })
           }
-
-          return updatedSession
+          if (hasEarlyWin) {
+            return Effect.succeed({ ...baseData, _tag: 'EarlyWin' as const, completedAt: new Date() })
+          }
+          if (hasCompletedNormal) {
+            return Effect.succeed({ ...baseData, _tag: 'CompletedNormal' as const, completedAt: new Date() })
+          }
+          return Effect.succeed({ ...baseData, _tag: 'InProgress' as const })
         }),
       calculateGameResult:
         fn?.calculateGameResult ??
-        ((session: GameSession) => ({
-          sessionId: session.id,
-          totalQuestions: session.totalAnswered,
-          correctAnswers: session.correctAnswers,
-          incorrectAnswers: session.incorrectAnswers,
-          percentage:
-            session.totalAnswered > 0
-              ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
-              : 0,
-          isEarlyWin: session.isEarlyWin,
-          isEarlyFail: session.isEarlyFail,
-          completedAt: session.completedAt ?? new Date()
-        })),
+        ((session: GameSession) =>
+          Effect.succeed({
+            sessionId: session.id,
+            totalQuestions: session.totalAnswered,
+            correctAnswers: session.correctAnswers,
+            incorrectAnswers: session.incorrectAnswers,
+            percentage:
+              session.totalAnswered > 0
+                ? Math.round((session.correctAnswers / session.totalAnswered) * 100)
+                : 0,
+            isEarlyWin: isSessionEarlyWin(session),
+            isEarlyFail: isSessionEarlyFail(session),
+            completedAt: getSessionCompletedAt(session) ?? new Date()
+          })),
       transformQuestionToDisplay:
         fn?.transformQuestionToDisplay ??
         ((question: Question, questionNumber: number, totalQuestions: number) => ({

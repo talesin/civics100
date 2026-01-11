@@ -1,8 +1,6 @@
 import { Data, Effect, Layer } from 'effect'
-// Using default imports, which is the modern way to handle CJS modules that export a function/object with `module.exports`.
-// @ts-expect-error - no types available
+// Using default imports for CJS modules
 import similarity from 'sentence-similarity'
-// @ts-expect-error - no types available
 import similarityScore from 'similarity-score'
 
 // Define a structured error for better error handling

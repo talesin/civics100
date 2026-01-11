@@ -2,7 +2,13 @@ import { describe, it, expect } from '@jest/globals'
 import { Effect } from 'effect'
 import { SessionService } from '@/services/SessionService'
 import { DEFAULT_GAME_SETTINGS } from '@/types'
-import { GameSession } from 'questionnaire'
+import {
+  GameSession,
+  isSessionCompleted,
+  isSessionEarlyWin,
+  isSessionEarlyFail,
+  getSessionCompletedAt
+} from 'questionnaire'
 
 describe('SessionService', () => {
   const testLayer = SessionService.Default
@@ -18,8 +24,7 @@ describe('SessionService', () => {
         currentQuestionIndex: 0,
         correctAnswers: 0,
         totalAnswered: 0,
-        isCompleted: false,
-        isEarlyWin: false,
+        _tag: 'InProgress',
         startedAt: expect.any(Date)
       })
       expect(session.questions).toHaveLength(DEFAULT_GAME_SETTINGS.maxQuestions)
@@ -40,13 +45,11 @@ describe('SessionService', () => {
 
       const updatedSession = sessionService.processAnswer(session, correctAnswer)
 
-      expect(updatedSession).toMatchObject({
-        correctAnswers: 1,
-        totalAnswered: 1,
-        currentQuestionIndex: 1,
-        isCompleted: false,
-        isEarlyWin: false
-      })
+      expect(updatedSession.correctAnswers).toBe(1)
+      expect(updatedSession.totalAnswered).toBe(1)
+      expect(updatedSession.currentQuestionIndex).toBe(1)
+      expect(isSessionCompleted(updatedSession)).toBe(false)
+      expect(isSessionEarlyWin(updatedSession)).toBe(false)
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
@@ -64,13 +67,11 @@ describe('SessionService', () => {
 
       const updatedSession = sessionService.processAnswer(session, incorrectAnswer)
 
-      expect(updatedSession).toMatchObject({
-        correctAnswers: 0,
-        totalAnswered: 1,
-        currentQuestionIndex: 1,
-        isCompleted: false,
-        isEarlyWin: false
-      })
+      expect(updatedSession.correctAnswers).toBe(0)
+      expect(updatedSession.totalAnswered).toBe(1)
+      expect(updatedSession.currentQuestionIndex).toBe(1)
+      expect(isSessionCompleted(updatedSession)).toBe(false)
+      expect(isSessionEarlyWin(updatedSession)).toBe(false)
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
@@ -90,15 +91,13 @@ describe('SessionService', () => {
         session = sessionService.processAnswer(session, correctAnswer)
       }
 
-      expect(session).toMatchObject({
-        correctAnswers: 12,
-        totalAnswered: 12,
-        incorrectAnswers: 0,
-        isCompleted: true,
-        isEarlyWin: true,
-        isEarlyFail: false,
-        completedAt: expect.any(Date)
-      })
+      expect(session.correctAnswers).toBe(12)
+      expect(session.totalAnswered).toBe(12)
+      expect(session.incorrectAnswers).toBe(0)
+      expect(isSessionCompleted(session)).toBe(true)
+      expect(isSessionEarlyWin(session)).toBe(true)
+      expect(isSessionEarlyFail(session)).toBe(false)
+      expect(getSessionCompletedAt(session)).toBeInstanceOf(Date)
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
@@ -124,10 +123,10 @@ describe('SessionService', () => {
       expect(session.correctAnswers).toBe(2)
       expect(session.incorrectAnswers).toBe(1)
       expect(session.totalAnswered).toBe(3)
-      expect(session.isCompleted).toBe(true)
-      expect(session.isEarlyWin).toBe(false)
-      expect(session.isEarlyFail).toBe(false)
-      expect(session.completedAt).toBeInstanceOf(Date)
+      expect(isSessionCompleted(session)).toBe(true)
+      expect(isSessionEarlyWin(session)).toBe(false)
+      expect(isSessionEarlyFail(session)).toBe(false)
+      expect(getSessionCompletedAt(session)).toBeInstanceOf(Date)
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
@@ -147,15 +146,13 @@ describe('SessionService', () => {
         session = sessionService.processAnswer(session, incorrectAnswer)
       }
 
-      expect(session).toMatchObject({
-        correctAnswers: 0,
-        incorrectAnswers: 9,
-        totalAnswered: 9,
-        isCompleted: true,
-        isEarlyWin: false,
-        isEarlyFail: true,
-        completedAt: expect.any(Date)
-      })
+      expect(session.correctAnswers).toBe(0)
+      expect(session.incorrectAnswers).toBe(9)
+      expect(session.totalAnswered).toBe(9)
+      expect(isSessionCompleted(session)).toBe(true)
+      expect(isSessionEarlyWin(session)).toBe(false)
+      expect(isSessionEarlyFail(session)).toBe(true)
+      expect(getSessionCompletedAt(session)).toBeInstanceOf(Date)
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
 
@@ -164,19 +161,19 @@ describe('SessionService', () => {
       const sessionService = yield* SessionService
 
       const session: GameSession = {
+        _tag: 'CompletedNormal',
         id: 'test-session',
         questions: ['q1', 'q2', 'q3', 'q4', 'q5'],
         currentQuestionIndex: 5,
         correctAnswers: 4,
+        incorrectAnswers: 1,
         totalAnswered: 5,
-        isCompleted: true,
-        isEarlyWin: false,
         startedAt: new Date(),
         completedAt: new Date(),
         pairedAnswers: {},
         settings: {
-          maxQuestions: 0,
-          winThreshold: 0,
+          maxQuestions: 5,
+          winThreshold: 3,
           userState: 'CA',
           questionNumbers: undefined
         }
@@ -198,13 +195,13 @@ describe('SessionService', () => {
       const sessionService = yield* SessionService
 
       const activeSession: GameSession = {
+        _tag: 'InProgress',
         id: 'test-session',
         questions: ['q1', 'q2', 'q3'],
         currentQuestionIndex: 1,
         correctAnswers: 1,
+        incorrectAnswers: 0,
         totalAnswered: 1,
-        isCompleted: false,
-        isEarlyWin: false,
         startedAt: new Date(),
         pairedAnswers: {},
         settings: {
@@ -216,14 +213,41 @@ describe('SessionService', () => {
       }
 
       const completedSession: GameSession = {
-        ...activeSession,
-        isCompleted: true
+        _tag: 'CompletedNormal',
+        id: 'test-session',
+        questions: ['q1', 'q2', 'q3'],
+        currentQuestionIndex: 3,
+        correctAnswers: 2,
+        incorrectAnswers: 1,
+        totalAnswered: 3,
+        startedAt: new Date(),
+        completedAt: new Date(),
+        pairedAnswers: {},
+        settings: {
+          maxQuestions: 3,
+          winThreshold: 2,
+          userState: 'CA',
+          questionNumbers: undefined
+        }
       }
 
       const earlyWinSession: GameSession = {
-        ...activeSession,
+        _tag: 'EarlyWin',
+        id: 'test-session',
+        questions: ['q1', 'q2', 'q3'],
+        currentQuestionIndex: 6,
         correctAnswers: 6,
-        isEarlyWin: true
+        incorrectAnswers: 0,
+        totalAnswered: 6,
+        startedAt: new Date(),
+        completedAt: new Date(),
+        pairedAnswers: {},
+        settings: {
+          maxQuestions: 10,
+          winThreshold: 6,
+          userState: 'CA',
+          questionNumbers: undefined
+        }
       }
 
       expect(sessionService.canContinue(activeSession)).toBe(true)
@@ -254,13 +278,11 @@ describe('SessionService', () => {
           session = sessionService.processAnswer(session, correctAnswer)
         }
 
-        expect(session).toMatchObject({
-          correctAnswers: 30,
-          totalAnswered: 30,
-          isCompleted: true,
-          isEarlyWin: true,
-          isEarlyFail: false
-        })
+        expect(session.correctAnswers).toBe(30)
+        expect(session.totalAnswered).toBe(30)
+        expect(isSessionCompleted(session)).toBe(true)
+        expect(isSessionEarlyWin(session)).toBe(true)
+        expect(isSessionEarlyFail(session)).toBe(false)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -284,13 +306,11 @@ describe('SessionService', () => {
           session = sessionService.processAnswer(session, correctAnswer)
         }
 
-        expect(session).toMatchObject({
-          correctAnswers: 60,
-          totalAnswered: 60,
-          isCompleted: true,
-          isEarlyWin: true,
-          isEarlyFail: false
-        })
+        expect(session.correctAnswers).toBe(60)
+        expect(session.totalAnswered).toBe(60)
+        expect(isSessionCompleted(session)).toBe(true)
+        expect(isSessionEarlyWin(session)).toBe(true)
+        expect(isSessionEarlyFail(session)).toBe(false)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -314,12 +334,10 @@ describe('SessionService', () => {
           session = sessionService.processAnswer(session, incorrectAnswer)
         }
 
-        expect(session).toMatchObject({
-          incorrectAnswers: 9,
-          isCompleted: true,
-          isEarlyWin: false,
-          isEarlyFail: true
-        })
+        expect(session.incorrectAnswers).toBe(9)
+        expect(isSessionCompleted(session)).toBe(true)
+        expect(isSessionEarlyWin(session)).toBe(false)
+        expect(isSessionEarlyFail(session)).toBe(true)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -343,12 +361,10 @@ describe('SessionService', () => {
           session = sessionService.processAnswer(session, incorrectAnswer)
         }
 
-        expect(session).toMatchObject({
-          incorrectAnswers: 9,
-          isCompleted: true,
-          isEarlyWin: false,
-          isEarlyFail: true
-        })
+        expect(session.incorrectAnswers).toBe(9)
+        expect(isSessionCompleted(session)).toBe(true)
+        expect(isSessionEarlyWin(session)).toBe(false)
+        expect(isSessionEarlyFail(session)).toBe(true)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
 
@@ -370,8 +386,8 @@ describe('SessionService', () => {
             answeredAt: new Date()
           })
         }
-        expect(session20.isEarlyWin).toBe(false)
-        expect(session20.isCompleted).toBe(false)
+        expect(isSessionEarlyWin(session20)).toBe(false)
+        expect(isSessionCompleted(session20)).toBe(false)
 
         // Test 29/50 (one short of 30)
         let session50 = yield* sessionService.createNewSession({
@@ -387,8 +403,8 @@ describe('SessionService', () => {
             answeredAt: new Date()
           })
         }
-        expect(session50.isEarlyWin).toBe(false)
-        expect(session50.isCompleted).toBe(false)
+        expect(isSessionEarlyWin(session50)).toBe(false)
+        expect(isSessionCompleted(session50)).toBe(false)
 
         // Test 59/100 (one short of 60)
         let session100 = yield* sessionService.createNewSession({
@@ -404,8 +420,8 @@ describe('SessionService', () => {
             answeredAt: new Date()
           })
         }
-        expect(session100.isEarlyWin).toBe(false)
-        expect(session100.isCompleted).toBe(false)
+        expect(isSessionEarlyWin(session100)).toBe(false)
+        expect(isSessionCompleted(session100)).toBe(false)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
   })

@@ -220,13 +220,13 @@
     "website": "https://westerman.house.gov/"
   },
   {
-    "name": "Doug LaMalfa",
+    "name": "Doug- Vacancy LaMalfa",
     "state": "CA",
     "district": "1st",
     "party": "R",
     "officeRoom": "408 CHOB",
     "phone": "(202) 225-3076",
-    "committeeAssignment": "Agriculture|Natural Resources|Transportation and Infrastructure",
+    "committeeAssignment": "",
     "website": "https://lamalfa.house.gov"
   },
   {
@@ -1300,14 +1300,14 @@
     "website": "https://davidscott.house.gov/"
   },
   {
-    "name": "Marjorie Greene",
+    "name": "Marjorie Taylor- Vacancy Greene",
     "state": "GA",
     "district": "14th",
     "party": "R",
     "officeRoom": "2201 RHOB",
     "phone": "(202) 225-5211",
-    "committeeAssignment": "Oversight and Government Reform|Homeland Security",
-    "website": "https://greene.house.gov"
+    "committeeAssignment": "",
+    "website": "https://clerk.house.gov/members/GA14/vacancy"
   },
   {
     "name": "James Moylan",
@@ -3626,7 +3626,7 @@
     "party": "R",
     "officeRoom": "2446 RHOB",
     "phone": "(202) 225-2811",
-    "committeeAssignment": "",
+    "committeeAssignment": "Homeland Security|Science, Space, and Technology",
     "website": "https://vanepps.house.gov/"
   },
   {
@@ -4156,7 +4156,7 @@
     "party": "D",
     "officeRoom": "1226 LHOB",
     "phone": "(202) 225-4376",
-    "committeeAssignment": "Ways and Means",
+    "committeeAssignment": "Science, Space, and Technology|Ways and Means",
     "website": "https://beyer.house.gov"
   },
   {

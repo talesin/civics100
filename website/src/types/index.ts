@@ -6,7 +6,22 @@ export type {
   GameResult,
   UserAnswer as QuestionAnswer,
   QuestionDisplay,
-  GameSettings
+  GameSettings,
+  InProgressSession,
+  CompletedNormalSession,
+  EarlyWinSession,
+  EarlyFailSession
+} from 'questionnaire'
+
+// Re-export type guards and helpers from questionnaire
+export {
+  isSessionInProgress,
+  isSessionCompleted,
+  isSessionEarlyWin,
+  isSessionEarlyFail,
+  isSessionCompletedNormal,
+  getSessionCompletedAt,
+  getSessionFlags
 } from 'questionnaire'
 
 // Website-specific GameSettings that extends questionnaire GameSettings

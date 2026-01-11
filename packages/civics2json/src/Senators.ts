@@ -55,7 +55,7 @@ export const parseSenators = (
  * const senators = yield* SenatorsClient.fetch()
  * const parsed = yield* SenatorsClient.parse(senators)
  */
-export class SenatorsClient extends Effect.Service<SenatorsClient>()('SenatorsClient', {
+export class SenatorsClient extends Effect.Service<SenatorsClient>()('civics2json/SenatorsClient', {
   effect: Effect.gen(function* () {
     const httpClient = yield* HttpClient.HttpClient
     const config = yield* CivicsConfig
@@ -79,7 +79,7 @@ export const TestSenatorsClientLayer = (fn?: {
   Layer.succeed(
     SenatorsClient,
     SenatorsClient.of({
-      _tag: 'SenatorsClient',
+      _tag: 'civics2json/SenatorsClient',
       fetch: fn?.fetch ?? (() => Effect.succeed('')),
       parse: fn?.parse ?? (() => Effect.succeed([]))
     })

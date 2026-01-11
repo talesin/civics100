@@ -107,7 +107,7 @@ export const parseRepresentatives = (
  * Represents a service for fetching, parsing, and writing representatives.
  */
 export class RepresentativesClient extends Effect.Service<RepresentativesClient>()(
-  'RepresentativesClient',
+  'civics2json/RepresentativesClient',
   {
     effect: Effect.gen(function* () {
       const httpClient = yield* HttpClient.HttpClient
@@ -133,7 +133,7 @@ export const TestRepresentativesClientLayer = (fn?: {
   Layer.succeed(
     RepresentativesClient,
     RepresentativesClient.of({
-      _tag: 'RepresentativesClient',
+      _tag: 'civics2json/RepresentativesClient',
       fetch: fn?.fetch ?? (() => Effect.succeed('')),
       parse: fn?.parse ?? ((_html: string) => Effect.succeed([]))
     })

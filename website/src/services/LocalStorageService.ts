@@ -1,6 +1,20 @@
 import { Effect, Layer, Option, Schema } from 'effect'
 import { GameResult, WebsiteGameSettings, DEFAULT_GAME_SETTINGS } from '@/types'
-import type { PairedAnswers } from 'questionnaire'
+import type { PairedAnswers, AnswerHistory } from 'questionnaire'
+import type { StateAbbreviation } from 'civics2json'
+
+// Valid US state and territory abbreviations
+const VALID_STATE_ABBREVIATIONS = new Set([
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY',
+  'DC', 'PR', 'GU', 'VI', 'AS', 'MP'
+] as const)
+
+const isStateAbbreviation = (value: string): value is StateAbbreviation =>
+  VALID_STATE_ABBREVIATIONS.has(value as StateAbbreviation)
 
 // Effect Schemas for runtime validation
 const GameResultSchema = Schema.Struct({
@@ -14,11 +28,35 @@ const GameResultSchema = Schema.Struct({
   completedAt: Schema.DateFromString
 })
 
+// StateAbbreviation schema with runtime validation
+const StateAbbreviationSchema = Schema.String.pipe(
+  Schema.filter(isStateAbbreviation, {
+    message: (s) => `Invalid state abbreviation: ${s}`
+  })
+) as Schema.Schema<StateAbbreviation, string, never>
+
 const WebsiteGameSettingsSchema = Schema.Struct({
   maxQuestions: Schema.Number,
-  winThreshold: Schema.Number, 
-  userState: Schema.String,
+  winThreshold: Schema.Number,
+  userState: StateAbbreviationSchema,
+  userDistrict: Schema.optionalWith(Schema.String, { as: 'Option' }),
   darkMode: Schema.Boolean
+})
+
+// Schema for answer history entries (ts stored as number in localStorage)
+const AnswerHistoryEntrySchema = Schema.Struct({
+  ts: Schema.transform(
+    Schema.Number,
+    Schema.DateFromSelf,
+    { decode: (n) => new Date(n), encode: (d) => d.getTime() }
+  ),
+  correct: Schema.Boolean
+})
+
+// Schema for the full PairedAnswers record
+const PairedAnswersSchema = Schema.Record({
+  key: Schema.String,
+  value: Schema.Array(AnswerHistoryEntrySchema)
 })
 
 const STORAGE_KEYS = {
@@ -153,11 +191,21 @@ const getGameSettings = (): Effect.Effect<WebsiteGameSettings, never, never> => 
 
     // Use schema to validate and decode settings, fallback to defaults if invalid
     const settingsOption = Schema.decodeUnknownOption(WebsiteGameSettingsSchema)(rawSettings)
-    
-    const decodedSettings = Option.getOrElse(settingsOption, () => DEFAULT_GAME_SETTINGS)
-    
-    // Type assertion needed due to StateAbbreviation type mismatch
-    return decodedSettings as WebsiteGameSettings
+
+    if (Option.isSome(settingsOption)) {
+      const decoded = settingsOption.value
+      return {
+        maxQuestions: decoded.maxQuestions,
+        winThreshold: decoded.winThreshold,
+        userState: decoded.userState,
+        userDistrict: Option.isSome(decoded.userDistrict)
+          ? decoded.userDistrict.value
+          : undefined,
+        darkMode: decoded.darkMode
+      }
+    }
+
+    return DEFAULT_GAME_SETTINGS
   })
 }
 
@@ -253,8 +301,19 @@ const getPairedAnswers = (): Effect.Effect<PairedAnswers, never, never> => {
     const parsed = safeJsonParse(json)
     const rawAnswers = Option.getOrElse(parsed, () => ({}))
 
-    // For now, return the raw answers as typed - can be improved later with proper schema
-    return rawAnswers as PairedAnswers
+    // Validate and decode with schema
+    const decodedOption = Schema.decodeUnknownOption(PairedAnswersSchema)(rawAnswers)
+
+    if (Option.isSome(decodedOption)) {
+      // Transform the decoded record to proper PairedAnswers type
+      const result: Record<string, AnswerHistory> = {}
+      for (const [key, value] of Object.entries(decodedOption.value)) {
+        result[key] = value as unknown as AnswerHistory
+      }
+      return result as PairedAnswers
+    }
+
+    return {} as PairedAnswers
   })
 }
 

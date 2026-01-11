@@ -1,6 +1,7 @@
 import * as Cache from 'effect/Cache'
 import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
+import * as Option from 'effect/Option'
 import type { Question } from 'civics2json'
 import type { OpenAIRequest, OpenAIResponse } from '../types/index'
 
@@ -50,21 +51,35 @@ export const getCacheStats = <K, A, E>(cache: Cache.Cache<K, A, E>) =>
   })
 
 // Specialized caching functions for different data types
+// Note: These check for cache hits (confidence > 0 for OpenAI responses)
+// and execute the actual operation on cache miss
 export const cacheOpenAIResponse = <E>(
   cache: Cache.Cache<string, OpenAIResponse>,
   request: OpenAIRequest,
-  _operation: Effect.Effect<OpenAIResponse, E>
-): Effect.Effect<OpenAIResponse, E> => {
-  const key = generateOpenAICacheKey(request)
-  return cache.get(key)
-}
+  operation: Effect.Effect<OpenAIResponse, E>
+): Effect.Effect<OpenAIResponse, E> =>
+  Effect.gen(function* () {
+    const key = generateOpenAICacheKey(request)
+    const cached = yield* cache.get(key).pipe(Effect.option)
 
+    // Check if we have a real cached value (confidence > 0 indicates real data)
+    if (Option.isSome(cached) && cached.value.confidence > 0) {
+      return cached.value
+    }
+
+    // Execute the actual operation on cache miss
+    return yield* operation
+  })
+
+/**
+ * Cache validation result - currently passes through to operation.
+ * Note: For boolean caches, we can't distinguish a cache miss from a cached 'false' value,
+ * so we always execute the operation. The cache and key parameters are kept for API
+ * compatibility and potential future use with Option-based caching.
+ */
 export const cacheValidationResult = <E>(
-  cache: Cache.Cache<string, boolean>,
-  distractor: string,
-  question: Question,
-  _operation: Effect.Effect<boolean, E>
-): Effect.Effect<boolean, E> => {
-  const key = `${question.questionNumber}-${distractor.slice(0, 20).replace(/\s+/g, '-')}`
-  return cache.get(key)
-}
+  _cache: Cache.Cache<string, boolean>,
+  _distractor: string,
+  _question: Question,
+  operation: Effect.Effect<boolean, E>
+): Effect.Effect<boolean, E> => operation
