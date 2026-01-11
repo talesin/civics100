@@ -1,9 +1,8 @@
 import { Effect, Layer } from 'effect'
 import * as Metric from 'effect/Metric'
-import * as Cache from 'effect/Cache'
 import OpenAI from 'openai'
 import type { Question } from 'civics2json'
-import type { OpenAIRequest, OpenAIResponse } from '@src/types/index'
+import type { OpenAIRequest } from '@src/types/index'
 import {
   OpenAIError,
   OpenAIRateLimitError,
@@ -15,7 +14,8 @@ import { createOpenAIRateLimiter, withRateLimit } from '@src/utils/rate-limiter'
 import {
   createOpenAIResponseCache,
   cacheOpenAIResponse,
-  generateOpenAICacheKey
+  generateOpenAICacheKey,
+  type OpenAIResponseCache
 } from '@src/utils/cache'
 import { DistractorMetrics, measureAndTrack, measureDuration } from '@src/utils/metrics'
 import {
@@ -110,7 +110,7 @@ For capital city questions:
 }
 
 // Core function for generating distractors via OpenAI (following coding guide)
-export const generateDistractorsWithOpenAI = (cache?: Cache.Cache<string, OpenAIResponse>) =>
+export const generateDistractorsWithOpenAI = (cache?: OpenAIResponseCache) =>
   Effect.fn(function* (request: OpenAIRequest) {
     // Track total OpenAI requests
     yield* Metric.increment(DistractorMetrics.openaiRequestsTotal)
@@ -530,7 +530,7 @@ export const TestOpenAIDistractorServiceLayer = (fn?: {
   generateDistractors?: OpenAIDistractorService['generateDistractors']
   createRequest?: OpenAIDistractorService['createRequest']
   validateConfig?: OpenAIDistractorService['validateConfig']
-  cache?: Cache.Cache<string, OpenAIResponse>
+  cache?: OpenAIResponseCache
 }) =>
   Layer.effect(
     OpenAIDistractorService,

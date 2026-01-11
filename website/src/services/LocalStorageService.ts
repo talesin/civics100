@@ -1,6 +1,6 @@
 import { Effect, Layer, Option, Schema } from 'effect'
 import { GameResult, WebsiteGameSettings, DEFAULT_GAME_SETTINGS } from '@/types'
-import type { PairedAnswers, AnswerHistory } from 'questionnaire'
+import type { PairedAnswers } from 'questionnaire'
 import type { StateAbbreviation } from 'civics2json'
 
 // Valid US state and territory abbreviations
@@ -305,12 +305,9 @@ const getPairedAnswers = (): Effect.Effect<PairedAnswers, never, never> => {
     const decodedOption = Schema.decodeUnknownOption(PairedAnswersSchema)(rawAnswers)
 
     if (Option.isSome(decodedOption)) {
-      // Transform the decoded record to proper PairedAnswers type
-      const result: Record<string, AnswerHistory> = {}
-      for (const [key, value] of Object.entries(decodedOption.value)) {
-        result[key] = value as unknown as AnswerHistory
-      }
-      return result as PairedAnswers
+      // Schema ensures structure matches AnswerHistory (array of {ts: Date, correct: boolean})
+      // Cast at record level is safe since schema validates the value structure
+      return decodedOption.value as PairedAnswers
     }
 
     return {} as PairedAnswers
