@@ -9,11 +9,11 @@
 - [x] Write tests for fetch and parse logic
 - [x] Document usage and commands in README
 - [ ] Handle variable/location-dependent questions
-  - [x] Generate US senators by state: https://www.senate.gov/general/contact_information/senators_cfm.xml
-  - [x] Generate US representatives by state: https://www.house.gov/representatives
-  - [x] Generate US governors by state: https://www.usa.gov/state-governments
-  - [x] Generate state capitals by state: https://www.usa.gov/state-governments
-  - [x] Retrieve and parse answers for the variable questions on this page: https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates
+  - [x] Generate US senators by state: <https://www.senate.gov/general/contact_information/senators_cfm.xml>
+  - [x] Generate US representatives by state: <https://www.house.gov/representatives>
+  - [x] Generate US governors by state: <https://www.usa.gov/state-governments>
+  - [x] Generate state capitals by state: <https://www.usa.gov/state-governments>
+  - [x] Retrieve and parse answers for the variable questions on this page: <https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates>
     - [x] 20. Who is one of your state's U.S. Senators now?
     - [x] 23. Name your U.S. Representative.
     - [x] 28. What is the name of the President of the United States now?
@@ -67,7 +67,7 @@ Retrieve and parse the official USCIS civics questions from the USCIS website, a
 #### 1. Retrieve (Fetch State Links)
 
 - **Fetch the state governments index:**
-  - Download the HTML from https://www.usa.gov/state-governments
+  - Download the HTML from <https://www.usa.gov/state-governments>
   - Parse the page to extract links to each state government website or governor's office page.
   - If a local cache exists and force-fetch is not specified, use the cached HTML file.
 
@@ -104,10 +104,10 @@ Retrieve and parse the official USCIS civics questions from the USCIS website, a
 ### A. Data Retrieval
 
 - Fetch the official civics questions from the USCIS website using a CLI command.
-- Fetch US senators by state: https://www.senate.gov/general/contact_information/senators_cfm.xml
-- Fetch US representatives by state: https://www.house.gov/representatives
-- Fetch US governors by state: https://www.usa.gov/state-governments
-- Fetch answers for the from questions on this page: https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates
+- Fetch US senators by state: <https://www.senate.gov/general/contact_information/senators_cfm.xml>
+- Fetch US representatives by state: <https://www.house.gov/representatives>
+- Fetch US governors by state: <https://www.usa.gov/state-governments>
+- Fetch answers for the from questions on this page: <https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates>
 
 ### B. Data Parsing
 

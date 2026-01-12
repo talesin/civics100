@@ -28,6 +28,7 @@ npm run dev --workspace=website
 ## 2025 USCIS Test Requirements
 
 The application implements the latest 2025 USCIS Civics Test format:
+
 - **Default**: 20 questions, pass with 12 correct (60%)
 - **Options**: 20, 50, or 100 questions per session
 - **Pass rates**: 60%, 70%, 80%, 90%, or 100%

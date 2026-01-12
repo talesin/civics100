@@ -15,6 +15,7 @@ Generate or augment **10–15 plausible distractors** per question in `civics-qu
 **Phase 1 Summary**: Complete architectural foundation established with proper Effect-TS patterns, comprehensive type definitions, utility infrastructure, static data pools, service foundations with detailed implementation roadmaps, and full test coverage (72 passing tests). All services follow coding guide patterns with dependency injection at execution points.
 
 **⚠️ Areas Requiring Full Implementation (Currently Stubbed/Placeholder Code):**
+
 - OpenAI API integration (currently returns mock responses)
 - Utility integration in services (infrastructure exists but not used)
 - Quality metrics calculation (placeholder values)

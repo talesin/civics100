@@ -18,10 +18,12 @@ Guidance for Claude Code when working in this repository.
 Monorepo for parsing and processing U.S. Citizenship and Immigration Services (USCIS) Civics Test data.
 
 **Workspaces:**
+
 - **civics2json**: Core tool - downloads and converts USCIS Civics Test data to JSON
 - **distractions**: Secondary workspace (in development)
 
 **Tech Stack:**
+
 - Effect-TS for functional programming and composability
 - @effect/cli for command-line interface
 - Effect Schema for runtime type validation
@@ -45,11 +47,13 @@ Monorepo for parsing and processing U.S. Citizenship and Immigration Services (U
 ## Commands
 
 ### Root Level
+
 ```bash
 npm test                    # Run tests across all workspaces
 ```
 
 ### civics2json
+
 ```bash
 npm run clean              # Clean build artifacts
 npm run lint               # Run ESLint
@@ -59,6 +63,7 @@ npm test                   # Run Jest tests
 ```
 
 ### CLI Usage
+
 ```bash
 npx tsx src/index.ts questions fetch      # Fetch civics questions
 npx tsx src/index.ts questions parse      # Parse civics questions
@@ -80,17 +85,20 @@ npx tsx src/index.ts governors fetch [--force]
 ## Website Styling (Tamagui)
 
 ### Theme Context
+
 ```typescript
 const { theme } = useThemeContext();  // 'light' | 'dark'
 const colors = themeColors[theme];
 ```
 
 ### Available CSS Classes
+
 - Cards: `card`, `card-elevated`, `card-interactive`
 - Buttons: `btn-primary`, `btn-secondary`, `btn-success`, `btn-error`
 - Utilities: `focus-ring`, `animate-fade-in`, `text-gradient`
 - Responsive: `hidden`, `md:flex`, `md:hidden`
 
 ### Notes
+
 - Tailwind CSS removed - do not add Tailwind classes
 - Test both light and dark themes when modifying styles

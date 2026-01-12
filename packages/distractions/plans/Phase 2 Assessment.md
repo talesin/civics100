@@ -12,6 +12,7 @@
 ### Task 1: OpenAI API Integration ✅ ~95% COMPLETE
 
 #### What's Already Implemented:
+
 - ✅ Real OpenAI client integration (`openai` package)
 - ✅ Proper JSON response parsing with `response_format: { type: 'json_object' }`
 - ✅ Sophisticated prompt engineering with question-type-specific templates
@@ -20,6 +21,7 @@
 - ✅ Configuration from environment variables
 
 #### What's in `OpenAIDistractorService.ts`:
+
 ```typescript
 Lines 33-42: OpenAI client creation with API key and timeout
 Lines 45-110: buildPrompt() with question-type-specific templates
@@ -29,6 +31,7 @@ Lines 230-270: JSON parsing and validation
 ```
 
 #### What Remains:
+
 - [ ] Fine-tune prompts based on real-world testing
 - [ ] Add more examples of good/bad distractors per type
 - [ ] Test with actual OpenAI API key
@@ -40,6 +43,7 @@ Lines 230-270: JSON parsing and validation
 ### Task 2: Effect-TS Utilities Integration ✅ ~90% COMPLETE
 
 #### What's Already Implemented:
+
 - ✅ Rate limiting integrated (`createOpenAIRateLimiter`, `withRateLimit`)
 - ✅ Response caching (`createOpenAIResponseCache`, `cacheOpenAIResponse`)
 - ✅ Metrics tracking (requests, success, failure, response time)
@@ -47,6 +51,7 @@ Lines 230-270: JSON parsing and validation
 - ✅ Error-specific handling (auth, rate limit, network, timeout)
 
 #### What's in the Code:
+
 ```typescript
 Lines 113-131: Caching integration with cache-or-generate pattern
 Lines 134-140: Metrics wrapping
@@ -56,6 +61,7 @@ Lines 315-377: Retry schedule in EnhancedStaticGenerator
 ```
 
 #### What Remains:
+
 - [ ] Test rate limiting under load
 - [ ] Test cache effectiveness (hit rate metrics)
 - [ ] Verify retry logic in production scenarios
@@ -64,9 +70,10 @@ Lines 315-377: Retry schedule in EnhancedStaticGenerator
 
 ---
 
-###  3: Enhanced Generation Logic ⏳ ~60% COMPLETE
+### 3: Enhanced Generation Logic ⏳ ~60% COMPLETE
 
 #### What's Already Implemented:
+
 - ✅ Strategy selection logic (`selectDistractorStrategy`)
 - ✅ Multiple strategies (curated, static-pool, openai-text, section-based, hybrid)
 - ✅ Quality filtering (`DistractorQualityService`)
@@ -74,6 +81,7 @@ Lines 315-377: Retry schedule in EnhancedStaticGenerator
 - ✅ Fallback chains (OpenAI → section-based)
 
 #### What Has TODOs:
+
 ```typescript
 EnhancedStaticGenerator.ts:154-160: TODO: Phase 2 Enhancement
 - Question complexity analysis
@@ -99,6 +107,7 @@ EnhancedStaticGenerator.ts:525-535: TODO: Phase 2
 ```
 
 #### What Remains:
+
 - [ ] Implement intelligent strategy selection (complexity analysis, history)
 - [ ] Enhance static pool generation (contextual awareness, difficulty matching)
 - [ ] Calculate real quality metrics (semantic similarity, readability)
@@ -111,6 +120,7 @@ EnhancedStaticGenerator.ts:525-535: TODO: Phase 2
 ### Task 4: Testing Enhancement ⏳ ~70% COMPLETE
 
 #### What's Already Implemented:
+
 - ✅ 89 tests passing (Phase 0.5 added 17 integration tests)
 - ✅ OpenAI service tests with mocking
 - ✅ EnhancedStaticGenerator tests (strategy selection, pool generation)
@@ -119,6 +129,7 @@ EnhancedStaticGenerator.ts:525-535: TODO: Phase 2
 - ✅ CLI integration tests
 
 #### What Remains:
+
 - [ ] Test with real OpenAI API (requires API key)
 - [ ] Test full generation pipeline end-to-end with real data
 - [ ] Load testing for rate limiting and caching
@@ -152,7 +163,9 @@ EnhancedStaticGenerator.ts:525-535: TODO: Phase 2
 ## Recommended Next Steps
 
 ### Option A: Complete Phase 2 Enhancements (2-4 hours)
+
 Focus on the TODO markers in `EnhancedStaticGenerator.ts`:
+
 1. Implement intelligent strategy selection
 2. Enhance static pool generation with context
 3. Calculate real quality metrics
@@ -163,7 +176,9 @@ Focus on the TODO markers in `EnhancedStaticGenerator.ts`:
 **Cons:** More time investment
 
 ### Option B: Test Current Implementation (1-2 hours)
+
 Focus on validating what's already built:
+
 1. Set up OpenAI API key
 2. Run end-to-end generation with real questions
 3. Validate output quality
@@ -174,6 +189,7 @@ Focus on validating what's already built:
 **Cons:** Leave enhancements for later
 
 ### Option C: Hybrid Approach (2-3 hours)
+
 1. Test with real OpenAI API first
 2. Identify biggest gaps from real usage
 3. Implement only critical enhancements
@@ -192,4 +208,3 @@ A. Complete all Phase 2 enhancements
 B. Test current implementation first
 C. Hybrid approach (test + critical enhancements)
 D. Something else
-

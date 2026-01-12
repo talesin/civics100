@@ -15,6 +15,7 @@ The questionnaire package serves as the core game engine for civics test practic
 ## Features
 
 ### Core Functionality
+
 - **Adaptive Question Selection** - Prioritizes unanswered and incorrectly answered questions
 - **Game Session Tracking** - Complete session state management with statistics
 - **Multiple Answer Types** - Support for single and multiple-choice questions
@@ -22,6 +23,7 @@ The questionnaire package serves as the core game engine for civics test practic
 - **State-Specific Questions** - Dynamic questions for senators, representatives, and governors
 
 ### Technical Features
+
 - **Effect-TS Architecture** - Functional programming with composable services
 - **CLI Interface** - Interactive command-line game with real-time feedback
 - **Programmatic API** - Import and use services in other applications
@@ -71,6 +73,7 @@ npx tsx src/cli/index.ts -s TX -q "28,29,46,47"
 #### Interactive Commands
 
 During gameplay:
+
 - **A, B, C, D** - Select answer choice
 - **stats** - Display current session statistics
 - **quit** - Exit the game
@@ -122,26 +125,34 @@ await Effect.runPromise(
 The package follows Effect-TS service patterns with dependency injection:
 
 #### GameService
+
 Core game logic and session management:
+
 - `createGameSession()` - Initialize new practice sessions
 - `processGameAnswer()` - Handle user answers and update state
 - `calculateGameResult()` - Generate final statistics
 - `transformQuestionToDisplay()` - Convert questions for UI consumption
 
 #### QuestionDataService  
+
 Question data loading and filtering:
+
 - `loadQuestions()` - Load and filter questions by state and criteria
 - Integration with `civics2json` for base questions
 - Integration with `distractions` for answer choices
 
 #### QuestionSelector
+
 Adaptive learning and question selection:
+
 - `selectPairedQuestion()` - Choose next question using adaptive algorithm
 - `recordPairedAnswer()` - Track user performance for learning
 - Prioritizes unanswered and incorrectly answered questions
 
 #### CLIGameService
+
 CLI-specific game interface and interaction:
+
 - `initializeGame()` - Set up CLI game session
 - `displayQuestion()` - Format questions for terminal display
 - `processAnswer()` - Handle CLI user input
@@ -284,6 +295,7 @@ The question selector implements adaptive learning:
 ### Answer Validation
 
 Supports multiple answer formats:
+
 - **Single Choice** - Standard A/B/C/D selection
 - **Multiple Choice** - Questions requiring multiple selections
 - **Expected Answers** - Flexible validation for variable-length answers
@@ -291,16 +303,19 @@ Supports multiple answer formats:
 ## Integration
 
 ### With civics2json
+
 - Imports base question data and types
 - Uses `StateAbbreviation` type for state validation
 - Leverages question schemas for type safety
 
 ### With distractions  
+
 - Imports questions with distractor pools
 - Uses generated incorrect answers for multiple choice
 - Maintains question-distractor relationships
 
 ### With website
+
 - Provides services for web interface
 - Supports programmatic session management
 - Enables real-time game state updates
@@ -346,16 +361,19 @@ interface GameResult {
 ### Service Methods
 
 #### GameService
+
 - `createGameSession(settings, pairedAnswers?)` - Create new session
 - `processGameAnswer(session, answer)` - Process user answer
 - `calculateGameResult(session)` - Generate final statistics
 - `validateAnswerSelection(selected, correct, expected?)` - Validate answers
 
 #### QuestionDataService
+
 - `loadQuestions(options)` - Load filtered question set
 - Integration with data packages for question loading
 
 #### QuestionSelector  
+
 - `selectPairedQuestion(available, history)` - Adaptive question selection
 - `recordPairedAnswer(questionId, correct, history)` - Track performance
 
@@ -364,6 +382,7 @@ interface GameResult {
 ### Common Issues
 
 **CLI State Error**:
+
 ```bash
 # Ensure valid state abbreviation
 npx tsx src/cli/index.ts --state INVALID
@@ -374,6 +393,7 @@ npx tsx src/cli/index.ts --state CA
 ```
 
 **Missing Question Data**:
+
 ```bash
 # Ensure civics2json data is available
 cd ../civics2json
@@ -385,6 +405,7 @@ npm start -- --state NY
 ```
 
 **Build Errors**:
+
 ```bash
 # Clean and reinstall
 npm run clean
@@ -395,6 +416,7 @@ npm run build
 ### Dependencies
 
 The package requires data from other workspace packages:
+
 - `civics2json` - Base question data and types  
 - `distractions` - Questions with distractor pools
 
@@ -410,12 +432,14 @@ npm run build --workspace=questionnaire
 ## Contributing
 
 ### Code Style
+
 - Follow Effect-TS patterns for service architecture
 - Use dependency injection for all external dependencies
 - Write comprehensive tests for all functionality
 - Maintain strict TypeScript configuration
 
 ### Service Development
+
 - Keep services pure and composable
 - Use Effect.gen for readable async composition
 - Provide test layers for all services

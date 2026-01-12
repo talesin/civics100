@@ -24,7 +24,7 @@ cp .env.example .env
 # Edit .env and add your key
 ```
 
-Get your API key from: https://platform.openai.com/api-keys
+Get your API key from: <https://platform.openai.com/api-keys>
 
 ### 2. Run the Integration Test
 
@@ -33,6 +33,7 @@ npx tsx scripts/test-openai-integration.ts
 ```
 
 This will:
+
 - Test OpenAI integration with 3 sample civics questions
 - Generate 5 distractors per question
 - Apply quality filtering and similarity detection
@@ -47,6 +48,7 @@ npx tsx src/cli/index.ts
 ```
 
 Options:
+
 - `--target-count N` - Generate N distractors per question (5-20)
 - `--use-openai` / `--no-use-openai` - Enable/disable OpenAI
 - `--filter-similar` / `--no-filter-similar` - Similarity filtering
@@ -59,6 +61,7 @@ The generated file will be at: `data/questions-with-distractors.json`
 ## What to Look For
 
 ### Good Distractors:
+
 - ✅ Plausible but incorrect
 - ✅ Related to the topic/domain
 - ✅ Appropriate difficulty level
@@ -66,6 +69,7 @@ The generated file will be at: `data/questions-with-distractors.json`
 - ✅ Diverse (not repetitive)
 
 ### Bad Distractors:
+
 - ❌ Obviously wrong or silly
 - ❌ Unrelated to the topic
 - ❌ Too easy or too hard
@@ -75,18 +79,21 @@ The generated file will be at: `data/questions-with-distractors.json`
 ## Cost Estimation
 
 With gpt-5-mini pricing (as of Oct 2024):
+
 - Input: $0.15 per 1M tokens
 - Output: $0.60 per 1M tokens
 
 For 100 questions with 5 distractors each:
+
 - Estimated cost: $0.50 - $2.00
 - Actual cost depends on prompt length and response size
 
-Check your usage at: https://platform.openai.com/usage
+Check your usage at: <https://platform.openai.com/usage>
 
 ## Troubleshooting
 
 ### "OPENAI_API_KEY not found"
+
 - If using direnv: Make sure you created `.envrc` and ran `direnv allow`
 - If using .env: Make sure you created `.env` file
 - Check that the API key starts with `sk-`
@@ -94,16 +101,19 @@ Check your usage at: https://platform.openai.com/usage
 - Test with: `echo $OPENAI_API_KEY` (should show your key)
 
 ### "Rate limit exceeded"
+
 - Reduce `OPENAI_REQUESTS_PER_MINUTE` in `.env`
 - Default is 60/min, try 30 or lower
 - Free tier has lower limits than paid
 
 ### "Invalid API key"
+
 - Verify the key is correct (no extra spaces)
 - Check that the key is active at platform.openai.com
 - Make sure your OpenAI account has credits
 
 ### Poor Quality Distractors
+
 - Try adjusting `OPENAI_TEMPERATURE` (default 0.7)
   - Lower (0.3-0.5) = more conservative
   - Higher (0.8-1.0) = more creative
@@ -113,6 +123,7 @@ Check your usage at: https://platform.openai.com/usage
 ## Next Steps
 
 After validating the integration:
+
 1. Review the Phase 2 Assessment document
 2. Implement remaining enhancements (Option A)
 3. Run full generation on all questions
@@ -120,6 +131,6 @@ After validating the integration:
 
 ## Support
 
-- OpenAI API Docs: https://platform.openai.com/docs
-- Effect-TS Docs: https://effect.website
+- OpenAI API Docs: <https://platform.openai.com/docs>
+- Effect-TS Docs: <https://effect.website>
 - Project Issues: Check PLAN.md and Phase 2 plans/

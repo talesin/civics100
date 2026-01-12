@@ -56,6 +56,7 @@ git push origin gh-pages
 ### GitHub Actions Configuration
 
 The `.github/workflows/deploy.yml` file handles:
+
 - **Dependencies**: Installs both civics2json and website dependencies
 - **Testing**: Runs full test suite
 - **Linting**: Ensures code quality
@@ -80,12 +81,13 @@ Vercel provides excellent Next.js hosting with automatic deployments.
    ```
 
 3. **Configure Build Settings**
-   
+
    **Option 1: Vercel Dashboard**
+
    - Build Command: `cd website && npm run build`
    - Output Directory: `website/dist`  
    - Install Command: `npm install` (at root level)
-   
+
    **Option 2: Configure vercel.json**
    ```json
    {
@@ -347,19 +349,23 @@ curl -o /dev/null -s -w "Time: %{time_total}s\n" https://your-domain.com
 ### Common Issues
 
 **404 Errors on Refresh**
+
 - Ensure server is configured for SPA routing
 - Check that fallback to `index.html` is working
 
 **Static Assets Not Loading**
+
 - Verify correct base path configuration
 - Check asset paths in browser developer tools
 
 **Build Failures**
+
 - Clear node_modules and reinstall
 - Check Node.js version compatibility
 - Verify all dependencies are installed
 
 **Performance Issues**
+
 - Enable compression (gzip/brotli)
 - Implement proper caching headers
 - Use CDN for static assets
@@ -380,25 +386,30 @@ npx playwright test
 ### Environment-Specific Issues
 
 **GitHub Pages**
+
 - Check Actions logs for build errors
 - Verify repository settings
 - Ensure branch permissions are correct
 
 **Vercel**
+
 - Check deployment logs in dashboard
 - Verify build settings match requirements
 - Test preview deployments first
 
 **TypeScript Dependencies Missing (Next.js)**
+
 ```
 FatalError: It looks like you're trying to use TypeScript but do not have the required package(s) installed.
 Please install @types/react and @types/node
 ```
+
 - **Cause**: Monorepo workspace dependency resolution issue
 - **Solution**: Ensure build command includes `cd website &&` to run from correct directory
 - **Fixed**: Build script no longer runs `npm run clean && npm install` which disrupted workspace structure
 
 **Netlify**
+
 - Check deploy logs for errors
 - Verify build command and publish directory
 - Test with netlify dev locally
@@ -408,6 +419,7 @@ Please install @types/react and @types/node
 ### HTTPS
 
 Always deploy with HTTPS enabled:
+
 - GitHub Pages: Automatic HTTPS
 - Vercel: Automatic HTTPS
 - Netlify: Automatic HTTPS
