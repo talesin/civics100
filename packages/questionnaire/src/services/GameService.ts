@@ -10,6 +10,7 @@ import {
   type GameResult,
   type QuestionDisplay,
   type QuestionArray,
+  type InProgressSession,
   isSessionEarlyWin,
   isSessionEarlyFail,
   getSessionCompletedAt
@@ -24,6 +25,29 @@ const generateSessionId = Effect.gen(function* () {
   const timestamp = yield* Clock.currentTimeMillis
   const random = yield* Random.nextIntBetween(0, 1_000_000_000)
   return `session_${timestamp}_${random.toString(36).slice(2, 11)}`
+})
+
+/**
+ * Pure factory function to create an InProgress game session
+ * Shared between production code and tests to avoid duplication
+ */
+export const createInProgressSession = (
+  sessionId: string,
+  questionPairedNumbers: ReadonlyArray<string>,
+  startTimestamp: number,
+  settings: GameSettings,
+  existingPairedAnswers?: PairedAnswers
+): InProgressSession => ({
+  _tag: 'InProgress',
+  id: sessionId,
+  questions: questionPairedNumbers,
+  currentQuestionIndex: 0,
+  correctAnswers: 0,
+  incorrectAnswers: 0,
+  totalAnswered: 0,
+  startedAt: new Date(startTimestamp),
+  pairedAnswers: existingPairedAnswers ?? {},
+  settings
 })
 
 /**
@@ -52,18 +76,13 @@ const createGameSession = (
     const sessionId = yield* generateSessionId
     const startTimestamp = yield* Clock.currentTimeMillis
 
-    const session: GameSession = {
-      _tag: 'InProgress',
-      id: sessionId,
-      questions: selectedQuestions.map((q) => q.pairedQuestionNumber),
-      currentQuestionIndex: 0,
-      correctAnswers: 0,
-      incorrectAnswers: 0,
-      totalAnswered: 0,
-      startedAt: new Date(startTimestamp),
-      pairedAnswers: existingPairedAnswers ?? {},
-      settings
-    }
+    const session = createInProgressSession(
+      sessionId,
+      selectedQuestions.map((q) => q.pairedQuestionNumber),
+      startTimestamp,
+      settings,
+      existingPairedAnswers
+    )
 
     return { session, questions: selectedQuestions }
   })
@@ -337,9 +356,7 @@ export const TestGameServiceLayer = (fn?: {
             },
             questions: []
           })),
-      processGameAnswer:
-        fn?.processGameAnswer ??
-        ((session, _answer) => Effect.succeed(session)),
+      processGameAnswer: fn?.processGameAnswer ?? ((session, _answer) => Effect.succeed(session)),
       calculateGameResult:
         fn?.calculateGameResult ??
         ((_session) =>

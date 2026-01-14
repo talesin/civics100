@@ -36,9 +36,8 @@ describe('EnhancedStaticGenerator Integration Tests', () => {
 
   describe('Strategy Selection', () => {
     it('should select openai-text strategy for text questions with OpenAI enabled', async () => {
-      const { selectDistractorStrategy } = await import(
-        '../../src/generators/EnhancedStaticGenerator'
-      )
+      const { selectDistractorStrategy } =
+        await import('../../src/generators/EnhancedStaticGenerator')
 
       const options = { ...DEFAULT_GENERATION_OPTIONS, useOpenAI: true }
 
@@ -49,9 +48,8 @@ describe('EnhancedStaticGenerator Integration Tests', () => {
     })
 
     it('should select static-pool strategy for senator questions', async () => {
-      const { selectDistractorStrategy } = await import(
-        '../../src/generators/EnhancedStaticGenerator'
-      )
+      const { selectDistractorStrategy } =
+        await import('../../src/generators/EnhancedStaticGenerator')
 
       const options = { ...DEFAULT_GENERATION_OPTIONS, useOpenAI: true }
 
@@ -62,9 +60,8 @@ describe('EnhancedStaticGenerator Integration Tests', () => {
     })
 
     it('should select section-based strategy when OpenAI is disabled', async () => {
-      const { selectDistractorStrategy } = await import(
-        '../../src/generators/EnhancedStaticGenerator'
-      )
+      const { selectDistractorStrategy } =
+        await import('../../src/generators/EnhancedStaticGenerator')
 
       const options = { ...DEFAULT_GENERATION_OPTIONS, useOpenAI: false }
 
@@ -77,9 +74,8 @@ describe('EnhancedStaticGenerator Integration Tests', () => {
 
   describe('Static Pool Generation', () => {
     it('should generate distractors from senator pool', async () => {
-      const { generateFromStaticPools } = await import(
-        '../../src/generators/EnhancedStaticGenerator'
-      )
+      const { generateFromStaticPools } =
+        await import('../../src/generators/EnhancedStaticGenerator')
 
       await Effect.gen(function* () {
         const distractors = yield* generateFromStaticPools(mockSenatorQuestion, 10)
@@ -93,17 +89,14 @@ describe('EnhancedStaticGenerator Integration Tests', () => {
     })
 
     it('should filter out correct answers from pool', async () => {
-      const { generateFromStaticPools } = await import(
-        '../../src/generators/EnhancedStaticGenerator'
-      )
+      const { generateFromStaticPools } =
+        await import('../../src/generators/EnhancedStaticGenerator')
 
       await Effect.gen(function* () {
         const distractors = yield* generateFromStaticPools(mockTextQuestion, 10)
 
         // Should not include 'the Constitution' or similar
-        const hasCorrectAnswer = distractors.some((d) =>
-          d.toLowerCase().includes('constitution')
-        )
+        const hasCorrectAnswer = distractors.some((d) => d.toLowerCase().includes('constitution'))
         expect(hasCorrectAnswer).toBe(false)
       }).pipe(Effect.runPromise)
     })

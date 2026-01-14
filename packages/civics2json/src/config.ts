@@ -23,7 +23,8 @@ export const CivicsConfig = getConfig(
   {
     QUESTIONS_TEXT_FILE: { value: 'data/civics-questions-2025.txt' },
     QUESTIONS_URL: {
-      value: 'https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf'
+      value:
+        'https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf'
     },
     QUESTIONS_JSON_FILE: { value: 'data/civics-questions.json' },
     SENATORS_URL: { value: 'https://www.senate.gov/general/contact_information/senators_cfm.xml' },

@@ -42,7 +42,7 @@ export {
   getQuestionCount
 } from './services/QuestionDataService'
 
-export { GameService, TestGameServiceLayer } from './services/GameService'
+export { GameService, TestGameServiceLayer, createInProgressSession } from './services/GameService'
 
 // Import services to access their defaults
 import { GameService } from './services/GameService'

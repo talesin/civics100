@@ -129,19 +129,22 @@ export const parseGovernorInfo = (
 /**
  * GovernorsClient service for dependency injection.
  */
-export class GovernorsClient extends Effect.Service<GovernorsClient>()('civics2json/GovernorsClient', {
-  effect: Effect.gen(function* () {
-    const httpClient = yield* HttpClient.HttpClient
-    const config = yield* CivicsConfig
-    return {
-      fetchGovernmentsIndex: fetchGovernmentsIndex(httpClient, config),
-      fetchGovernmentPage: fetchGovernmentPage(httpClient, config),
-      fetchAllGovernmentPages: fetchAllGovernmentPages(httpClient, config),
-      parseStateLinks: parseStateLinks,
-      parseGovernorInfo: parseGovernorInfo
-    }
-  })
-}) {}
+export class GovernorsClient extends Effect.Service<GovernorsClient>()(
+  'civics2json/GovernorsClient',
+  {
+    effect: Effect.gen(function* () {
+      const httpClient = yield* HttpClient.HttpClient
+      const config = yield* CivicsConfig
+      return {
+        fetchGovernmentsIndex: fetchGovernmentsIndex(httpClient, config),
+        fetchGovernmentPage: fetchGovernmentPage(httpClient, config),
+        fetchAllGovernmentPages: fetchAllGovernmentPages(httpClient, config),
+        parseStateLinks: parseStateLinks,
+        parseGovernorInfo: parseGovernorInfo
+      }
+    })
+  }
+) {}
 
 /**
  * TestGovernorsClientLayer allows dependency injection of mock/test implementations for unit testing.

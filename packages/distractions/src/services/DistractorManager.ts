@@ -42,6 +42,7 @@ export const TestDistractorManagerLayer = (fn?: {
     DistractorManager,
     DistractorManager.of({
       _tag: 'DistractorManager',
-      generateAndWrite: fn?.generateAndWrite ?? ((_options?: DistractorGenerationOptions) => Effect.void)
+      generateAndWrite:
+        fn?.generateAndWrite ?? ((_options?: DistractorGenerationOptions) => Effect.void)
     })
   )

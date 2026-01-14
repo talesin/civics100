@@ -1,5 +1,4 @@
 import * as Cache from 'effect/Cache'
-import * as Duration from 'effect/Duration'
 import * as Effect from 'effect/Effect'
 import * as Ref from 'effect/Ref'
 import type { Question } from 'civics2json'
@@ -26,6 +25,14 @@ export interface OpenAIResponseCache {
   readonly ttlMs: number
 }
 
+// Validation Cache using Ref for proper cache-on-miss behavior with boolean values
+export interface ValidationCache {
+  readonly _tag: 'ValidationCache'
+  readonly ref: Ref.Ref<Map<string, CacheEntry<boolean>>>
+  readonly maxSize: number
+  readonly ttlMs: number
+}
+
 // Create cache for OpenAI responses using Ref-based approach
 export const createOpenAIResponseCache = (
   maxSize: number = 1000,
@@ -41,12 +48,19 @@ export const createOpenAIResponseCache = (
     }
   })
 
-// Create cache for distractor validation results
-export const createValidationCache = (maxSize: number = 500, ttlMinutes: number = 30) =>
-  Cache.make({
-    capacity: maxSize,
-    timeToLive: Duration.minutes(ttlMinutes),
-    lookup: (_key: string) => Effect.succeed(false)
+// Create cache for distractor validation results using Ref-based approach
+export const createValidationCache = (
+  maxSize: number = 500,
+  ttlMinutes: number = 30
+): Effect.Effect<ValidationCache> =>
+  Effect.gen(function* () {
+    const ref = yield* Ref.make(new Map<string, CacheEntry<boolean>>())
+    return {
+      _tag: 'ValidationCache' as const,
+      ref,
+      maxSize,
+      ttlMs: ttlMinutes * 60 * 1000
+    }
   })
 
 // Wrapper for cached operations (legacy API for validation cache)
@@ -128,14 +142,54 @@ export const cacheOpenAIResponse = <E>(
   })
 
 /**
- * Cache validation result - currently passes through to operation.
- * Note: For boolean caches, we can't distinguish a cache miss from a cached 'false' value,
- * so we always execute the operation. The cache and key parameters are kept for API
- * compatibility and potential future use with Option-based caching.
+ * Cache validation result using Ref-based approach.
+ * Properly caches boolean validation results, handling cache-on-miss semantics.
  */
 export const cacheValidationResult = <E>(
-  _cache: Cache.Cache<string, boolean>,
-  _distractor: string,
-  _question: Question,
+  cache: ValidationCache,
+  distractor: string,
+  question: Question,
   operation: Effect.Effect<boolean, E>
-): Effect.Effect<boolean, E> => operation
+): Effect.Effect<boolean, E> =>
+  Effect.gen(function* () {
+    const key = `validation:${question.questionNumber}:${distractor}`
+    const now = Date.now()
+    const map = yield* Ref.get(cache.ref)
+    const cached = map.get(key)
+
+    // Check if we have a valid cached value (not expired)
+    if (cached !== undefined && now - cached.timestamp < cache.ttlMs) {
+      return cached.value
+    }
+
+    // Execute the actual operation on cache miss
+    const result = yield* operation
+
+    // Store the result in the cache
+    yield* Ref.update(cache.ref, (currentMap) => {
+      const newMap = new Map(currentMap)
+
+      // Evict expired entries and oldest if at capacity
+      if (newMap.size >= cache.maxSize) {
+        let oldestKey: string | undefined
+        let oldestTime = Infinity
+        for (const [k, v] of newMap) {
+          if (now - v.timestamp >= cache.ttlMs) {
+            newMap.delete(k)
+          } else if (v.timestamp < oldestTime) {
+            oldestTime = v.timestamp
+            oldestKey = k
+          }
+        }
+        // If still at capacity after evicting expired, remove oldest
+        if (newMap.size >= cache.maxSize && oldestKey !== undefined) {
+          newMap.delete(oldestKey)
+        }
+      }
+
+      newMap.set(key, { value: result, timestamp: now })
+      return newMap
+    })
+
+    return result
+  })

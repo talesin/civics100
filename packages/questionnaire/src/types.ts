@@ -150,13 +150,19 @@ export type EarlyFailSession = BaseSessionData & {
  * - EarlyWin: Won by reaching win threshold
  * - EarlyFail: Lost by accumulating 9 incorrect answers
  */
-export type GameSession = InProgressSession | CompletedNormalSession | EarlyWinSession | EarlyFailSession
+export type GameSession =
+  | InProgressSession
+  | CompletedNormalSession
+  | EarlyWinSession
+  | EarlyFailSession
 
 // Type guards for GameSession states
 export const isSessionInProgress = (session: GameSession): session is InProgressSession =>
   session._tag === 'InProgress'
 
-export const isSessionCompleted = (session: GameSession): session is CompletedNormalSession | EarlyWinSession | EarlyFailSession =>
+export const isSessionCompleted = (
+  session: GameSession
+): session is CompletedNormalSession | EarlyWinSession | EarlyFailSession =>
   session._tag !== 'InProgress'
 
 export const isSessionEarlyWin = (session: GameSession): session is EarlyWinSession =>
