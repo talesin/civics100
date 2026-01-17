@@ -5,7 +5,7 @@ import { PairedQuestionNumber } from 'questionnaire'
 import { MASTERY_THRESHOLD, NEEDS_PRACTICE_THRESHOLD } from '@/services/StatisticsService'
 import { XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
-import { useThemeContext } from '@/components/TamaguiProvider'
+import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
 interface QuestionDetailModalProps {
   question: QuestionStatistics
@@ -236,12 +236,12 @@ export default function QuestionDetailModal({
   onClose
 }: QuestionDetailModalProps) {
   const { theme } = useThemeContext()
-  const isDark = theme === 'dark'
+  const colors = themeColors[theme]
   const history = pairedAnswers[PairedQuestionNumber(question.pairedQuestionNumber)] ?? []
 
   // Theme-aware dynamic styles
   const dynamicModalStyles = useMemo((): React.CSSProperties => ({
-    backgroundColor: isDark ? '#1a1a1a' : 'white',
+    backgroundColor: colors.cardBg,
     borderRadius: 16,
     maxWidth: 768,
     width: '100%',
@@ -249,38 +249,24 @@ export default function QuestionDetailModal({
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-  }), [isDark])
+  }), [colors.cardBg])
 
   const dynamicThStyles = useMemo((): React.CSSProperties => ({
     padding: '8px 16px',
     textAlign: 'left',
     fontSize: 12,
     fontWeight: 500,
-    color: isDark ? '#d1d5db' : '#374151',
+    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
-    backgroundColor: isDark ? '#262626' : '#f9fafb',
-  }), [isDark])
+    backgroundColor: colors.backgroundHover,
+  }), [colors.textMuted, colors.backgroundHover])
 
   const dynamicTdStyles = useMemo((): React.CSSProperties => ({
     padding: '8px 16px',
     fontSize: 14,
-    borderTop: `1px solid ${isDark ? '#404040' : '#e5e7eb'}`,
-  }), [isDark])
-
-  const dynamicColors = useMemo(() => ({
-    text: isDark ? '#e5e5e5' : '#111827',
-    muted: isDark ? '#a1a1aa' : '#6b7280',
-    success: isDark ? '#22c55e' : '#16a34a',
-    primary: isDark ? '#60a5fa' : '#2563eb',
-    purple: isDark ? '#a78bfa' : '#9333ea',
-    successBg: isDark ? '#166534' : '#dcfce7',
-    successText: isDark ? '#bbf7d0' : '#166534',
-    errorBg: isDark ? '#7f1d1d' : '#fee2e2',
-    errorText: isDark ? '#fecaca' : '#991b1b',
-    border: isDark ? '#404040' : '#e5e7eb',
-    iconStroke: isDark ? '#a1a1aa' : '#9ca3af',
-  }), [isDark])
+    borderTop: `1px solid ${colors.border}`,
+  }), [colors.border])
 
   // Handle ESC key
   useEffect(() => {
@@ -364,7 +350,7 @@ export default function QuestionDetailModal({
             </HeaderSubtitle>
           </YStack>
           <CloseButton onPress={onClose}>
-            <svg width={24} height={24} fill="none" stroke={dynamicColors.iconStroke} viewBox="0 0 24 24">
+            <svg width={24} height={24} fill="none" stroke={colors.iconStroke} viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -392,21 +378,21 @@ export default function QuestionDetailModal({
           <StatsGrid>
             <StatItem>
               <StatLabel>Times Asked</StatLabel>
-              <StatValue color={dynamicColors.text}>{question.timesAsked}</StatValue>
+              <StatValue color={colors.text}>{question.timesAsked}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Correct</StatLabel>
-              <StatValue color={dynamicColors.success}>{question.timesCorrect}</StatValue>
+              <StatValue color={colors.success}>{question.timesCorrect}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Accuracy</StatLabel>
-              <StatValue color={dynamicColors.primary}>
+              <StatValue color={colors.primary}>
                 {question.timesAsked > 0 ? `${Math.round(question.accuracy * 100)}%` : '-'}
               </StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Next Time %</StatLabel>
-              <StatValue color={dynamicColors.purple}>{question.selectionProbability.toFixed(2)}%</StatValue>
+              <StatValue color={colors.purple}>{question.selectionProbability.toFixed(2)}%</StatValue>
             </StatItem>
           </StatsGrid>
 
@@ -435,7 +421,7 @@ export default function QuestionDetailModal({
             {history.length > 0 ? (
               <YStack
                 borderWidth={1}
-                borderColor={dynamicColors.border}
+                borderColor={colors.border}
                 borderRadius="$3"
                 overflow="hidden"
               >
@@ -450,10 +436,10 @@ export default function QuestionDetailModal({
                   <tbody>
                     {[...history].reverse().map((answer, index) => (
                       <tr key={index}>
-                        <td style={{ ...dynamicTdStyles, color: dynamicColors.muted, whiteSpace: 'nowrap' }}>
+                        <td style={{ ...dynamicTdStyles, color: colors.textMuted, whiteSpace: 'nowrap' }}>
                           {history.length - index}
                         </td>
-                        <td style={{ ...dynamicTdStyles, color: dynamicColors.text, whiteSpace: 'nowrap' }}>
+                        <td style={{ ...dynamicTdStyles, color: colors.text, whiteSpace: 'nowrap' }}>
                           {formatDate(answer.ts)}
                         </td>
                         <td style={dynamicTdStyles}>
@@ -465,8 +451,8 @@ export default function QuestionDetailModal({
                               borderRadius: 9999,
                               fontSize: 12,
                               fontWeight: 500,
-                              backgroundColor: dynamicColors.successBg,
-                              color: dynamicColors.successText,
+                              backgroundColor: colors.successBg,
+                              color: colors.successText,
                             }}>
                               Correct
                             </span>
@@ -478,8 +464,8 @@ export default function QuestionDetailModal({
                               borderRadius: 9999,
                               fontSize: 12,
                               fontWeight: 500,
-                              backgroundColor: dynamicColors.errorBg,
-                              color: dynamicColors.errorText,
+                              backgroundColor: colors.errorBg,
+                              color: colors.errorText,
                             }}>
                               Incorrect
                             </span>

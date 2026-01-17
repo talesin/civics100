@@ -3,6 +3,7 @@ import { StateAbbreviation } from 'civics2json'
 import { StatesByAbbreviation } from 'civics2json'
 import { XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
+import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
 interface StateSelectorProps {
   selectedState: StateAbbreviation
@@ -73,6 +74,8 @@ export default function StateSelector({
   onStateChange,
   className = ''
 }: StateSelectorProps) {
+  const { theme } = useThemeContext()
+  const colors = themeColors[theme]
   const [isDetectingLocation, setIsDetectingLocation] = useState(false)
   const [hasLocationPermission, setHasLocationPermission] = useState<boolean | null>(null)
 
@@ -219,11 +222,11 @@ export default function StateSelector({
             padding: '8px 12px',
             borderWidth: 1,
             borderStyle: 'solid',
-            borderColor: '#d1d5db',
+            borderColor: colors.border,
             borderRadius: 6,
-            backgroundColor: 'white',
+            backgroundColor: colors.cardBg,
             fontSize: 14,
-            outline: 'none',
+            color: colors.text,
           }}
         >
           {stateOptions.map((option) => (
