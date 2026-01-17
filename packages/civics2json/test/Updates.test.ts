@@ -125,7 +125,7 @@ describe('parseUpdates', () => {
       answers: {
         _type: 'text',
         choices: [
-          "Answers will vary. [District of Columbia residents and residents of U.S. territories should answer that D.C. (or the territory where the applicant lives) has no U.S. Senators.]"
+          'Answers will vary. [District of Columbia residents and residents of U.S. territories should answer that D.C. (or the territory where the applicant lives) has no U.S. Senators.]'
         ]
       }
     },

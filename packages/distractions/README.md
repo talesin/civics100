@@ -18,6 +18,7 @@ The distractions package generates high-quality "distractor" answers (incorrect 
 ### Distractor Generation Strategies
 
 #### Static Pool Generation
+
 For questions where distractors can be drawn from well-defined categories:
 
 - **Branches of Government** - Legislative, Executive, Judicial mix-ups
@@ -29,7 +30,9 @@ For questions where distractors can be drawn from well-defined categories:
 - **State Information** - Capitals, governors from other states
 
 #### Curated Distractor Database
+
 Carefully selected incorrect answers that are:
+
 - **Contextually Relevant** - Related to the correct answer domain
 - **Educationally Valuable** - Test genuine understanding vs. memorization
 - **Appropriately Challenging** - Neither too obvious nor impossibly obscure
@@ -75,6 +78,7 @@ npx tsx src/cli/index.ts
 ```
 
 The CLI will:
+
 1. Load questions from the `civics2json` package
 2. Classify each question by type and content
 3. Generate appropriate distractors using static pools
@@ -126,24 +130,31 @@ await Effect.runPromise(
 The package follows Effect-TS service patterns with dependency injection:
 
 #### DistractorManager
+
 Main orchestration service:
+
 - `generateAndWrite()` - Complete distractor generation pipeline
 - Coordinates between question loading and distractor generation
 - Handles file I/O and output formatting
 
 #### CuratedDistractorService  
+
 Core distractor generation logic:
+
 - `generateDistractors(category, count)` - Generate distractors by category
 - `assessDistractorQuality()` - Evaluate distractor effectiveness
 - `classifyQuestion()` - Determine appropriate distractor strategies
 
 #### StaticGenerator
+
 Static pool-based distractor creation:
+
 - `generate()` - Process all questions with static distractors
 - Integration with curated distractor pools
 - Question classification and pool selection
 
 #### Supporting Services
+
 - **QuestionClassifierService** - Categorize questions by content type
 - **PoolMappingService** - Map question types to distractor pools  
 - **DistractorQualityService** - Assess distractor appropriateness
@@ -277,20 +288,26 @@ test/                     # Test suites
 ### Static Pool Categories
 
 #### Geography Distractors
+
 For questions about US geography:
+
 - **States**: Other US states for state-specific questions
 - **Capitals**: State capitals from other states  
 - **Rivers**: Major US rivers (Mississippi, Colorado, etc.)
 - **Oceans**: Bodies of water bordering the US
 
 #### Government Distractors
+
 For questions about government structure:
+
 - **Cabinet Positions**: Secretary roles and departments
 - **Constitutional Offices**: President, Vice President, Speaker, etc.
 - **Branches**: Legislative, Executive, Judicial concepts
 
 #### Historical Distractors
+
 For questions about US history:
+
 - **Presidents**: Historical presidents for presidential questions
 - **Vice Presidents**: Historical VPs for VP questions
 - **Wars**: Major US conflicts and military actions
@@ -322,16 +339,19 @@ Distractors are evaluated on:
 ## Integration
 
 ### With civics2json
+
 - Imports base question data and schemas
 - Uses question classification for distractor selection
 - Maintains question metadata and structure
 
 ### With questionnaire
+
 - Provides questions-with-distractors for game sessions
 - Enables multiple-choice question generation
 - Supports adaptive learning with quality distractors
 
 ### With website
+
 - Supplies distractor pools for web-based quizzes
 - Ensures consistent question difficulty across platforms
 - Enables real-time distractor selection
@@ -370,14 +390,17 @@ interface DistractorQuality {
 ### Service Methods
 
 #### DistractorManager
+
 - `generateAndWrite()` - Complete distractor generation pipeline
 
 #### CuratedDistractorService
+
 - `generateDistractors(category, count)` - Generate by category
 - `assessDistractorQuality(distractor, correct)` - Quality evaluation
 - `classifyQuestion(question)` - Determine question category
 
 #### StaticGenerator  
+
 - `generate()` - Process all questions with static pools
 - Integration with static distractor pools
 
@@ -415,6 +438,7 @@ const QUALITY_THRESHOLDS = {
 ### Common Issues
 
 **Missing Question Data**:
+
 ```bash
 # Ensure civics2json data is available
 cd ../civics2json
@@ -426,11 +450,13 @@ npx tsx src/cli/index.ts
 ```
 
 **Empty Distractor Pools**:
+
 - Check static pool files in `src/data/pools/`
 - Verify question classification logic
 - Review quality threshold settings
 
 **Build Errors**:
+
 ```bash
 # Clean and reinstall
 npm run clean
@@ -467,6 +493,7 @@ npm test -- DistractorQualityService.test.ts
 4. Test with real user data for validation
 
 ### Code Style
+
 - Follow Effect-TS patterns for service architecture
 - Use dependency injection for all external dependencies
 - Write comprehensive tests for distractor quality

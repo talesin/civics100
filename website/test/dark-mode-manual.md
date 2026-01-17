@@ -51,6 +51,7 @@
 ## Technical Implementation
 
 The dark mode implementation uses:
+
 - **Tailwind CSS v4** with `@variant dark (.dark &);` directive
 - **Class-based dark mode** using `html.dark` selector
 - **localStorage persistence** for theme preference
@@ -60,6 +61,7 @@ The dark mode implementation uses:
 ## Debugging
 
 If dark mode still doesn't work:
+
 1. Check that `html` element gets the `dark` class when toggling
 2. Verify Tailwind CSS classes like `dark:bg-gray-900` are being applied
 3. Check browser console for any errors

@@ -20,27 +20,40 @@ export const AppServiceLayer = Layer.mergeAll(
 )
 
 /**
+ * Type representing all services provided by AppServiceLayer
+ * Used to constrain effects to only require services we can provide
+ */
+export type AppServices =
+  | LocalStorageService
+  | GameService
+  | QuestionDataService
+  | SessionService
+  | StatisticsService
+
+/**
  * Helper function to run Effect programs with all required services
  * This provides a consistent way to execute Effects in React components
+ *
+ * Only accepts Effects that require services provided by AppServiceLayer.
+ * TypeScript will error at compile time if an effect requires a service not listed.
  */
-export const runWithServices = <A, E = never, R = never>(
-  effect: Effect.Effect<A, E, R>
+export const runWithServices = <A, E>(
+  effect: Effect.Effect<A, E, AppServices>
 ): Promise<A> => {
-  // Type assertion needed due to Effect-TS layer providing complexities
-  return Effect.runPromise(
-    effect.pipe(Effect.provide(AppServiceLayer)) as Effect.Effect<A, E, never>
-  )
+  return Effect.runPromise(effect.pipe(Effect.provide(AppServiceLayer)))
 }
 
 /**
  * Helper function to run Effect programs with all required services and custom error handling
  * This provides a consistent way to execute Effects in React components with error handling
+ *
+ * Only accepts Effects that require services provided by AppServiceLayer.
+ * TypeScript will error at compile time if an effect requires a service not listed.
  */
-export const runWithServicesAndErrorHandling = <A, E = never, R = never>(
-  effect: Effect.Effect<A, E, R>,
+export const runWithServicesAndErrorHandling = <A, E>(
+  effect: Effect.Effect<A, E, AppServices>,
   onError: (error: unknown) => void = (error) => console.error('Service error:', error)
 ): Promise<A | undefined> => {
-  // Type assertion needed due to Effect-TS layer providing complexities
   return Effect.runPromise(
     effect.pipe(
       Effect.provide(AppServiceLayer),
@@ -48,6 +61,6 @@ export const runWithServicesAndErrorHandling = <A, E = never, R = never>(
         onError(error)
         return Effect.succeed(undefined)
       })
-    ) as Effect.Effect<A | undefined, never, never>
+    )
   )
 }

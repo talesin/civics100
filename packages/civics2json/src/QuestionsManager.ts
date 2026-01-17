@@ -42,10 +42,10 @@ export class InvalidUpdateError extends Data.TaggedError('InvalidUpdateError')<{
  * The variable questions that are used to identify the senator, representative, and governor questions in the civics questions set.
  */
 export const VARIABLE_QUESTIONS = {
-  STATE_SENATORS: "Who is one of your state’s U.S. senators now?",
-  STATE_REPRESENTATIVES: "Name your U.S. representative.",
-  STATE_GOVERNORS: "Who is the governor of your state now? *",
-  STATE_CAPITALS: "What is the capital of your state?",
+  STATE_SENATORS: 'Who is one of your state’s U.S. senators now?',
+  STATE_REPRESENTATIVES: 'Name your U.S. representative.',
+  STATE_GOVERNORS: 'Who is the governor of your state now? *',
+  STATE_CAPITALS: 'What is the capital of your state?'
 } as const
 
 /**
@@ -450,7 +450,9 @@ export const getGovernorsQuestions = (
 
 export const getStateCapitalsQuestions: (
   questionMap: Record<string, Question>
-) => Effect.Effect<Question, QuestionNotFoundError> = Effect.fn(function* (questionMap: Record<string, Question>) {
+) => Effect.Effect<Question, QuestionNotFoundError> = Effect.fn(function* (
+  questionMap: Record<string, Question>
+) {
   const capitalsQuestion = questionMap[VARIABLE_QUESTIONS.STATE_CAPITALS]
 
   // fail if we cannot find the capitals question
@@ -669,44 +671,47 @@ export const constructQuestions = (
  * It provides methods for fetching, parsing, and writing civics questions,
  * as well as fetching and parsing senators.
  */
-export class QuestionsManager extends Effect.Service<QuestionsManager>()('civics2json/QuestionsManager', {
-  effect: Effect.gen(function* () {
-    const fs = yield* FileSystem.FileSystem
-    const config = yield* CivicsConfig
-    const civicQuestionsClient = yield* CivicsQuestionsClient
-    const senatorsClient = yield* SenatorsClient
-    const representativesClient = yield* RepresentativesClient
-    const governorsClient = yield* GovernorsClient
-    const updatesClient = yield* Updates
+export class QuestionsManager extends Effect.Service<QuestionsManager>()(
+  'civics2json/QuestionsManager',
+  {
+    effect: Effect.gen(function* () {
+      const fs = yield* FileSystem.FileSystem
+      const config = yield* CivicsConfig
+      const civicQuestionsClient = yield* CivicsQuestionsClient
+      const senatorsClient = yield* SenatorsClient
+      const representativesClient = yield* RepresentativesClient
+      const governorsClient = yield* GovernorsClient
+      const updatesClient = yield* Updates
 
-    return {
-      fetchCivicsQuestions: fetchCivicsQuestions(fs, civicQuestionsClient, config),
-      parseCivicsQuestions: fetchAndParseCivicsQuestions(fs, civicQuestionsClient, config),
-      fetchSenators: fetchSenators(fs, senatorsClient, config),
-      parseSenators: fetchAndParseSenators(fs, senatorsClient, config),
-      fetchRepresentatives: fetchRepresentatives(fs, representativesClient, config),
-      parseRepresentatives: fetchAndParseRepresentatives(fs, representativesClient, config),
-      constructQuestions: constructQuestions(
-        fs,
-        civicQuestionsClient,
-        senatorsClient,
-        representativesClient,
-        governorsClient,
-        updatesClient,
-        config
-      ),
-      fetchGovernmentsIndex: fetchGovernmentsIndex(fs, governorsClient, config),
-      parseStateLinks: parseStateLinks(fs, governorsClient, config),
-      fetchAndParseGovernors: fetchAndParseGovernors(fs, governorsClient, config),
-      fetchUpdates: fetchUpdates(fs, config, updatesClient),
-      fetchAndParseUpdates: fetchAndParseUpdates(fs, config, updatesClient)
-    }
-  }),
-  dependencies: [
-    CivicsQuestionsClient.Default,
-    SenatorsClient.Default,
-    RepresentativesClient.Default,
-    GovernorsClient.Default,
-    Updates.Default
-  ]
-}) {}
+      return {
+        fetchCivicsQuestions: fetchCivicsQuestions(fs, civicQuestionsClient, config),
+        parseCivicsQuestions: fetchAndParseCivicsQuestions(fs, civicQuestionsClient, config),
+        fetchSenators: fetchSenators(fs, senatorsClient, config),
+        parseSenators: fetchAndParseSenators(fs, senatorsClient, config),
+        fetchRepresentatives: fetchRepresentatives(fs, representativesClient, config),
+        parseRepresentatives: fetchAndParseRepresentatives(fs, representativesClient, config),
+        constructQuestions: constructQuestions(
+          fs,
+          civicQuestionsClient,
+          senatorsClient,
+          representativesClient,
+          governorsClient,
+          updatesClient,
+          config
+        ),
+        fetchGovernmentsIndex: fetchGovernmentsIndex(fs, governorsClient, config),
+        parseStateLinks: parseStateLinks(fs, governorsClient, config),
+        fetchAndParseGovernors: fetchAndParseGovernors(fs, governorsClient, config),
+        fetchUpdates: fetchUpdates(fs, config, updatesClient),
+        fetchAndParseUpdates: fetchAndParseUpdates(fs, config, updatesClient)
+      }
+    }),
+    dependencies: [
+      CivicsQuestionsClient.Default,
+      SenatorsClient.Default,
+      RepresentativesClient.Default,
+      GovernorsClient.Default,
+      Updates.Default
+    ]
+  }
+) {}

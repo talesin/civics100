@@ -29,9 +29,10 @@ const extractTextFromPdf = (buffer: Buffer) =>
       const uint8Array = new Uint8Array(buffer)
       const result = await extractText(uint8Array)
       // unpdf returns an object with a text property
-      const rawText = typeof result === 'object' && result !== null && 'text' in result
-        ? String(result.text)
-        : String(result)
+      const rawText =
+        typeof result === 'object' && result !== null && 'text' in result
+          ? String(result.text)
+          : String(result)
       // Clean page markers immediately after extraction
       return cleanPdfPageMarkers(rawText)
     },

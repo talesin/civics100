@@ -17,6 +17,7 @@ Civics2JSON is a comprehensive data processing pipeline that retrieves official 
 ### Integration
 
 This package provides data for:
+
 - **[questionnaire](../questionnaire)** - Interactive quiz game engine
 - **[distractions](../distractions)** - Distractor answer generation
 - **[website](../../website)** - Web-based practice interface
@@ -24,12 +25,14 @@ This package provides data for:
 ## Features
 
 ### Data Processing Pipeline
+
 - **Multi-Source Fetching** - USCIS questions, Senate XML, House HTML, state government pages
 - **HTML/XML Parsing** - Convert diverse formats into structured data
 - **Schema Validation** - Runtime type checking with comprehensive error reporting
 - **Dynamic Updates** - Track and integrate USCIS test changes
 
 ### Government Data Integration  
+
 - **US Senators** - Real-time data from Senate.gov XML feed
 - **US Representatives** - Current representatives by district from House.gov
 - **State Governors** - Governor information from state government websites
@@ -37,6 +40,7 @@ This package provides data for:
 - **Variable Questions** - Dynamic population of state-specific answers
 
 ### Technical Features
+
 - **Effect-TS Architecture** - Functional programming with composable effects
 - **CLI Interface** - Comprehensive command structure for data operations
 - **Caching Strategy** - Local file caching to minimize external requests
@@ -69,6 +73,7 @@ npx tsx src/index.ts questions construct
 ```
 
 This runs the complete pipeline:
+
 1. Fetches/parses civics questions
 2. Retrieves current senators, representatives, governors
 3. Processes USCIS test updates
@@ -77,6 +82,7 @@ This runs the complete pipeline:
 ### Individual Commands
 
 #### Civics Questions
+
 ```bash
 # Fetch raw HTML from USCIS
 npx tsx src/index.ts questions fetch
@@ -86,6 +92,7 @@ npx tsx src/index.ts questions parse
 ```
 
 #### Government Representatives
+
 ```bash
 # US Senators
 npx tsx src/index.ts senators fetch
@@ -100,6 +107,7 @@ npx tsx src/index.ts governors fetch [--force]
 ```
 
 #### Test Updates
+
 ```bash
 # USCIS test updates
 npx tsx src/index.ts updates fetch [--force]

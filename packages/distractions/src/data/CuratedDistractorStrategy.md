@@ -7,9 +7,11 @@ Based on analysis of the civics questions, we've identified 10 main answer types
 ## Answer Type Categories & Distractor Strategies
 
 ### 1. DOCUMENTS
+
 **Questions**: Supreme law, Bill of Rights, Declaration purpose
 **Answer Examples**: "the Constitution", "the Bill of Rights"
 **Distractor Strategy**: Other foundational American documents
+
 - the Declaration of Independence
 - the Articles of Confederation  
 - the Federalist Papers
@@ -20,9 +22,11 @@ Based on analysis of the civics questions, we've identified 10 main answer types
 - the Treaty of Paris
 
 ### 2. NUMBERS
+
 **Questions**: Amendment count, Senator terms, President terms
 **Answer Examples**: "twenty-seven (27)", "six (6)", "four (4)"
 **Distractor Strategy**: Other significant government numbers
+
 - two (2) - Senate seats per state
 - four (4) - President term
 - six (6) - Senator term  
@@ -34,9 +38,11 @@ Based on analysis of the civics questions, we've identified 10 main answer types
 - four hundred thirty-five (435) - House members
 
 ### 3. GOVERNMENT BODIES/OFFICIALS
+
 **Questions**: Branches, who makes laws, executive leader
 **Answer Examples**: "Congress", "the President", "legislative"
 **Distractor Strategy**: Other government entities and roles
+
 - the Vice President
 - the Speaker of the House
 - the Chief Justice
@@ -48,9 +54,11 @@ Based on analysis of the civics questions, we've identified 10 main answer types
 - local governments
 
 ### 4. RIGHTS/FREEDOMS
+
 **Questions**: First Amendment rights, Declaration rights
 **Answer Examples**: "speech", "religion", "life", "liberty"
 **Distractor Strategy**: Other constitutional rights and freedoms
+
 - freedom of the press
 - freedom of assembly
 - right to bear arms
@@ -62,9 +70,11 @@ Based on analysis of the civics questions, we've identified 10 main answer types
 - right to trial by jury
 
 ### 5. PRINCIPLES/CONCEPTS
+
 **Questions**: Rule of law, checks and balances, amendment definition
 **Answer Examples**: "separation of powers", "a change to the Constitution"
 **Distractor Strategy**: Other democratic principles and government concepts
+
 - federalism
 - popular sovereignty
 - limited government
@@ -76,9 +86,11 @@ Based on analysis of the civics questions, we've identified 10 main answer types
 - republicanism
 
 ### 6. ECONOMIC SYSTEMS
+
 **Questions**: US economic system
 **Answer Examples**: "capitalist economy", "market economy"  
 **Distractor Strategy**: Other economic systems
+
 - socialist economy
 - communist economy
 - mixed economy
@@ -88,20 +100,24 @@ Based on analysis of the civics questions, we've identified 10 main answer types
 - free enterprise system
 
 ### 7. PHRASES/QUOTES
+
 **Questions**: Constitutional opening words
 **Answer Examples**: "We the People"
 **Distractor Strategy**: Other famous American phrases and quotes
+
 - "Life, Liberty and the pursuit of Happiness"
-- "All men are created equal" 
+- "All men are created equal"
 - "Government of the people, by the people, for the people"
 - "Give me liberty, or give me death!"
 - "These are the times that try men's souls"
 - "Don't fire until you see the whites of their eyes"
 
 ### 8. PEOPLE (DYNAMIC)
+
 **Questions**: Current senators, representatives, President
 **Answer Examples**: Current officeholders (varies)
 **Distractor Strategy**: Other current and recent political figures
+
 - Other senators from different states
 - Other representatives from different districts
 - Recent presidents (last 3-4 administrations)
@@ -110,18 +126,22 @@ Based on analysis of the civics questions, we've identified 10 main answer types
 - Supreme Court justices
 
 ### 9. PEOPLE (HISTORICAL)
+
 **Questions**: Founding Fathers, historical figures
 **Answer Examples**: "George Washington", "Thomas Jefferson"
 **Distractor Strategy**: Other historical American figures
+
 - Founding Fathers: Adams, Hamilton, Madison, Franklin
 - Presidents: Lincoln, Roosevelt, Kennedy, Reagan
 - Civil Rights leaders: King, Parks, Marshall
 - Other historical figures: Anthony, Douglass, Tubman
 
 ### 10. PLACES
+
 **Questions**: State capitals, geographical features
 **Answer Examples**: State names, capital cities
 **Distractor Strategy**: Other American geographical locations
+
 - Other state capitals
 - Major cities (New York, Los Angeles, Chicago)
 - Historical locations (Plymouth, Jamestown, Gettysburg)
@@ -131,21 +151,25 @@ Based on analysis of the civics questions, we've identified 10 main answer types
 ## Quality Guidelines
 
 ### Semantic Appropriateness
+
 - Distractors must be the same type of entity as the correct answer
 - Avoid category mixing (no people for document questions)
 - Ensure plausible confusion potential
 
 ### Educational Value
+
 - Include common misconceptions
 - Use historically significant alternatives
 - Choose distractors that teach related concepts
 
 ### Difficulty Balance  
+
 - Mix obvious wrong answers with plausible alternatives
 - Include some "close but not quite" options
 - Avoid completely unrelated distractors
 
 ### Quantity Guidelines
+
 - Provide 4-6 high-quality distractors per question
 - Prioritize quality over quantity
 - Ensure variety in distractor types

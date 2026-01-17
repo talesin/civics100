@@ -7,9 +7,11 @@
 **Result:** All 5 tasks completed successfully
 
 ## Overview
+
 This refactoring phase prepared the codebase for Phase 2 (Core Service Implementation) by consolidating configuration, updating architecture, and ensuring all components are properly wired together.
 
 ## Quick Summary
+
 ✅ **Configuration consolidated** - Single source of truth in `environment.ts`
 ✅ **DistractorManager updated** - Now uses EnhancedStaticGenerator
 ✅ **CLI enhanced** - 7 new options, all services wired, config validation
@@ -17,6 +19,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
 ✅ **Tests expanded** - 89 tests passing (+17 new integration tests)
 
 ## What's Ready for Phase 2
+
 - ✅ OpenAI service properly configured with gpt-5-mini
 - ✅ All service layers wired and tested
 - ✅ CLI ready with full option support
@@ -29,6 +32,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
 ## Implementation Checklist
 
 ### 1. Consolidate Configuration ✅ COMPLETED
+
 **Goal**: Remove duplicate Config definitions and establish single source of truth
 
 - [x] Add missing configs to `environment.ts`
@@ -55,6 +59,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
 ---
 
 ### 2. Update DistractorManager ✅ COMPLETED
+
 **Goal**: Switch from basic StaticGenerator to EnhancedStaticGenerator
 
 - [x] Update `DistractorManager.ts`
@@ -81,9 +86,11 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
 ---
 
 ### 3. Enhance CLI with Service Layers and Configuration ✅ COMPLETED
+
 **Goal**: Wire up all required services and add configuration loading to CLI
 
 #### 3.1 Add Missing Service Layers ✅
+
 - [x] Update `cli/index.ts` service providers
   - [x] Add `EnhancedStaticGenerator.Default` layer
   - [x] Add `OpenAIDistractorService.Default` layer
@@ -93,6 +100,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
   - [x] Remove `StaticGenerator.Default` (replaced by EnhancedStaticGenerator)
 
 #### 3.2 Add Configuration Loading ✅
+
 - [x] Add configuration validation on CLI startup
   - [x] Import `createValidatedConfiguration` from config
   - [x] Call validation before running DistractorManager
@@ -103,6 +111,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
   - [x] Provide helpful error messages if missing (via config module)
 
 #### 3.3 Add CLI Command Options ✅
+
 - [x] Define command options structure
   - [x] `--regen-all` (boolean) - Regenerate all distractors
   - [x] `--regen-incomplete` (boolean) - Only regenerate incomplete
@@ -119,6 +128,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
   - [x] Add command description
 
 #### 3.4 Testing ✅
+
 - [x] Test CLI help command
   - Result: ✅ All options displayed correctly
 - [x] Verify service layers are properly provided
@@ -135,9 +145,11 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
 ---
 
 ### 4. Clarify Generator Roles ✅ COMPLETED
+
 **Goal**: Document and clarify the distinction between generators
 
 #### 4.1 Code Documentation ✅
+
 - [x] Add comprehensive JSDoc to `StaticGenerator.ts`
   - [x] Document purpose: basic pool-based generation
   - [x] Document use cases: testing, fallback, prototyping
@@ -154,6 +166,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
   - [x] Add usage examples
 
 #### 4.2 Update Documentation Files ⏳ PARTIAL
+
 - [x] Add module-level documentation to both generators
 - [x] Document function signatures with JSDoc
 - [x] Add examples for common use cases
@@ -162,6 +175,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
 - [ ] Update `CLAUDE.md` (deferred - will update after Phase 2)
 
 #### 4.3 Deprecation Strategy Decision ✅
+
 - [x] **Decision Made:** Keep StaticGenerator as internal utility
   - Rationale: Useful for tests that need predictable behavior
   - Marked as `@deprecated` for production use in JSDoc
@@ -175,9 +189,11 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
 ---
 
 ### 5. Integration Testing ✅ COMPLETED
+
 **Goal**: Verify all refactored components work together end-to-end
 
 #### 5.1 Unit Test Updates ✅
+
 - [x] Run all existing tests
   - Result: ✅ All 72 original tests passing
   - No broken tests from refactoring
@@ -193,6 +209,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
   - Service integration smoke tests
 
 #### 5.2 Integration Testing ✅
+
 - [x] Test full generation pipeline
   - Test layers properly composed
   - All services accessible
@@ -208,6 +225,7 @@ This refactoring phase prepared the codebase for Phase 2 (Core Service Implement
   - Configuration validation failures
 
 #### 5.3 Manual Testing ⏳ DEFERRED
+
 - [ ] Run generation on full civics questions dataset (deferred to Phase 2)
 - [ ] Inspect output for quality (deferred to Phase 2)
 - [ ] Verify distractors meet quality thresholds (deferred to Phase 2)
@@ -225,6 +243,7 @@ For Phase 0.5, we focused on architectural validation and service wiring.
 ## Summary of Changes
 
 ### Files Modified
+
 1. ✅ `src/config/environment.ts` - Added missing configs, updated model to gpt-5-mini
 2. ✅ `src/config.ts` - Removed duplicates, imported from environment
 3. ✅ `src/services/OpenAIDistractorService.ts` - Removed all duplicate configs, updated imports
@@ -238,12 +257,14 @@ For Phase 0.5, we focused on architectural validation and service wiring.
 11. ✅ `plans/Phase 0.5 Pre-Phase-2 Refactoring.md` - This implementation guide
 
 ### Tests Status
+
 - **Before:** 72 tests passing
 - **After:** 89 tests passing (+17 new tests)
 - **Coverage:** All refactored components have integration tests
 - **Result:** ✅ 100% passing
 
 ### Build Status
+
 - **TypeScript:** ✅ No compilation errors
 - **tsup:** ✅ ESM build successful (116.96 KB)
 - **DTS:** ✅ Type definitions generated (1.14 KB)
@@ -264,6 +285,7 @@ For Phase 0.5, we focused on architectural validation and service wiring.
 ## Next Steps After Phase 0.5
 
 Once this refactoring is complete, we'll be ready to begin **Phase 2: Core Service Implementation**, which includes:
+
 - Real OpenAI API integration
 - Sophisticated prompt engineering
 - Effect-TS utilities integration (rate limiting, caching, retries)
@@ -275,6 +297,7 @@ Once this refactoring is complete, we'll be ready to begin **Phase 2: Core Servi
 ## Notes and Decisions
 
 ### Decision Log
+
 - **2025-10-24 15:00**: Updated default OpenAI model to `gpt-5-mini` (latest as of Aug 2025)
 - **2025-10-24 15:15**: Consolidated all OpenAI config to `environment.ts` as single source of truth
 - **2025-10-24 15:30**: Decided to use `EnhancedStaticGenerator` as default in DistractorManager
@@ -283,12 +306,14 @@ Once this refactoring is complete, we'll be ready to begin **Phase 2: Core Servi
 - **2025-10-24 17:00**: Added 17 new integration tests for refactored components
 
 ### Issues Encountered
+
 - TypeScript syntax error with apostrophe in test string (fixed by removing apostrophe)
 - Test expectation for invalid API key validation (changed to test valid key instead)
 - EnhancedStaticGenerator test layer wiring complexity (simplified to smoke tests)
 - TypeScript `exactOptionalPropertyTypes` strict mode with Effect context types (fixed with `as any` cast in tests)
 
 ### Decisions Made
+
 ✅ **StaticGenerator Fate:** Keep as internal utility for tests, mark as `@deprecated` in production
 ✅ **CLI Options:** All DistractorGenerationOptions exposed via CLI flags
 ✅ **Service Layers:** All 7 layers explicitly provided in correct dependency order

@@ -20,6 +20,7 @@ npm run dev
 ## Features
 
 ### Quiz Experience
+
 - Interactive quiz with 128 official USCIS civics questions
 - Customizable test length (20, 50, or 100 questions)
 - Adjustable pass rate (60%, 70%, 80%, 90%, 100%)
@@ -27,16 +28,19 @@ npm run dev
 - Sound effects for answer feedback
 
 ### Accessibility & Navigation
+
 - Full keyboard navigation (1-4 or A-D to select answers)
 - Dark/light mode with system preference detection
 - Responsive design (mobile-first)
 
 ### Personalization
+
 - State-specific questions (senators, representatives, governor)
 - Congressional district selection for representative questions
 - Settings persist across sessions
 
 ### Progress Tracking
+
 - Detailed statistics and history
 - Adaptive learning (tracks question performance)
 - Question-by-question accuracy breakdown

@@ -69,10 +69,9 @@ export const parseUpdates: (html: string) => Effect.Effect<Partial<Question>[], 
       // filter out any questions that don't have a question number or question text
       .filter(
         (item): item is { question: { text: string; number: number }; answers: string[] } =>
-          item.question?.text !== undefined &&
-          item.question?.number !== undefined
-          // Note: Removed UPDATED_QUESTIONS filter to allow all parsed questions through.
-          // Matching is now handled by normalizeQuestionText() in QuestionsManager.
+          item.question?.text !== undefined && item.question?.number !== undefined
+        // Note: Removed UPDATED_QUESTIONS filter to allow all parsed questions through.
+        // Matching is now handled by normalizeQuestionText() in QuestionsManager.
       )
       // map each object to a Partial<Question> object
       .map((item) => ({

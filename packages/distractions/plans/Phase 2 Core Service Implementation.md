@@ -1,10 +1,13 @@
 # Phase 2: Core Service Implementation Plan
 
 ## Overview
+
 Phase 2 focuses on implementing the core functionality for the distractor generation system, replacing mock implementations with real OpenAI API integration and enhancing the generation pipeline with intelligent features.
 
 ## Current Status
+
 ✅ **Phase 1 Completed**: All architectural foundations are in place
+
 - Type definitions, utility infrastructure, static data pools
 - Service foundations with Effect-TS patterns
 - Testing infrastructure with 72/72 tests passing
@@ -13,6 +16,7 @@ Phase 2 focuses on implementing the core functionality for the distractor genera
 ## Implementation Tasks
 
 ### Task 1: OpenAI API Integration
+
 **Priority: High** | **Dependencies: None**
 
 1. **Replace mock OpenAI implementation** in `src/services/OpenAIDistractorService.ts`
@@ -27,6 +31,7 @@ Phase 2 focuses on implementing the core functionality for the distractor genera
    - Include educational context about effective distractor characteristics
 
 ### Task 2: Effect-TS Utilities Integration  
+
 **Priority: High** | **Dependencies: Task 1**
 
 1. **Integrate RateLimiter with OpenAI service**
@@ -49,6 +54,7 @@ Phase 2 focuses on implementing the core functionality for the distractor genera
    - Implement performance dashboards
 
 ### Task 3: Enhanced Generation Logic
+
 **Priority: Medium** | **Dependencies: Task 1**
 
 1. **Implement intelligent strategy selection**
@@ -69,6 +75,7 @@ Phase 2 focuses on implementing the core functionality for the distractor genera
    - Add educational value scoring based on learning objectives
 
 ### Task 4: Testing Enhancement
+
 **Priority: Medium** | **Dependencies: Tasks 1-3**
 
 1. **Add EnhancedStaticGenerator comprehensive tests**
@@ -86,8 +93,9 @@ Phase 2 focuses on implementing the core functionality for the distractor genera
    - Re-enable currently skipped tests
 
 ## Success Criteria
+
 - [ ] OpenAI API integration working with real responses
-- [ ] Rate limiting and caching operational 
+- [ ] Rate limiting and caching operational
 - [ ] Enhanced quality metrics providing meaningful scores
 - [ ] Intelligent strategy selection improving generation quality
 - [ ] All tests passing (target: >80 total tests)
@@ -95,12 +103,14 @@ Phase 2 focuses on implementing the core functionality for the distractor genera
 - [ ] Generation quality improvement measurable through metrics
 
 ## Risk Mitigation
+
 - **API Key Security**: Implement proper key validation and rotation
 - **Cost Control**: Set usage limits and monitoring alerts
 - **Quality Assurance**: Implement fallback to static generation if quality drops
 - **Performance**: Cache aggressively and batch API calls where possible
 
 ## Deliverables
+
 1. Fully functional OpenAI integration in `OpenAIDistractorService`
 2. Enhanced `EnhancedStaticGenerator` with intelligent features
 3. Comprehensive test suite covering all new functionality

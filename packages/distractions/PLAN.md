@@ -43,10 +43,10 @@ When can run it locally by: `npx tsx src/cli/index.ts`
 
 ### C. Data Processing Pipeline
 
-1.  **Input**: Read the `civics-questions.json` file from the `civics2json` package.
-2.  **Processing**: For each question, determine the appropriate distractor strategy (static, AI, or both).
-3.  **Generation**: Generate a comprehensive pool of distractors for each question, ensuring they do not overlap with the correct answer(s). The goal is to provide enough plausible distractors that downstream applications can randomly select from this pool.
-4.  **Output**: Write the enhanced question data (including the distractor pools) to a new JSON file.
+1. **Input**: Read the `civics-questions.json` file from the `civics2json` package.
+2. **Processing**: For each question, determine the appropriate distractor strategy (static, AI, or both).
+3. **Generation**: Generate a comprehensive pool of distractors for each question, ensuring they do not overlap with the correct answer(s). The goal is to provide enough plausible distractors that downstream applications can randomly select from this pool.
+4. **Output**: Write the enhanced question data (including the distractor pools) to a new JSON file.
 
 ## 3. Proposed File Hierarchy
 

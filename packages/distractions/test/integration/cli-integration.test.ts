@@ -171,13 +171,14 @@ describe('CLI Integration Tests', () => {
     it('should define all required service layers', async () => {
       // Test that all services can be imported
       const { QuestionsDataService } = await import('../../src/data/QuestionsDataService')
-      const { CuratedDistractorService } = await import('../../src/services/CuratedDistractorService')
+      const { CuratedDistractorService } =
+        await import('../../src/services/CuratedDistractorService')
       const { OpenAIDistractorService } = await import('../../src/services/OpenAIDistractorService')
-      const { DistractorQualityService } = await import(
-        '../../src/services/DistractorQualityService'
-      )
+      const { DistractorQualityService } =
+        await import('../../src/services/DistractorQualityService')
       const { SimilarityService } = await import('../../src/services/SimilarityService')
-      const { EnhancedStaticGenerator } = await import('../../src/generators/EnhancedStaticGenerator')
+      const { EnhancedStaticGenerator } =
+        await import('../../src/generators/EnhancedStaticGenerator')
       const { DistractorManager } = await import('../../src/services/DistractorManager')
 
       expect(QuestionsDataService).toBeDefined()

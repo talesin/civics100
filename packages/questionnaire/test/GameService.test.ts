@@ -1,6 +1,10 @@
 import { describe, it, expect } from '@jest/globals'
 import { Effect } from 'effect'
-import { GameService, validateAnswerSelection } from '../src/services/GameService'
+import {
+  GameService,
+  validateAnswerSelection,
+  createInProgressSession
+} from '../src/services/GameService'
 import type { GameSession, UserAnswer, GameSettings } from '../src/types'
 import {
   isSessionCompleted,
@@ -9,19 +13,14 @@ import {
   getSessionCompletedAt
 } from '../src/types'
 
-// Helper to create a test session
-const createTestSession = (settings: GameSettings): GameSession => ({
-  _tag: 'InProgress',
-  id: 'test-session',
-  questions: Array.from({ length: settings.maxQuestions }, (_, i) => `q-${i}`),
-  currentQuestionIndex: 0,
-  correctAnswers: 0,
-  incorrectAnswers: 0,
-  totalAnswered: 0,
-  startedAt: new Date(),
-  pairedAnswers: {},
-  settings
-})
+// Helper to create a test session using shared factory
+const createTestSession = (settings: GameSettings): GameSession =>
+  createInProgressSession(
+    'test-session',
+    Array.from({ length: settings.maxQuestions }, (_, i) => `q-${i}`),
+    Date.now(),
+    settings
+  )
 
 describe('GameService', () => {
   describe('validateAnswerSelection', () => {

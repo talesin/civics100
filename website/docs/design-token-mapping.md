@@ -5,6 +5,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 ## Colors
 
 ### Primary (Patriotic Blue)
+
 | Tailwind Token        | Value   | Tamagui Token  |
 | --------------------- | ------- | -------------- |
 | `--color-primary-50`  | #eff6ff | `$blue1`       |
@@ -19,6 +20,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 | `--color-primary-900` | #1e3a8a | `$blue9`       |
 
 ### Secondary (Civic Red)
+
 | Tailwind Token          | Value   | Tamagui Token   |
 | ----------------------- | ------- | --------------- |
 | `--color-secondary-50`  | #fef2f2 | `$red1`         |
@@ -33,6 +35,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 | `--color-secondary-900` | #7f1d1d | `$red9`         |
 
 ### Success
+
 | Tailwind Token        | Value   | Tamagui Token |
 | --------------------- | ------- | ------------- |
 | `--color-success-50`  | #f0fdf4 | `$green1`     |
@@ -42,6 +45,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 | `--color-success-700` | #15803d | `$green7`     |
 
 ### Error
+
 | Tailwind Token      | Value   | Tamagui Token |
 | ------------------- | ------- | ------------- |
 | `--color-error-50`  | #fef2f2 | `$errorLight` |
@@ -51,6 +55,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 | `--color-error-700` | #b91c1c | `$errorDark`  |
 
 ### Warning
+
 | Tailwind Token        | Value   | Tamagui Token |
 | --------------------- | ------- | ------------- |
 | `--color-warning-50`  | #fffbeb | `$warning1`   |
@@ -59,6 +64,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 | `--color-warning-600` | #d97706 | `$warning6`   |
 
 ### Neutral
+
 | Tailwind Token        | Value   | Tamagui Token |
 | --------------------- | ------- | ------------- |
 | `--color-neutral-50`  | #f9fafb | `$gray1`      |
@@ -92,6 +98,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 ## Typography
 
 ### Font Sizes
+
 | Tailwind Token     | Value           | Tamagui Token |
 | ------------------ | --------------- | ------------- |
 | `--font-size-xs`   | 0.75rem (12px)  | `$1`          |
@@ -105,6 +112,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 | `--font-size-5xl`  | 3rem (48px)     | `$9`          |
 
 ### Line Heights
+
 | Tailwind Token          | Value | Usage             |
 | ----------------------- | ----- | ----------------- |
 | `--line-height-tight`   | 1.25  | Headers           |
@@ -114,6 +122,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 | `--line-height-loose`   | 2     | Special spacing   |
 
 ### Font Weights
+
 | Tailwind Token            | Value | Tamagui Usage       |
 | ------------------------- | ----- | ------------------- |
 | `--font-weight-light`     | 300   | `fontWeight: '300'` |
@@ -168,6 +177,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 ## Theme Mapping
 
 ### Light Theme
+
 - Background: `$background` → `--color-neutral-50` (#f9fafb)
 - Text: `$color` → `--color-neutral-900` (#111827)
 - Border: `$borderColor` → `--color-neutral-200` (#e5e7eb)
@@ -175,6 +185,7 @@ This document maps the current Tailwind CSS design tokens to their Tamagui equiv
 - Secondary: `$secondary` → `--color-secondary-600` (#dc2626)
 
 ### Dark Theme
+
 - Background: `$background` → `--color-neutral-900` (#111827)
 - Text: `$color` → `--color-neutral-50` (#f9fafb)
 - Border: `$borderColor` → `--color-neutral-700` (#374151)

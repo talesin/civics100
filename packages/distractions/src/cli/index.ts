@@ -70,9 +70,7 @@ const cli = Command.make('distractors', options, (opts) =>
     yield* manager.generateAndWrite(generationOptions)
     yield* Effect.log('Generation complete!')
   })
-).pipe(
-  Command.withDescription('Generate distractors for civics questions')
-)
+).pipe(Command.withDescription('Generate distractors for civics questions'))
 
 const runnable = Command.run(cli, {
   name: 'Distractor Generator',
