@@ -1,16 +1,16 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useRef, useCallback } from 'react'
 import { QuestionStatistics } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 import { PairedQuestionNumber } from 'questionnaire'
 import { MASTERY_THRESHOLD, NEEDS_PRACTICE_THRESHOLD } from '@/services/StatisticsService'
 import { XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
-import { useThemeContext } from '@/components/TamaguiProvider'
+import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
 interface QuestionDetailModalProps {
-  question: QuestionStatistics
-  pairedAnswers: PairedAnswers
-  onClose: () => void
+  readonly question: QuestionStatistics
+  readonly pairedAnswers: PairedAnswers
+  readonly onClose: () => void
 }
 
 // Overlay styles - using native div since Tamagui doesn't support position: fixed
@@ -52,15 +52,6 @@ const HeaderTitle = styled(Text, {
 const HeaderSubtitle = styled(Text, {
   fontSize: '$2',
   color: '$placeholderColor',
-})
-
-const CloseButton = styled(Button, {
-  backgroundColor: 'transparent',
-  padding: '$1',
-
-  hoverStyle: {
-    opacity: 0.7,
-  },
 })
 
 const Content = styled(YStack, {
@@ -230,18 +221,23 @@ const tableStyles: React.CSSProperties = {
   borderSpacing: 0,
 }
 
-export default function QuestionDetailModal({
+const QuestionDetailModal = ({
   question,
   pairedAnswers,
   onClose
-}: QuestionDetailModalProps) {
+}: QuestionDetailModalProps): React.ReactElement => {
   const { theme } = useThemeContext()
-  const isDark = theme === 'dark'
+  const colors = themeColors[theme]
   const history = pairedAnswers[PairedQuestionNumber(question.pairedQuestionNumber)] ?? []
+
+  // Refs for focus management
+  const modalRef = useRef<HTMLDivElement>(null)
+  const previousActiveElement = useRef<Element | null>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   // Theme-aware dynamic styles
   const dynamicModalStyles = useMemo((): React.CSSProperties => ({
-    backgroundColor: isDark ? '#1a1a1a' : 'white',
+    backgroundColor: colors.cardBg,
     borderRadius: 16,
     maxWidth: 768,
     width: '100%',
@@ -249,49 +245,69 @@ export default function QuestionDetailModal({
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-  }), [isDark])
+  }), [colors.cardBg])
 
   const dynamicThStyles = useMemo((): React.CSSProperties => ({
     padding: '8px 16px',
     textAlign: 'left',
     fontSize: 12,
     fontWeight: 500,
-    color: isDark ? '#d1d5db' : '#374151',
+    color: colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
-    backgroundColor: isDark ? '#262626' : '#f9fafb',
-  }), [isDark])
+    backgroundColor: colors.backgroundHover,
+  }), [colors.textMuted, colors.backgroundHover])
 
   const dynamicTdStyles = useMemo((): React.CSSProperties => ({
     padding: '8px 16px',
     fontSize: 14,
-    borderTop: `1px solid ${isDark ? '#404040' : '#e5e7eb'}`,
-  }), [isDark])
+    borderTop: `1px solid ${colors.border}`,
+  }), [colors.border])
 
-  const dynamicColors = useMemo(() => ({
-    text: isDark ? '#e5e5e5' : '#111827',
-    muted: isDark ? '#a1a1aa' : '#6b7280',
-    success: isDark ? '#22c55e' : '#16a34a',
-    primary: isDark ? '#60a5fa' : '#2563eb',
-    purple: isDark ? '#a78bfa' : '#9333ea',
-    successBg: isDark ? '#166534' : '#dcfce7',
-    successText: isDark ? '#bbf7d0' : '#166534',
-    errorBg: isDark ? '#7f1d1d' : '#fee2e2',
-    errorText: isDark ? '#fecaca' : '#991b1b',
-    border: isDark ? '#404040' : '#e5e7eb',
-    iconStroke: isDark ? '#a1a1aa' : '#9ca3af',
-  }), [isDark])
-
-  // Handle ESC key
+  // Handle ESC key and focus trap
   useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
+    // Store the previously focused element to restore focus on close
+    previousActiveElement.current = document.activeElement
+
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose()
+        return
+      }
+
+      // Focus trap - Tab key handling
+      if (event.key === 'Tab' && modalRef.current !== null) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+
+        if (event.shiftKey && document.activeElement === firstElement) {
+          event.preventDefault()
+          lastElement?.focus()
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+          event.preventDefault()
+          firstElement?.focus()
+        }
       }
     }
 
-    window.addEventListener('keydown', handleEsc)
-    return () => window.removeEventListener('keydown', handleEsc)
+    // Focus the close button when modal opens
+    closeButtonRef.current?.focus()
+
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden'
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
+      // Restore focus to the previously focused element
+      if (previousActiveElement.current instanceof HTMLElement) {
+        previousActiveElement.current.focus()
+      }
+    }
   }, [onClose])
 
   // Determine mastery status
@@ -347,14 +363,26 @@ export default function QuestionDetailModal({
     return recent
   }
 
+  // Handle close with focus restoration
+  const handleClose = useCallback(() => {
+    onClose()
+  }, [onClose])
+
   return (
-    <div style={overlayStyles} onClick={onClose}>
-      <div style={dynamicModalStyles} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+    <div style={overlayStyles} onClick={handleClose} aria-hidden="true">
+      <div
+        ref={modalRef}
+        style={dynamicModalStyles}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
         {/* Header */}
         <Header>
           <YStack flex={1} paddingRight="$4">
             <XStack alignItems="center" gap="$3" marginBottom="$2">
-              <HeaderTitle>
+              <HeaderTitle id="modal-title">
                 Question {question.questionNumber}
               </HeaderTitle>
               {getStatusBadge()}
@@ -363,8 +391,19 @@ export default function QuestionDetailModal({
               Paired ID: {question.pairedQuestionNumber}
             </HeaderSubtitle>
           </YStack>
-          <CloseButton onPress={onClose}>
-            <svg width={24} height={24} fill="none" stroke={dynamicColors.iconStroke} viewBox="0 0 24 24">
+          <button
+            ref={closeButtonRef}
+            onClick={handleClose}
+            aria-label="Close modal"
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: 4,
+              cursor: 'pointer',
+              borderRadius: 4,
+            }}
+          >
+            <svg width={24} height={24} fill="none" stroke={colors.iconStroke} viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -372,7 +411,7 @@ export default function QuestionDetailModal({
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </CloseButton>
+          </button>
         </Header>
 
         {/* Content */}
@@ -392,21 +431,21 @@ export default function QuestionDetailModal({
           <StatsGrid>
             <StatItem>
               <StatLabel>Times Asked</StatLabel>
-              <StatValue color={dynamicColors.text}>{question.timesAsked}</StatValue>
+              <StatValue color={colors.text}>{question.timesAsked}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Correct</StatLabel>
-              <StatValue color={dynamicColors.success}>{question.timesCorrect}</StatValue>
+              <StatValue color={colors.success}>{question.timesCorrect}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Accuracy</StatLabel>
-              <StatValue color={dynamicColors.primary}>
+              <StatValue color={colors.primary}>
                 {question.timesAsked > 0 ? `${Math.round(question.accuracy * 100)}%` : '-'}
               </StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Next Time %</StatLabel>
-              <StatValue color={dynamicColors.purple}>{question.selectionProbability.toFixed(2)}%</StatValue>
+              <StatValue color={colors.purple}>{question.selectionProbability.toFixed(2)}%</StatValue>
             </StatItem>
           </StatsGrid>
 
@@ -435,7 +474,7 @@ export default function QuestionDetailModal({
             {history.length > 0 ? (
               <YStack
                 borderWidth={1}
-                borderColor={dynamicColors.border}
+                borderColor={colors.border}
                 borderRadius="$3"
                 overflow="hidden"
               >
@@ -450,10 +489,10 @@ export default function QuestionDetailModal({
                   <tbody>
                     {[...history].reverse().map((answer, index) => (
                       <tr key={index}>
-                        <td style={{ ...dynamicTdStyles, color: dynamicColors.muted, whiteSpace: 'nowrap' }}>
+                        <td style={{ ...dynamicTdStyles, color: colors.textMuted, whiteSpace: 'nowrap' }}>
                           {history.length - index}
                         </td>
-                        <td style={{ ...dynamicTdStyles, color: dynamicColors.text, whiteSpace: 'nowrap' }}>
+                        <td style={{ ...dynamicTdStyles, color: colors.text, whiteSpace: 'nowrap' }}>
                           {formatDate(answer.ts)}
                         </td>
                         <td style={dynamicTdStyles}>
@@ -465,8 +504,8 @@ export default function QuestionDetailModal({
                               borderRadius: 9999,
                               fontSize: 12,
                               fontWeight: 500,
-                              backgroundColor: dynamicColors.successBg,
-                              color: dynamicColors.successText,
+                              backgroundColor: colors.successBg,
+                              color: colors.successText,
                             }}>
                               Correct
                             </span>
@@ -478,8 +517,8 @@ export default function QuestionDetailModal({
                               borderRadius: 9999,
                               fontSize: 12,
                               fontWeight: 500,
-                              backgroundColor: dynamicColors.errorBg,
-                              color: dynamicColors.errorText,
+                              backgroundColor: colors.errorBg,
+                              color: colors.errorText,
                             }}>
                               Incorrect
                             </span>
@@ -500,7 +539,7 @@ export default function QuestionDetailModal({
 
         {/* Footer */}
         <Footer>
-          <PrimaryButton onPress={onClose}>
+          <PrimaryButton onPress={handleClose}>
             <ButtonText>Close</ButtonText>
           </PrimaryButton>
         </Footer>
@@ -508,3 +547,5 @@ export default function QuestionDetailModal({
     </div>
   )
 }
+
+export default QuestionDetailModal

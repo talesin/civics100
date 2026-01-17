@@ -1,15 +1,15 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { QuestionStatistics, QuestionSortField } from '@/types'
 import { YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
 import { useThemeContext } from '@/components/TamaguiProvider'
 
 interface QuestionStatisticsTableProps {
-  statistics: ReadonlyArray<QuestionStatistics>
-  sortField: QuestionSortField
-  sortAscending: boolean
-  onSort: (field: QuestionSortField) => void
-  onQuestionClick: (stat: QuestionStatistics) => void
+  readonly statistics: ReadonlyArray<QuestionStatistics>
+  readonly sortField: QuestionSortField
+  readonly sortAscending: boolean
+  readonly onSort: (field: QuestionSortField) => void
+  readonly onQuestionClick: (stat: QuestionStatistics) => void
 }
 
 const EmptyContainer = styled(YStack, {
@@ -72,11 +72,6 @@ const getTdNumberStyles = (isDark: boolean): React.CSSProperties => ({
   fontWeight: 500,
 })
 
-const getHoverColors = (isDark: boolean) => ({
-  thHover: isDark ? '#333333' : '#f3f4f6',
-  rowHover: isDark ? '#262626' : '#f9fafb',
-})
-
 const getAccuracyColors = (isDark: boolean) => ({
   high: isDark ? '#4ade80' : '#16a34a',    // green
   medium: isDark ? '#60a5fa' : '#2563eb',   // blue
@@ -93,13 +88,13 @@ const getProbabilityColors = (isDark: boolean) => ({
 
 const getMutedColor = (isDark: boolean): string => isDark ? '#a1a1aa' : '#6b7280'
 
-export default function QuestionStatisticsTable({
+const QuestionStatisticsTable = ({
   statistics,
   sortField,
   sortAscending,
   onSort,
   onQuestionClick
-}: QuestionStatisticsTableProps) {
+}: QuestionStatisticsTableProps): React.ReactElement | null => {
   const { theme } = useThemeContext()
   const isDark = theme === 'dark'
 
@@ -110,10 +105,17 @@ export default function QuestionStatisticsTable({
   const tbodyStyles = useMemo(() => getTbodyStyles(isDark), [isDark])
   const tdStyles = useMemo(() => getTdStyles(isDark), [isDark])
   const tdNumberStyles = useMemo(() => getTdNumberStyles(isDark), [isDark])
-  const hoverColors = useMemo(() => getHoverColors(isDark), [isDark])
   const accuracyColors = useMemo(() => getAccuracyColors(isDark), [isDark])
   const probabilityColors = useMemo(() => getProbabilityColors(isDark), [isDark])
   const mutedColor = useMemo(() => getMutedColor(isDark), [isDark])
+
+  // Keyboard handler for sortable columns
+  const handleSortKeyDown = useCallback((field: QuestionSortField) => (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      onSort(field)
+    }
+  }, [onSort])
 
   const getSortIcon = (field: QuestionSortField) => {
     if (sortField !== field) {
@@ -184,16 +186,29 @@ export default function QuestionStatisticsTable({
     )
   }
 
+  // CSS hover class for interactive elements
+  const hoverClassName = isDark ? 'stat-table-hover-dark' : 'stat-table-hover-light'
+
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={tableStyles}>
+      <style>{`
+        .stat-table-hover-light:hover { background-color: #f3f4f6 !important; }
+        .stat-table-hover-dark:hover { background-color: #333333 !important; }
+        .stat-row-hover-light:hover { background-color: #f9fafb !important; }
+        .stat-row-hover-dark:hover { background-color: #262626 !important; }
+      `}</style>
+      <table style={tableStyles} aria-label="Question statistics">
         <thead style={theadStyles}>
           <tr>
             <th
+              scope="col"
               style={thSortableStyles}
               onClick={() => onSort(QuestionSortField.QuestionNumber)}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = hoverColors.thHover }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+              onKeyDown={handleSortKeyDown(QuestionSortField.QuestionNumber)}
+              tabIndex={0}
+              role="columnheader"
+              aria-sort={sortField === QuestionSortField.QuestionNumber ? (sortAscending ? 'ascending' : 'descending') : 'none'}
+              className={hoverClassName}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Question #</span>
@@ -201,15 +216,19 @@ export default function QuestionStatisticsTable({
               </div>
             </th>
 
-            <th style={thStyles}>
+            <th scope="col" style={thStyles}>
               Question
             </th>
 
             <th
+              scope="col"
               style={thSortableStyles}
               onClick={() => onSort(QuestionSortField.TimesAsked)}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = hoverColors.thHover }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+              onKeyDown={handleSortKeyDown(QuestionSortField.TimesAsked)}
+              tabIndex={0}
+              role="columnheader"
+              aria-sort={sortField === QuestionSortField.TimesAsked ? (sortAscending ? 'ascending' : 'descending') : 'none'}
+              className={hoverClassName}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Asked</span>
@@ -217,15 +236,19 @@ export default function QuestionStatisticsTable({
               </div>
             </th>
 
-            <th style={thStyles}>
+            <th scope="col" style={thStyles}>
               Correct
             </th>
 
             <th
+              scope="col"
               style={thSortableStyles}
               onClick={() => onSort(QuestionSortField.Accuracy)}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = hoverColors.thHover }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+              onKeyDown={handleSortKeyDown(QuestionSortField.Accuracy)}
+              tabIndex={0}
+              role="columnheader"
+              aria-sort={sortField === QuestionSortField.Accuracy ? (sortAscending ? 'ascending' : 'descending') : 'none'}
+              className={hoverClassName}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Accuracy</span>
@@ -234,10 +257,14 @@ export default function QuestionStatisticsTable({
             </th>
 
             <th
+              scope="col"
               style={thSortableStyles}
               onClick={() => onSort(QuestionSortField.Probability)}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = hoverColors.thHover }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+              onKeyDown={handleSortKeyDown(QuestionSortField.Probability)}
+              tabIndex={0}
+              role="columnheader"
+              aria-sort={sortField === QuestionSortField.Probability ? (sortAscending ? 'ascending' : 'descending') : 'none'}
+              className={hoverClassName}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Next Time %</span>
@@ -251,13 +278,19 @@ export default function QuestionStatisticsTable({
             <tr
               key={stat.pairedQuestionNumber}
               onClick={() => onQuestionClick(stat)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onQuestionClick(stat)
+                }
+              }}
               style={trStyles}
-              onMouseOver={(e) => { e.currentTarget.style.backgroundColor = hoverColors.rowHover }}
-              onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'transparent' }}
+              tabIndex={0}
+              className={isDark ? 'stat-row-hover-dark' : 'stat-row-hover-light'}
             >
-              <td style={tdNumberStyles}>
+              <th scope="row" style={tdNumberStyles}>
                 {stat.questionNumber}
-              </td>
+              </th>
 
               <td style={tdStyles}>
                 <div style={{ maxWidth: 448 }}>
@@ -298,3 +331,5 @@ export default function QuestionStatisticsTable({
     </div>
   )
 }
+
+export default QuestionStatisticsTable

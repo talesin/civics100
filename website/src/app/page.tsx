@@ -1,20 +1,18 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Effect } from 'effect'
 import Layout from '@/components/Layout'
 import StatsSummary from '@/components/StatsSummary'
 import { LocalStorageService } from '@/services/LocalStorageService'
 import { GameStats } from '@/types'
-import { useThemeContext } from '@/components/TamaguiProvider'
+import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
-// Theme-aware colors
-const themeColors = {
+// Extended theme colors for home page specific UI
+const homeThemeColors = {
   light: {
-    text: '#111827',          // gray-900
-    textMuted: '#4b5563',     // gray-600
     textLight: '#6b7280',     // gray-500
-    cardBg: '#ffffff',
     badgeBlueBg: '#eff6ff',   // blue-50
     badgeBlueText: '#1d4ed8', // blue-700
     badgeGreenBg: '#f0fdf4',  // green-50
@@ -24,10 +22,7 @@ const themeColors = {
     link: '#2563eb',          // blue-600
   },
   dark: {
-    text: '#ffffff',
-    textMuted: '#d1d5db',     // gray-300
     textLight: '#9ca3af',     // gray-400
-    cardBg: '#1f2937',        // gray-800
     badgeBlueBg: 'rgba(30, 64, 175, 0.2)',
     badgeBlueText: '#93c5fd', // blue-300
     badgeGreenBg: 'rgba(21, 128, 61, 0.2)',
@@ -39,6 +34,7 @@ const themeColors = {
 }
 
 export default function Home() {
+  const router = useRouter()
   const [stats, setStats] = useState<GameStats>({
     totalGames: 0,
     averageScore: 0,
@@ -48,7 +44,9 @@ export default function Home() {
   })
   const [isLoading, setIsLoading] = useState(true)
   const { theme } = useThemeContext()
-  const colors = themeColors[theme]
+  const baseColors = themeColors[theme]
+  const homeColors = homeThemeColors[theme]
+  const colors = { ...baseColors, ...homeColors }
 
   useEffect(() => {
     const loadStats = Effect.gen(function* () {
@@ -64,15 +62,15 @@ export default function Home() {
   }, [])
 
   const handleStartGame = () => {
-    window.location.href = '/settings'
+    router.push('/settings')
   }
 
   const handleQuickStart = () => {
-    window.location.href = '/game'
+    router.push('/game')
   }
 
   const handleViewResults = () => {
-    window.location.href = '/results'
+    router.push('/results')
   }
 
   if (isLoading) {
@@ -450,6 +448,10 @@ export default function Home() {
               All test questions and state-specific data are sourced from official U.S. government
               websites:
             </p>
+            <style>{`
+              .source-link { text-decoration: none; }
+              .source-link:hover { text-decoration: underline; }
+            `}</style>
             <ul style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <li>
                 •{' '}
@@ -457,9 +459,8 @@ export default function Home() {
                   href="https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: colors.link, textDecoration: 'none' }}
-                  onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                  onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                  style={{ color: colors.link }}
+                  className="source-link"
                 >
                   USCIS 128 Civics Questions (2025)
                 </a>{' '}
@@ -471,9 +472,8 @@ export default function Home() {
                   href="https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: colors.link, textDecoration: 'none' }}
-                  onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                  onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                  style={{ color: colors.link }}
+                  className="source-link"
                 >
                   USCIS Test Updates
                 </a>{' '}
@@ -485,9 +485,8 @@ export default function Home() {
                   href="https://www.senate.gov/senators/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: colors.link, textDecoration: 'none' }}
-                  onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                  onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                  style={{ color: colors.link }}
+                  className="source-link"
                 >
                   U.S. Senate
                 </a>{' '}
@@ -499,9 +498,8 @@ export default function Home() {
                   href="https://www.house.gov/representatives"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: colors.link, textDecoration: 'none' }}
-                  onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                  onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                  style={{ color: colors.link }}
+                  className="source-link"
                 >
                   U.S. House of Representatives
                 </a>{' '}
@@ -513,9 +511,8 @@ export default function Home() {
                   href="https://www.usa.gov/state-governments"
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: colors.link, textDecoration: 'none' }}
-                  onMouseOver={(e) => e.currentTarget.style.textDecoration = 'underline'}
-                  onMouseOut={(e) => e.currentTarget.style.textDecoration = 'none'}
+                  style={{ color: colors.link }}
+                  className="source-link"
                 >
                   USA.gov State Governments
                 </a>{' '}

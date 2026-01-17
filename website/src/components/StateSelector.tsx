@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { StateAbbreviation } from 'civics2json'
 import { StatesByAbbreviation } from 'civics2json'
 import { XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
+import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
 interface StateSelectorProps {
-  selectedState: StateAbbreviation
-  onStateChange: (state: StateAbbreviation) => void
-  className?: string
+  readonly selectedState: StateAbbreviation
+  readonly onStateChange: (state: StateAbbreviation) => void
+  readonly className?: string
 }
 
 // List of states sorted by name for dropdown
@@ -68,21 +69,49 @@ const Label = styled(Text, {
   color: '$color',
 })
 
-export default function StateSelector({
+// Cache for detected location to avoid repeated API calls
+const locationCache = {
+  detectedState: null as StateAbbreviation | null,
+  timestamp: 0,
+  CACHE_DURATION_MS: 5 * 60 * 1000, // 5 minutes
+}
+
+const StateSelector = ({
   selectedState,
   onStateChange,
   className = ''
-}: StateSelectorProps) {
+}: StateSelectorProps): React.ReactElement => {
+  const { theme } = useThemeContext()
+  const colors = themeColors[theme]
   const [isDetectingLocation, setIsDetectingLocation] = useState(false)
   const [hasLocationPermission, setHasLocationPermission] = useState<boolean | null>(null)
+  const isMountedRef = useRef(true)
 
   const selectedStateInfo = StatesByAbbreviation[selectedState]
 
+  // Cleanup mounted ref on unmount
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
   // Function to detect user's location and determine their state
-  // TODO: refactor location detection to a service with proper error handling
-  const detectLocation = async () => {
+  const detectLocation = useCallback(async () => {
     if (typeof navigator === 'undefined' || typeof navigator.geolocation === 'undefined') {
       console.log('Geolocation is not supported by this browser')
+      return
+    }
+
+    // Check cache first
+    const now = Date.now()
+    if (
+      locationCache.detectedState !== null &&
+      now - locationCache.timestamp < locationCache.CACHE_DURATION_MS
+    ) {
+      onStateChange(locationCache.detectedState)
+      setHasLocationPermission(true)
       return
     }
 
@@ -97,12 +126,18 @@ export default function StateSelector({
         })
       })
 
+      // Check if component is still mounted before updating state
+      if (!isMountedRef.current) return
+
       const { latitude, longitude } = position.coords
 
       // Use a reverse geocoding service to get state from coordinates
       const response = await fetch(
         `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
       )
+
+      // Check if component is still mounted before updating state
+      if (!isMountedRef.current) return
 
       if (!response.ok) {
         throw new Error('Failed to get location data')
@@ -111,23 +146,35 @@ export default function StateSelector({
       const data = await response.json()
       const stateAbbr = data.principalSubdivision
 
+      // Check if component is still mounted before updating state
+      if (!isMountedRef.current) return
+
       // Validate and convert state abbreviation
       if (
         typeof stateAbbr === 'string' &&
         StatesByAbbreviation[stateAbbr as StateAbbreviation] !== undefined
       ) {
-        onStateChange(stateAbbr as StateAbbreviation)
+        const detectedState = stateAbbr as StateAbbreviation
+        // Update cache
+        locationCache.detectedState = detectedState
+        locationCache.timestamp = Date.now()
+
+        onStateChange(detectedState)
         setHasLocationPermission(true)
       } else {
         console.log('Could not determine state from location')
       }
     } catch (error) {
       console.log('Error detecting location:', error)
-      setHasLocationPermission(false)
+      if (isMountedRef.current) {
+        setHasLocationPermission(false)
+      }
     } finally {
-      setIsDetectingLocation(false)
+      if (isMountedRef.current) {
+        setIsDetectingLocation(false)
+      }
     }
-  }
+  }, [onStateChange])
 
   // Check if geolocation permission has been granted previously
   useEffect(() => {
@@ -219,11 +266,11 @@ export default function StateSelector({
             padding: '8px 12px',
             borderWidth: 1,
             borderStyle: 'solid',
-            borderColor: '#d1d5db',
+            borderColor: colors.border,
             borderRadius: 6,
-            backgroundColor: 'white',
+            backgroundColor: colors.cardBg,
             fontSize: 14,
-            outline: 'none',
+            color: colors.text,
           }}
         >
           {stateOptions.map((option) => (
@@ -254,3 +301,5 @@ export default function StateSelector({
     </YStack>
   )
 }
+
+export default StateSelector

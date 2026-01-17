@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { QuestionDisplay as GameQuestionType, QuestionAnswer } from '@/types'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
@@ -7,9 +7,9 @@ import { styled } from 'tamagui'
 import { useThemeContext } from '@/components/TamaguiProvider'
 
 interface GameQuestionProps {
-  question: GameQuestionType
-  onAnswer: (answer: QuestionAnswer) => void
-  disabled?: boolean
+  readonly question: GameQuestionType
+  readonly onAnswer: (answer: QuestionAnswer) => void
+  readonly disabled?: boolean
 }
 
 const QuestionCard = styled(Card, {
@@ -323,11 +323,14 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
     setHasAnswered(false)
   }, [question.id])
 
+  // Stable no-op callback for keyboard navigation
+  const noOp = useCallback(() => {}, [])
+
   // Keyboard navigation
   useKeyboardNavigation({
     onSelectAnswer: handleAnswerSelect,
-    onNext: () => {}, // Will be handled by parent component
-    onRestart: () => {}, // Will be handled by parent component
+    onNext: noOp, // Will be handled by parent component
+    onRestart: noOp, // Will be handled by parent component
     isAnswered: hasAnswered,
     totalAnswers: question.answers.length,
     disabled: disabled || hasAnswered

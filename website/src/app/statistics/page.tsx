@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Effect } from 'effect'
 import Layout from '@/components/Layout'
 import QuestionStatisticsTable from '@/components/QuestionStatisticsTable'
@@ -9,17 +9,14 @@ import { LocalStorageService } from '@/services/LocalStorageService'
 import { StatisticsService } from '@/services/StatisticsService'
 import { runWithServicesAndErrorHandling } from '@/services/ServiceProvider'
 import { QuestionStatistics, QuestionFilter, QuestionSortField } from '@/types'
-import { useThemeContext } from '@/components/TamaguiProvider'
+import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 import type { PairedAnswers } from 'questionnaire'
 import { loadQuestions, civicsQuestionsWithDistractors } from 'questionnaire'
 
-// Theme-aware colors
-const themeColors = {
+// Extended theme colors for statistics-specific UI
+const statsThemeColors = {
   light: {
-    text: '#111827',
-    textMuted: '#4b5563',
     textLight: '#6b7280',
-    cardBg: '#ffffff',
     inputBg: '#ffffff',
     inputBorder: '#d1d5db',
     blueText: '#2563eb',
@@ -28,10 +25,7 @@ const themeColors = {
     orangeText: '#ea580c',
   },
   dark: {
-    text: '#ffffff',
-    textMuted: '#9ca3af',
     textLight: '#9ca3af',
-    cardBg: '#1f2937',
     inputBg: '#374151',
     inputBorder: '#4b5563',
     blueText: '#60a5fa',
@@ -58,20 +52,11 @@ export default function Statistics() {
     questionsNeedingPractice: 0
   })
   const { theme } = useThemeContext()
-  const colors = themeColors[theme]
+  const baseColors = themeColors[theme]
+  const statsColors = statsThemeColors[theme]
+  const colors = { ...baseColors, ...statsColors }
 
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  useEffect(() => {
-    applyFiltersAndSort()
-    // Dependencies intentionally limited to trigger re-filter only when these values change.
-    // Including pairedAnswers or service methods would cause unnecessary re-renders.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statistics, filter, sortField, sortAscending, searchQuery])
-
-  const loadData = () => {
+  const loadData = useCallback(() => {
     runWithServicesAndErrorHandling(
       Effect.gen(function* () {
         const storageService = yield* LocalStorageService
@@ -106,9 +91,9 @@ export default function Statistics() {
         setIsLoading(false)
       }
     )
-  }
+  }, [])
 
-  const applyFiltersAndSort = () => {
+  const applyFiltersAndSort = useCallback(() => {
     runWithServicesAndErrorHandling(
       Effect.gen(function* () {
         const statisticsService = yield* StatisticsService
@@ -131,9 +116,20 @@ export default function Statistics() {
         const sorted = statisticsService.sortQuestions(filtered, sortField, sortAscending)
 
         setFilteredStatistics([...sorted])
-      })
+      }),
+      (error) => {
+        console.error('Failed to apply filters:', error)
+      }
     )
-  }
+  }, [statistics, filter, pairedAnswers, searchQuery, sortField, sortAscending])
+
+  useEffect(() => {
+    loadData()
+  }, [loadData])
+
+  useEffect(() => {
+    applyFiltersAndSort()
+  }, [applyFiltersAndSort])
 
   const handleSort = (field: QuestionSortField) => {
     if (sortField === field) {

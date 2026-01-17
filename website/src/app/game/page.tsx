@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { Effect } from 'effect'
 import Layout from '@/components/Layout'
 import GameQuestion from '@/components/GameQuestion'
@@ -12,7 +13,7 @@ import { QuestionDataService } from '@/services/QuestionDataService'
 import { runWithServicesAndErrorHandling } from '@/services/ServiceProvider'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
-import { useThemeContext } from '@/components/TamaguiProvider'
+import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 import {
   DEFAULT_GAME_SETTINGS,
   GameSession,
@@ -26,12 +27,42 @@ import {
 
 type GameState = 'loading' | 'playing' | 'answered' | 'transitioning' | 'completed'
 
-// Theme-aware colors
-const themeColors = {
+// Transition timing constant
+const TRANSITION_DELAY_MS = 300
+
+// Static styles to avoid recreation on each render
+const loadingContainerStyles: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: 384,
+}
+
+const loadingTextContainerStyles: React.CSSProperties = {
+  textAlign: 'center',
+}
+
+const loadingSpinnerStyles: React.CSSProperties = {
+  width: 48,
+  height: 48,
+  borderRadius: '50%',
+  border: '2px solid transparent',
+  borderBottomColor: '#2563eb',
+  animation: 'spin 1s linear infinite',
+  margin: '0 auto 16px',
+}
+
+const transitionIconContainerStyles: React.CSSProperties = {
+  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+}
+
+const errorIconContainerStyles: React.CSSProperties = {
+  textAlign: 'center',
+}
+
+// Extended theme colors for game-specific UI (beyond what TamaguiProvider exports)
+const gameThemeColors = {
   light: {
-    text: '#111827',
-    textMuted: '#4b5563',
-    cardBg: '#ffffff',
     iconBgBlue: '#dbeafe',
     iconBlue: '#2563eb',
     iconBgRed: '#fee2e2',
@@ -44,9 +75,6 @@ const themeColors = {
     keyboardBg: '#f3f4f6',
   },
   dark: {
-    text: '#ffffff',
-    textMuted: '#d1d5db',
-    cardBg: '#1f2937',
     iconBgBlue: 'rgba(30, 64, 175, 0.3)',
     iconBlue: '#60a5fa',
     iconBgRed: 'rgba(185, 28, 28, 0.3)',
@@ -61,6 +89,7 @@ const themeColors = {
 }
 
 export default function Game() {
+  const router = useRouter()
   const [gameState, setGameState] = useState<GameState>('loading')
   const [session, setSession] = useState<GameSession | null>(null)
   const [questions, setQuestions] = useState<GameQuestionType[]>([])
@@ -71,8 +100,19 @@ export default function Game() {
   const [gameSettings, setGameSettings] = useState<WebsiteGameSettings>(DEFAULT_GAME_SETTINGS)
 
   const { theme } = useThemeContext()
-  const colors = themeColors[theme]
+  const baseColors = themeColors[theme]
+  const gameColors = gameThemeColors[theme]
+  const colors = useMemo(() => ({ ...baseColors, ...gameColors }), [baseColors, gameColors])
   const { playComplete, playEarlyWin } = useGameSounds()
+  const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Refs to avoid stale closures in setTimeout callbacks
+  const sessionRef = useRef(session)
+  const currentQuestionIndexRef = useRef(currentQuestionIndex)
+  const questionsRef = useRef(questions)
+  sessionRef.current = session
+  currentQuestionIndexRef.current = currentQuestionIndex
+  questionsRef.current = questions
 
   const initializeGame = useCallback(() => {
     setGameState('loading')
@@ -151,9 +191,18 @@ export default function Game() {
     initializeGame()
   }, [initializeGame])
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (transitionTimeoutRef.current !== null) {
+        clearTimeout(transitionTimeoutRef.current)
+      }
+    }
+  }, [])
+
   const handleAnswer = useCallback(
     (answer: QuestionAnswer) => {
-      if (session == null || gameState !== 'playing') return
+      if (session === null || gameState !== 'playing') return
 
       runWithServicesAndErrorHandling(
         Effect.gen(function* () {
@@ -183,32 +232,44 @@ export default function Game() {
   )
 
   const handleNext = useCallback(() => {
-    if (session == null) return
+    if (session === null) return
 
     setGameState('transitioning')
 
+    // Clear any existing timeout
+    if (transitionTimeoutRef.current !== null) {
+      clearTimeout(transitionTimeoutRef.current)
+    }
+
     // Add transition delay for better UX
-    setTimeout(() => {
-      if (currentQuestionIndex < questions.length - 1) {
+    // Use refs to get current values and avoid stale closures
+    transitionTimeoutRef.current = setTimeout(() => {
+      const currentSession = sessionRef.current
+      const currentIndex = currentQuestionIndexRef.current
+      const currentQuestions = questionsRef.current
+
+      if (currentSession === null) return
+
+      if (currentIndex < currentQuestions.length - 1) {
         setCurrentQuestionIndex((prev) => prev + 1)
         setGameState('playing')
       } else {
         // Complete the session
         const completedSession = {
-          ...session,
+          ...currentSession,
           isCompleted: true,
           completedAt: new Date(),
-          currentQuestionIndex: currentQuestionIndex + 1,
-          totalAnswered: session.totalAnswered
+          currentQuestionIndex: currentIndex + 1,
+          totalAnswered: currentSession.totalAnswered
         }
 
         completeGame(completedSession)
       }
-    }, 300)
-  }, [session, currentQuestionIndex, questions.length, completeGame])
+    }, TRANSITION_DELAY_MS)
+  }, [session, completeGame])
 
   const handleEarlyFinish = useCallback(() => {
-    if (session == null) return
+    if (session === null) return
 
     const earlyFinishSession = {
       ...session,
@@ -229,13 +290,9 @@ export default function Game() {
     initializeGame()
   }, [initializeGame])
 
-  const handlePlayAgain = useCallback(() => {
-    handleRestart()
-  }, [handleRestart])
-
   const handleViewHistory = useCallback(() => {
-    window.location.href = '/results'
-  }, [])
+    router.push('/results')
+  }, [router])
 
   // Keyboard navigation for main game controls
   useKeyboardNavigation({
@@ -263,21 +320,37 @@ export default function Game() {
   // Current question based on index
   const currentQuestion = questions[currentQuestionIndex]
 
+  // Memoized styles for transition and error states that depend on theme colors
+  // Must be called before any conditional returns to comply with React's rules of hooks
+  const transitionIconBgStyles = useMemo((): React.CSSProperties => ({
+    width: 64,
+    height: 64,
+    backgroundColor: colors.iconBgBlue,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '0 auto 16px',
+  }), [colors.iconBgBlue])
+
+  const errorIconBgStyles = useMemo((): React.CSSProperties => ({
+    width: 64,
+    height: 64,
+    backgroundColor: colors.iconBgRed,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: '0 auto 16px',
+  }), [colors.iconBgRed])
+
   // Loading state
   if (gameState === 'loading') {
     return (
       <Layout title="Loading Game...">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{
-              width: 48,
-              height: 48,
-              borderRadius: '50%',
-              border: '2px solid transparent',
-              borderBottomColor: '#2563eb',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 16px'
-            }} />
+        <div style={loadingContainerStyles}>
+          <div style={loadingTextContainerStyles}>
+            <div style={loadingSpinnerStyles} />
             <p style={{ color: colors.textMuted }}>Preparing your civics test...</p>
           </div>
         </div>
@@ -289,19 +362,10 @@ export default function Game() {
   if (gameState === 'transitioning') {
     return (
       <Layout title="Loading Next Question...">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }}>
-              <div style={{
-                width: 64,
-                height: 64,
-                backgroundColor: colors.iconBgBlue,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px'
-              }}>
+        <div style={loadingContainerStyles}>
+          <div style={loadingTextContainerStyles}>
+            <div style={transitionIconContainerStyles}>
+              <div style={transitionIconBgStyles}>
                 <svg
                   style={{ width: 32, height: 32, color: colors.iconBlue }}
                   fill="none"
@@ -325,12 +389,12 @@ export default function Game() {
   }
 
   // Completed state
-  if (gameState === 'completed' && gameResult != null) {
+  if (gameState === 'completed' && gameResult !== null) {
     return (
       <Layout title="Test Complete">
         <GameResults
           result={gameResult}
-          onPlayAgain={handlePlayAgain}
+          onPlayAgain={handleRestart}
           onViewHistory={handleViewHistory}
         />
       </Layout>
@@ -341,17 +405,8 @@ export default function Game() {
   if (session === null || currentQuestion === undefined || questions.length === 0) {
     return (
       <Layout title="Game Error">
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: 64,
-            height: 64,
-            backgroundColor: colors.iconBgRed,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 16px'
-          }}>
+        <div style={errorIconContainerStyles}>
+          <div style={errorIconBgStyles}>
             <svg
               style={{ width: 32, height: 32, color: colors.iconRed }}
               fill="none"
@@ -418,7 +473,7 @@ export default function Game() {
         </div>
 
         {/* Early Win Option */}
-        {showEarlyWinOption === true && gameState === 'answered' ? (
+        {showEarlyWinOption && gameState === 'answered' ? (
           <div className="animate-fade-in" style={{
             background: colors.successBg,
             border: `1px solid ${colors.successBorder}`,
@@ -483,7 +538,7 @@ export default function Game() {
         />
 
         {/* Keyboard Help */}
-        {showKeyboardHelp === true ? (
+        {showKeyboardHelp ? (
           <div className="animate-fade-in" style={{
             position: 'fixed',
             top: 0,

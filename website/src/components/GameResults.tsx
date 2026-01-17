@@ -2,11 +2,12 @@ import React from 'react'
 import { GameResult } from '@/types'
 import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
+import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
 interface GameResultsProps {
-  result: GameResult
-  onPlayAgain: () => void
-  onViewHistory: () => void
+  readonly result: GameResult
+  readonly onPlayAgain: () => void
+  readonly onViewHistory: () => void
 }
 
 const ResultCard = styled(Card, {
@@ -159,8 +160,13 @@ const SecondaryButton = styled(Button, {
   },
 })
 
-const ButtonText = styled(Text, {
+const PrimaryButtonText = styled(Text, {
   color: 'white',
+  fontWeight: '500',
+})
+
+const SecondaryButtonText = styled(Text, {
+  color: '$color',
   fontWeight: '500',
 })
 
@@ -179,6 +185,9 @@ const FooterText = styled(Text, {
 })
 
 export default function GameResults({ result, onPlayAgain, onViewHistory }: GameResultsProps) {
+  const { theme } = useThemeContext()
+  const colors = themeColors[theme]
+
   const getResultMessage = () => {
     if (result.isEarlyFail === true) {
       return '📚 Test ended - You answered 9 questions incorrectly. Keep studying and try again!'
@@ -193,18 +202,18 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
 
   const getResultColor = (): string => {
     if (result.isEarlyFail === true) {
-      return '#dc2626' // red-600
+      return colors.error
     } else if (result.isEarlyWin === true || result.percentage >= 60) {
-      return '#16a34a' // green-600
+      return colors.success
     } else {
-      return '#dc2626' // red-600
+      return colors.error
     }
   }
 
   const getScoreColor = (): string => {
-    if (result.percentage >= 80) return '#16a34a' // green-600
-    if (result.percentage >= 60) return '#2563eb' // blue-600
-    return '#dc2626' // red-600
+    if (result.percentage >= 80) return colors.success
+    if (result.percentage >= 60) return colors.primary
+    return colors.error
   }
 
   const isSuccess = result.isEarlyFail !== true && (result.isEarlyWin === true || result.percentage >= 60)
@@ -218,7 +227,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
               width={40}
               height={40}
               fill="none"
-              stroke="#16a34a"
+              stroke={colors.success}
               viewBox="0 0 24 24"
             >
               <path
@@ -235,7 +244,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
               width={40}
               height={40}
               fill="none"
-              stroke="#dc2626"
+              stroke={colors.error}
               viewBox="0 0 24 24"
             >
               <path
@@ -290,10 +299,10 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
 
       <ButtonContainer>
         <PrimaryButton onPress={onPlayAgain}>
-          <ButtonText>Play Again</ButtonText>
+          <PrimaryButtonText>Play Again</PrimaryButtonText>
         </PrimaryButton>
         <SecondaryButton onPress={onViewHistory}>
-          <ButtonText>View History</ButtonText>
+          <SecondaryButtonText>View History</SecondaryButtonText>
         </SecondaryButton>
       </ButtonContainer>
 
