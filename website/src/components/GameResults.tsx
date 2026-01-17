@@ -5,9 +5,9 @@ import { styled } from 'tamagui'
 import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
 interface GameResultsProps {
-  result: GameResult
-  onPlayAgain: () => void
-  onViewHistory: () => void
+  readonly result: GameResult
+  readonly onPlayAgain: () => void
+  readonly onViewHistory: () => void
 }
 
 const ResultCard = styled(Card, {
@@ -160,8 +160,13 @@ const SecondaryButton = styled(Button, {
   },
 })
 
-const ButtonText = styled(Text, {
+const PrimaryButtonText = styled(Text, {
   color: 'white',
+  fontWeight: '500',
+})
+
+const SecondaryButtonText = styled(Text, {
+  color: '$color',
   fontWeight: '500',
 })
 
@@ -294,10 +299,10 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
 
       <ButtonContainer>
         <PrimaryButton onPress={onPlayAgain}>
-          <ButtonText>Play Again</ButtonText>
+          <PrimaryButtonText>Play Again</PrimaryButtonText>
         </PrimaryButton>
         <SecondaryButton onPress={onViewHistory}>
-          <ButtonText>View History</ButtonText>
+          <SecondaryButtonText>View History</SecondaryButtonText>
         </SecondaryButton>
       </ButtonContainer>
 

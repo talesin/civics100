@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { StateAbbreviation } from 'civics2json'
 import {
   getDistrictsForState,
@@ -14,10 +14,10 @@ function isNonEmptyArray<T>(arr: T[]): arr is NonEmptyArray<T> {
 }
 
 interface DistrictSelectorProps {
-  selectedState: StateAbbreviation
-  selectedDistrict?: string | undefined
-  onDistrictChange: (district: string | undefined) => void
-  className?: string
+  readonly selectedState: StateAbbreviation
+  readonly selectedDistrict?: string | undefined
+  readonly onDistrictChange: (district: string | undefined) => void
+  readonly className?: string
 }
 
 const Label = styled(Text, {
@@ -71,15 +71,19 @@ const HelperText = styled(Text, {
   color: '#6b7280', // gray-500
 })
 
-export default function DistrictSelector({
+const DistrictSelector = ({
   selectedState,
   selectedDistrict,
   onDistrictChange,
   className = ''
-}: DistrictSelectorProps) {
+}: DistrictSelectorProps): React.ReactElement | null => {
   const [districts, setDistricts] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  // Use ref to avoid infinite loop - callback changes should not trigger effect
+  const onDistrictChangeRef = useRef(onDistrictChange)
+  onDistrictChangeRef.current = onDistrictChange
 
   // Load districts when state changes
   useEffect(() => {
@@ -92,11 +96,11 @@ export default function DistrictSelector({
 
       // Auto-select if only one district
       if (stateDistricts.length === 1 && selectedDistrict !== stateDistricts[0]) {
-        onDistrictChange(stateDistricts[0])
+        onDistrictChangeRef.current(stateDistricts[0])
       }
       // Clear selection if current district is not valid for new state
-      else if ((selectedDistrict != null) && !stateDistricts.includes(selectedDistrict)) {
-        onDistrictChange(undefined)
+      else if (selectedDistrict !== null && selectedDistrict !== undefined && !stateDistricts.includes(selectedDistrict)) {
+        onDistrictChangeRef.current(undefined)
       }
     } catch (err) {
       console.error('Failed to load districts:', err)
@@ -105,7 +109,7 @@ export default function DistrictSelector({
     } finally {
       setIsLoading(false)
     }
-  }, [selectedState, selectedDistrict, onDistrictChange])
+  }, [selectedState, selectedDistrict])
 
   const handleDistrictChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = event.target.value
@@ -141,7 +145,7 @@ export default function DistrictSelector({
     )
   }
 
-  if (error != null) {
+  if (error !== null) {
     return (
       <YStack gap="$3" className={className}>
         <XStack alignItems="center" justifyContent="space-between">
@@ -223,3 +227,5 @@ export default function DistrictSelector({
     </YStack>
   )
 }
+
+export default DistrictSelector

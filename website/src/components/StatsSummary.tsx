@@ -5,7 +5,7 @@ import { styled } from 'tamagui'
 import { useThemeContext } from '@/components/TamaguiProvider'
 
 interface StatsSummaryProps {
-  stats: GameStats
+  readonly stats: GameStats
 }
 
 const HeaderIcon = styled(YStack, {

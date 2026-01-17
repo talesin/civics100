@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useRef, useCallback } from 'react'
 import { QuestionStatistics } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 import { PairedQuestionNumber } from 'questionnaire'
@@ -8,9 +8,9 @@ import { styled } from 'tamagui'
 import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
 interface QuestionDetailModalProps {
-  question: QuestionStatistics
-  pairedAnswers: PairedAnswers
-  onClose: () => void
+  readonly question: QuestionStatistics
+  readonly pairedAnswers: PairedAnswers
+  readonly onClose: () => void
 }
 
 // Overlay styles - using native div since Tamagui doesn't support position: fixed
@@ -52,15 +52,6 @@ const HeaderTitle = styled(Text, {
 const HeaderSubtitle = styled(Text, {
   fontSize: '$2',
   color: '$placeholderColor',
-})
-
-const CloseButton = styled(Button, {
-  backgroundColor: 'transparent',
-  padding: '$1',
-
-  hoverStyle: {
-    opacity: 0.7,
-  },
 })
 
 const Content = styled(YStack, {
@@ -230,14 +221,19 @@ const tableStyles: React.CSSProperties = {
   borderSpacing: 0,
 }
 
-export default function QuestionDetailModal({
+const QuestionDetailModal = ({
   question,
   pairedAnswers,
   onClose
-}: QuestionDetailModalProps) {
+}: QuestionDetailModalProps): React.ReactElement => {
   const { theme } = useThemeContext()
   const colors = themeColors[theme]
   const history = pairedAnswers[PairedQuestionNumber(question.pairedQuestionNumber)] ?? []
+
+  // Refs for focus management
+  const modalRef = useRef<HTMLDivElement>(null)
+  const previousActiveElement = useRef<Element | null>(null)
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   // Theme-aware dynamic styles
   const dynamicModalStyles = useMemo((): React.CSSProperties => ({
@@ -268,16 +264,50 @@ export default function QuestionDetailModal({
     borderTop: `1px solid ${colors.border}`,
   }), [colors.border])
 
-  // Handle ESC key
+  // Handle ESC key and focus trap
   useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
+    // Store the previously focused element to restore focus on close
+    previousActiveElement.current = document.activeElement
+
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose()
+        return
+      }
+
+      // Focus trap - Tab key handling
+      if (event.key === 'Tab' && modalRef.current !== null) {
+        const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        )
+        const firstElement = focusableElements[0]
+        const lastElement = focusableElements[focusableElements.length - 1]
+
+        if (event.shiftKey && document.activeElement === firstElement) {
+          event.preventDefault()
+          lastElement?.focus()
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+          event.preventDefault()
+          firstElement?.focus()
+        }
       }
     }
 
-    window.addEventListener('keydown', handleEsc)
-    return () => window.removeEventListener('keydown', handleEsc)
+    // Focus the close button when modal opens
+    closeButtonRef.current?.focus()
+
+    // Prevent body scroll when modal is open
+    document.body.style.overflow = 'hidden'
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
+      // Restore focus to the previously focused element
+      if (previousActiveElement.current instanceof HTMLElement) {
+        previousActiveElement.current.focus()
+      }
+    }
   }, [onClose])
 
   // Determine mastery status
@@ -333,14 +363,26 @@ export default function QuestionDetailModal({
     return recent
   }
 
+  // Handle close with focus restoration
+  const handleClose = useCallback(() => {
+    onClose()
+  }, [onClose])
+
   return (
-    <div style={overlayStyles} onClick={onClose}>
-      <div style={dynamicModalStyles} onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+    <div style={overlayStyles} onClick={handleClose} aria-hidden="true">
+      <div
+        ref={modalRef}
+        style={dynamicModalStyles}
+        onClick={(e: React.MouseEvent) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
         {/* Header */}
         <Header>
           <YStack flex={1} paddingRight="$4">
             <XStack alignItems="center" gap="$3" marginBottom="$2">
-              <HeaderTitle>
+              <HeaderTitle id="modal-title">
                 Question {question.questionNumber}
               </HeaderTitle>
               {getStatusBadge()}
@@ -349,7 +391,18 @@ export default function QuestionDetailModal({
               Paired ID: {question.pairedQuestionNumber}
             </HeaderSubtitle>
           </YStack>
-          <CloseButton onPress={onClose}>
+          <button
+            ref={closeButtonRef}
+            onClick={handleClose}
+            aria-label="Close modal"
+            style={{
+              backgroundColor: 'transparent',
+              border: 'none',
+              padding: 4,
+              cursor: 'pointer',
+              borderRadius: 4,
+            }}
+          >
             <svg width={24} height={24} fill="none" stroke={colors.iconStroke} viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
@@ -358,7 +411,7 @@ export default function QuestionDetailModal({
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
-          </CloseButton>
+          </button>
         </Header>
 
         {/* Content */}
@@ -486,7 +539,7 @@ export default function QuestionDetailModal({
 
         {/* Footer */}
         <Footer>
-          <PrimaryButton onPress={onClose}>
+          <PrimaryButton onPress={handleClose}>
             <ButtonText>Close</ButtonText>
           </PrimaryButton>
         </Footer>
@@ -494,3 +547,5 @@ export default function QuestionDetailModal({
     </div>
   )
 }
+
+export default QuestionDetailModal

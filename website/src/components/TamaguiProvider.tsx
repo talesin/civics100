@@ -87,7 +87,7 @@ export const themeColors = {
 
 export type ThemeColors = typeof themeColors.light
 
-export function TamaguiProvider({ children }: { children: React.ReactNode }) {
+export const TamaguiProvider = ({ children }: { readonly children: React.ReactNode }): React.ReactElement => {
   const [theme, setThemeState] = useState<ThemeName>('light')
   const [mounted, setMounted] = useState(false)
 

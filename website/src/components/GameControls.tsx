@@ -4,11 +4,11 @@ import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
 
 interface GameControlsProps {
-  session: GameSession
-  onNext?: (() => void) | undefined
-  onRestart?: (() => void) | undefined
-  showNext: boolean
-  showRestart: boolean
+  readonly session: GameSession
+  readonly onNext?: (() => void) | undefined
+  readonly onRestart?: (() => void) | undefined
+  readonly showNext: boolean
+  readonly showRestart: boolean
 }
 
 const PrimaryButton = styled(Button, {
@@ -86,7 +86,7 @@ export default function GameControls({
       </XStack>
 
       <XStack gap="$3">
-        {showNext === true && onNext !== undefined ? (
+        {showNext && onNext !== undefined ? (
           <PrimaryButton onPress={onNext}>
             <PrimaryButtonText>
               {session.currentQuestionIndex >= session.questions.length - 1
@@ -96,7 +96,7 @@ export default function GameControls({
           </PrimaryButton>
         ) : null}
 
-        {showRestart === true && onRestart !== undefined ? (
+        {showRestart && onRestart !== undefined ? (
           <SecondaryButton onPress={onRestart}>
             <SecondaryButtonText>Restart Game</SecondaryButtonText>
           </SecondaryButton>

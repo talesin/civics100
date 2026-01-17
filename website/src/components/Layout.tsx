@@ -6,14 +6,14 @@ import { XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
 
 interface LayoutProps {
-  children: React.ReactNode
-  title?: string
-  showHeader?: boolean
-  className?: string
+  readonly children: React.ReactNode
+  readonly title?: string
+  readonly showHeader?: boolean
+  readonly className?: string
 }
 
-// Theme-aware color maps
-const themeColors = {
+// Extended theme colors for layout-specific UI
+const layoutThemeColors = {
   light: {
     pageBg: '#f9fafb',      // gray-50
     headerBg: '#ffffff',
@@ -82,7 +82,7 @@ const Title = styled(Text, {
 })
 
 // Helper to generate theme-aware style functions
-const getNavLinkStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
+const getNavLinkStyles = (colors: typeof layoutThemeColors.light): React.CSSProperties => ({
   color: colors.navText,
   padding: '8px 12px',
   borderRadius: 6,
@@ -92,13 +92,13 @@ const getNavLinkStyles = (colors: typeof themeColors.light): React.CSSProperties
   transition: 'all 200ms',
 })
 
-const getDividerStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
+const getDividerStyles = (colors: typeof layoutThemeColors.light): React.CSSProperties => ({
   borderLeft: `1px solid ${colors.divider}`,
   height: 24,
   margin: '0 8px',
 })
 
-const getMobileMenuButtonStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
+const getMobileMenuButtonStyles = (colors: typeof layoutThemeColors.light): React.CSSProperties => ({
   padding: 8,
   borderRadius: 6,
   backgroundColor: 'transparent',
@@ -107,13 +107,13 @@ const getMobileMenuButtonStyles = (colors: typeof themeColors.light): React.CSSP
   color: colors.navText,
 })
 
-const getMobileMenuStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
+const getMobileMenuStyles = (colors: typeof layoutThemeColors.light): React.CSSProperties => ({
   padding: '8px 8px 12px',
   backgroundColor: colors.mobileMenuBg,
   borderTop: `1px solid ${colors.headerBorder}`,
 })
 
-const getMobileNavLinkStyles = (colors: typeof themeColors.light): React.CSSProperties => ({
+const getMobileNavLinkStyles = (colors: typeof layoutThemeColors.light): React.CSSProperties => ({
   display: 'block',
   color: colors.navText,
   padding: '8px 12px',
@@ -156,7 +156,8 @@ export default function Layout({
 }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { theme } = useThemeContext()
-  const colors = themeColors[theme]
+  const layoutColors = layoutThemeColors[theme]
+  const colors = layoutColors
 
   // Dynamic styles based on theme
   const pageStyles: React.CSSProperties = {
@@ -194,7 +195,7 @@ export default function Layout({
         Skip to main content
       </a>
 
-      {showHeader === true ? (
+      {showHeader ? (
         <header style={headerStyles}>
           <div style={containerStyles}>
             <div style={headerContentStyles}>
@@ -257,7 +258,7 @@ export default function Layout({
             </div>
 
             {/* Mobile Navigation */}
-            {mobileMenuOpen === true ? (
+            {mobileMenuOpen ? (
               <div className="md:hidden" id="mobile-menu" data-testid="mobile-menu">
                 <div style={mobileMenuStyles}>
                   <Link
