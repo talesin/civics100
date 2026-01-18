@@ -119,8 +119,6 @@ describe('FallbackDistractorService', () => {
 
       expect(result).toBeDefined()
       expect(result?.questionNumber).toBe(1)
-      expect(result?.answerType).toBeDefined()
-      expect(Array.isArray(result?.correctAnswers)).toBe(true)
       expect(Array.isArray(result?.fallbackDistractors)).toBe(true)
     })
 

@@ -22,8 +22,7 @@ export const getFallbackDistractors =
   (fallbackDatabase: FallbackDistractorDatabase) =>
   (question: Question): readonly string[] => {
     const questionKey = question.questionNumber.toString()
-    const entry = fallbackDatabase[questionKey]
-    return entry?.fallbackDistractors ?? []
+    return fallbackDatabase[questionKey] ?? []
   }
 
 export const hasFallbackDistractors =
@@ -37,15 +36,19 @@ export const getFallbackEntry =
   (fallbackDatabase: FallbackDistractorDatabase) =>
   (question: Question): FallbackDistractorEntry | undefined => {
     const questionKey = question.questionNumber.toString()
-    return fallbackDatabase[questionKey]
+    const distractors = fallbackDatabase[questionKey]
+    if (!distractors) return undefined
+    return {
+      questionNumber: question.questionNumber,
+      fallbackDistractors: distractors
+    }
   }
 
 export const getFallbackCount =
   (fallbackDatabase: FallbackDistractorDatabase) =>
   (question: Question): number => {
     const questionKey = question.questionNumber.toString()
-    const entry = fallbackDatabase[questionKey]
-    return entry?.fallbackDistractors.length ?? 0
+    return (fallbackDatabase[questionKey] ?? []).length
   }
 
 export class FallbackDistractorService extends Effect.Service<FallbackDistractorService>()(
