@@ -32,6 +32,34 @@ const shuffleArray = (
   })
 
 /**
+ * Randomly selects up to N distractors from the available pool.
+ * If fewer distractors are available, returns all of them.
+ */
+const selectRandomDistractors = (
+  distractors: ReadonlyArray<string>,
+  count: number
+): Effect.Effect<ReadonlyArray<string>, never, never> =>
+  Effect.gen(function* () {
+    if (distractors.length <= count) {
+      return distractors
+    }
+    const shuffled = yield* shuffleArray(distractors)
+    return shuffled.slice(0, count)
+  })
+
+/**
+ * Determines how many distractors to include based on expected answers.
+ * - 1 expected answer: 4 distractors
+ * - 2 expected answers: 6 distractors
+ * - 3+ expected answers: 8 distractors
+ */
+const getDistractorCount = (expectedAnswers: number): number => {
+  if (expectedAnswers <= 1) return 4
+  if (expectedAnswers === 2) return 6
+  return 8
+}
+
+/**
  * Shuffles an array of answers using Fisher-Yates algorithm with Effect Random
  * Returns the shuffled answers array and the index of the correct answer
  * Uses a specific correct answer rather than always the first one
@@ -65,7 +93,9 @@ const createQuestion = (
   expectedAnswers?: number
 ): Effect.Effect<Question, never, never> => {
   return Effect.gen(function* () {
-    const { answers, correctIndex } = yield* shuffleAnswers(correctAnswer, distractors)
+    const count = getDistractorCount(expectedAnswers ?? 1)
+    const selectedDistractors = yield* selectRandomDistractors(distractors, count)
+    const { answers, correctIndex } = yield* shuffleAnswers(correctAnswer, selectedDistractors)
 
     return {
       questionNumber,
@@ -90,8 +120,10 @@ const createUnifiedMultiAnswerQuestion = (
   expectedAnswers: number
 ): Effect.Effect<Question, never, never> => {
   return Effect.gen(function* () {
-    // Combine correct answers with distractors
-    const allAnswers = [...correctAnswers, ...distractors]
+    const count = getDistractorCount(expectedAnswers)
+    const selectedDistractors = yield* selectRandomDistractors(distractors, count)
+    // Combine correct answers with selected distractors
+    const allAnswers = [...correctAnswers, ...selectedDistractors]
 
     // Create a unified pairedQuestionNumber for multi-answer questions
     const pairedQuestionNumber = PairedQuestionNumber(`${questionNumber}-unified`)
