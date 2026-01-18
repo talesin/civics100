@@ -153,6 +153,12 @@ const getAnswerText = (choice: Question['answers']['choices'][number]): string =
 export const analyzeComplexity = (question: Question): QuestionComplexity => {
   const text = question.question.toLowerCase()
 
+  // Check comparative keywords FIRST - they can appear anywhere in question
+  // and override the apparent simplicity of "What is the difference..."
+  if (/\b(difference|compare|contrast|versus|vs\.?)\b/.test(text)) {
+    return { type: 'comparative', difficulty: 4, cognitiveLevel: 'analyze' }
+  }
+
   // Simple facts: "What is...", "Who is...", "When did...", "Where is..."
   if (/^(what|who|when|where) (is|was|are|were)\b/.test(text)) {
     return { type: 'simple-fact', difficulty: 1, cognitiveLevel: 'recall' }
@@ -161,11 +167,6 @@ export const analyzeComplexity = (question: Question): QuestionComplexity => {
   // Name/identify questions are also simple recall
   if (/^name\b|^identify\b|^list\b/.test(text)) {
     return { type: 'simple-fact', difficulty: 2, cognitiveLevel: 'recall' }
-  }
-
-  // Comparative: "difference between", "compare", "contrast", "versus"
-  if (/\b(difference|compare|contrast|versus|vs\.?)\b/.test(text)) {
-    return { type: 'comparative', difficulty: 4, cognitiveLevel: 'analyze' }
   }
 
   // Conceptual: "Why...", "How does...", "Explain..."
