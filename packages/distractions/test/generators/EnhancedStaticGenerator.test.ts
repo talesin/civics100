@@ -7,7 +7,8 @@ import {
   getFallbackChain,
   selectDistractorStrategy,
   getTemporalContext,
-  generateFromStaticPools
+  generateFromStaticPools,
+  padDistractors
 } from '../../src/generators/EnhancedStaticGenerator'
 import { DEFAULT_GENERATION_OPTIONS } from '../../src/types/config'
 
@@ -309,6 +310,163 @@ describe('EnhancedStaticGenerator Unit Tests', () => {
       // Should not contain the correct answer or variations
       const hasCorrectAnswer = distractors.some((d) => d.toLowerCase().includes('alex padilla'))
       expect(hasCorrectAnswer).toBe(false)
+    })
+  })
+
+  describe('padDistractors behavior', () => {
+    // Create test questions for padding tests
+    const govFormQuestion = createQuestion(
+      'What is the form of government of the United States?',
+      'text',
+      ['Republic', 'Constitution-based federal republic', 'Representative democracy']
+    )
+
+    const constitutionQuestion: Question = {
+      theme: 'AMERICAN GOVERNMENT',
+      section: 'Principles of American Democracy',
+      question: 'What does the Constitution do?',
+      questionNumber: 2,
+      expectedAnswers: 1,
+      answers: {
+        _type: 'text',
+        choices: [
+          'Sets up the government',
+          'Defines the government',
+          'Protects basic rights of Americans'
+        ]
+      }
+    }
+
+    // Questions in the same section for generating section-based distractors
+    const allQuestions: Question[] = [govFormQuestion, constitutionQuestion]
+    const correctAnswers = [
+      'Republic',
+      'Constitution-based federal republic',
+      'Representative democracy'
+    ]
+
+    // Mock quality service that passes through all distractors
+    const mockQualityService = {
+      _tag: 'DistractorQualityService' as const,
+      filterQualityDistractors: (
+        candidates: readonly string[],
+        _correctAnswers: readonly string[]
+      ) => Effect.succeed([...candidates]),
+      validateDistractorCompleteness: () => true,
+      semanticValidation: () => true,
+      standardizeDistractorFormat: (d: string) => d,
+      applyEnhancedQualityFilters: (candidates: readonly string[]) =>
+        Effect.succeed([...candidates])
+    }
+
+    // Mock fallback service with some pre-defined fallbacks
+    const mockFallbackService = {
+      _tag: 'FallbackDistractorService' as const,
+      getFallbackDistractors: () => [
+        'Fallback 1',
+        'Fallback 2',
+        'Fallback 3',
+        'Fallback 4',
+        'Fallback 5'
+      ],
+      hasFallbackDistractors: () => true,
+      getFallbackEntry: () => undefined,
+      getFallbackCount: () => 5
+    }
+
+    it('should use fallback distractors when skipSectionPadding is true and distractors exist', async () => {
+      const openAIDistractors = ['Theocracy', 'Oligarchy', 'Plutocracy']
+      const targetCount = 10
+
+      const result = await Effect.runPromise(
+        padDistractors(
+          openAIDistractors,
+          targetCount,
+          govFormQuestion,
+          allQuestions,
+          correctAnswers,
+          mockQualityService,
+          mockFallbackService,
+          { skipSectionPadding: true }
+        )
+      )
+
+      // Should contain original distractors plus fallback distractors
+      expect(result).toContain('Theocracy')
+      expect(result).toContain('Oligarchy')
+      expect(result).toContain('Plutocracy')
+      expect(result.length).toBe(8) // 3 original + 5 fallback
+
+      // Should NOT contain answers from question 2 (the Constitution question) - section-based is skipped
+      expect(result).not.toContain('Sets up the government')
+      expect(result).not.toContain('Defines the government')
+      expect(result).not.toContain('Protects basic rights of Americans')
+    })
+
+    it('should add section-based answers when skipSectionPadding is false', async () => {
+      const openAIDistractors = ['Theocracy', 'Oligarchy', 'Plutocracy']
+      const targetCount = 10
+
+      const result = await Effect.runPromise(
+        padDistractors(
+          openAIDistractors,
+          targetCount,
+          govFormQuestion,
+          allQuestions,
+          correctAnswers,
+          mockQualityService,
+          mockFallbackService,
+          { skipSectionPadding: false }
+        )
+      )
+
+      // Should contain original distractors plus section padding
+      expect(result.length).toBeGreaterThan(3)
+      expect(result).toContain('Theocracy')
+      expect(result).toContain('Oligarchy')
+      expect(result).toContain('Plutocracy')
+    })
+
+    it('should return original distractors when already at target count', async () => {
+      const openAIDistractors = Array.from({ length: 10 }, (_, i) => `Distractor ${i + 1}`)
+      const targetCount = 10
+
+      const result = await Effect.runPromise(
+        padDistractors(
+          openAIDistractors,
+          targetCount,
+          govFormQuestion,
+          allQuestions,
+          correctAnswers,
+          mockQualityService,
+          mockFallbackService,
+          { skipSectionPadding: true }
+        )
+      )
+
+      expect(result).toEqual(openAIDistractors)
+      expect(result.length).toBe(10)
+    })
+
+    it('should add section padding when distractors array is empty even with skipSectionPadding', async () => {
+      const emptyDistractors: string[] = []
+      const targetCount = 5
+
+      const result = await Effect.runPromise(
+        padDistractors(
+          emptyDistractors,
+          targetCount,
+          govFormQuestion,
+          allQuestions,
+          correctAnswers,
+          mockQualityService,
+          mockFallbackService,
+          { skipSectionPadding: true } // Should still pad because distractors.length === 0
+        )
+      )
+
+      // Should add section padding because there are no existing distractors
+      expect(result.length).toBeGreaterThan(0)
     })
   })
 })

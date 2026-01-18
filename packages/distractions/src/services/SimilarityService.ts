@@ -46,7 +46,7 @@ export const calculateSimilarityScore =
     })
 
 export const isSimilar =
-  (threshold: number = 0.4) =>
+  (threshold: number = 0.7) =>
   (answer: string, distractor: string): Effect.Effect<boolean, SimilarityError> =>
     Effect.gen(function* () {
       const score = yield* calculateSimilarityScore()(answer, distractor)

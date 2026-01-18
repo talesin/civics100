@@ -140,7 +140,13 @@ export const measureAndTrack = <A, E>(
   measureDuration(durationMetric, trackOperation(successMetric, failureMetric, operation))
 
 // Strategy type for metrics
-type DistractorStrategy = 'curated' | 'section-based' | 'openai-text' | 'static-pool' | 'hybrid'
+type DistractorStrategy =
+  | 'curated'
+  | 'fallback'
+  | 'section-based'
+  | 'openai-text'
+  | 'static-pool'
+  | 'hybrid'
 
 // Helper to track strategy selection
 export const trackStrategySelection = (
@@ -157,6 +163,8 @@ export const trackStrategySelection = (
       return Metric.increment(DistractorMetrics.strategyHybridSelected)
     case 'curated':
       return Metric.increment(DistractorMetrics.strategyCuratedSelected)
+    case 'fallback':
+      return Metric.increment(DistractorMetrics.strategyFallbackUsed)
     default:
       return Effect.void
   }

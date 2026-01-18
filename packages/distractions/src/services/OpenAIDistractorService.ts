@@ -26,7 +26,8 @@ import {
   openaiTimeoutConfig,
   openaiRequestsPerMinuteConfig,
   openaiCacheSizeConfig,
-  openaiCacheTTLHoursConfig
+  openaiCacheTTLHoursConfig,
+  cacheEnabledConfig
 } from '@src/config/environment'
 
 // Helper function to create OpenAI client instance
@@ -152,11 +153,12 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
       // Create rate limiter for this service instance
       const rateLimiter = yield* createOpenAIRateLimiter(requestsPerMinute)
 
-      yield* Effect.log(
-        `Generating ${request.targetCount} distractors for question: ${request.question.slice(0, 50)}... (rate limited to ${requestsPerMinute}/min)`
-      )
-
       const prompt = buildPrompt(request)
+      const estimatedPromptTokens = Math.ceil(prompt.length / 4) // ~4 chars per token estimate
+
+      yield* Effect.log(
+        `Generating ${request.targetCount} distractors for question: ${request.question.slice(0, 50)}... (rate limited to ${requestsPerMinute}/min, prompt ~${estimatedPromptTokens} tokens)`
+      )
 
       // Wrap the API call with rate limiting
       const rateLimitedAPICall = withRateLimit(
@@ -164,6 +166,10 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
         Effect.gen(function* () {
           const startTime = Date.now()
 
+          // gpt-5-mini only supports default temperature (1)
+          const supportsCustomTemperature = !model.includes('gpt-5')
+
+          // Use Structured Outputs with json_schema for guaranteed response format
           const completion = yield* Effect.tryPromise({
             try: () =>
               client.chat.completions.create({
@@ -172,16 +178,33 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
                   {
                     role: 'system',
                     content:
-                      'You are an expert educational content creator specializing in U.S. Civics assessments. Always respond with valid JSON arrays only.'
+                      'You are an expert educational content creator specializing in U.S. Civics assessments.'
                   },
                   {
                     role: 'user',
                     content: prompt
                   }
                 ],
-                temperature,
-                max_tokens: maxTokens,
-                response_format: { type: 'json_object' }
+                ...(supportsCustomTemperature ? { temperature } : {}),
+                max_completion_tokens: maxTokens,
+                response_format: {
+                  type: 'json_schema',
+                  json_schema: {
+                    name: 'distractors_response',
+                    strict: true,
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        distractors: {
+                          type: 'array',
+                          items: { type: 'string' }
+                        }
+                      },
+                      required: ['distractors'],
+                      additionalProperties: false
+                    }
+                  }
+                }
               }),
             catch: (error) => {
               if (error instanceof Error) {
@@ -212,39 +235,47 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
           const tokensUsed = completion.usage?.total_tokens ?? 0
 
           // Parse the response content
-          const content = completion.choices[0]?.message?.content
+          const choice = completion.choices[0]
+          const message = choice?.message
+          const content = message?.content
+          const finishReason = choice?.finish_reason
+
+          yield* Effect.log(
+            `OpenAI response: finish_reason=${finishReason}, tokens=${tokensUsed}, content_length=${content?.length ?? 0}, message_keys=${Object.keys(message ?? {}).join(',')}`
+          )
+
+          // Log raw message for debugging
           if (content === undefined || content === null || content === '') {
+            yield* Effect.log(`OpenAI raw message: ${JSON.stringify(message)}`)
+          }
+
+          if (content === undefined || content === null || content === '') {
+            const refusal = choice?.message?.refusal
+            const errorDetail =
+              refusal !== undefined && refusal !== null
+                ? `Refusal: ${refusal}`
+                : `finish_reason: ${finishReason ?? 'unknown'}`
             return yield* Effect.fail(
-              new OpenAIError({ cause: new Error('Empty response from OpenAI') })
+              new OpenAIError({ cause: new Error(`Empty response from OpenAI (${errorDetail})`) })
             )
           }
 
+          // Log first 200 chars of content for debugging
+          yield* Effect.log(`OpenAI content preview: ${content.slice(0, 200)}...`)
+
+          // With Structured Outputs (json_schema), response is guaranteed to match schema
           const parsedResponse = yield* Effect.tryPromise({
-            try: () => Promise.resolve(JSON.parse(content)),
-            catch: () => new OpenAIError({ cause: new Error('Invalid JSON response from OpenAI') })
+            try: () => Promise.resolve(JSON.parse(content) as { distractors: string[] }),
+            catch: (e) =>
+              new OpenAIError({
+                cause: new Error(
+                  `Invalid JSON response from OpenAI: ${e instanceof Error ? e.message : String(e)}`
+                )
+              })
           })
 
-          // Extract distractors array - handle different possible response formats
-          let distractors: string[]
-          if (Array.isArray(parsedResponse) === true) {
-            distractors = parsedResponse
-          } else if (
-            parsedResponse.distractors !== undefined &&
-            Array.isArray(parsedResponse.distractors) === true
-          ) {
-            distractors = parsedResponse.distractors
-          } else if (
-            parsedResponse.answers !== undefined &&
-            Array.isArray(parsedResponse.answers) === true
-          ) {
-            distractors = parsedResponse.answers
-          } else {
-            return yield* Effect.fail(
-              new OpenAIError({
-                cause: new Error('Response does not contain a valid distractors array')
-              })
-            )
-          }
+          // Schema guarantees { distractors: string[] } structure
+          const distractors = parsedResponse.distractors
 
           // Validate distractors
           if (Array.isArray(distractors) === false || distractors.length === 0) {
@@ -510,10 +541,21 @@ export class OpenAIDistractorService extends Effect.Service<OpenAIDistractorServ
       // Validate configuration on service initialization
       yield* validateOpenAIConfig()()
 
-      // Initialize cache
+      // Check if caching is enabled via environment config
+      const isCacheEnabled = yield* cacheEnabledConfig
+
+      // Initialize cache only if enabled
       const cacheSize = yield* openaiCacheSizeConfig
       const cacheTTL = yield* openaiCacheTTLHoursConfig
-      const responseCache = yield* createOpenAIResponseCache(cacheSize, cacheTTL)
+      const responseCache = isCacheEnabled
+        ? yield* createOpenAIResponseCache(cacheSize, cacheTTL)
+        : undefined
+
+      if (isCacheEnabled) {
+        yield* Effect.log('OpenAI response cache enabled')
+      } else {
+        yield* Effect.log('OpenAI response cache disabled via CACHE_ENABLED=false')
+      }
 
       return {
         generateDistractors: generateDistractorsWithOpenAI(responseCache),

@@ -18,6 +18,7 @@ export interface QualityMetrics {
 
 export type DistractorStrategy =
   | 'curated'
+  | 'fallback'
   | 'section-based'
   | 'openai-text'
   | 'static-pool'

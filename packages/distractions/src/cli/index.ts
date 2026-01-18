@@ -4,6 +4,7 @@ import { Effect } from 'effect'
 import { QuestionsDataService } from '../data/QuestionsDataService'
 import { DistractorManager } from '../services/DistractorManager'
 import { CuratedDistractorService } from '../services/CuratedDistractorService'
+import { FallbackDistractorService } from '../services/FallbackDistractorService'
 import { EnhancedStaticGenerator } from '../generators/EnhancedStaticGenerator'
 import { OpenAIDistractorService } from '../services/OpenAIDistractorService'
 import { DistractorQualityService } from '../services/DistractorQualityService'
@@ -40,11 +41,32 @@ const options = {
   batchSize: Options.integer('batch-size').pipe(
     Options.withDescription('Number of questions to process in each batch'),
     Options.withDefault(DEFAULT_GENERATION_OPTIONS.batchSize)
+  ),
+  questionNumber: Options.integer('question').pipe(
+    Options.withDescription('Regenerate distractors for a specific question by number (1-100)'),
+    Options.optional
   )
 }
 
 const cli = Command.make('distractors', options, (opts) =>
   Effect.gen(function* () {
+    // Validate questionNumber option
+    const questionNumber =
+      opts.questionNumber._tag === 'Some' ? opts.questionNumber.value : undefined
+    if (questionNumber !== undefined) {
+      // Validate range
+      if (questionNumber < 1 || questionNumber > 100) {
+        yield* Effect.fail(new Error('Question number must be between 1 and 100'))
+      }
+      // Cannot combine with --regen-all or --regen-incomplete
+      if (opts.regenAll) {
+        yield* Effect.fail(new Error('Cannot use --question with --regen-all'))
+      }
+      if (opts.regenIncomplete) {
+        yield* Effect.fail(new Error('Cannot use --question with --regen-incomplete'))
+      }
+    }
+
     // Load and validate configuration
     yield* Effect.log('Loading configuration...')
     const config = yield* createValidatedConfiguration()
@@ -53,7 +75,7 @@ const cli = Command.make('distractors', options, (opts) =>
     )
 
     // Build generation options from CLI args
-    const generationOptions: DistractorGenerationOptions = {
+    const baseOptions = {
       regenAll: opts.regenAll,
       regenIncomplete: opts.regenIncomplete,
       targetCount: opts.targetCount,
@@ -63,9 +85,16 @@ const cli = Command.make('distractors', options, (opts) =>
       batchSize: opts.batchSize,
       maxRetries: DEFAULT_GENERATION_OPTIONS.maxRetries
     }
+    // Add questionNumber only if defined (exactOptionalPropertyTypes)
+    const generationOptions: DistractorGenerationOptions =
+      questionNumber !== undefined ? { ...baseOptions, questionNumber } : baseOptions
 
     // Run generation
-    yield* Effect.log('Starting distractor generation...')
+    if (questionNumber !== undefined) {
+      yield* Effect.log(`Regenerating distractors for question ${questionNumber}...`)
+    } else {
+      yield* Effect.log('Starting distractor generation...')
+    }
     const manager = yield* DistractorManager
     yield* manager.generateAndWrite(generationOptions)
     yield* Effect.log('Generation complete!')
@@ -81,6 +110,7 @@ runnable(process.argv).pipe(
   // Provide service layers in dependency order
   Effect.provide(QuestionsDataService.Default),
   Effect.provide(CuratedDistractorService.Default),
+  Effect.provide(FallbackDistractorService.Default),
   Effect.provide(OpenAIDistractorService.Default),
   Effect.provide(DistractorQualityService.Default),
   Effect.provide(SimilarityService.Default),

@@ -10,6 +10,7 @@ export interface DistractorGenerationOptions {
   readonly useOpenAI: boolean // Enable OpenAI generation for text questions
   readonly batchSize: number // Number of questions to process in each batch (default: 10)
   readonly maxRetries: number // Maximum retry attempts for failed operations (default: 3)
+  readonly questionNumber?: number // If set, only regenerate distractors for this question (1-100)
 }
 
 // Default configuration values
@@ -28,7 +29,13 @@ export const DEFAULT_GENERATION_OPTIONS: DistractorGenerationOptions = {
 export const validateGenerationOptions = (
   options: Partial<DistractorGenerationOptions>
 ): DistractorGenerationOptions => {
-  return {
+  // Validate questionNumber if provided (must be 1-100)
+  const questionNumber =
+    options.questionNumber !== undefined
+      ? Math.max(1, Math.min(100, options.questionNumber))
+      : undefined
+
+  const result: DistractorGenerationOptions = {
     regenAll: options.regenAll ?? DEFAULT_GENERATION_OPTIONS.regenAll,
     regenIncomplete: options.regenIncomplete ?? DEFAULT_GENERATION_OPTIONS.regenIncomplete,
     targetCount: Math.max(
@@ -44,6 +51,12 @@ export const validateGenerationOptions = (
       Math.min(10, options.maxRetries ?? DEFAULT_GENERATION_OPTIONS.maxRetries)
     )
   }
+
+  // Only add questionNumber if defined (avoid undefined in exactOptionalPropertyTypes)
+  if (questionNumber !== undefined) {
+    return { ...result, questionNumber }
+  }
+  return result
 }
 
 // Quality assessment configuration

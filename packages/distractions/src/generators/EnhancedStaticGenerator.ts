@@ -84,6 +84,7 @@ import * as Metric from 'effect/Metric'
 import type { Question } from 'civics2json'
 import { QuestionsDataService } from '../data/QuestionsDataService'
 import { CuratedDistractorService } from '../services/CuratedDistractorService'
+import { FallbackDistractorService } from '../services/FallbackDistractorService'
 import { OpenAIDistractorService } from '../services/OpenAIDistractorService'
 import { DistractorQualityService } from '../services/DistractorQualityService'
 import { SimilarityService } from '../services/SimilarityService'
@@ -585,11 +586,36 @@ const generateWithOpenAI = (
 
     const openaiResult = yield* openaiAttempt.pipe(
       Effect.retry(retrySchedule),
-      Effect.tapError((error) =>
-        Effect.log(
-          `OpenAI attempt failed for question ${question.questionNumber}: ${error instanceof Error ? error.message : String(error)}`
+      Effect.tapError((error) => {
+        // Extract detailed error message from tagged errors
+        const errorDetails = (() => {
+          if (error instanceof OpenAIAuthError) {
+            return `Authentication error: ${error.message}`
+          }
+          if (error instanceof OpenAIRateLimitError) {
+            const retryInfo =
+              error.retryAfter !== undefined ? ` (retry after ${error.retryAfter}s)` : ''
+            return `Rate limit exceeded${retryInfo}`
+          }
+          if (error instanceof OpenAITimeoutError) {
+            return `Request timed out after ${error.timeoutMs}ms`
+          }
+          if (error instanceof OpenAIError) {
+            const cause = error.cause
+            if (cause instanceof Error) {
+              return cause.message
+            }
+            return String(cause)
+          }
+          if (error instanceof Error) {
+            return error.message
+          }
+          return String(error)
+        })()
+        return Effect.log(
+          `OpenAI attempt failed for question ${question.questionNumber}: ${errorDetails}`
         )
-      ),
+      }),
       Effect.either
     )
 
@@ -666,13 +692,16 @@ const applyQualityFiltering = (
   })
 
 // Pad distractors to target count if needed (following coding guide)
-const padDistractors = (
+// Exported for testing purposes
+export const padDistractors = (
   distractors: string[],
   targetCount: number,
   question: Question,
   allQuestions: Question[],
   correctAnswers: string[],
-  qualityService: DistractorQualityService
+  qualityService: DistractorQualityService,
+  fallbackService: FallbackDistractorService,
+  options: { skipSectionPadding?: boolean } = {}
 ): Effect.Effect<string[], never> =>
   Effect.gen(function* () {
     if (distractors.length >= targetCount) {
@@ -680,12 +709,48 @@ const padDistractors = (
     }
 
     const needed = targetCount - distractors.length
-    const sectionPadding = yield* generateFromSection(question, allQuestions, needed)
-    const filteredPadding = yield* qualityService
-      .filterQualityDistractors(sectionPadding, correctAnswers)
-      .pipe(Effect.catchAll(() => Effect.succeed(sectionPadding)))
+    let result = [...distractors]
 
-    return [...distractors, ...filteredPadding].slice(0, targetCount)
+    // PRIORITY 1: Use fallback database (fast, pre-validated)
+    const fallbacks = fallbackService.getFallbackDistractors(question)
+    const unusedFallbacks = [...fallbacks].filter(
+      (f) =>
+        !result.some((d) => d.toLowerCase() === f.toLowerCase()) &&
+        !correctAnswers.some((a) => a.toLowerCase() === f.toLowerCase())
+    )
+
+    if (unusedFallbacks.length > 0) {
+      const fallbacksToAdd = unusedFallbacks.slice(0, needed)
+      result = [...result, ...fallbacksToAdd]
+
+      if (result.length >= targetCount) {
+        return result.slice(0, targetCount)
+      }
+    }
+
+    // Skip section-based padding when OpenAI distractors exist and we have some results
+    // Section answers from other questions are often unrelated and lower quality
+    if (options.skipSectionPadding && result.length > 0) {
+      return result
+    }
+
+    // PRIORITY 2: Section-based as last resort
+    const stillNeeded = targetCount - result.length
+    if (stillNeeded > 0) {
+      const sectionPadding = yield* generateFromSection(question, allQuestions, stillNeeded)
+      const filteredPadding = yield* qualityService
+        .filterQualityDistractors(sectionPadding, correctAnswers)
+        .pipe(Effect.catchAll(() => Effect.succeed(sectionPadding)))
+
+      // Filter out distractors already in result
+      const uniqueSectionPadding = filteredPadding.filter(
+        (p) => !result.some((r) => r.toLowerCase() === p.toLowerCase())
+      )
+
+      result = [...result, ...uniqueSectionPadding]
+    }
+
+    return result.slice(0, targetCount)
   })
 
 // ============================================================================
@@ -898,6 +963,7 @@ const calculateQualityMetrics = (
 export const generateEnhancedDistractors =
   (
     curatedDistractorService: CuratedDistractorService,
+    fallbackService: FallbackDistractorService,
     openaiService: OpenAIDistractorService,
     qualityService: DistractorQualityService,
     similarityService: SimilarityService
@@ -936,16 +1002,25 @@ export const generateEnhancedDistractors =
               if (openaiDistractors.length > 0) {
                 rawDistractors = openaiDistractors
               } else {
-                // Fallback to section-based generation
-                rawDistractors = yield* generateFromSection(
-                  question,
-                  allQuestions,
-                  options.targetCount
-                )
-                strategy = 'section-based'
-                yield* Effect.log(
-                  `OpenAI fallback: using section-based for question ${question.questionNumber}`
-                )
+                // Fallback priority: fallback database first, then section-based
+                const fallbackDistractors = fallbackService.getFallbackDistractors(question)
+                if (fallbackDistractors.length > 0) {
+                  rawDistractors = [...fallbackDistractors].slice(0, options.targetCount)
+                  strategy = 'fallback'
+                  yield* Effect.log(
+                    `OpenAI failed: using fallback database for question ${question.questionNumber}`
+                  )
+                } else {
+                  rawDistractors = yield* generateFromSection(
+                    question,
+                    allQuestions,
+                    options.targetCount
+                  )
+                  strategy = 'section-based'
+                  yield* Effect.log(
+                    `OpenAI fallback: using section-based for question ${question.questionNumber}`
+                  )
+                }
               }
               break
             }
@@ -997,13 +1072,16 @@ export const generateEnhancedDistractors =
         )
 
         // Step 4: Ensure we have enough distractors, pad if needed
+        // Skip section-based padding when OpenAI was used to avoid adding unrelated answers
         const paddedDistractors = yield* padDistractors(
           filteredDistractors,
           options.targetCount,
           question,
           allQuestions,
           correctAnswers,
-          qualityService
+          qualityService,
+          fallbackService,
+          { skipSectionPadding: strategy === 'openai-text' }
         )
 
         // Step 5: Track final metrics
@@ -1080,6 +1158,7 @@ export const generateEnhancedDistractors =
  *
  * @param questionsDataService - Service to fetch all civics questions
  * @param curatedDistractorService - Service for hand-crafted distractors
+ * @param fallbackService - Service for fallback distractors when OpenAI fails
  * @param openaiService - Service for AI-generated distractors
  * @param qualityService - Service for quality filtering
  * @param similarityService - Service for similarity detection
@@ -1089,6 +1168,7 @@ export const generateEnhanced =
   (
     questionsDataService: QuestionsDataService,
     curatedDistractorService: CuratedDistractorService,
+    fallbackService: FallbackDistractorService,
     openaiService: OpenAIDistractorService,
     qualityService: DistractorQualityService,
     similarityService: SimilarityService
@@ -1097,10 +1177,18 @@ export const generateEnhanced =
     Effect.gen(function* () {
       const allQuestions = yield* questionsDataService.getAllQuestions()
 
+      // Filter to specific question if questionNumber is set
+      // Still pass allQuestions to generateEnhancedDistractors for section-based context
+      const questionsToProcess =
+        options.questionNumber !== undefined
+          ? allQuestions.filter((q) => q.questionNumber === options.questionNumber)
+          : allQuestions
+
       const results = yield* Effect.all(
-        allQuestions.map((question) =>
+        questionsToProcess.map((question) =>
           generateEnhancedDistractors(
             curatedDistractorService,
+            fallbackService,
             openaiService,
             qualityService,
             similarityService
@@ -1125,6 +1213,7 @@ export const generateEnhanced =
  * **Service Dependencies:**
  * - {@link QuestionsDataService} - Provides civics questions
  * - {@link CuratedDistractorService} - Provides hand-crafted distractors
+ * - {@link FallbackDistractorService} - Provides fallback distractors when OpenAI fails
  * - {@link OpenAIDistractorService} - Provides AI-generated distractors
  * - {@link DistractorQualityService} - Filters low-quality distractors
  * - {@link SimilarityService} - Removes duplicate/similar distractors
@@ -1149,6 +1238,7 @@ export class EnhancedStaticGenerator extends Effect.Service<EnhancedStaticGenera
     effect: Effect.gen(function* () {
       const questionsDataService = yield* QuestionsDataService
       const curatedDistractorService = yield* CuratedDistractorService
+      const fallbackService = yield* FallbackDistractorService
       const openaiService = yield* OpenAIDistractorService
       const qualityService = yield* DistractorQualityService
       const similarityService = yield* SimilarityService
@@ -1156,6 +1246,7 @@ export class EnhancedStaticGenerator extends Effect.Service<EnhancedStaticGenera
       const generateEnhancedFn = generateEnhanced(
         questionsDataService,
         curatedDistractorService,
+        fallbackService,
         openaiService,
         qualityService,
         similarityService
@@ -1171,6 +1262,7 @@ export class EnhancedStaticGenerator extends Effect.Service<EnhancedStaticGenera
     dependencies: [
       QuestionsDataService.Default,
       CuratedDistractorService.Default,
+      FallbackDistractorService.Default,
       OpenAIDistractorService.Default,
       DistractorQualityService.Default,
       SimilarityService.Default

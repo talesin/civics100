@@ -152,9 +152,9 @@ Context: ${request.context}`
 
 ## Structured Outputs
 
-### JSON Response Format
+### Using JSON Schema (Recommended)
 
-Request structured JSON output from OpenAI:
+Use `json_schema` response format for **guaranteed** structured responses. This ensures responses match the exact schema with no markdown wrapping:
 
 ```typescript
 const completion = yield* Effect.tryPromise({
@@ -162,15 +162,38 @@ const completion = yield* Effect.tryPromise({
     client.chat.completions.create({
       model,
       messages,
-      response_format: { type: 'json_object' }  // Request JSON
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'my_response',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: {
+              items: {
+                type: 'array',
+                items: { type: 'string' }
+              }
+            },
+            required: ['items'],
+            additionalProperties: false
+          }
+        }
+      }
     }),
   catch: (error) => mapOpenAIError(error)
 })
 ```
 
-### Parsing and Validating Responses
+**Benefits of `json_schema` over `json_object`:**
+- Guarantees response matches schema exactly
+- No markdown code block wrapping (` ```json ... ``` `)
+- Type-safe parsing with known structure
+- Works reliably with `gpt-4o-mini`
 
-Handle multiple possible response formats:
+### Parsing Schema-Guaranteed Responses
+
+With `json_schema`, parsing is simplified since structure is guaranteed:
 
 ```typescript
 // Extract content from response
@@ -181,27 +204,14 @@ if (content === undefined || content === null || content === '') {
   )
 }
 
-// Parse JSON
+// Schema guarantees structure - direct type assertion is safe
 const parsedResponse = yield* Effect.tryPromise({
-  try: () => Promise.resolve(JSON.parse(content)),
+  try: () => Promise.resolve(JSON.parse(content) as { items: string[] }),
   catch: () => new OpenAIError({ cause: new Error('Invalid JSON response') })
 })
 
-// Handle different response formats
-let items: string[]
-if (Array.isArray(parsedResponse) === true) {
-  items = parsedResponse
-} else if (parsedResponse.items !== undefined && Array.isArray(parsedResponse.items) === true) {
-  items = parsedResponse.items
-} else if (parsedResponse.data !== undefined && Array.isArray(parsedResponse.data) === true) {
-  items = parsedResponse.data
-} else {
-  return yield* Effect.fail(
-    new OpenAIError({
-      cause: new Error('Response does not contain a valid array')
-    })
-  )
-}
+// Access guaranteed fields directly
+const items = parsedResponse.items
 
 // Filter and validate items
 const validItems = items
@@ -216,6 +226,22 @@ if (validItems.length === 0) {
     })
   )
 }
+```
+
+### Legacy: JSON Object Format
+
+For simple JSON without strict schema validation (not recommended for production):
+
+```typescript
+const completion = yield* Effect.tryPromise({
+  try: () =>
+    client.chat.completions.create({
+      model,
+      messages,
+      response_format: { type: 'json_object' }  // Less strict, may wrap in markdown
+    }),
+  catch: (error) => mapOpenAIError(error)
+})
 ```
 
 ---
