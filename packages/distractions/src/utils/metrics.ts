@@ -26,6 +26,53 @@ export const DistractorMetrics = {
     description: 'Total number of distractors filtered out for quality'
   }),
 
+  // Strategy selection metrics
+  strategyOpenAISelected: Metric.counter('strategy_openai_selected', {
+    description: 'Times OpenAI text strategy was selected'
+  }),
+
+  strategyStaticPoolSelected: Metric.counter('strategy_static_pool_selected', {
+    description: 'Times static pool strategy was selected'
+  }),
+
+  strategySectionBasedSelected: Metric.counter('strategy_section_based_selected', {
+    description: 'Times section-based strategy was selected'
+  }),
+
+  strategyHybridSelected: Metric.counter('strategy_hybrid_selected', {
+    description: 'Times hybrid strategy was selected'
+  }),
+
+  strategyCuratedSelected: Metric.counter('strategy_curated_selected', {
+    description: 'Times curated strategy was selected'
+  }),
+
+  strategyFallbackUsed: Metric.counter('strategy_fallback_used', {
+    description: 'Times a fallback strategy was used due to primary failure'
+  }),
+
+  // Complexity analysis metrics
+  complexitySimpleFact: Metric.counter('complexity_simple_fact', {
+    description: 'Questions classified as simple fact'
+  }),
+
+  complexityConceptual: Metric.counter('complexity_conceptual', {
+    description: 'Questions classified as conceptual'
+  }),
+
+  complexityComparative: Metric.counter('complexity_comparative', {
+    description: 'Questions classified as comparative'
+  }),
+
+  complexityAnalytical: Metric.counter('complexity_analytical', {
+    description: 'Questions classified as analytical'
+  }),
+
+  // Cost tracking
+  estimatedCostTotal: Metric.gauge('estimated_cost_total_usd', {
+    description: 'Estimated total OpenAI cost in USD'
+  }),
+
   // Histogram metrics (using simple boundaries for now)
   openaiResponseTime: Metric.histogram(
     'openai_response_time_ms',
@@ -91,3 +138,45 @@ export const measureAndTrack = <A, E>(
   operation: Effect.Effect<A, E>
 ): Effect.Effect<A, E> =>
   measureDuration(durationMetric, trackOperation(successMetric, failureMetric, operation))
+
+// Strategy type for metrics
+type DistractorStrategy = 'curated' | 'section-based' | 'openai-text' | 'static-pool' | 'hybrid'
+
+// Helper to track strategy selection
+export const trackStrategySelection = (
+  strategy: DistractorStrategy
+): Effect.Effect<void, never> => {
+  switch (strategy) {
+    case 'openai-text':
+      return Metric.increment(DistractorMetrics.strategyOpenAISelected)
+    case 'static-pool':
+      return Metric.increment(DistractorMetrics.strategyStaticPoolSelected)
+    case 'section-based':
+      return Metric.increment(DistractorMetrics.strategySectionBasedSelected)
+    case 'hybrid':
+      return Metric.increment(DistractorMetrics.strategyHybridSelected)
+    case 'curated':
+      return Metric.increment(DistractorMetrics.strategyCuratedSelected)
+    default:
+      return Effect.void
+  }
+}
+
+// Complexity type for metrics
+type ComplexityType = 'simple-fact' | 'conceptual' | 'analytical' | 'comparative'
+
+// Helper to track complexity classification
+export const trackComplexity = (complexityType: ComplexityType): Effect.Effect<void, never> => {
+  switch (complexityType) {
+    case 'simple-fact':
+      return Metric.increment(DistractorMetrics.complexitySimpleFact)
+    case 'conceptual':
+      return Metric.increment(DistractorMetrics.complexityConceptual)
+    case 'comparative':
+      return Metric.increment(DistractorMetrics.complexityComparative)
+    case 'analytical':
+      return Metric.increment(DistractorMetrics.complexityAnalytical)
+    default:
+      return Effect.void
+  }
+}

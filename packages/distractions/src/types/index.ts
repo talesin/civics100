@@ -53,3 +53,26 @@ export interface OpenAIResponse {
   readonly confidence: number
   readonly tokensUsed: number
 }
+
+// Question complexity analysis types
+export interface QuestionComplexity {
+  readonly type: 'simple-fact' | 'conceptual' | 'analytical' | 'comparative'
+  readonly difficulty: 1 | 2 | 3 | 4 | 5
+  readonly cognitiveLevel: 'recall' | 'understand' | 'apply' | 'analyze'
+}
+
+// Cost estimation for strategy selection
+export interface CostEstimate {
+  readonly estimatedTokens: number
+  readonly estimatedCost: number // USD
+  readonly shouldUseOpenAI: boolean
+}
+
+// Temporal context for pool filtering
+export interface TemporalContext {
+  readonly era: 'historical' | 'modern' | 'current'
+  readonly relevantYears?: readonly [number, number]
+}
+
+// Fallback chain type alias
+export type FallbackChain = readonly DistractorStrategy[]
