@@ -29,7 +29,11 @@ describe('Phase 1 Integration Tests', () => {
       const openaiLayer = TestOpenAIDistractorServiceLayer({
         generateDistractors: () =>
           Effect.succeed({
-            distractors: ['Bill of Rights', 'Declaration of Independence', 'Magna Carta'],
+            distractors: [
+              { text: 'Bill of Rights', relevance: 8 },
+              { text: 'Declaration of Independence', relevance: 7 },
+              { text: 'Magna Carta', relevance: 6 }
+            ],
             confidence: 0.8,
             tokensUsed: 100
           })
@@ -58,9 +62,10 @@ describe('Phase 1 Integration Tests', () => {
         const response = yield* openaiService.generateDistractors(request)
         expect(response.distractors).toHaveLength(3)
 
-        // Test quality filtering
+        // Test quality filtering - extract text from scored distractors
+        const distractorTexts = response.distractors.map((d) => d.text)
         const filtered = yield* qualityService.applyEnhancedQualityFilters(
-          response.distractors,
+          distractorTexts,
           ['the Constitution'],
           'text'
         )

@@ -11,6 +11,7 @@ export interface DistractorGenerationOptions {
   readonly batchSize: number // Number of questions to process in each batch (default: 10)
   readonly maxRetries: number // Maximum retry attempts for failed operations (default: 3)
   readonly questionNumber?: number // If set, only regenerate distractors for this question (1-100)
+  readonly overRequestCount: number // Extra distractors to request for filtering by relevance (default: 5)
 }
 
 // Default configuration values
@@ -22,7 +23,8 @@ export const DEFAULT_GENERATION_OPTIONS: DistractorGenerationOptions = {
   checkAnswers: true,
   useOpenAI: true,
   batchSize: 10,
-  maxRetries: 3
+  maxRetries: 3,
+  overRequestCount: 5
 } as const
 
 // Basic validation helpers (replace with @effect/schema when available)
@@ -49,6 +51,10 @@ export const validateGenerationOptions = (
     maxRetries: Math.max(
       1,
       Math.min(10, options.maxRetries ?? DEFAULT_GENERATION_OPTIONS.maxRetries)
+    ),
+    overRequestCount: Math.max(
+      0,
+      Math.min(10, options.overRequestCount ?? DEFAULT_GENERATION_OPTIONS.overRequestCount)
     )
   }
 
@@ -91,7 +97,7 @@ export interface OpenAIConfiguration {
 export const DEFAULT_OPENAI_CONFIG: Omit<OpenAIConfiguration, 'apiKey'> = {
   model: 'gpt-4o-mini',
   temperature: 0.7,
-  maxTokens: 1000,
+  maxTokens: 2000, // Increased for scored distractors (each { text, relevance } needs ~40 tokens)
   requestsPerMinute: 60,
   timeoutMs: 30000
 } as const

@@ -52,7 +52,12 @@ IMPORTANT REQUIREMENTS:
 - Avoid obviously wrong or silly answers
 - Match the format and style of the correct answer
 - Focus on common misconceptions or closely related concepts
-- Return ONLY a JSON array of strings, no additional text
+- For each distractor, provide a relevance score from 1-10:
+  - 10: Perfect distractor - plausible, related to question topic, tests understanding
+  - 7-9: Good distractor - relevant to topic, could reasonably confuse learners
+  - 4-6: Acceptable - somewhat related but less effective
+  - 1-3: Poor - too obvious, off-topic, or nonsensical
+- Return JSON with array of { text, relevance } objects
 
 Question: ${request.question}
 Question Type: ${request.answerType}
@@ -160,6 +165,9 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
         `Generating ${request.targetCount} distractors for question: ${request.question.slice(0, 50)}... (rate limited to ${requestsPerMinute}/min, prompt ~${estimatedPromptTokens} tokens)`
       )
 
+      // Debug: show full prompt
+      yield* Effect.logDebug(`OpenAI prompt:\n${prompt}`)
+
       // Wrap the API call with rate limiting
       const rateLimitedAPICall = withRateLimit(
         rateLimiter,
@@ -197,7 +205,15 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
                       properties: {
                         distractors: {
                           type: 'array',
-                          items: { type: 'string' }
+                          items: {
+                            type: 'object',
+                            properties: {
+                              text: { type: 'string' },
+                              relevance: { type: 'integer' }
+                            },
+                            required: ['text', 'relevance'],
+                            additionalProperties: false
+                          }
                         }
                       },
                       required: ['distractors'],
@@ -265,7 +281,12 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
 
           // With Structured Outputs (json_schema), response is guaranteed to match schema
           const parsedResponse = yield* Effect.tryPromise({
-            try: () => Promise.resolve(JSON.parse(content) as { distractors: string[] }),
+            try: () =>
+              Promise.resolve(
+                JSON.parse(content) as {
+                  distractors: Array<{ text: string; relevance: number }>
+                }
+              ),
             catch: (e) =>
               new OpenAIError({
                 cause: new Error(
@@ -274,7 +295,7 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
               })
           })
 
-          // Schema guarantees { distractors: string[] } structure
+          // Schema guarantees { distractors: Array<{ text, relevance }> } structure
           const distractors = parsedResponse.distractors
 
           // Validate distractors
@@ -286,16 +307,30 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
             )
           }
 
-          // Filter to strings only and trim whitespace
+          // Filter and validate scored distractors
           const validDistractors = distractors
-            .filter((d): d is string => typeof d === 'string')
-            .map((d) => d.trim())
-            .filter((d) => d.length > 0)
+            .filter(
+              (d): d is { text: string; relevance: number } =>
+                typeof d === 'object' &&
+                d !== null &&
+                typeof d.text === 'string' &&
+                typeof d.relevance === 'number' &&
+                d.relevance >= 1 &&
+                d.relevance <= 10
+            )
+            .map((d) => ({ text: d.text.trim(), relevance: d.relevance }))
+            .filter((d) => d.text.length > 0)
+
+          // Debug: show all parsed distractors with scores
+          yield* Effect.logDebug(
+            `OpenAI returned ${validDistractors.length} scored distractors:\n` +
+              validDistractors.map((d) => `  [${d.relevance}] ${d.text}`).join('\n')
+          )
 
           if (validDistractors.length === 0) {
             return yield* Effect.fail(
               new OpenAIError({
-                cause: new Error('No valid string distractors found in response')
+                cause: new Error('No valid scored distractors found in response')
               })
             )
           }
@@ -315,7 +350,10 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
           )
 
           return yield* Effect.succeed({
-            distractors: validDistractors.slice(0, request.targetCount),
+            distractors: validDistractors.slice(0, request.targetCount) as readonly {
+              text: string
+              relevance: number
+            }[],
             confidence,
             tokensUsed
           })
@@ -584,7 +622,10 @@ export const TestOpenAIDistractorServiceLayer = (fn?: {
           fn?.generateDistractors ??
           (() =>
             Effect.succeed({
-              distractors: ['Test distractor 1', 'Test distractor 2'],
+              distractors: [
+                { text: 'Test distractor 1', relevance: 8 },
+                { text: 'Test distractor 2', relevance: 7 }
+              ],
               confidence: 0.9,
               tokensUsed: 100
             })),
