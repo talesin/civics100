@@ -69,9 +69,9 @@ describe('OpenAIDistractorService', () => {
         generateDistractors: () =>
           Effect.succeed({
             distractors: [
-              { text: 'Test distractor A', relevance: 9 },
-              { text: 'Test distractor B', relevance: 8 },
-              { text: 'Test distractor C', relevance: 7 }
+              { text: 'Test distractor A', relevance: 0.9 },
+              { text: 'Test distractor B', relevance: 0.8 },
+              { text: 'Test distractor C', relevance: 0.7 }
             ],
             confidence: 0.85,
             tokensUsed: 200
@@ -87,7 +87,7 @@ describe('OpenAIDistractorService', () => {
         expect(response.tokensUsed).toBe(200)
         const firstDistractor = response.distractors[0]
         expect(firstDistractor?.text).toBe('Test distractor A')
-        expect(firstDistractor?.relevance).toBe(9)
+        expect(firstDistractor?.relevance).toBe(0.9)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
   })
@@ -98,8 +98,8 @@ describe('OpenAIDistractorService', () => {
         generateDistractors: () =>
           Effect.succeed({
             distractors: [
-              { text: 'Test A', relevance: 8 },
-              { text: 'Test B', relevance: 7 }
+              { text: 'Test A', relevance: 0.8 },
+              { text: 'Test B', relevance: 0.7 }
             ],
             confidence: 0.9,
             tokensUsed: 50
@@ -117,8 +117,8 @@ describe('OpenAIDistractorService', () => {
 
         const response = yield* service.generateDistractors(mockRequest)
         expect(response.distractors).toEqual([
-          { text: 'Test A', relevance: 8 },
-          { text: 'Test B', relevance: 7 }
+          { text: 'Test A', relevance: 0.8 },
+          { text: 'Test B', relevance: 0.7 }
         ])
         expect(response.confidence).toBe(0.9)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)

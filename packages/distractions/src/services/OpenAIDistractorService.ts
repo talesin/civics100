@@ -52,11 +52,11 @@ IMPORTANT REQUIREMENTS:
 - Avoid obviously wrong or silly answers
 - Match the format and style of the correct answer
 - Focus on common misconceptions or closely related concepts
-- For each distractor, provide a relevance score from 1-10:
-  - 10: Perfect distractor - plausible, related to question topic, tests understanding
-  - 7-9: Good distractor - relevant to topic, could reasonably confuse learners
-  - 4-6: Acceptable - somewhat related but less effective
-  - 1-3: Poor - too obvious, off-topic, or nonsensical
+- For each distractor, provide a relevance score from 0.000 to 1.000 (3 decimal places):
+  - 0.900-1.000: Perfect distractor - plausible, related to question topic, tests understanding
+  - 0.700-0.899: Good distractor - relevant to topic, could reasonably confuse learners
+  - 0.400-0.699: Acceptable - somewhat related but less effective
+  - 0.000-0.399: Poor - too obvious, off-topic, or nonsensical
 - Return JSON with array of { text, relevance } objects
 
 Question: ${request.question}
@@ -209,7 +209,7 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
                             type: 'object',
                             properties: {
                               text: { type: 'string' },
-                              relevance: { type: 'integer' }
+                              relevance: { type: 'number' }
                             },
                             required: ['text', 'relevance'],
                             additionalProperties: false
@@ -315,8 +315,8 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
                 d !== null &&
                 typeof d.text === 'string' &&
                 typeof d.relevance === 'number' &&
-                d.relevance >= 1 &&
-                d.relevance <= 10
+                d.relevance >= 0 &&
+                d.relevance <= 1
             )
             .map((d) => ({ text: d.text.trim(), relevance: d.relevance }))
             .filter((d) => d.text.length > 0)
@@ -623,8 +623,8 @@ export const TestOpenAIDistractorServiceLayer = (fn?: {
           (() =>
             Effect.succeed({
               distractors: [
-                { text: 'Test distractor 1', relevance: 8 },
-                { text: 'Test distractor 2', relevance: 7 }
+                { text: 'Test distractor 1', relevance: 0.8 },
+                { text: 'Test distractor 2', relevance: 0.7 }
               ],
               confidence: 0.9,
               tokensUsed: 100

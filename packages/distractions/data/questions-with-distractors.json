@@ -638,21 +638,21 @@
       ]
     },
     "distractors": [
-      "Enforces laws",
-      "Interprets the Constitution",
-      "Commands the military",
+      "Vetoes laws",
       "Appoints Supreme Court justices",
-      "Vetoes legislation",
-      "Conducts foreign policy",
+      "Interprets the Constitution",
+      "Enforces federal laws",
+      "Overturns Supreme Court decisions",
+      "Runs the military",
       "Issues executive orders",
       "Grants pardons",
-      "Negotiates treaties alone",
-      "Controls state governments",
-      "Appoints Cabinet members",
-      "Sets interest rates",
-      "Prints currency alone",
-      "Manages federal agencies",
-      "Declares emergencies"
+      "Conducts foreign diplomacy",
+      "Creates state laws",
+      "Regulates state elections",
+      "Appoints the president",
+      "Passes votes of no confidence",
+      "Prints paper money",
+      "Organizes political parties"
     ],
     "_tag": "QuestionWithDistractors"
   },
