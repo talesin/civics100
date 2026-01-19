@@ -16,9 +16,7 @@ export interface QualityMetrics {
   readonly totalGenerated: number
 }
 
-export type DistractorStrategy =
-  | 'openai-text'
-  | 'fallback'
+export type DistractorStrategy = 'openai-text' | 'fallback'
 
 // Question processing context
 export interface QuestionContext {
@@ -56,4 +54,3 @@ export interface OpenAIResponse {
   readonly confidence: number
   readonly tokensUsed: number
 }
-

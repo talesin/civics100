@@ -1,7 +1,10 @@
 import { describe, it, expect } from '@jest/globals'
 import { Effect } from 'effect'
 import type { Question } from 'civics2json'
-import { selectDistractorStrategy, padDistractors } from '../../src/generators/EnhancedStaticGenerator'
+import {
+  selectDistractorStrategy,
+  padDistractors
+} from '../../src/generators/EnhancedStaticGenerator'
 import { DEFAULT_GENERATION_OPTIONS } from '../../src/types/config'
 
 describe('EnhancedStaticGenerator Unit Tests', () => {

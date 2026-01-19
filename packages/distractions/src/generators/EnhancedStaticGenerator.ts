@@ -50,12 +50,7 @@ import {
   OpenAIAuthError,
   OpenAITimeoutError
 } from '../types/errors'
-import {
-  DistractorMetrics,
-  measureDuration,
-  trackStrategySelection
-} from '../utils/metrics'
-
+import { DistractorMetrics, measureDuration, trackStrategySelection } from '../utils/metrics'
 
 // Helper to extract answer text (reused from StaticGenerator)
 const getAnswerText = (choice: Question['answers']['choices'][number]): string => {
@@ -76,7 +71,6 @@ const getAnswerText = (choice: Question['answers']['choices'][number]): string =
   }
   return ''
 }
-
 
 /**
  * Select the distractor generation strategy for a given question.
@@ -103,7 +97,6 @@ export const selectDistractorStrategy = (
     yield* trackStrategySelection(selectedStrategy)
     return selectedStrategy
   })
-
 
 // Create retry schedule for OpenAI requests (following coding guide)
 const createOpenAIRetrySchedule = () =>
@@ -203,7 +196,6 @@ const generateWithOpenAI = (
       return { distractors: [] }
     }
   })
-
 
 // Apply quality filtering and similarity removal (following coding guide)
 const applyQualityFiltering = (

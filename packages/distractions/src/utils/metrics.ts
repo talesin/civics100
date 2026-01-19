@@ -35,7 +35,6 @@ export const DistractorMetrics = {
     description: 'Times fallback strategy was selected'
   }),
 
-
   // Cost tracking
   estimatedCostTotal: Metric.gauge('estimated_cost_total_usd', {
     description: 'Estimated total OpenAI cost in USD'
@@ -123,4 +122,3 @@ export const trackStrategySelection = (
       return Effect.void
   }
 }
-
