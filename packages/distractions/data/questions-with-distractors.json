@@ -6916,7 +6916,21 @@
       ]
     },
     "distractors": [
-      "Iroquois"
+      "Aztec",
+      "Maya",
+      "Inca",
+      "Olmec",
+      "Toltec",
+      "Taino",
+      "Arawak",
+      "Carib",
+      "Mixtec",
+      "Zapotec",
+      "Iroquois",
+      "Mapuche",
+      "Quechua",
+      "Guarani",
+      "Muisca"
     ],
     "_tag": "QuestionWithDistractors"
   },
