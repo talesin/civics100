@@ -2,16 +2,10 @@ import { NodeContext, NodeRuntime } from '@effect/platform-node'
 import { Command, Options } from '@effect/cli'
 import { Effect, Logger, LogLevel } from 'effect'
 import Questions from 'civics2json/Questions'
-import { QuestionsDataService } from '../data/QuestionsDataService'
+import { DistractorManager } from '../services/DistractorManager'
+import { createValidatedConfiguration } from '../config'
 
 const TOTAL_QUESTIONS = Questions.length
-import { DistractorManager } from '../services/DistractorManager'
-import { FallbackDistractorService } from '../services/FallbackDistractorService'
-import { EnhancedStaticGenerator } from '../generators/EnhancedStaticGenerator'
-import { OpenAIDistractorService } from '../services/OpenAIDistractorService'
-import { DistractorQualityService } from '../services/DistractorQualityService'
-import { SimilarityService } from '../services/SimilarityService'
-import { createValidatedConfiguration } from '../config'
 import { DistractorGenerationOptions, DEFAULT_GENERATION_OPTIONS } from '../types/config'
 
 // Define CLI options
@@ -45,7 +39,9 @@ const options = {
     Options.withDefault(DEFAULT_GENERATION_OPTIONS.batchSize)
   ),
   questionNumber: Options.integer('question').pipe(
-    Options.withDescription(`Regenerate distractors for a specific question by number (1-${TOTAL_QUESTIONS})`),
+    Options.withDescription(
+      `Regenerate distractors for a specific question by number (1-${TOTAL_QUESTIONS})`
+    ),
     Options.optional
   ),
   verbose: Options.boolean('verbose').pipe(
@@ -123,13 +119,7 @@ const runnable = Command.run(cli, {
 })
 
 runnable(process.argv).pipe(
-  // Provide service layers in dependency order
-  Effect.provide(QuestionsDataService.Default),
-  Effect.provide(FallbackDistractorService.Default),
-  Effect.provide(OpenAIDistractorService.Default),
-  Effect.provide(DistractorQualityService.Default),
-  Effect.provide(SimilarityService.Default),
-  Effect.provide(EnhancedStaticGenerator.Default),
+  // DistractorManager.Default includes all service dependencies via its layer chain
   Effect.provide(DistractorManager.Default),
   Effect.provide(NodeContext.layer),
   NodeRuntime.runMain
