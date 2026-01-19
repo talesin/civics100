@@ -1,7 +1,10 @@
 import { NodeContext, NodeRuntime } from '@effect/platform-node'
 import { Command, Options } from '@effect/cli'
 import { Effect, Logger, LogLevel } from 'effect'
+import Questions from 'civics2json/Questions'
 import { QuestionsDataService } from '../data/QuestionsDataService'
+
+const TOTAL_QUESTIONS = Questions.length
 import { DistractorManager } from '../services/DistractorManager'
 import { FallbackDistractorService } from '../services/FallbackDistractorService'
 import { EnhancedStaticGenerator } from '../generators/EnhancedStaticGenerator'
@@ -42,7 +45,7 @@ const options = {
     Options.withDefault(DEFAULT_GENERATION_OPTIONS.batchSize)
   ),
   questionNumber: Options.integer('question').pipe(
-    Options.withDescription('Regenerate distractors for a specific question by number (1-100)'),
+    Options.withDescription(`Regenerate distractors for a specific question by number (1-${TOTAL_QUESTIONS})`),
     Options.optional
   ),
   verbose: Options.boolean('verbose').pipe(
@@ -62,8 +65,8 @@ const cli = Command.make('distractors', options, (opts) =>
       opts.questionNumber._tag === 'Some' ? opts.questionNumber.value : undefined
     if (questionNumber !== undefined) {
       // Validate range
-      if (questionNumber < 1 || questionNumber > 100) {
-        yield* Effect.fail(new Error('Question number must be between 1 and 100'))
+      if (questionNumber < 1 || questionNumber > TOTAL_QUESTIONS) {
+        yield* Effect.fail(new Error(`Question number must be between 1 and ${TOTAL_QUESTIONS}`))
       }
       // Cannot combine with --regen-all or --regen-incomplete
       if (opts.regenAll) {

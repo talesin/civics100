@@ -12,7 +12,7 @@ npm run dev
 
 ## 2025 USCIS Test Format
 
-- **20 questions** by default (customizable to 50 or 100)
+- **20 questions** by default (customizable to 50 or all 128)
 - **Pass with 12 correct** answers (60% threshold, adjustable)
 - **Early win**: Auto-complete when pass threshold is reached
 - **Early fail**: Auto-end after 9 incorrect answers
@@ -22,7 +22,7 @@ npm run dev
 ### Quiz Experience
 
 - Interactive quiz with 128 official USCIS civics questions
-- Customizable test length (20, 50, or 100 questions)
+- Customizable test length (20, 50, or all questions)
 - Adjustable pass rate (60%, 70%, 80%, 90%, 100%)
 - Early win/fail mechanics with auto-completion
 - Sound effects for answer feedback

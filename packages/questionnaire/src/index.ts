@@ -55,5 +55,5 @@ export const QuestionDataServiceDefault = QuestionDataService.Default
 export const QuestionSelectorDefault = QuestionSelector.Default
 
 // Re-export question data for consuming packages
-export { rawCivicsQuestions, civicsQuestionsWithDistractors } from './data/index'
+export { rawCivicsQuestions, civicsQuestionsWithDistractors, TOTAL_QUESTION_COUNT } from './data/index'
 export type { QuestionWithDistractors } from './data/index'

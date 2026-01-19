@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { StateAbbreviation } from 'civics2json'
+import { TOTAL_QUESTION_COUNT } from 'questionnaire'
 import Layout from '@/components/Layout'
 import StateSelector from '@/components/StateSelector'
 import DistrictSelector from '@/components/DistrictSelector'
@@ -219,7 +220,7 @@ export default function Settings() {
                 >
                   <option value={20}>20 questions (Official 2025 minimum)</option>
                   <option value={50}>50 questions</option>
-                  <option value={100}>100 questions (All questions)</option>
+                  <option value={TOTAL_QUESTION_COUNT}>{TOTAL_QUESTION_COUNT} questions (All questions)</option>
                 </select>
               </div>
 

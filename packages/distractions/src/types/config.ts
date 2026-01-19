@@ -1,4 +1,7 @@
 // Note: @effect/schema not available in current setup, using basic validation
+import Questions from 'civics2json/Questions'
+
+const TOTAL_QUESTIONS = Questions.length
 
 // Main configuration for distractor generation process
 export interface DistractorGenerationOptions {
@@ -10,7 +13,7 @@ export interface DistractorGenerationOptions {
   readonly useOpenAI: boolean // Enable OpenAI generation for text questions
   readonly batchSize: number // Number of questions to process in each batch (default: 10)
   readonly maxRetries: number // Maximum retry attempts for failed operations (default: 3)
-  readonly questionNumber?: number // If set, only regenerate distractors for this question (1-100)
+  readonly questionNumber?: number // If set, only regenerate distractors for this question (1-N)
   readonly overRequestCount: number // Extra distractors to request for filtering by relevance (default: 5)
 }
 
@@ -31,10 +34,10 @@ export const DEFAULT_GENERATION_OPTIONS: DistractorGenerationOptions = {
 export const validateGenerationOptions = (
   options: Partial<DistractorGenerationOptions>
 ): DistractorGenerationOptions => {
-  // Validate questionNumber if provided (must be 1-100)
+  // Validate questionNumber if provided (must be 1-N)
   const questionNumber =
     options.questionNumber !== undefined
-      ? Math.max(1, Math.min(100, options.questionNumber))
+      ? Math.max(1, Math.min(TOTAL_QUESTIONS, options.questionNumber))
       : undefined
 
   const result: DistractorGenerationOptions = {
