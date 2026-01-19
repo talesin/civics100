@@ -1,5 +1,6 @@
 import React from 'react'
-import { GameSession, isSessionCompleted } from '@/types'
+import { GameSession } from '@/types'
+import { isSessionCompleted } from 'questionnaire'
 import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
 

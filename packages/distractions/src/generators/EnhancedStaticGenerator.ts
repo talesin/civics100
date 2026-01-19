@@ -471,7 +471,6 @@ export const generateEnhancedDistractors =
   ) =>
   (
     question: Question,
-    allQuestions: Question[],
     options: DistractorGenerationOptions
   ): Effect.Effect<DistractorGenerationResult, never> => {
     // Wrap the entire generation process with metrics
@@ -646,7 +645,6 @@ export const generateEnhanced =
       const allQuestions = yield* questionsDataService.getAllQuestions()
 
       // Filter to specific question if questionNumber is set
-      // Still pass allQuestions to generateEnhancedDistractors for section-based context
       const questionsToProcess =
         options.questionNumber !== undefined
           ? allQuestions.filter((q) => q.questionNumber === options.questionNumber)
@@ -659,7 +657,7 @@ export const generateEnhanced =
             openaiService,
             qualityService,
             similarityService
-          )(question, [...allQuestions], options)
+          )(question, options)
         ),
         { concurrency: options.batchSize ?? 10 }
       )

@@ -20,10 +20,9 @@ import {
   QuestionAnswer,
   GameResult,
   QuestionDisplay as GameQuestionType,
-  WebsiteGameSettings,
-  isSessionEarlyWin,
-  isSessionCompleted
+  WebsiteGameSettings
 } from '@/types'
+import { isSessionCompleted, isSessionEarlyWin } from 'questionnaire'
 
 type GameState = 'loading' | 'playing' | 'answered' | 'transitioning' | 'completed'
 

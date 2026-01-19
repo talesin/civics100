@@ -13,17 +13,6 @@ export type {
   EarlyFailSession
 } from 'questionnaire'
 
-// Re-export type guards and helpers from questionnaire
-export {
-  isSessionInProgress,
-  isSessionCompleted,
-  isSessionEarlyWin,
-  isSessionEarlyFail,
-  isSessionCompletedNormal,
-  getSessionCompletedAt,
-  getSessionFlags
-} from 'questionnaire'
-
 // Website-specific GameSettings that extends questionnaire GameSettings
 export interface WebsiteGameSettings extends GameSettings {
   darkMode: boolean
