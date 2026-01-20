@@ -50,10 +50,17 @@ export const parseUpdates: (html: string) => Effect.Effect<Partial<Question>[], 
       return { text: split?.[1], number: parseInt(split?.[0] ?? '0') }
     }
 
-    const questions: Partial<Question>[] = Array.from(
-      // select all <p> elements that are children of <div> elements with class "accordion__panel"
-      doc.querySelectorAll(`div[class="accordion__panel"] > p`)
-    )
+    // Find the 2025 accordion panel by header text
+    const headers = doc.querySelectorAll('h4.accordion__header')
+    const header2025 = Array.from(headers).find((h) => h.textContent?.includes('2025'))
+    const panel2025 = header2025?.nextElementSibling as Element | null
+
+    if (!panel2025) {
+      yield* Effect.log('Warning: 2025 accordion panel not found')
+      return []
+    }
+
+    const questions: Partial<Question>[] = Array.from(panel2025.querySelectorAll('p'))
       .map((p) => ({
         // extract question number and question text from <p> element
         question: splitQuestion(p.textContent),
@@ -70,8 +77,6 @@ export const parseUpdates: (html: string) => Effect.Effect<Partial<Question>[], 
       .filter(
         (item): item is { question: { text: string; number: number }; answers: string[] } =>
           item.question?.text !== undefined && item.question?.number !== undefined
-        // Note: Removed UPDATED_QUESTIONS filter to allow all parsed questions through.
-        // Matching is now handled by normalizeQuestionText() in QuestionsManager.
       )
       // map each object to a Partial<Question> object
       .map((item) => ({
@@ -80,7 +85,7 @@ export const parseUpdates: (html: string) => Effect.Effect<Partial<Question>[], 
         answers: { _type: 'text', choices: item.answers }
       }))
 
-    yield* Effect.log(`Found ${questions.length} questions`)
+    yield* Effect.log(`Found ${questions.length} questions from 2025 section`)
 
     return questions
   })
