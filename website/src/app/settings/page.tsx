@@ -7,6 +7,7 @@ import { TOTAL_QUESTION_COUNT } from 'questionnaire'
 import Layout from '@/components/Layout'
 import StateSelector from '@/components/StateSelector'
 import DistrictSelector from '@/components/DistrictSelector'
+import PoliticianVerificationBox from '@/components/PoliticianVerificationBox'
 import { useThemeContext } from '@/components/TamaguiProvider'
 import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings, WIN_THRESHOLD_PERCENTAGE } from '@/types'
 
@@ -51,8 +52,7 @@ export default function Settings() {
   // Load settings from localStorage on component mount
   useEffect(() => {
     try {
-      // TODO: migrate settings to use LocalStorageService
-      const savedSettings = localStorage.getItem('civics-game-settings')
+      const savedSettings = localStorage.getItem('civics100_game_settings')
       if (savedSettings !== null) {
         const parsed = JSON.parse(savedSettings) as WebsiteGameSettings
         setSettings(parsed)
@@ -67,7 +67,7 @@ export default function Settings() {
   // Save settings to localStorage
   const saveSettings = () => {
     try {
-      localStorage.setItem('civics-game-settings', JSON.stringify(settings))
+      localStorage.setItem('civics100_game_settings', JSON.stringify(settings))
       setHasChanges(false)
     } catch (error) {
       console.error('Failed to save settings:', error)
@@ -195,6 +195,10 @@ export default function Settings() {
               selectedDistrict={settings.userDistrict}
               onDistrictChange={handleDistrictChange}
               className="mt-4"
+            />
+            <PoliticianVerificationBox
+              selectedState={settings.userState}
+              selectedDistrict={settings.userDistrict}
             />
           </div>
 

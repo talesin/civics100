@@ -8,6 +8,18 @@ type RepresentativeChoice = Readonly<{
   district: string
 }>
 
+// Senator data type
+type SenatorChoice = Readonly<{
+  senator: string
+  state: StateAbbreviation
+}>
+
+// Governor data type
+type GovernorChoice = Readonly<{
+  governor: string
+  state: StateAbbreviation
+}>
+
 /**
  * Extract representatives data from the static civics questions data
  * This gets the actual representatives from the civics2json package data
@@ -120,4 +132,57 @@ export const getLocationDisplayName = (
 
   const formattedDistrict = formatDistrictLabel(district)
   return `${stateName}, ${formattedDistrict}`
+}
+
+/**
+ * Extract senators data from the static civics questions data
+ */
+const getSenatorData = (): readonly SenatorChoice[] => {
+  const senatorQuestion = civicsQuestionsWithDistractors.find(
+    (q) => q.answers._type === 'senator'
+  )
+
+  if (senatorQuestion != null && senatorQuestion.answers._type === 'senator') {
+    return senatorQuestion.answers.choices
+  }
+
+  console.warn('No senators question found in civics data')
+  return []
+}
+
+/**
+ * Extract governors data from the static civics questions data
+ */
+const getGovernorData = (): readonly GovernorChoice[] => {
+  const governorQuestion = civicsQuestionsWithDistractors.find(
+    (q) => q.answers._type === 'governor'
+  )
+
+  if (governorQuestion != null && governorQuestion.answers._type === 'governor') {
+    return governorQuestion.answers.choices
+  }
+
+  console.warn('No governors question found in civics data')
+  return []
+}
+
+/**
+ * Get senators for a given state
+ * Returns array of senator names (typically 2 for states, 0 for territories)
+ */
+export const getSenatorForState = (state: StateAbbreviation): string[] => {
+  const senators = getSenatorData()
+  return senators
+    .filter((s) => s.state === state)
+    .map((s) => s.senator)
+}
+
+/**
+ * Get governor for a given state
+ * Returns the governor's name or null if not found
+ */
+export const getGovernorForState = (state: StateAbbreviation): string | null => {
+  const governors = getGovernorData()
+  const governor = governors.find((g) => g.state === state)
+  return governor?.governor ?? null
 }
