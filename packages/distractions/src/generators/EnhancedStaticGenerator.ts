@@ -584,17 +584,30 @@ export const generateEnhancedDistractors =
         }
       })
     ).pipe(
-      Effect.catchAll(() =>
-        Effect.succeed({
-          question,
-          distractors: [] as readonly string[],
-          strategy: 'fallback' as DistractorStrategy,
-          quality: {
-            relevanceScore: 0.5,
-            plausibilityScore: 0.5,
-            educationalValue: 0.5,
-            duplicatesRemoved: 0,
-            totalGenerated: 0
+      Effect.catchAll((err) =>
+        Effect.gen(function* () {
+          // Cast to unknown since error channel is 'never' but we handle all errors
+          const error = err as unknown
+          // Log with error-specific context
+          const errorMsg = (() => {
+            if (error instanceof OpenAIAuthError) return `Auth error: ${error.message}`
+            if (error instanceof OpenAIRateLimitError) return `Rate limit: retry after ${error.retryAfter ?? 'unknown'}s`
+            if (error instanceof OpenAITimeoutError) return `Timeout: ${error.timeoutMs}ms`
+            if (error instanceof OpenAIError) return `OpenAI error: ${error.cause instanceof Error ? error.cause.message : String(error.cause)}`
+            return error instanceof Error ? error.message : String(error)
+          })()
+          yield* Effect.logWarning(`Error for Q${question.questionNumber}: ${errorMsg}`)
+          return {
+            question,
+            distractors: [] as readonly string[],
+            strategy: 'fallback' as DistractorStrategy,
+            quality: {
+              relevanceScore: 0.5,
+              plausibilityScore: 0.5,
+              educationalValue: 0.5,
+              duplicatesRemoved: 0,
+              totalGenerated: 0
+            }
           }
         })
       )

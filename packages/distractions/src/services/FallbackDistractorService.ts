@@ -1,4 +1,4 @@
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Option } from 'effect'
 import type { Question } from 'civics2json'
 import {
   FallbackDistractorDatabase,
@@ -34,14 +34,14 @@ export const hasFallbackDistractors =
 
 export const getFallbackEntry =
   (fallbackDatabase: FallbackDistractorDatabase) =>
-  (question: Question): FallbackDistractorEntry | undefined => {
+  (question: Question): Option.Option<FallbackDistractorEntry> => {
     const questionKey = question.questionNumber.toString()
     const distractors = fallbackDatabase[questionKey]
-    if (!distractors) return undefined
-    return {
+    if (distractors === undefined) return Option.none()
+    return Option.some({
       questionNumber: question.questionNumber,
       fallbackDistractors: distractors
-    }
+    })
   }
 
 export const getFallbackCount =
@@ -70,7 +70,7 @@ export class FallbackDistractorService extends Effect.Service<FallbackDistractor
 export const TestFallbackDistractorServiceLayer = (fn?: {
   getFallbackDistractors?: (question: Question) => readonly string[]
   hasFallbackDistractors?: (question: Question) => boolean
-  getFallbackEntry?: (question: Question) => FallbackDistractorEntry | undefined
+  getFallbackEntry?: (question: Question) => Option.Option<FallbackDistractorEntry>
   getFallbackCount?: (question: Question) => number
 }) =>
   Layer.succeed(
@@ -79,7 +79,7 @@ export const TestFallbackDistractorServiceLayer = (fn?: {
       _tag: 'FallbackDistractorService',
       getFallbackDistractors: fn?.getFallbackDistractors ?? (() => []),
       hasFallbackDistractors: fn?.hasFallbackDistractors ?? (() => false),
-      getFallbackEntry: fn?.getFallbackEntry ?? (() => undefined),
+      getFallbackEntry: fn?.getFallbackEntry ?? (() => Option.none()),
       getFallbackCount: fn?.getFallbackCount ?? (() => 0)
     })
   )

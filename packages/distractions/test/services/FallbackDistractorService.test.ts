@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
-import { Effect } from 'effect'
+import { Effect, Option } from 'effect'
 import type { Question } from 'civics2json'
 import {
   FallbackDistractorService,
@@ -117,12 +117,13 @@ describe('FallbackDistractorService', () => {
         }).pipe(Effect.provide(FallbackDistractorService.Default))
       )
 
-      expect(result).toBeDefined()
-      expect(result?.questionNumber).toBe(1)
-      expect(Array.isArray(result?.fallbackDistractors)).toBe(true)
+      expect(Option.isSome(result)).toBe(true)
+      const entry = Option.getOrUndefined(result)
+      expect(entry?.questionNumber).toBe(1)
+      expect(Array.isArray(entry?.fallbackDistractors)).toBe(true)
     })
 
-    it('should return undefined for unknown questions', async () => {
+    it('should return None for unknown questions', async () => {
       const question = createQuestion(999)
 
       const result = await Effect.runPromise(
@@ -132,7 +133,7 @@ describe('FallbackDistractorService', () => {
         }).pipe(Effect.provide(FallbackDistractorService.Default))
       )
 
-      expect(result).toBeUndefined()
+      expect(Option.isNone(result)).toBe(true)
     })
   })
 

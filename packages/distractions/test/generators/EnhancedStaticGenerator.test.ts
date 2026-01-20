@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
-import { Effect } from 'effect'
+import { Effect, Option } from 'effect'
 import type { Question } from 'civics2json'
 import {
   selectDistractorStrategy,
@@ -90,7 +90,7 @@ describe('EnhancedStaticGenerator Unit Tests', () => {
         'Fallback 5'
       ],
       hasFallbackDistractors: () => true,
-      getFallbackEntry: () => undefined,
+      getFallbackEntry: () => Option.none(),
       getFallbackCount: () => 5
     }
 
@@ -162,7 +162,8 @@ describe('EnhancedStaticGenerator Unit Tests', () => {
           'Fallback 3',
           'Fallback 4',
           'Fallback 5'
-        ]
+        ],
+        getFallbackEntry: () => Option.none()
       }
 
       const emptyDistractors: string[] = []

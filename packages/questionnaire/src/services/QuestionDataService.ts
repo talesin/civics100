@@ -152,7 +152,10 @@ const createUnifiedMultiAnswerQuestion = (
 ): Effect.Effect<Question, never, never> => {
   return Effect.gen(function* () {
     // Select only expectedAnswers correct answers when pool is larger
-    const selectedCorrectAnswers = yield* selectRandomCorrectAnswers(correctAnswers, expectedAnswers)
+    const selectedCorrectAnswers = yield* selectRandomCorrectAnswers(
+      correctAnswers,
+      expectedAnswers
+    )
 
     const distractorCount = getDistractorCount(expectedAnswers)
     const selectedDistractors = yield* selectRandomDistractors(distractors, distractorCount)

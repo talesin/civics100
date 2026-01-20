@@ -1,8 +1,20 @@
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Schema } from 'effect'
 import * as Metric from 'effect/Metric'
 import OpenAI from 'openai'
 import type { Question } from 'civics2json'
 import type { OpenAIRequest } from '@src/types/index'
+
+// Schema for validating OpenAI response structure
+const DistractorItemSchema = Schema.Struct({
+  text: Schema.String,
+  relevance: Schema.Number.pipe(Schema.between(0, 1))
+})
+
+const OpenAIResponseSchema = Schema.Struct({
+  distractors: Schema.Array(DistractorItemSchema)
+})
+
+type OpenAIResponse = Schema.Schema.Type<typeof OpenAIResponseSchema>
 import {
   OpenAIError,
   OpenAIRateLimitError,
@@ -279,14 +291,9 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
           // Log first 200 chars of content for debugging
           yield* Effect.log(`OpenAI content preview: ${content.slice(0, 200)}...`)
 
-          // With Structured Outputs (json_schema), response is guaranteed to match schema
-          const parsedResponse = yield* Effect.tryPromise({
-            try: () =>
-              Promise.resolve(
-                JSON.parse(content) as {
-                  distractors: Array<{ text: string; relevance: number }>
-                }
-              ),
+          // Parse and validate response using Effect Schema
+          const jsonParsed = yield* Effect.try({
+            try: () => JSON.parse(content) as unknown,
             catch: (e) =>
               new OpenAIError({
                 cause: new Error(
@@ -294,6 +301,17 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
                 )
               })
           })
+
+          const parsedResponse: OpenAIResponse = yield* Schema.decodeUnknown(OpenAIResponseSchema)(
+            jsonParsed
+          ).pipe(
+            Effect.mapError(
+              (e) =>
+                new OpenAIError({
+                  cause: new Error(`Schema validation failed: ${e.message}`)
+                })
+            )
+          )
 
           // Schema guarantees { distractors: Array<{ text, relevance }> } structure
           const distractors = parsedResponse.distractors
@@ -307,17 +325,8 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
             )
           }
 
-          // Filter and validate scored distractors
+          // Schema validation ensures type safety - just trim and filter empty text
           const validDistractors = distractors
-            .filter(
-              (d): d is { text: string; relevance: number } =>
-                typeof d === 'object' &&
-                d !== null &&
-                typeof d.text === 'string' &&
-                typeof d.relevance === 'number' &&
-                d.relevance >= 0 &&
-                d.relevance <= 1
-            )
             .map((d) => ({ text: d.text.trim(), relevance: d.relevance }))
             .filter((d) => d.text.length > 0)
 

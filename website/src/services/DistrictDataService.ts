@@ -20,24 +20,35 @@ type GovernorChoice = Readonly<{
   state: StateAbbreviation
 }>
 
+// Module-level cache for extracted data (computed once, reused on subsequent calls)
+let _representativesCache: readonly RepresentativeChoice[] | null = null
+let _senatorsCache: readonly SenatorChoice[] | null = null
+let _governorsCache: readonly GovernorChoice[] | null = null
+
 /**
  * Extract representatives data from the static civics questions data
  * This gets the actual representatives from the civics2json package data
+ * Results are cached after first extraction.
  */
 const getRepresentativesData = (): readonly RepresentativeChoice[] => {
+  if (_representativesCache !== null) {
+    return _representativesCache
+  }
+
   // Find the representatives question in the static data
   const representativeQuestion = civicsQuestionsWithDistractors.find(
     (q) => q.answers._type === 'representative'
   )
 
   if ((representativeQuestion != null) && representativeQuestion.answers._type === 'representative') {
-    const representativesData: readonly RepresentativeChoice[]  = representativeQuestion.answers.choices
-    return representativesData
+    _representativesCache = representativeQuestion.answers.choices
+    return _representativesCache
   }
 
   // This should never happen with valid data, but provide empty array as fallback
   console.warn('No representatives question found in civics data')
-  return []
+  _representativesCache = []
+  return _representativesCache
 }
 
 /**
@@ -136,34 +147,48 @@ export const getLocationDisplayName = (
 
 /**
  * Extract senators data from the static civics questions data
+ * Results are cached after first extraction.
  */
 const getSenatorData = (): readonly SenatorChoice[] => {
+  if (_senatorsCache !== null) {
+    return _senatorsCache
+  }
+
   const senatorQuestion = civicsQuestionsWithDistractors.find(
     (q) => q.answers._type === 'senator'
   )
 
   if (senatorQuestion != null && senatorQuestion.answers._type === 'senator') {
-    return senatorQuestion.answers.choices
+    _senatorsCache = senatorQuestion.answers.choices
+    return _senatorsCache
   }
 
   console.warn('No senators question found in civics data')
-  return []
+  _senatorsCache = []
+  return _senatorsCache
 }
 
 /**
  * Extract governors data from the static civics questions data
+ * Results are cached after first extraction.
  */
 const getGovernorData = (): readonly GovernorChoice[] => {
+  if (_governorsCache !== null) {
+    return _governorsCache
+  }
+
   const governorQuestion = civicsQuestionsWithDistractors.find(
     (q) => q.answers._type === 'governor'
   )
 
   if (governorQuestion != null && governorQuestion.answers._type === 'governor') {
-    return governorQuestion.answers.choices
+    _governorsCache = governorQuestion.answers.choices
+    return _governorsCache
   }
 
   console.warn('No governors question found in civics data')
-  return []
+  _governorsCache = []
+  return _governorsCache
 }
 
 /**

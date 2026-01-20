@@ -343,6 +343,18 @@ export default function Game() {
     margin: '0 auto 16px',
   }), [colors.iconBgRed])
 
+  // Memoize displaySession to avoid creating new object every render
+  // Must be called before any conditional returns to comply with React's rules of hooks
+  // Note: The early returns below guarantee session is non-null when displaySession is used
+  const questionIds = useMemo(() => questions.map((q) => q.id), [questions])
+  const displaySession = useMemo(() =>
+    session === null ? null : {
+      ...session,
+      currentQuestionIndex,
+      questions: questionIds
+    }
+  , [session, currentQuestionIndex, questionIds])
+
   // Loading state
   if (gameState === 'loading') {
     return (
@@ -446,13 +458,6 @@ export default function Game() {
     )
   }
 
-  // Update session with current index for display
-  const displaySession = {
-    ...session,
-    currentQuestionIndex,
-    questions: questions.map((q) => q.id)
-  }
-
   return (
     <Layout title={`Question ${currentQuestionIndex + 1} of ${questions.length}`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -527,9 +532,10 @@ export default function Game() {
           </div>
         ) : null}
 
-        {/* Game Controls */}
+        {/* Game Controls - displaySession! is safe because early returns guarantee session is non-null */}
         <GameControls
-          session={displaySession}
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          session={displaySession!}
           onNext={showEarlyWinOption ? undefined : handleNext}
           onRestart={handleRestart}
           showNext={gameState === 'answered' && !showEarlyWinOption}
