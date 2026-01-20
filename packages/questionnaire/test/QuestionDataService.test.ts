@@ -94,7 +94,7 @@ describe('QuestionDataService', () => {
         expect(questions).toHaveLength(3)
         expect(questions[0]?.questionNumber).toBe('1')
         expect(questions[0]?.question).toBe('What is the supreme law of the land?')
-        expect(questions[0]?.answers).toHaveLength(5) // 1 correct + 4 distractors
+        expect(questions[0]?.answers).toHaveLength(4) // 1 correct + 3 distractors = 4 total
         expect(questions[0]?.pairedQuestionNumber).toBe('1-0')
         expect(questions[0]?.expectedAnswers).toBe(1)
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
@@ -146,8 +146,8 @@ describe('QuestionDataService', () => {
         expect(senatorQuestion?.answers).not.toEqual(
           expect.arrayContaining(['Chuck Schumer', 'Kirsten Gillibrand'])
         )
-        // Should have correct + distractors
-        expect(senatorQuestion?.answers).toHaveLength(8) // 2 CA senators + 6 distractors = 8 total
+        // Should have correct + distractors (limited to 6 total for expectedAnswers=2)
+        expect(senatorQuestion?.answers).toHaveLength(6) // 2 CA senators + 4 distractors = 6 total
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 
