@@ -1,19 +1,19 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { StateAbbreviation } from 'civics2json'
+import { TOTAL_QUESTION_COUNT } from 'questionnaire'
 import Layout from '@/components/Layout'
 import StateSelector from '@/components/StateSelector'
 import DistrictSelector from '@/components/DistrictSelector'
-import { useThemeContext } from '@/components/TamaguiProvider'
+import PoliticianVerificationBox from '@/components/PoliticianVerificationBox'
+import { useThemeContext, themeColors as baseThemeColors } from '@/components/TamaguiProvider'
 import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings, WIN_THRESHOLD_PERCENTAGE } from '@/types'
 
-// Theme-aware colors
-const themeColors = {
+// Settings-specific colors that extend the base theme colors
+const settingsThemeColors = {
   light: {
-    text: '#111827',
-    textMuted: '#4b5563',
     textLight: '#6b7280',
     textXLight: '#9ca3af',
     linkText: '#2563eb',
@@ -25,8 +25,6 @@ const themeColors = {
     amberText: '#d97706',
   },
   dark: {
-    text: '#ffffff',
-    textMuted: '#d1d5db',
     textLight: '#9ca3af',
     textXLight: '#9ca3af',
     linkText: '#60a5fa',
@@ -45,13 +43,16 @@ export default function Settings() {
   const [isLoading, setIsLoading] = useState(true)
   const [hasChanges, setHasChanges] = useState(false)
   const { theme, setTheme } = useThemeContext()
-  const colors = themeColors[theme]
+  // Merge base theme colors with settings-specific colors
+  const colors = useMemo(() => ({
+    ...baseThemeColors[theme],
+    ...settingsThemeColors[theme]
+  }), [theme])
 
   // Load settings from localStorage on component mount
   useEffect(() => {
     try {
-      // TODO: migrate settings to use LocalStorageService
-      const savedSettings = localStorage.getItem('civics-game-settings')
+      const savedSettings = localStorage.getItem('civics100_game_settings')
       if (savedSettings !== null) {
         const parsed = JSON.parse(savedSettings) as WebsiteGameSettings
         setSettings(parsed)
@@ -64,62 +65,66 @@ export default function Settings() {
   }, [])
 
   // Save settings to localStorage
-  const saveSettings = () => {
+  const saveSettings = useCallback(() => {
     try {
-      localStorage.setItem('civics-game-settings', JSON.stringify(settings))
+      localStorage.setItem('civics100_game_settings', JSON.stringify(settings))
       setHasChanges(false)
     } catch (error) {
       console.error('Failed to save settings:', error)
     }
-  }
+  }, [settings])
 
-  const handleStateChange = (state: StateAbbreviation) => {
+  const handleStateChange = useCallback((state: StateAbbreviation) => {
     setSettings((prev) => ({ ...prev, userState: state, userDistrict: undefined }))
     setHasChanges(true)
-  }
+  }, [])
 
-  const handleDistrictChange = (district: string | undefined) => {
+  const handleDistrictChange = useCallback((district: string | undefined) => {
     setSettings((prev) => ({ ...prev, userDistrict: district }))
     setHasChanges(true)
-  }
+  }, [])
 
-  const handleMaxQuestionsChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleMaxQuestionsChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(event.target.value)
     // Auto-calculate winThreshold as 60% of maxQuestions
     const newWinThreshold = Math.ceil(value * WIN_THRESHOLD_PERCENTAGE)
     setSettings((prev) => ({ ...prev, maxQuestions: value, winThreshold: newWinThreshold }))
     setHasChanges(true)
-  }
+  }, [])
 
-  const handleWinThresholdChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleWinThresholdChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(event.target.value)
     setSettings((prev) => ({ ...prev, winThreshold: value }))
     setHasChanges(true)
-  }
+  }, [])
 
-  const handleDarkModeChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDarkModeChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.checked
     setSettings((prev) => ({ ...prev, darkMode: value }))
     setHasChanges(true)
 
     // Apply dark mode via theme context
     setTheme(value ? 'dark' : 'light')
-  }
+  }, [setTheme])
 
-  const handleStartGame = () => {
+  const handleStartGame = useCallback(() => {
     if (hasChanges) {
-      saveSettings()
+      try {
+        localStorage.setItem('civics100_game_settings', JSON.stringify(settings))
+      } catch (error) {
+        console.error('Failed to save settings:', error)
+      }
     }
     router.push('/game')
-  }
+  }, [hasChanges, settings, router])
 
-  const resetToDefaults = () => {
+  const resetToDefaults = useCallback(() => {
     setSettings(DEFAULT_GAME_SETTINGS)
     setHasChanges(true)
 
     // Reset dark mode via theme context
     setTheme(DEFAULT_GAME_SETTINGS.darkMode ? 'dark' : 'light')
-  }
+  }, [setTheme])
 
   if (isLoading) {
     return (
@@ -195,6 +200,10 @@ export default function Settings() {
               onDistrictChange={handleDistrictChange}
               className="mt-4"
             />
+            <PoliticianVerificationBox
+              selectedState={settings.userState}
+              selectedDistrict={settings.userDistrict}
+            />
           </div>
 
           <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
@@ -219,7 +228,7 @@ export default function Settings() {
                 >
                   <option value={20}>20 questions (Official 2025 minimum)</option>
                   <option value={50}>50 questions</option>
-                  <option value={100}>100 questions (All questions)</option>
+                  <option value={TOTAL_QUESTION_COUNT}>{TOTAL_QUESTION_COUNT} questions (All questions)</option>
                 </select>
               </div>
 

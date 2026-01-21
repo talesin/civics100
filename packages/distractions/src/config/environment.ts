@@ -19,8 +19,9 @@ export const openaiModelConfig = Config.string('OPENAI_MODEL').pipe(
 export const openaiTemperatureConfig = Config.number('OPENAI_TEMPERATURE').pipe(
   Config.withDefault(0.7)
 )
+// Reasoning models (gpt-5-mini) need more tokens for internal reasoning + structured output
 export const openaiMaxTokensConfig = Config.integer('OPENAI_MAX_TOKENS').pipe(
-  Config.withDefault(1000)
+  Config.withDefault(4000)
 )
 export const openaiTimeoutConfig = Config.number('OPENAI_TIMEOUT_MS').pipe(
   Config.withDefault(30000)
@@ -29,11 +30,12 @@ export const openaiMaxRetriesConfig = Config.integer('OPENAI_MAX_RETRIES').pipe(
   Config.withDefault(3)
 )
 
-// Rate limiting configuration
-export const openaiRateLimitRpmConfig = Config.number('OPENAI_RATE_LIMIT_RPM').pipe(
+// Rate limiting configuration - supports both naming conventions
+export const openaiRequestsPerMinuteConfig = Config.number('OPENAI_REQUESTS_PER_MINUTE').pipe(
+  Config.orElse(() => Config.number('OPENAI_RATE_LIMIT_RPM')),
   Config.withDefault(60)
 )
-export const openaiRequestsPerMinuteConfig = openaiRateLimitRpmConfig // Alias for consistency
+export const openaiRateLimitRpmConfig = openaiRequestsPerMinuteConfig // Alias for backwards compatibility
 
 // Cache configuration
 export const openaiCacheSizeConfig = Config.integer('OPENAI_CACHE_SIZE').pipe(
@@ -45,6 +47,16 @@ export const openaiCacheTTLHoursConfig = Config.number('OPENAI_CACHE_TTL_HOURS')
 export const cacheTtlSecondsConfig = Config.integer('CACHE_TTL_SECONDS').pipe(
   Config.withDefault(3600)
 )
+
+// Distractor generation settings
+export const distractorTargetCountConfig = Config.integer('DISTRACTOR_TARGET_COUNT').pipe(
+  Config.withDefault(15)
+)
+
+// Feature flags
+export const enableMetricsConfig = Config.boolean('ENABLE_METRICS').pipe(Config.withDefault(true))
+
+export const cacheEnabledConfig = Config.boolean('CACHE_ENABLED').pipe(Config.withDefault(true))
 
 // Test environment detection
 export const isTestEnv = nodeEnvConfig.pipe(Config.map((env) => env === 'test'))
@@ -66,7 +78,10 @@ export const environmentConfig = Config.all({
   openaiRateLimitRpm: openaiRateLimitRpmConfig,
   openaiCacheSize: openaiCacheSizeConfig,
   openaiCacheTTLHours: openaiCacheTTLHoursConfig,
-  cacheTtlSeconds: cacheTtlSecondsConfig
+  cacheTtlSeconds: cacheTtlSecondsConfig,
+  distractorTargetCount: distractorTargetCountConfig,
+  enableMetrics: enableMetricsConfig,
+  cacheEnabled: cacheEnabledConfig
 })
 
 export type EnvironmentConfig = Config.Config.Success<typeof environmentConfig>

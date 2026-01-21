@@ -68,7 +68,11 @@ describe('OpenAIDistractorService', () => {
       const testLayer = TestOpenAIDistractorServiceLayer({
         generateDistractors: () =>
           Effect.succeed({
-            distractors: ['Test distractor A', 'Test distractor B', 'Test distractor C'],
+            distractors: [
+              { text: 'Test distractor A', relevance: 0.9 },
+              { text: 'Test distractor B', relevance: 0.8 },
+              { text: 'Test distractor C', relevance: 0.7 }
+            ],
             confidence: 0.85,
             tokensUsed: 200
           })
@@ -81,7 +85,9 @@ describe('OpenAIDistractorService', () => {
         expect(response.distractors).toHaveLength(3)
         expect(response.confidence).toBe(0.85)
         expect(response.tokensUsed).toBe(200)
-        expect(response.distractors[0]).toBe('Test distractor A')
+        const firstDistractor = response.distractors[0]
+        expect(firstDistractor?.text).toBe('Test distractor A')
+        expect(firstDistractor?.relevance).toBe(0.9)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })
   })
@@ -91,7 +97,10 @@ describe('OpenAIDistractorService', () => {
       const testLayer = TestOpenAIDistractorServiceLayer({
         generateDistractors: () =>
           Effect.succeed({
-            distractors: ['Test A', 'Test B'],
+            distractors: [
+              { text: 'Test A', relevance: 0.8 },
+              { text: 'Test B', relevance: 0.7 }
+            ],
             confidence: 0.9,
             tokensUsed: 50
           })
@@ -107,7 +116,10 @@ describe('OpenAIDistractorService', () => {
         }
 
         const response = yield* service.generateDistractors(mockRequest)
-        expect(response.distractors).toEqual(['Test A', 'Test B'])
+        expect(response.distractors).toEqual([
+          { text: 'Test A', relevance: 0.8 },
+          { text: 'Test B', relevance: 0.7 }
+        ])
         expect(response.confidence).toBe(0.9)
       }).pipe(Effect.provide(testLayer), Effect.runPromise)
     })

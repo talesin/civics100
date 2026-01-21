@@ -1,4 +1,4 @@
-import { Config, Effect } from 'effect'
+import { Effect } from 'effect'
 import {
   DEFAULT_GENERATION_OPTIONS,
   DEFAULT_QUALITY_THRESHOLDS,
@@ -14,15 +14,11 @@ import {
   openaiTemperatureConfig,
   openaiMaxTokensConfig,
   openaiTimeoutConfig,
-  openaiRateLimitRpmConfig
+  openaiRateLimitRpmConfig,
+  distractorTargetCountConfig,
+  enableMetricsConfig,
+  cacheEnabledConfig
 } from './config/environment'
-
-// Environment variable configuration with Effect Config
-const distractorTargetCountConfig = Config.integer('DISTRACTOR_TARGET_COUNT').pipe(
-  Config.withDefault(15)
-)
-const enableMetricsConfig = Config.boolean('ENABLE_METRICS').pipe(Config.withDefault(true))
-const cacheEnabledConfig = Config.boolean('CACHE_ENABLED').pipe(Config.withDefault(true))
 
 // Load OpenAI configuration from environment (following coding guide)
 export const loadOpenAIConfig = () =>
@@ -145,18 +141,20 @@ export const loadSystemConfiguration = () =>
 // Validate environment variables using Config (following coding guide)
 export const validateEnvironment = () =>
   Effect.gen(function* () {
-    // Validate required environment variables using Config pattern
-    try {
-      const apiKey = yield* openaiApiKeyConfig
-      if (apiKey === undefined || apiKey === null || apiKey.trim().length === 0) {
-        return yield* Effect.fail(
-          new MissingEnvironmentVariableError({
-            variable: 'OPENAI_API_KEY',
-            required: true
-          })
-        )
-      }
-    } catch {
+    // Validate required environment variables using Effect error handling
+    const apiKeyResult = yield* Effect.either(openaiApiKeyConfig)
+
+    if (apiKeyResult._tag === 'Left') {
+      return yield* Effect.fail(
+        new MissingEnvironmentVariableError({
+          variable: 'OPENAI_API_KEY',
+          required: true
+        })
+      )
+    }
+
+    const apiKey = apiKeyResult.right
+    if (apiKey.trim().length === 0) {
       return yield* Effect.fail(
         new MissingEnvironmentVariableError({
           variable: 'OPENAI_API_KEY',
@@ -167,10 +165,7 @@ export const validateEnvironment = () =>
 
     // Validate optional but important variables
     const nodeEnv = yield* nodeEnvConfig
-    if (
-      nodeEnv !== undefined &&
-      ['development', 'production', 'test'].includes(nodeEnv) === false
-    ) {
+    if (['development', 'production', 'test'].includes(nodeEnv) === false) {
       yield* Effect.log(`Warning: Unexpected NODE_ENV value: ${nodeEnv}`)
     }
 

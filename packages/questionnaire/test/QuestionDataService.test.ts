@@ -19,7 +19,12 @@ describe('QuestionDataService', () => {
       distractors: [
         'the Declaration of Independence',
         'the Bill of Rights',
-        'the Articles of Confederation'
+        'the Articles of Confederation',
+        'the Federalist Papers',
+        'the Emancipation Proclamation',
+        'the Magna Carta',
+        'the Mayflower Compact',
+        'the Northwest Ordinance'
       ],
       _tag: 'QuestionWithDistractors'
     },
@@ -33,7 +38,16 @@ describe('QuestionDataService', () => {
         _type: 'text',
         choices: ['sets up the government', 'defines the government']
       },
-      distractors: ['creates the judiciary', 'establishes the military', 'defines voting rights'],
+      distractors: [
+        'creates the judiciary',
+        'establishes the military',
+        'defines voting rights',
+        'declares independence',
+        'abolishes slavery',
+        'establishes currency',
+        'creates political parties',
+        'defines state boundaries'
+      ],
       _tag: 'QuestionWithDistractors'
     },
     {
@@ -51,7 +65,16 @@ describe('QuestionDataService', () => {
           { senator: 'Kirsten Gillibrand', state: 'NY' as StateAbbreviation }
         ]
       },
-      distractors: ['Joe Biden', 'Nancy Pelosi', 'Kevin McCarthy'],
+      distractors: [
+        'Joe Biden',
+        'Nancy Pelosi',
+        'Kevin McCarthy',
+        'Kamala Harris',
+        'Mike Pence',
+        'Mitch McConnell',
+        'Bernie Sanders',
+        'Elizabeth Warren'
+      ],
       _tag: 'QuestionWithDistractors'
     }
   ]
@@ -71,7 +94,7 @@ describe('QuestionDataService', () => {
         expect(questions).toHaveLength(3)
         expect(questions[0]?.questionNumber).toBe('1')
         expect(questions[0]?.question).toBe('What is the supreme law of the land?')
-        expect(questions[0]?.answers).toHaveLength(4) // 1 correct + 3 distractors
+        expect(questions[0]?.answers).toHaveLength(4) // 1 correct + 3 distractors = 4 total
         expect(questions[0]?.pairedQuestionNumber).toBe('1-0')
         expect(questions[0]?.expectedAnswers).toBe(1)
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
@@ -123,8 +146,8 @@ describe('QuestionDataService', () => {
         expect(senatorQuestion?.answers).not.toEqual(
           expect.arrayContaining(['Chuck Schumer', 'Kirsten Gillibrand'])
         )
-        // Should have correct + distractors
-        expect(senatorQuestion?.answers).toHaveLength(5) // 2 CA senators + 3 distractors = 5 total
+        // Should have correct + distractors (limited to 6 total for expectedAnswers=2)
+        expect(senatorQuestion?.answers).toHaveLength(6) // 2 CA senators + 4 distractors = 6 total
       }).pipe(Effect.provide(QuestionDataService.Default), Effect.runPromise)
     })
 

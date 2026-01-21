@@ -1,4 +1,7 @@
 // Note: @effect/schema not available in current setup, using basic validation
+import Questions from 'civics2json/Questions'
+
+const TOTAL_QUESTIONS = Questions.length
 
 // Main configuration for distractor generation process
 export interface DistractorGenerationOptions {
@@ -10,6 +13,8 @@ export interface DistractorGenerationOptions {
   readonly useOpenAI: boolean // Enable OpenAI generation for text questions
   readonly batchSize: number // Number of questions to process in each batch (default: 10)
   readonly maxRetries: number // Maximum retry attempts for failed operations (default: 3)
+  readonly questionNumber?: number // If set, only regenerate distractors for this question (1-N)
+  readonly overRequestCount: number // Extra distractors to request for filtering by relevance (default: 5)
 }
 
 // Default configuration values
@@ -21,14 +26,21 @@ export const DEFAULT_GENERATION_OPTIONS: DistractorGenerationOptions = {
   checkAnswers: true,
   useOpenAI: true,
   batchSize: 10,
-  maxRetries: 3
+  maxRetries: 3,
+  overRequestCount: 5
 } as const
 
 // Basic validation helpers (replace with @effect/schema when available)
 export const validateGenerationOptions = (
   options: Partial<DistractorGenerationOptions>
 ): DistractorGenerationOptions => {
-  return {
+  // Validate questionNumber if provided (must be 1-N)
+  const questionNumber =
+    options.questionNumber !== undefined
+      ? Math.max(1, Math.min(TOTAL_QUESTIONS, options.questionNumber))
+      : undefined
+
+  const result: DistractorGenerationOptions = {
     regenAll: options.regenAll ?? DEFAULT_GENERATION_OPTIONS.regenAll,
     regenIncomplete: options.regenIncomplete ?? DEFAULT_GENERATION_OPTIONS.regenIncomplete,
     targetCount: Math.max(
@@ -42,8 +54,18 @@ export const validateGenerationOptions = (
     maxRetries: Math.max(
       1,
       Math.min(10, options.maxRetries ?? DEFAULT_GENERATION_OPTIONS.maxRetries)
+    ),
+    overRequestCount: Math.max(
+      0,
+      Math.min(10, options.overRequestCount ?? DEFAULT_GENERATION_OPTIONS.overRequestCount)
     )
   }
+
+  // Only add questionNumber if defined (avoid undefined in exactOptionalPropertyTypes)
+  if (questionNumber !== undefined) {
+    return { ...result, questionNumber }
+  }
+  return result
 }
 
 // Quality assessment configuration
@@ -78,7 +100,7 @@ export interface OpenAIConfiguration {
 export const DEFAULT_OPENAI_CONFIG: Omit<OpenAIConfiguration, 'apiKey'> = {
   model: 'gpt-4o-mini',
   temperature: 0.7,
-  maxTokens: 1000,
+  maxTokens: 2000, // Increased for scored distractors (each { text, relevance } needs ~40 tokens)
   requestsPerMinute: 60,
   timeoutMs: 30000
 } as const

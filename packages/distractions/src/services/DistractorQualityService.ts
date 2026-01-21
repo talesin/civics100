@@ -18,18 +18,31 @@ export const filterQualityDistractors = (similarityService: SimilarityService) =
     // Step 2: Remove very short fragments (less than 3 characters)
     const noShortFragments = noExactMatches.filter((candidate) => candidate.trim().length >= 3)
 
-    // Step 3: Remove candidates that are substrings of correct answers or vice versa
-    const noSubstrings = noShortFragments.filter((candidate) => {
+    // Step 3: Remove candidates that match whole correct answers (not just substrings)
+    // Uses word-based matching to avoid filtering valid distractors that share common words
+    const noMatches = noShortFragments.filter((candidate) => {
       const candidateLower = candidate.toLowerCase().trim()
+      const candidateWords = new Set(candidateLower.split(/\s+/))
+
       return !correctAnswers.some((answer) => {
         const answerLower = answer.toLowerCase().trim()
-        // Check if candidate is substring of answer or answer is substring of candidate
-        return candidateLower.includes(answerLower) || answerLower.includes(candidateLower)
+        const answerWords = new Set(answerLower.split(/\s+/))
+
+        // Only filter if:
+        // 1. Exact match (same string)
+        // 2. High word overlap (>75% of words match, excluding short words)
+        if (candidateLower === answerLower) return true
+
+        // Calculate word overlap (only count words > 2 characters to ignore articles/prepositions)
+        const commonWords = [...candidateWords].filter((w) => answerWords.has(w) && w.length > 2)
+        const overlapRatio = commonWords.length / Math.min(candidateWords.size, answerWords.size)
+
+        return overlapRatio > 0.75
       })
     })
 
     // Step 4: Apply similarity filtering to avoid partial matches
-    const notSimilar = yield* Effect.filter(noSubstrings, (candidate) =>
+    const notSimilar = yield* Effect.filter(noMatches, (candidate) =>
       Effect.gen(function* () {
         const isSimilar = yield* Effect.exists(correctAnswers, (answer) =>
           similarityService.isSimilar(answer, candidate)

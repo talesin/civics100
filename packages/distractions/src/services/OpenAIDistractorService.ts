@@ -1,8 +1,20 @@
-import { Effect, Layer } from 'effect'
+import { Effect, Layer, Schema } from 'effect'
 import * as Metric from 'effect/Metric'
 import OpenAI from 'openai'
 import type { Question } from 'civics2json'
 import type { OpenAIRequest } from '@src/types/index'
+
+// Schema for validating OpenAI response structure
+const DistractorItemSchema = Schema.Struct({
+  text: Schema.String,
+  relevance: Schema.Number.pipe(Schema.between(0, 1))
+})
+
+const OpenAIResponseSchema = Schema.Struct({
+  distractors: Schema.Array(DistractorItemSchema)
+})
+
+type OpenAIResponse = Schema.Schema.Type<typeof OpenAIResponseSchema>
 import {
   OpenAIError,
   OpenAIRateLimitError,
@@ -26,7 +38,8 @@ import {
   openaiTimeoutConfig,
   openaiRequestsPerMinuteConfig,
   openaiCacheSizeConfig,
-  openaiCacheTTLHoursConfig
+  openaiCacheTTLHoursConfig,
+  cacheEnabledConfig
 } from '@src/config/environment'
 
 // Helper function to create OpenAI client instance
@@ -51,7 +64,12 @@ IMPORTANT REQUIREMENTS:
 - Avoid obviously wrong or silly answers
 - Match the format and style of the correct answer
 - Focus on common misconceptions or closely related concepts
-- Return ONLY a JSON array of strings, no additional text
+- For each distractor, provide a relevance score from 0.000 to 1.000 (3 decimal places):
+  - 0.900-1.000: Perfect distractor - plausible, related to question topic, tests understanding
+  - 0.700-0.899: Good distractor - relevant to topic, could reasonably confuse learners
+  - 0.400-0.699: Acceptable - somewhat related but less effective
+  - 0.000-0.399: Poor - too obvious, off-topic, or nonsensical
+- Return JSON with array of { text, relevance } objects
 
 Question: ${request.question}
 Question Type: ${request.answerType}
@@ -152,11 +170,15 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
       // Create rate limiter for this service instance
       const rateLimiter = yield* createOpenAIRateLimiter(requestsPerMinute)
 
+      const prompt = buildPrompt(request)
+      const estimatedPromptTokens = Math.ceil(prompt.length / 4) // ~4 chars per token estimate
+
       yield* Effect.log(
-        `Generating ${request.targetCount} distractors for question: ${request.question.slice(0, 50)}... (rate limited to ${requestsPerMinute}/min)`
+        `Generating ${request.targetCount} distractors for question: ${request.question.slice(0, 50)}... (rate limited to ${requestsPerMinute}/min, prompt ~${estimatedPromptTokens} tokens)`
       )
 
-      const prompt = buildPrompt(request)
+      // Debug: show full prompt
+      yield* Effect.logDebug(`OpenAI prompt:\n${prompt}`)
 
       // Wrap the API call with rate limiting
       const rateLimitedAPICall = withRateLimit(
@@ -164,6 +186,10 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
         Effect.gen(function* () {
           const startTime = Date.now()
 
+          // gpt-5-mini only supports default temperature (1)
+          const supportsCustomTemperature = !model.includes('gpt-5')
+
+          // Use Structured Outputs with json_schema for guaranteed response format
           const completion = yield* Effect.tryPromise({
             try: () =>
               client.chat.completions.create({
@@ -172,16 +198,41 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
                   {
                     role: 'system',
                     content:
-                      'You are an expert educational content creator specializing in U.S. Civics assessments. Always respond with valid JSON arrays only.'
+                      'You are an expert educational content creator specializing in U.S. Civics assessments.'
                   },
                   {
                     role: 'user',
                     content: prompt
                   }
                 ],
-                temperature,
-                max_tokens: maxTokens,
-                response_format: { type: 'json_object' }
+                ...(supportsCustomTemperature ? { temperature } : {}),
+                max_completion_tokens: maxTokens,
+                response_format: {
+                  type: 'json_schema',
+                  json_schema: {
+                    name: 'distractors_response',
+                    strict: true,
+                    schema: {
+                      type: 'object',
+                      properties: {
+                        distractors: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              text: { type: 'string' },
+                              relevance: { type: 'number' }
+                            },
+                            required: ['text', 'relevance'],
+                            additionalProperties: false
+                          }
+                        }
+                      },
+                      required: ['distractors'],
+                      additionalProperties: false
+                    }
+                  }
+                }
               }),
             catch: (error) => {
               if (error instanceof Error) {
@@ -212,39 +263,58 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
           const tokensUsed = completion.usage?.total_tokens ?? 0
 
           // Parse the response content
-          const content = completion.choices[0]?.message?.content
+          const choice = completion.choices[0]
+          const message = choice?.message
+          const content = message?.content
+          const finishReason = choice?.finish_reason
+
+          yield* Effect.log(
+            `OpenAI response: finish_reason=${finishReason}, tokens=${tokensUsed}, content_length=${content?.length ?? 0}, message_keys=${Object.keys(message ?? {}).join(',')}`
+          )
+
+          // Log raw message for debugging
           if (content === undefined || content === null || content === '') {
+            yield* Effect.log(`OpenAI raw message: ${JSON.stringify(message)}`)
+          }
+
+          if (content === undefined || content === null || content === '') {
+            const refusal = choice?.message?.refusal
+            const errorDetail =
+              refusal !== undefined && refusal !== null
+                ? `Refusal: ${refusal}`
+                : `finish_reason: ${finishReason ?? 'unknown'}`
             return yield* Effect.fail(
-              new OpenAIError({ cause: new Error('Empty response from OpenAI') })
+              new OpenAIError({ cause: new Error(`Empty response from OpenAI (${errorDetail})`) })
             )
           }
 
-          const parsedResponse = yield* Effect.tryPromise({
-            try: () => Promise.resolve(JSON.parse(content)),
-            catch: () => new OpenAIError({ cause: new Error('Invalid JSON response from OpenAI') })
+          // Log first 200 chars of content for debugging
+          yield* Effect.log(`OpenAI content preview: ${content.slice(0, 200)}...`)
+
+          // Parse and validate response using Effect Schema
+          const jsonParsed = yield* Effect.try({
+            try: () => JSON.parse(content) as unknown,
+            catch: (e) =>
+              new OpenAIError({
+                cause: new Error(
+                  `Invalid JSON response from OpenAI: ${e instanceof Error ? e.message : String(e)}`
+                )
+              })
           })
 
-          // Extract distractors array - handle different possible response formats
-          let distractors: string[]
-          if (Array.isArray(parsedResponse) === true) {
-            distractors = parsedResponse
-          } else if (
-            parsedResponse.distractors !== undefined &&
-            Array.isArray(parsedResponse.distractors) === true
-          ) {
-            distractors = parsedResponse.distractors
-          } else if (
-            parsedResponse.answers !== undefined &&
-            Array.isArray(parsedResponse.answers) === true
-          ) {
-            distractors = parsedResponse.answers
-          } else {
-            return yield* Effect.fail(
-              new OpenAIError({
-                cause: new Error('Response does not contain a valid distractors array')
-              })
+          const parsedResponse: OpenAIResponse = yield* Schema.decodeUnknown(OpenAIResponseSchema)(
+            jsonParsed
+          ).pipe(
+            Effect.mapError(
+              (e) =>
+                new OpenAIError({
+                  cause: new Error(`Schema validation failed: ${e.message}`)
+                })
             )
-          }
+          )
+
+          // Schema guarantees { distractors: Array<{ text, relevance }> } structure
+          const distractors = parsedResponse.distractors
 
           // Validate distractors
           if (Array.isArray(distractors) === false || distractors.length === 0) {
@@ -255,16 +325,21 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
             )
           }
 
-          // Filter to strings only and trim whitespace
+          // Schema validation ensures type safety - just trim and filter empty text
           const validDistractors = distractors
-            .filter((d): d is string => typeof d === 'string')
-            .map((d) => d.trim())
-            .filter((d) => d.length > 0)
+            .map((d) => ({ text: d.text.trim(), relevance: d.relevance }))
+            .filter((d) => d.text.length > 0)
+
+          // Debug: show all parsed distractors with scores
+          yield* Effect.logDebug(
+            `OpenAI returned ${validDistractors.length} scored distractors:\n` +
+              validDistractors.map((d) => `  [${d.relevance}] ${d.text}`).join('\n')
+          )
 
           if (validDistractors.length === 0) {
             return yield* Effect.fail(
               new OpenAIError({
-                cause: new Error('No valid string distractors found in response')
+                cause: new Error('No valid scored distractors found in response')
               })
             )
           }
@@ -284,7 +359,10 @@ const generateDistractorsUncached = (request: OpenAIRequest) =>
           )
 
           return yield* Effect.succeed({
-            distractors: validDistractors.slice(0, request.targetCount),
+            distractors: validDistractors.slice(0, request.targetCount) as readonly {
+              text: string
+              relevance: number
+            }[],
             confidence,
             tokensUsed
           })
@@ -510,10 +588,21 @@ export class OpenAIDistractorService extends Effect.Service<OpenAIDistractorServ
       // Validate configuration on service initialization
       yield* validateOpenAIConfig()()
 
-      // Initialize cache
+      // Check if caching is enabled via environment config
+      const isCacheEnabled = yield* cacheEnabledConfig
+
+      // Initialize cache only if enabled
       const cacheSize = yield* openaiCacheSizeConfig
       const cacheTTL = yield* openaiCacheTTLHoursConfig
-      const responseCache = yield* createOpenAIResponseCache(cacheSize, cacheTTL)
+      const responseCache = isCacheEnabled
+        ? yield* createOpenAIResponseCache(cacheSize, cacheTTL)
+        : undefined
+
+      if (isCacheEnabled) {
+        yield* Effect.log('OpenAI response cache enabled')
+      } else {
+        yield* Effect.log('OpenAI response cache disabled via CACHE_ENABLED=false')
+      }
 
       return {
         generateDistractors: generateDistractorsWithOpenAI(responseCache),
@@ -542,7 +631,10 @@ export const TestOpenAIDistractorServiceLayer = (fn?: {
           fn?.generateDistractors ??
           (() =>
             Effect.succeed({
-              distractors: ['Test distractor 1', 'Test distractor 2'],
+              distractors: [
+                { text: 'Test distractor 1', relevance: 0.8 },
+                { text: 'Test distractor 2', relevance: 0.7 }
+              ],
               confidence: 0.9,
               tokensUsed: 100
             })),

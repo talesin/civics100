@@ -4,6 +4,7 @@ import { Effect } from 'effect'
 
 describe('parseUpdates', () => {
   const questionHtml = `
+  <h4 class="accordion__header">2025 Version Updates</h4>
   <div class="accordion__panel">
   <p>
     <strong>20. Who is one of your state's U.S. Senators now?*</strong>

@@ -13,22 +13,25 @@ Quick reference guide for coding standards in this project. Each section links t
 | Type design         | [type-design.md](./type-design.md)                 | Discriminated unions, branded types  |
 | React               | [react-guide.md](./react-guide.md)                 | Components, hooks, Tamagui           |
 | Testing             | [testing-guide.md](./testing-guide.md)             | Effect testing, mock layers          |
+| OpenAI API          | [openai-guide.md](./openai-guide.md)               | Chat, structured outputs, errors     |
 
 ## Pattern Lookup
 
 ### "How do I...?"
 
-| Task                      | Pattern                           | Guide                                                                                |
-| ------------------------- | --------------------------------- | ------------------------------------------------------------------------------------ |
-| Handle errors             | Tagged errors + `catchTag`        | [effect-ts-guide.md#error-handling](./effect-ts-guide.md#error-handling)             |
-| Create a service          | `Effect.Service` class            | [effect-ts-guide.md#services](./effect-ts-guide.md#services)                         |
-| Inject dependencies       | Curried functions + Layers        | [effect-ts-guide.md#dependency-injection](./effect-ts-guide.md#dependency-injection) |
-| Validate JSON             | Effect Schema                     | [effect-ts-guide.md#schema](./effect-ts-guide.md#schema)                             |
-| Model state               | Discriminated unions              | [type-design.md#discriminated-unions](./type-design.md#discriminated-unions)         |
-| Avoid primitive obsession | Branded/tagged types              | [type-design.md#branded-types](./type-design.md#branded-types)                       |
-| Chain operations          | `Effect.gen` with `yield*`        | [effect-ts-guide.md#composition](./effect-ts-guide.md#composition)                   |
-| Test Effect code          | Mock layers + `Effect.runPromise` | [testing-guide.md](./testing-guide.md)                                               |
-| Fetch HTTP data           | `HttpClient` with currying        | [effect-ts-guide.md#http-requests](./effect-ts-guide.md#http-requests)               |
+| Task                      | Pattern                             | Guide                                                                                |
+| ------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------ |
+| Handle errors             | Tagged errors + `catchTag`          | [effect-ts-guide.md#error-handling](./effect-ts-guide.md#error-handling)             |
+| Create a service          | `Effect.Service` class              | [effect-ts-guide.md#services](./effect-ts-guide.md#services)                         |
+| Inject dependencies       | Curried functions + Layers          | [effect-ts-guide.md#dependency-injection](./effect-ts-guide.md#dependency-injection) |
+| Validate JSON             | Effect Schema                       | [effect-ts-guide.md#schema](./effect-ts-guide.md#schema)                             |
+| Model state               | Discriminated unions                | [type-design.md#discriminated-unions](./type-design.md#discriminated-unions)         |
+| Avoid primitive obsession | Branded/tagged types                | [type-design.md#branded-types](./type-design.md#branded-types)                       |
+| Chain operations          | `Effect.gen` with `yield*`          | [effect-ts-guide.md#composition](./effect-ts-guide.md#composition)                   |
+| Test Effect code          | Mock layers + `Effect.runPromise`   | [testing-guide.md](./testing-guide.md)                                               |
+| Fetch HTTP data           | `HttpClient` with currying          | [effect-ts-guide.md#http-requests](./effect-ts-guide.md#http-requests)               |
+| Call OpenAI API           | `Effect.tryPromise` + tagged errors | [openai-guide.md#chat-completions](./openai-guide.md#chat-completions)               |
+| Handle rate limits        | RateLimiter with backoff            | [openai-guide.md#rate-limiting](./openai-guide.md#rate-limiting)                     |
 
 ### Decision Matrix: Error Handling
 
@@ -81,5 +84,6 @@ docs/
 ├── functional-patterns.md   # FP patterns for TypeScript
 ├── type-design.md           # Type-driven design
 ├── react-guide.md           # React + Tamagui patterns
-└── testing-guide.md         # Testing with Effect
+├── testing-guide.md         # Testing with Effect
+└── openai-guide.md          # OpenAI API integration
 ```

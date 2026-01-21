@@ -26,6 +26,20 @@ export const DistractorMetrics = {
     description: 'Total number of distractors filtered out for quality'
   }),
 
+  // Strategy selection metrics
+  strategyOpenAISelected: Metric.counter('strategy_openai_selected', {
+    description: 'Times OpenAI text strategy was selected'
+  }),
+
+  strategyFallbackSelected: Metric.counter('strategy_fallback_selected', {
+    description: 'Times fallback strategy was selected'
+  }),
+
+  // Cost tracking
+  estimatedCostTotal: Metric.gauge('estimated_cost_total_usd', {
+    description: 'Estimated total OpenAI cost in USD'
+  }),
+
   // Histogram metrics (using simple boundaries for now)
   openaiResponseTime: Metric.histogram(
     'openai_response_time_ms',
@@ -91,3 +105,20 @@ export const measureAndTrack = <A, E>(
   operation: Effect.Effect<A, E>
 ): Effect.Effect<A, E> =>
   measureDuration(durationMetric, trackOperation(successMetric, failureMetric, operation))
+
+// Strategy type for metrics
+type DistractorStrategy = 'openai-text' | 'fallback'
+
+// Helper to track strategy selection
+export const trackStrategySelection = (
+  strategy: DistractorStrategy
+): Effect.Effect<void, never> => {
+  switch (strategy) {
+    case 'openai-text':
+      return Metric.increment(DistractorMetrics.strategyOpenAISelected)
+    case 'fallback':
+      return Metric.increment(DistractorMetrics.strategyFallbackSelected)
+    default:
+      return Effect.void
+  }
+}

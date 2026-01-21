@@ -32,6 +32,44 @@ const shuffleArray = (
   })
 
 /**
+ * Randomly selects up to N distractors from the available pool.
+ * If fewer distractors are available, returns all of them.
+ */
+const selectRandomDistractors = (
+  distractors: ReadonlyArray<string>,
+  count: number
+): Effect.Effect<ReadonlyArray<string>, never, never> =>
+  Effect.gen(function* () {
+    if (distractors.length <= count) {
+      return distractors
+    }
+    const shuffled = yield* shuffleArray(distractors)
+    return shuffled.slice(0, count)
+  })
+
+/**
+ * Determines the total number of options to display based on expected answers.
+ * - 1 expected answer: 4 total options
+ * - 2 expected answers: 6 total options
+ * - 3+ expected answers: 8 total options
+ */
+const getTotalOptionCount = (expectedAnswers: number): number => {
+  if (expectedAnswers <= 1) return 4
+  if (expectedAnswers === 2) return 6
+  return 8
+}
+
+/**
+ * Determines how many distractors to include based on expected answers.
+ * For single-answer questions: totalOptions - 1 (one correct answer)
+ * For multi-answer questions: totalOptions - expectedAnswers
+ */
+const getDistractorCount = (expectedAnswers: number): number => {
+  const total = getTotalOptionCount(expectedAnswers)
+  return total - expectedAnswers
+}
+
+/**
  * Shuffles an array of answers using Fisher-Yates algorithm with Effect Random
  * Returns the shuffled answers array and the index of the correct answer
  * Uses a specific correct answer rather than always the first one
@@ -65,7 +103,9 @@ const createQuestion = (
   expectedAnswers?: number
 ): Effect.Effect<Question, never, never> => {
   return Effect.gen(function* () {
-    const { answers, correctIndex } = yield* shuffleAnswers(correctAnswer, distractors)
+    const count = getDistractorCount(expectedAnswers ?? 1)
+    const selectedDistractors = yield* selectRandomDistractors(distractors, count)
+    const { answers, correctIndex } = yield* shuffleAnswers(correctAnswer, selectedDistractors)
 
     return {
       questionNumber,
@@ -80,7 +120,28 @@ const createQuestion = (
 }
 
 /**
+ * Randomly selects correct answers when there are more available than needed.
+ * This ensures variety in multi-answer questions with large answer pools.
+ */
+const selectRandomCorrectAnswers = (
+  correctAnswers: ReadonlyArray<string>,
+  count: number
+): Effect.Effect<ReadonlyArray<string>, never, never> =>
+  Effect.gen(function* () {
+    if (correctAnswers.length <= count) {
+      return correctAnswers
+    }
+    const shuffled = yield* shuffleArray(correctAnswers)
+    return shuffled.slice(0, count)
+  })
+
+/**
  * Create a unified multi-answer question with multiple correct answers
+ *
+ * When there are more correct answers than expectedAnswers (e.g., 22 Cabinet
+ * positions but user needs to select 2), randomly selects expectedAnswers
+ * correct answers to display alongside distractors, keeping total options
+ * within the limit (6 for expectedAnswers=2).
  */
 const createUnifiedMultiAnswerQuestion = (
   questionNumber: QuestionNumber,
@@ -90,8 +151,16 @@ const createUnifiedMultiAnswerQuestion = (
   expectedAnswers: number
 ): Effect.Effect<Question, never, never> => {
   return Effect.gen(function* () {
-    // Combine correct answers with distractors
-    const allAnswers = [...correctAnswers, ...distractors]
+    // Select only expectedAnswers correct answers when pool is larger
+    const selectedCorrectAnswers = yield* selectRandomCorrectAnswers(
+      correctAnswers,
+      expectedAnswers
+    )
+
+    const distractorCount = getDistractorCount(expectedAnswers)
+    const selectedDistractors = yield* selectRandomDistractors(distractors, distractorCount)
+    // Combine selected correct answers with selected distractors
+    const allAnswers = [...selectedCorrectAnswers, ...selectedDistractors]
 
     // Create a unified pairedQuestionNumber for multi-answer questions
     const pairedQuestionNumber = PairedQuestionNumber(`${questionNumber}-unified`)
@@ -100,7 +169,7 @@ const createUnifiedMultiAnswerQuestion = (
     const shuffled = yield* shuffleArray(allAnswers)
 
     // Find indices of correct answers in shuffled array
-    const correctIndices = correctAnswers
+    const correctIndices = selectedCorrectAnswers
       .map((correctAnswer) => shuffled.findIndex((answer) => answer === correctAnswer))
       .filter((index) => index !== -1)
 
@@ -109,7 +178,7 @@ const createUnifiedMultiAnswerQuestion = (
       pairedQuestionNumber,
       question: questionText,
       correctAnswer: correctIndices, // Array of correct indices for multi-answer
-      correctAnswerText: correctAnswers.join(', '),
+      correctAnswerText: selectedCorrectAnswers.join(', '),
       answers: shuffled,
       expectedAnswers
     }

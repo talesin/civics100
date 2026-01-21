@@ -1,10 +1,11 @@
 import { describe, it, expect } from '@jest/globals'
-import { Effect } from 'effect'
+import { Effect, pipe } from 'effect'
 import {
   filterQualityDistractors,
   validateDistractorCompleteness,
   semanticValidation,
-  standardizeDistractorFormat
+  standardizeDistractorFormat,
+  DistractorQualityService
 } from '@src/services/DistractorQualityService'
 import { SimilarityService, TestSimilarityServiceLayer } from '@src/services/SimilarityService'
 
@@ -157,5 +158,93 @@ describe('DistractorQualityService', () => {
       const result = standardizeDistractorFormat(distractor, correctAnswers)
       expect(result).toBe('a law passed by Congress')
     })
+  })
+})
+
+describe('filterQualityDistractors with government forms (real similarity service)', () => {
+  // These tests use the real SimilarityService to verify government-form distractors are preserved
+  const correctAnswers = [
+    'Republic',
+    'Constitution-based federal republic',
+    'Representative democracy'
+  ]
+  const openAIDistractors = [
+    'Parliamentary democracy',
+    'Constitutional monarchy',
+    'Direct democracy',
+    'Theocracy',
+    'Oligarchy',
+    'Plutocracy',
+    'Unitary state',
+    'Confederation',
+    'Federal parliamentary republic',
+    'One-party state'
+  ]
+
+  it('should preserve valid government-form distractors', async () => {
+    const result = await pipe(
+      Effect.gen(function* () {
+        const qualityService = yield* DistractorQualityService
+        return yield* qualityService.filterQualityDistractors(openAIDistractors, correctAnswers)
+      }),
+      Effect.provide(DistractorQualityService.Default),
+      Effect.runPromise
+    )
+
+    // These should all be preserved (not filtered as "similar" to correct answers)
+    expect(result).toContain('Theocracy')
+    expect(result).toContain('Oligarchy')
+    expect(result).toContain('Plutocracy')
+    expect(result).toContain('Constitutional monarchy')
+    expect(result).toContain('Unitary state')
+    expect(result).toContain('Confederation')
+    expect(result).toContain('One-party state')
+  })
+
+  it('should preserve "Parliamentary democracy" despite sharing "democracy" word', async () => {
+    const result = await pipe(
+      Effect.gen(function* () {
+        const qualityService = yield* DistractorQualityService
+        return yield* qualityService.filterQualityDistractors(
+          ['Parliamentary democracy'],
+          correctAnswers
+        )
+      }),
+      Effect.provide(DistractorQualityService.Default),
+      Effect.runPromise
+    )
+
+    expect(result).toContain('Parliamentary democracy')
+  })
+
+  it('should filter exact matches of correct answers', async () => {
+    const withExact = [...openAIDistractors, 'Republic', 'Representative democracy']
+    const result = await pipe(
+      Effect.gen(function* () {
+        const qualityService = yield* DistractorQualityService
+        return yield* qualityService.filterQualityDistractors(withExact, correctAnswers)
+      }),
+      Effect.provide(DistractorQualityService.Default),
+      Effect.runPromise
+    )
+
+    // Exact matches should be filtered out
+    expect(result).not.toContain('Republic')
+    expect(result).not.toContain('Representative democracy')
+  })
+
+  it('should filter case-insensitive exact matches', async () => {
+    const withCaseVariant = [...openAIDistractors, 'republic', 'REPUBLIC']
+    const result = await pipe(
+      Effect.gen(function* () {
+        const qualityService = yield* DistractorQualityService
+        return yield* qualityService.filterQualityDistractors(withCaseVariant, correctAnswers)
+      }),
+      Effect.provide(DistractorQualityService.Default),
+      Effect.runPromise
+    )
+
+    expect(result).not.toContain('republic')
+    expect(result).not.toContain('REPUBLIC')
   })
 })

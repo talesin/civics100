@@ -16,12 +16,7 @@ export interface QualityMetrics {
   readonly totalGenerated: number
 }
 
-export type DistractorStrategy =
-  | 'curated'
-  | 'section-based'
-  | 'openai-text'
-  | 'static-pool'
-  | 'hybrid'
+export type DistractorStrategy = 'openai-text' | 'fallback'
 
 // Question processing context
 export interface QuestionContext {
@@ -48,8 +43,14 @@ export interface OpenAIRequest {
   readonly targetCount: number
 }
 
+// Scored distractor from OpenAI with relevance rating
+export interface ScoredDistractor {
+  readonly text: string
+  readonly relevance: number // 0-1 scale from OpenAI (3 decimal places)
+}
+
 export interface OpenAIResponse {
-  readonly distractors: readonly string[]
+  readonly distractors: readonly ScoredDistractor[]
   readonly confidence: number
   readonly tokensUsed: number
 }

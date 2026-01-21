@@ -49,7 +49,7 @@
       "@data/*": ["./data/*"]
     }
   },
-  "include": ["src", "test", "data/questions-with-distractors.json"],
+  "include": ["src", "test", "src/data/*.json", "data/questions-with-distractors.json"],
   "references": [
     { "path": "../civics2json" }
   ]

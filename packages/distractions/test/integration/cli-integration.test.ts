@@ -171,8 +171,8 @@ describe('CLI Integration Tests', () => {
     it('should define all required service layers', async () => {
       // Test that all services can be imported
       const { QuestionsDataService } = await import('../../src/data/QuestionsDataService')
-      const { CuratedDistractorService } =
-        await import('../../src/services/CuratedDistractorService')
+      const { FallbackDistractorService } =
+        await import('../../src/services/FallbackDistractorService')
       const { OpenAIDistractorService } = await import('../../src/services/OpenAIDistractorService')
       const { DistractorQualityService } =
         await import('../../src/services/DistractorQualityService')
@@ -182,7 +182,7 @@ describe('CLI Integration Tests', () => {
       const { DistractorManager } = await import('../../src/services/DistractorManager')
 
       expect(QuestionsDataService).toBeDefined()
-      expect(CuratedDistractorService).toBeDefined()
+      expect(FallbackDistractorService).toBeDefined()
       expect(OpenAIDistractorService).toBeDefined()
       expect(DistractorQualityService).toBeDefined()
       expect(SimilarityService).toBeDefined()
@@ -191,7 +191,7 @@ describe('CLI Integration Tests', () => {
 
       // Check that Default layers exist
       expect(QuestionsDataService.Default).toBeDefined()
-      expect(CuratedDistractorService.Default).toBeDefined()
+      expect(FallbackDistractorService.Default).toBeDefined()
       expect(OpenAIDistractorService.Default).toBeDefined()
       expect(DistractorQualityService.Default).toBeDefined()
       expect(SimilarityService.Default).toBeDefined()

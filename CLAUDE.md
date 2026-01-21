@@ -12,6 +12,7 @@ Guidance for Claude Code when working in this repository.
 | Type design        | [docs/type-design.md](./docs/type-design.md)                                       |
 | Testing            | [docs/testing-guide.md](./docs/testing-guide.md)                                   |
 | React/Tamagui      | [docs/react-guide.md](./docs/react-guide.md)                                       |
+| OpenAI integration | [docs/openai-guide.md](./docs/openai-guide.md)                                     |
 
 ## Project Overview
 

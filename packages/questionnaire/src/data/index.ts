@@ -51,3 +51,6 @@ export const civicsQuestionsWithDistractors: readonly QuestionWithDistractors[] 
 
 // Re-export types for convenience
 export type { Question, QuestionWithDistractors }
+
+// Total question count derived from source data
+export const TOTAL_QUESTION_COUNT = civicsQuestionsWithDistractors.length

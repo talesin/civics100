@@ -1,44 +1,29 @@
 # Issues
 
-Issues and feature updates as of 2025-08-06
+## 2026-01-19 Font Size
 
-## State Selection in Web UI - ✅
+The font size in several locations is too small to read. It is probably worth setting a minimum font size. Areas that are too small to read or should be larger due to emphasis:
 
-State selection in the web UI doesn't impact the questionnaire - it defaults to California. Make sure the state selection is reflected in the questionnaire and that it filters the questions accordingly. This will ensure that users see questions relevant to their selected state.
+- On the Game Settings:
+  - "Select your state" above state drop down
+  - State drop down text
+  - Text that says "Selected <state> Capital: <capital>", small but in particular the state name is even smaller
+  - "Questions will be customized based on your selected state's representatives, senators, and governor"
+  - "Select your congressional district:"
+  - District drop down text
+  - Text below district drop down that seems to repeat the district name - is this even necessary?
+  - "Selecting your district will show only your specific representative in relevant questions"
+  - Everything in the elected officials box, but in particular "Senators", "Governor" and "U.S. Representative"
+  - The description of the limits, eg "The game ends when you reach the pass threshold (early win), answer 9 questions incorrectly (early fail), or complete all questions. This matches the 2025 USCIS Civics Test format."
+- The footer where "US Civics Test Practice" is very small and "Test your knowledge of American civics and history with questions based on the official U.S. Citizenship Test." is impossibly small to read
+- On the Game Complete page:
+  - Passing score is too small to read
+  - "Session completed at ..." is impossibly small
 
-## US Representatives and Senators contain State Abbreviations - ✅
+## 2026-01-20 Multiple Choice Questions
 
-The answers for the state US representatives and senators show the state next to their name, making it obvious which state they represent. This is redundant since the state is already selected in the UI. We should remove the state abbreviation from the representative and senator names in the answers.
+The question _"There were 13 original states. Name five"_ needs a selection of 5 answers, however the `expectedAnsers` for it in `packages/civics2json/data/civics-questions.json` was set to 1. We should ensure that this value always reflects the actually number of expected answers.
 
-## US Representatives by District - ✅
+## 2026-01-20 Testing Specific Questions in the Web UI
 
-We need to update the US Representatives data to include district information. This will allow users to select their district and see the representatives for that district. The data should be structured in a way that allows easy filtering by district.
-
-- Update the `data/civics-questions.json` to include the district information for each representative.
-- Do not include the state in the representative's name, as it is redundant when the state is already selected.
-- Make sure the representative's name is in the format "First Last" without the state abbreviation.
-
-```json
-{
-  "theme": "AMERICAN GOVERNMENT",
-  "section": "System of Government",
-  "question": "Name your U.S. Representative.",
-  "questionNumber": 23,
-  "expectedAnswers": 1,
-  "answers": {
-    "_type": "representative",
-    "choices": [
-      {
-        "representative": "Barry Moore",
-        "state": "AL",
-        "district": "1st"
-      },
-      {
-        "representative": "Shomari Figures",
-        "state": "AL",
-        "district": "2nd"
-      }
-    ]
-  }
-}
-```
+We need to be able to choose specfic questions for testing.
