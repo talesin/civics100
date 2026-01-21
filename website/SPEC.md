@@ -9,7 +9,7 @@ This website is an interactive questionnaire that tests users' knowledge using t
 - Effect-TS
 - Next.js
 - TypeScript
-- Tailwind CSS
+- Tamagui (cross-platform UI framework with theming)
 - GitHub Pages
 
 ## Implementation Details
@@ -18,7 +18,7 @@ This website is an interactive questionnaire that tests users' knowledge using t
 - The website will be built using Next.js and TypeScript.
 - The website will be deployed to GitHub Pages.
 - TypeScript code will use Effect-TS for side effects and follow guidelines in code-style-guide.md.
-- The website will use Tailwind CSS for styling.
+- The website will use Tamagui for cross-platform styling with built-in light/dark theme support.
 
 ## User Experience
 
@@ -32,31 +32,32 @@ This website is an interactive questionnaire that tests users' knowledge using t
 
 ## Game Flow
 
-The US Civics questionnaire will now follow a constrained session model. Each session presents **10 randomly selected questions** from the question bank. The session will **automatically end once the user answers 6 questions correctly** or all 10 are answered, whichever comes first.
+The US Civics questionnaire follows a configurable session model. Users can choose from three quiz lengths: **20 questions** (Quick), **50 questions** (Standard), or **100 questions** (Full). For the 20-question mode, the session will **automatically end once the user answers 6 questions correctly** (an "early win"), or all 20 questions are answered, whichever comes first.
 
 ### Card Game Flow
 
 1. User lands on the homepage and selects "Take the Questionnaire".
 2. User is navigated to the game screen.
-3. A random subset of **10 questions** is selected and shuffled.
-4. One question is displayed per card.
-5. User selects an answer by clicking on one of the options.
-6. The card visually confirms whether the selected answer is correct or incorrect.
-7. After a short delay (or user action), the next card is shown.
-8. If the user answers **6 questions correctly**, the game ends early.
-9. Otherwise, the game ends after all 10 questions are answered.
-10. The user is shown a results page with performance stats.
+3. User selects quiz length: 20 (Quick), 50 (Standard), or 100 (Full) questions.
+4. A random subset of questions is selected and shuffled.
+5. One question is displayed per card with multiple-choice answers.
+6. User selects an answer by clicking on one of the options.
+7. The card visually confirms whether the selected answer is correct or incorrect.
+8. After a short delay (or user action), the next card is shown.
+9. For 20-question mode: if the user answers **6 questions correctly**, the game ends early with an "early win".
+10. Otherwise, the game ends after all selected questions are answered.
+11. The user is shown a results page with performance stats.
 
 ## Game UX Details
 
 - Each question is presented on a "card" in a card deck.
 - Answer selection highlights the choice and disables others.
 - Cards automatically slide to the next question after a short delay or after clicking a "Next" button.
-- Progress indicator shows current question number and total (e.g. "Card 3 of 10").
+- Progress indicator shows current question number and total (e.g. "Card 3 of 20").
 - At the end of the deck (or on early completion), a results summary appears showing:
   - Total correct answers
   - Percentage score
-  - Message if quiz ended early due to reaching 6 correct
+  - Message if quiz ended early due to reaching 6 correct (20-question mode only)
   - Option to retake the quiz
   - Option to return to homepage
 
@@ -103,9 +104,9 @@ The US Civics questionnaire will now follow a constrained session model. Each se
 
 - Given I am taking the questionnaire, when I reach 6 correct answers, then the game should end and take me to the results screen.
 
-### As a user, I want to be limited to 10 questions per quiz so that sessions are focused and short.
+### As a user, I want to choose quiz length so that I can customize my study session.
 
-- Given I start a new quiz, when the session begins, then I should only be asked up to 10 questions total.
+- Given I start a new quiz, when the session begins, then I should be able to choose from 20 (Quick), 50 (Standard), or 100 (Full) questions.
 
 ### As a user, I want to the US state to default to my location so that I can take the quiz with the relevant questions.
 
@@ -136,9 +137,10 @@ The US Civics questionnaire will now follow a constrained session model. Each se
 
 ## Test Scenarios (Acceptance Criteria)
 
-| Scenario          | Given            | When                           | Then                                              |
-| ----------------- | ---------------- | ------------------------------ | ------------------------------------------------- |
-| Early Win         | Quiz starts      | User reaches 6 correct answers | Show results screen, mark quiz as completed early |
-| Full Attempt      | Quiz starts      | User answers all 10 questions  | Show results screen                               |
-| Progress Tracking | Quiz in progress | User answers each question     | Show current card (e.g. "Card 4 of 10")           |
-| Retake            | Quiz ends        | User clicks "Retake Quiz"      | Restart quiz with new shuffled 10-question subset |
+| Scenario          | Given                  | When                                  | Then                                                      |
+| ----------------- | ---------------------- | ------------------------------------- | --------------------------------------------------------- |
+| Quiz Length       | Homepage               | User starts quiz                      | User can select 20, 50, or 100 question quiz              |
+| Early Win         | 20-question quiz       | User reaches 6 correct answers        | Show results screen, mark quiz as completed early         |
+| Full Attempt      | Quiz starts            | User answers all selected questions   | Show results screen                                       |
+| Progress Tracking | Quiz in progress       | User answers each question            | Show current card (e.g. "Card 4 of 20")                   |
+| Retake            | Quiz ends              | User clicks "Retake Quiz"             | Restart quiz with new shuffled question subset            |
