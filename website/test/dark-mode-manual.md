@@ -35,9 +35,9 @@
 
 6. **Debug if not working**:
    - Open browser dev tools (F12)
-   - In console, run: `document.documentElement.classList.contains('dark')`
-   - This should return `true` for dark mode, `false` for light mode
-   - Check if the `html` element has the `dark` class in Elements tab
+   - In console, run: `localStorage.getItem('theme')`
+   - This should return `'dark'` or `'light'` depending on current theme
+   - Check React DevTools to verify ThemeContext value
 
 ## Expected Results
 
@@ -52,17 +52,18 @@
 
 The dark mode implementation uses:
 
-- **Tailwind CSS v4** with `@variant dark (.dark &);` directive
-- **Class-based dark mode** using `html.dark` selector
+- **Tamagui** with built-in theme support (`light` and `dark` themes)
+- **ThemeContext** using `useThemeContext()` hook
 - **localStorage persistence** for theme preference
 - **System preference fallback** when no saved preference exists
-- **Custom CSS variables** for consistent theming
+- **Design tokens** via `themeColors[theme]` for consistent theming
 
 ## Debugging
 
 If dark mode still doesn't work:
 
-1. Check that `html` element gets the `dark` class when toggling
-2. Verify Tailwind CSS classes like `dark:bg-gray-900` are being applied
+1. Check that `ThemeContext` is providing the correct theme value
+2. Verify `themeColors[theme]` is returning the expected color tokens
 3. Check browser console for any errors
 4. Ensure development server was restarted after configuration changes
+5. Verify the theme toggle updates `localStorage` correctly
