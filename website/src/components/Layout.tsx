@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import ThemeToggle from './ThemeToggle'
+import { ErrorBoundary } from './ErrorBoundary'
 import { useThemeContext } from '@/components/TamaguiProvider'
 import { XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
@@ -292,7 +293,9 @@ export default function Layout({
       {/* Main content */}
       <main id="main-content" style={mainStyles} role="main">
         <div style={containerStyles}>
-          {children}
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
         </div>
       </main>
 

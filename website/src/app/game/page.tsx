@@ -104,6 +104,7 @@ export default function Game() {
   const colors = useMemo(() => ({ ...baseColors, ...gameColors }), [baseColors, gameColors])
   const { playComplete, playEarlyWin } = useGameSounds()
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const mountedRef = useRef(true)
 
   // Refs to avoid stale closures in setTimeout callbacks
   const sessionRef = useRef(session)
@@ -112,6 +113,14 @@ export default function Game() {
   sessionRef.current = session
   currentQuestionIndexRef.current = currentQuestionIndex
   questionsRef.current = questions
+
+  // Cleanup mounted ref on unmount
+  useEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   const initializeGame = useCallback(() => {
     setGameState('loading')
@@ -135,13 +144,19 @@ export default function Game() {
           gameSettings.userDistrict
         )
 
+        if (!mountedRef.current) return
+
         setSession(newSession)
         setQuestions(gameQuestions)
         setCurrentQuestionIndex(0)
         setShowEarlyWinOption(false)
         setGameState('playing')
       }),
-      console.error
+      (error) => {
+        if (mountedRef.current) {
+          console.error(error)
+        }
+      }
     )
   }, [gameSettings])
 
@@ -158,6 +173,8 @@ export default function Game() {
           // Save paired answers for adaptive learning
           yield* storageService.savePairedAnswers(finalSession.pairedAnswers)
 
+          if (!mountedRef.current) return
+
           // Play completion sound
           if (isSessionEarlyWin(finalSession)) {
             playEarlyWin()
@@ -168,7 +185,11 @@ export default function Game() {
           setGameResult(result)
           setGameState('completed')
         }),
-        console.error
+        (error) => {
+          if (mountedRef.current) {
+            console.error(error)
+          }
+        }
       )
     },
     [playComplete, playEarlyWin]
@@ -180,9 +201,15 @@ export default function Game() {
       Effect.gen(function* () {
         const localStorage = yield* LocalStorageService
         const savedSettings = yield* localStorage.getGameSettings()
-        setGameSettings(savedSettings)
+        if (mountedRef.current) {
+          setGameSettings(savedSettings)
+        }
       }),
-      console.error
+      (error) => {
+        if (mountedRef.current) {
+          console.error(error)
+        }
+      }
     )
   }, [])
 
@@ -208,6 +235,9 @@ export default function Game() {
           const sessionService = yield* SessionService
 
           const updatedSession = sessionService.processAnswer(session, answer)
+
+          if (!mountedRef.current) return
+
           setSession(updatedSession)
           setGameState('answered')
 
@@ -224,7 +254,11 @@ export default function Game() {
             completeGame(updatedSession)
           }
         }),
-        console.error
+        (error) => {
+          if (mountedRef.current) {
+            console.error(error)
+          }
+        }
       )
     },
     [session, gameState, completeGame, gameSettings.winThreshold]

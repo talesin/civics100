@@ -195,8 +195,11 @@ const StateSelector = ({
   }, [])
 
   const handleStateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newState = event.target.value as StateAbbreviation
-    onStateChange(newState)
+    const value = event.target.value
+    // Type guard: only call onStateChange if value is a valid state abbreviation
+    if (value in StatesByAbbreviation) {
+      onStateChange(value as StateAbbreviation)
+    }
   }
 
   return (

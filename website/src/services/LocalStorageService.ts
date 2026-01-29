@@ -305,11 +305,18 @@ const getPairedAnswers = (): Effect.Effect<PairedAnswers, never, never> => {
     const decodedOption = Schema.decodeUnknownOption(PairedAnswersSchema)(rawAnswers)
 
     if (Option.isSome(decodedOption)) {
-      // Schema ensures structure matches AnswerHistory (array of {ts: Date, correct: boolean})
-      // Cast at record level is safe since schema validates the value structure
+      // Type cast rationale: Effect Schema cannot produce branded types (PairedQuestionNumber).
+      // The schema validates the structure as Record<string, Array<{ts: Date, correct: boolean}>>,
+      // which matches the shape of PairedAnswers. The branded type information is lost in
+      // localStorage serialization anyway. The cast is safe because:
+      // 1. Schema validates all keys are strings (would satisfy PairedQuestionNumber brand)
+      // 2. Schema validates all values are valid AnswerHistory arrays
+      // 3. Empty records and malformed data are handled by the Option.isNone path
       return decodedOption.value as PairedAnswers
     }
 
+    // Return empty PairedAnswers for invalid/missing data
+    // Cast is safe: empty record satisfies Record<PairedQuestionNumber, AnswerHistory>
     return {} as PairedAnswers
   })
 }
