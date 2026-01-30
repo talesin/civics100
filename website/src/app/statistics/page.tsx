@@ -56,7 +56,7 @@ export default function Statistics() {
   const statsColors = statsThemeColors[theme]
   const colors = { ...baseColors, ...statsColors }
 
-  const loadData = useCallback(() => {
+  const loadData = useCallback((mountedRef: { current: boolean }) => {
     runWithServicesAndErrorHandling(
       Effect.gen(function* () {
         const storageService = yield* LocalStorageService
@@ -67,6 +67,8 @@ export default function Statistics() {
 
         // Load paired answers
         const answers = yield* storageService.getPairedAnswers()
+        if (!mountedRef.current) return
+
         setPairedAnswers(answers)
 
         // Load all questions using loadQuestions from questionnaire package
@@ -76,19 +78,24 @@ export default function Statistics() {
           userDistrict: gameSettings.userDistrict
         })
 
+        if (!mountedRef.current) return
+
         // Calculate statistics
         const stats = yield* statisticsService.calculateQuestionStatistics(allQuestions, answers)
         setStatistics([...stats])
 
         // Get summary
         const summaryStats = yield* statisticsService.getSummaryStatistics(allQuestions, answers)
-        setSummary(summaryStats)
+        if (!mountedRef.current) return
 
+        setSummary(summaryStats)
         setIsLoading(false)
       }),
       (error) => {
-        console.error('Failed to load statistics:', error)
-        setIsLoading(false)
+        if (mountedRef.current) {
+          console.error('Failed to load statistics:', error)
+          setIsLoading(false)
+        }
       }
     )
   }, [])
@@ -124,7 +131,11 @@ export default function Statistics() {
   }, [statistics, filter, pairedAnswers, searchQuery, sortField, sortAscending])
 
   useEffect(() => {
-    loadData()
+    const mountedRef = { current: true }
+    loadData(mountedRef)
+    return () => {
+      mountedRef.current = false
+    }
   }, [loadData])
 
   useEffect(() => {
@@ -261,7 +272,13 @@ export default function Statistics() {
               </label>
               <select
                 value={filter}
-                onChange={(e) => setFilter(e.target.value as QuestionFilter)}
+                onChange={(e) => {
+                  const value = e.target.value
+                  // Type guard: only set filter if value is a valid QuestionFilter
+                  if (Object.values(QuestionFilter).includes(value as QuestionFilter)) {
+                    setFilter(value as QuestionFilter)
+                  }
+                }}
                 style={{ ...inputStyles, width: 192 }}
               >
                 <option value={QuestionFilter.All}>All Questions</option>

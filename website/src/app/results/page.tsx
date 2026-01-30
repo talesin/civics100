@@ -68,24 +68,33 @@ export default function Results() {
   const colors = themeColors[theme]
 
   useEffect(() => {
-    loadData()
-  }, [])
+    let mounted = true
 
-  const loadData = () => {
     const fetchData = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
       const gameResults = yield* storageService.getGameResults()
       const gameStats = yield* storageService.getGameStats()
 
-      setResults([...gameResults])
-      setStats(gameStats)
-      setIsLoading(false)
+      if (mounted) {
+        setResults([...gameResults])
+        setStats(gameStats)
+        setIsLoading(false)
+      }
     })
 
     Effect.runPromise(fetchData.pipe(Effect.provide(LocalStorageService.Default))).catch(
-      console.error
+      (error) => {
+        if (mounted) {
+          console.error(error)
+          setIsLoading(false)
+        }
+      }
     )
-  }
+
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const handleClearData = () => {
     if (confirm('Are you sure you want to clear all your test results? This cannot be undone.')) {

@@ -49,16 +49,29 @@ export default function Home() {
   const colors = { ...baseColors, ...homeColors }
 
   useEffect(() => {
+    let mounted = true
+
     const loadStats = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
       const gameStats = yield* storageService.getGameStats()
-      setStats(gameStats)
-      setIsLoading(false)
+      if (mounted) {
+        setStats(gameStats)
+        setIsLoading(false)
+      }
     })
 
     Effect.runPromise(loadStats.pipe(Effect.provide(LocalStorageService.Default))).catch(
-      console.error
+      (error) => {
+        if (mounted) {
+          console.error(error)
+          setIsLoading(false)
+        }
+      }
     )
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
   const handleStartGame = () => {

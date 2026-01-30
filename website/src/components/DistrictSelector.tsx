@@ -6,6 +6,35 @@ import {
 } from '@/services/DistrictDataService'
 import { XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
+import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
+
+// Extended theme colors for district selector specific UI
+const districtThemeColors = {
+  light: {
+    loadingBorder: '#d1d5db',
+    loadingBg: '#f9fafb',
+    loadingText: '#6b7280',
+    errorBg: '#fef2f2',
+    errorText: '#dc2626',
+    infoBg: '#f9fafb',
+    infoText: '#4b5563',
+    helperText: '#6b7280',
+    selectBg: '#ffffff',
+    selectBorder: '#d1d5db',
+  },
+  dark: {
+    loadingBorder: '#4b5563',
+    loadingBg: '#374151',
+    loadingText: '#9ca3af',
+    errorBg: 'rgba(220, 38, 38, 0.1)',
+    errorText: '#f87171',
+    infoBg: '#374151',
+    infoText: '#d1d5db',
+    helperText: '#9ca3af',
+    selectBg: '#1f2937',
+    selectBorder: '#4b5563',
+  },
+}
 
 type NonEmptyArray<T> = [T, ...T[]];
 
@@ -26,57 +55,17 @@ const Label = styled(Text, {
   color: '$color',
 })
 
-const LoadingBox = styled(XStack, {
-  paddingHorizontal: '$3',
-  paddingVertical: '$2',
-  borderWidth: 1,
-  borderColor: '#d1d5db', // gray-300
-  borderRadius: '$2',
-  backgroundColor: '#f9fafb', // gray-50
-  alignItems: 'center',
-  gap: '$2',
-})
-
-const LoadingText = styled(Text, {
-  fontSize: '$3',
-  color: '#6b7280', // gray-500
-})
-
-const ErrorBox = styled(YStack, {
-  backgroundColor: '#fef2f2', // red-50
-  paddingHorizontal: '$3',
-  paddingVertical: '$2',
-  borderRadius: '$2',
-})
-
-const ErrorText = styled(Text, {
-  fontSize: '$3',
-  color: '#dc2626', // red-600
-})
-
-const InfoBox = styled(XStack, {
-  backgroundColor: '#f9fafb', // gray-50
-  paddingHorizontal: '$3',
-  paddingVertical: '$2',
-  borderRadius: '$2',
-})
-
-const InfoText = styled(Text, {
-  fontSize: '$2',
-  color: '#4b5563', // gray-600
-})
-
-const HelperText = styled(Text, {
-  fontSize: '$2',
-  color: '#6b7280', // gray-500
-})
-
 const DistrictSelector = ({
   selectedState,
   selectedDistrict,
   onDistrictChange,
   className = ''
 }: DistrictSelectorProps): React.ReactElement | null => {
+  const { theme } = useThemeContext()
+  const baseColors = themeColors[theme]
+  const districtColors = districtThemeColors[theme]
+  const colors = { ...baseColors, ...districtColors }
+
   const [districts, setDistricts] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -116,6 +105,53 @@ const DistrictSelector = ({
     onDistrictChange(value === '' ? undefined : value)
   }
 
+  const loadingBoxStyles: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: colors.loadingBorder,
+    borderRadius: 6,
+    backgroundColor: colors.loadingBg,
+  }
+
+  const errorBoxStyles: React.CSSProperties = {
+    backgroundColor: colors.errorBg,
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
+    borderRadius: 6,
+  }
+
+  const infoBoxStyles: React.CSSProperties = {
+    display: 'flex',
+    backgroundColor: colors.infoBg,
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingTop: 8,
+    paddingBottom: 8,
+    borderRadius: 6,
+  }
+
+  const selectStyles: React.CSSProperties = {
+    width: '100%',
+    padding: '8px 12px',
+    borderWidth: 1,
+    borderStyle: 'solid',
+    borderColor: colors.selectBorder,
+    borderRadius: 6,
+    backgroundColor: colors.selectBg,
+    color: colors.text,
+    fontSize: 14,
+    outline: 'none',
+  }
+
   // Don't render if no districts loaded yet or error occurred
   if (isLoading) {
     return (
@@ -123,8 +159,8 @@ const DistrictSelector = ({
         <XStack alignItems="center" justifyContent="space-between">
           <Label>Congressional District:</Label>
         </XStack>
-        <LoadingBox>
-          <svg width={16} height={16} fill="none" viewBox="0 0 24 24" style={{ animation: 'spin 1s linear infinite' }}>
+        <div style={loadingBoxStyles}>
+          <svg width={16} height={16} fill="none" viewBox="0 0 24 24" style={{ animation: 'spin 1s linear infinite', color: colors.loadingText }}>
             <circle
               opacity={0.25}
               cx="12"
@@ -139,8 +175,8 @@ const DistrictSelector = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <LoadingText>Loading districts...</LoadingText>
-        </LoadingBox>
+          <span style={{ fontSize: 14, color: colors.loadingText }}>Loading districts...</span>
+        </div>
       </YStack>
     )
   }
@@ -151,9 +187,9 @@ const DistrictSelector = ({
         <XStack alignItems="center" justifyContent="space-between">
           <Label>Congressional District:</Label>
         </XStack>
-        <ErrorBox>
-          <ErrorText>{error}</ErrorText>
-        </ErrorBox>
+        <div style={errorBoxStyles}>
+          <span style={{ fontSize: 14, color: colors.errorText }}>{error}</span>
+        </div>
       </YStack>
     )
   }
@@ -170,11 +206,11 @@ const DistrictSelector = ({
         <XStack alignItems="center" justifyContent="space-between">
           <Label>Congressional District:</Label>
         </XStack>
-        <InfoBox>
-          <InfoText>
-            <Text fontWeight="500">District:</Text> {formatDistrictLabel(districts[0])}
-          </InfoText>
-        </InfoBox>
+        <div style={infoBoxStyles}>
+          <span style={{ fontSize: 12, color: colors.infoText }}>
+            <span style={{ fontWeight: 500 }}>District:</span> {formatDistrictLabel(districts[0])}
+          </span>
+        </div>
       </YStack>
     )
   }
@@ -192,17 +228,7 @@ const DistrictSelector = ({
           id="district-selector"
           value={selectedDistrict ?? ''}
           onChange={handleDistrictChange}
-          style={{
-            width: '100%',
-            padding: '8px 12px',
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderColor: '#d1d5db',
-            borderRadius: 6,
-            backgroundColor: 'white',
-            fontSize: 14,
-            outline: 'none',
-          }}
+          style={selectStyles}
         >
           <option value="">Select a district...</option>
           {districts.map((district) => (
@@ -214,16 +240,16 @@ const DistrictSelector = ({
       </YStack>
 
       {selectedDistrict !== null && selectedDistrict !== undefined ? (
-        <InfoBox>
-          <InfoText>
-            <Text fontWeight="500">Selected:</Text> {formatDistrictLabel(selectedDistrict)}
-          </InfoText>
-        </InfoBox>
+        <div style={infoBoxStyles}>
+          <span style={{ fontSize: 12, color: colors.infoText }}>
+            <span style={{ fontWeight: 500 }}>Selected:</span> {formatDistrictLabel(selectedDistrict)}
+          </span>
+        </div>
       ) : null}
 
-      <HelperText>
+      <span style={{ fontSize: 12, color: colors.helperText }}>
         Selecting your district will show only your specific representative in relevant questions.
-      </HelperText>
+      </span>
     </YStack>
   )
 }

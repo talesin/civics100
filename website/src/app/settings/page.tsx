@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { Effect } from 'effect'
 import { StateAbbreviation } from 'civics2json'
 import { TOTAL_QUESTION_COUNT } from 'questionnaire'
 import Layout from '@/components/Layout'
@@ -9,6 +10,7 @@ import StateSelector from '@/components/StateSelector'
 import DistrictSelector from '@/components/DistrictSelector'
 import PoliticianVerificationBox from '@/components/PoliticianVerificationBox'
 import { useThemeContext, themeColors as baseThemeColors } from '@/components/TamaguiProvider'
+import { LocalStorageService } from '@/services/LocalStorageService'
 import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings, WIN_THRESHOLD_PERCENTAGE } from '@/types'
 
 // Settings-specific colors that extend the base theme colors
@@ -49,29 +51,46 @@ export default function Settings() {
     ...settingsThemeColors[theme]
   }), [theme])
 
-  // Load settings from localStorage on component mount
+  // Load settings from LocalStorageService on component mount
   useEffect(() => {
-    try {
-      const savedSettings = localStorage.getItem('civics100_game_settings')
-      if (savedSettings !== null) {
-        const parsed = JSON.parse(savedSettings) as WebsiteGameSettings
-        setSettings(parsed)
+    let mounted = true
+
+    const loadSettings = Effect.gen(function* () {
+      const storageService = yield* LocalStorageService
+      const savedSettings = yield* storageService.getGameSettings()
+      if (mounted) {
+        setSettings(savedSettings)
+        setIsLoading(false)
       }
-    } catch (error) {
-      console.error('Failed to load settings:', error)
-    } finally {
-      setIsLoading(false)
+    })
+
+    Effect.runPromise(loadSettings.pipe(Effect.provide(LocalStorageService.Default))).catch(
+      (error) => {
+        if (mounted) {
+          console.error('Failed to load settings:', error)
+          setIsLoading(false)
+        }
+      }
+    )
+
+    return () => {
+      mounted = false
     }
   }, [])
 
-  // Save settings to localStorage
+  // Save settings to LocalStorageService
   const saveSettings = useCallback(() => {
-    try {
-      localStorage.setItem('civics100_game_settings', JSON.stringify(settings))
+    const saveEffect = Effect.gen(function* () {
+      const storageService = yield* LocalStorageService
+      yield* storageService.saveGameSettings(settings)
       setHasChanges(false)
-    } catch (error) {
-      console.error('Failed to save settings:', error)
-    }
+    })
+
+    Effect.runPromise(saveEffect.pipe(Effect.provide(LocalStorageService.Default))).catch(
+      (error) => {
+        console.error('Failed to save settings:', error)
+      }
+    )
   }, [settings])
 
   const handleStateChange = useCallback((state: StateAbbreviation) => {
@@ -108,14 +127,20 @@ export default function Settings() {
   }, [setTheme])
 
   const handleStartGame = useCallback(() => {
+    const navigateToGame = () => router.push('/game')
+
     if (hasChanges) {
-      try {
-        localStorage.setItem('civics100_game_settings', JSON.stringify(settings))
-      } catch (error) {
-        console.error('Failed to save settings:', error)
-      }
+      const saveEffect = Effect.gen(function* () {
+        const storageService = yield* LocalStorageService
+        yield* storageService.saveGameSettings(settings)
+      })
+
+      Effect.runPromise(saveEffect.pipe(Effect.provide(LocalStorageService.Default)))
+        .catch((error) => console.error('Failed to save settings:', error))
+        .finally(navigateToGame)
+    } else {
+      navigateToGame()
     }
-    router.push('/game')
   }, [hasChanges, settings, router])
 
   const resetToDefaults = useCallback(() => {
