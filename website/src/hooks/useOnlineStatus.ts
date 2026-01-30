@@ -6,10 +6,7 @@ export function useOnlineStatus(): boolean {
   const [isOnline, setIsOnline] = useState(true)
 
   useEffect(() => {
-    // Set initial state from navigator
-    if (typeof navigator !== 'undefined') {
-      setIsOnline(navigator.onLine)
-    }
+    setIsOnline(navigator.onLine)
 
     const handleOnline = () => setIsOnline(true)
     const handleOffline = () => setIsOnline(false)

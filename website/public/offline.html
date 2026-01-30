@@ -100,12 +100,22 @@
       It looks like you've lost your internet connection.
       Check your connection and try again.
     </p>
-    <button onclick="window.location.reload()">
+    <button id="retry-button">
       Try Again
     </button>
     <p class="hint">
       Previously visited pages may still be available offline.
     </p>
   </div>
+  <script>
+    document.getElementById('retry-button').addEventListener('click', function() {
+      if (navigator.onLine) {
+        window.location.reload();
+      } else {
+        // When still offline, navigate to the homepage which may be cached
+        window.location.href = '/';
+      }
+    });
+  </script>
 </body>
 </html>

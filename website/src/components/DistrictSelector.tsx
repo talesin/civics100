@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { StateAbbreviation } from 'civics2json'
 import {
   getDistrictsForState,
@@ -64,7 +64,7 @@ const DistrictSelector = ({
   const { theme } = useThemeContext()
   const baseColors = themeColors[theme]
   const districtColors = districtThemeColors[theme]
-  const colors = useMemo(() => ({ ...baseColors, ...districtColors }), [baseColors, districtColors])
+  const colors = { ...baseColors, ...districtColors }
 
   const [districts, setDistricts] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -105,8 +105,7 @@ const DistrictSelector = ({
     onDistrictChange(value === '' ? undefined : value)
   }
 
-  // Memoized styles
-  const loadingBoxStyles: React.CSSProperties = useMemo(() => ({
+  const loadingBoxStyles: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
@@ -119,18 +118,18 @@ const DistrictSelector = ({
     borderColor: colors.loadingBorder,
     borderRadius: 6,
     backgroundColor: colors.loadingBg,
-  }), [colors.loadingBorder, colors.loadingBg])
+  }
 
-  const errorBoxStyles: React.CSSProperties = useMemo(() => ({
+  const errorBoxStyles: React.CSSProperties = {
     backgroundColor: colors.errorBg,
     paddingLeft: 12,
     paddingRight: 12,
     paddingTop: 8,
     paddingBottom: 8,
     borderRadius: 6,
-  }), [colors.errorBg])
+  }
 
-  const infoBoxStyles: React.CSSProperties = useMemo(() => ({
+  const infoBoxStyles: React.CSSProperties = {
     display: 'flex',
     backgroundColor: colors.infoBg,
     paddingLeft: 12,
@@ -138,9 +137,9 @@ const DistrictSelector = ({
     paddingTop: 8,
     paddingBottom: 8,
     borderRadius: 6,
-  }), [colors.infoBg])
+  }
 
-  const selectStyles: React.CSSProperties = useMemo(() => ({
+  const selectStyles: React.CSSProperties = {
     width: '100%',
     padding: '8px 12px',
     borderWidth: 1,
@@ -151,7 +150,7 @@ const DistrictSelector = ({
     color: colors.text,
     fontSize: 14,
     outline: 'none',
-  }), [colors.selectBorder, colors.selectBg, colors.text])
+  }
 
   // Don't render if no districts loaded yet or error occurred
   if (isLoading) {

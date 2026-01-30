@@ -64,13 +64,15 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return cached response and update cache in background
+        // Return cached response and update cache in background (stale-while-revalidate)
         event.waitUntil(
           fetch(request)
             .then((response) => {
               if (response.ok) {
+                // Clone response before caching - response body can only be consumed once
+                const responseClone = response.clone();
                 caches.open(CACHE_NAME).then((cache) => {
-                  cache.put(request, response);
+                  cache.put(request, responseClone);
                 });
               }
             })

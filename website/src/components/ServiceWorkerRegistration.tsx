@@ -8,10 +8,12 @@ export function ServiceWorkerRegistration() {
       return
     }
 
+    const isDev = process.env.NODE_ENV === 'development'
+
     navigator.serviceWorker
       .register('/sw.js')
       .then((registration) => {
-        console.log('[SW] Service worker registered:', registration.scope)
+        if (isDev) console.log('[SW] Service worker registered:', registration.scope)
 
         // Handle updates
         registration.addEventListener('updatefound', () => {
@@ -24,12 +26,13 @@ export function ServiceWorkerRegistration() {
               navigator.serviceWorker.controller !== null
             ) {
               // New content is available, will be used on next refresh
-              console.log('[SW] New content available')
+              if (isDev) console.log('[SW] New content available')
             }
           })
         })
       })
       .catch((error) => {
+        // Keep error logging in production for debugging user issues
         console.error('[SW] Service worker registration failed:', error)
       })
   }, [])
