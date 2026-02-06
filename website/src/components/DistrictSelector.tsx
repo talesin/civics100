@@ -148,7 +148,7 @@ const DistrictSelector = ({
     borderRadius: 6,
     backgroundColor: colors.selectBg,
     color: colors.text,
-    fontSize: 14,
+    fontSize: 16,
     outline: 'none',
   }
 
@@ -175,7 +175,7 @@ const DistrictSelector = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span style={{ fontSize: 14, color: colors.loadingText }}>Loading districts...</span>
+          <span style={{ fontSize: 16, color: colors.loadingText }}>Loading districts...</span>
         </div>
       </YStack>
     )
@@ -188,7 +188,7 @@ const DistrictSelector = ({
           <Label>Congressional District:</Label>
         </XStack>
         <div style={errorBoxStyles}>
-          <span style={{ fontSize: 14, color: colors.errorText }}>{error}</span>
+          <span style={{ fontSize: 16, color: colors.errorText }}>{error}</span>
         </div>
       </YStack>
     )
@@ -207,7 +207,7 @@ const DistrictSelector = ({
           <Label>Congressional District:</Label>
         </XStack>
         <div style={infoBoxStyles}>
-          <span style={{ fontSize: 12, color: colors.infoText }}>
+          <span style={{ fontSize: 14, color: colors.infoText }}>
             <span style={{ fontWeight: 500 }}>District:</span> {formatDistrictLabel(districts[0])}
           </span>
         </div>
@@ -241,13 +241,13 @@ const DistrictSelector = ({
 
       {selectedDistrict !== null && selectedDistrict !== undefined ? (
         <div style={infoBoxStyles}>
-          <span style={{ fontSize: 12, color: colors.infoText }}>
+          <span style={{ fontSize: 14, color: colors.infoText }}>
             <span style={{ fontWeight: 500 }}>Selected:</span> {formatDistrictLabel(selectedDistrict)}
           </span>
         </div>
       ) : null}
 
-      <span style={{ fontSize: 12, color: colors.helperText }}>
+      <span style={{ fontSize: 14, color: colors.helperText }}>
         Selecting your district will show only your specific representative in relevant questions.
       </span>
     </YStack>

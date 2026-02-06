@@ -105,7 +105,7 @@ const ProgressBar = styled(YStack, {
 })
 
 const ProgressText = styled(Text, {
-  fontSize: '$2',
+  fontSize: '$3',
   color: '$placeholderColor',
   textAlign: 'center',
 })
@@ -180,7 +180,7 @@ const Footer = styled(YStack, {
 })
 
 const FooterText = styled(Text, {
-  fontSize: '$1',
+  fontSize: '$2',
   color: '$placeholderColor',
 })
 

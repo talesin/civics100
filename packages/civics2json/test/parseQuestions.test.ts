@@ -616,6 +616,26 @@ A: Principles of American Democracy
     }).pipe(Effect.runPromise)
   })
 
+  it('should detect expectedAnswers for "Name five." mid-sentence (Question 81 pattern)', async () => {
+    const text = `
+AMERICAN HISTORY
+A: Colonial Period and Independence
+
+81. There were 13 original states. Name five.
+. New Hampshire
+. Massachusetts
+. Rhode Island
+. Connecticut
+. New York
+`
+    await Effect.gen(function* (_) {
+      const questions = yield* parseQuestionsFile(text, { skipValidation: true })
+
+      const question81 = questions.find((q) => q.questionNumber === 81)
+      expect(question81?.expectedAnswers).toBe(5)
+    }).pipe(Effect.runPromise)
+  })
+
   it('should detect expectedAnswers for various numerical patterns', async () => {
     const text = `
 AMERICAN GOVERNMENT

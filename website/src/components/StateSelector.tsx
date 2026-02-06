@@ -54,12 +54,12 @@ const InfoBox = styled(XStack, {
 })
 
 const InfoText = styled(Text, {
-  fontSize: '$2',
+  fontSize: '$3',
   color: '$placeholderColor',
 })
 
 const HelperText = styled(Text, {
-  fontSize: '$2',
+  fontSize: '$3',
   color: '$placeholderColor',
 })
 
@@ -272,7 +272,7 @@ const StateSelector = ({
             borderColor: colors.border,
             borderRadius: 6,
             backgroundColor: colors.cardBg,
-            fontSize: 14,
+            fontSize: 16,
             color: colors.text,
           }}
         >

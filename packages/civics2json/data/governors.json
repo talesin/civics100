@@ -472,9 +472,9 @@
   },
   {
     "state": "NJ",
-    "name": "Phil Murphy",
+    "name": "Mikie Sherrill",
     "governorUrl": "https://www.nj.gov/governor/",
-    "contactUrl": "https://www.nj.gov/governor/contact/all/",
+    "contactUrl": "https://www-njlib.nj.gov/GOV_TRANS_APPLICANTS/BTCustomServlet",
     "phone": "1-609-292-6000",
     "address": {
       "street": "Office of Governor",
@@ -682,9 +682,9 @@
   },
   {
     "state": "VA",
-    "name": "Glenn Youngkin",
+    "name": "Abigail Spanberger",
     "governorUrl": "https://www.governor.virginia.gov/",
-    "contactUrl": "https://www.governor.virginia.gov/communicating-with-the-governors-office/",
+    "contactUrl": "https://www.governor.virginia.gov/contact/",
     "phone": "1-804-786-2211",
     "address": {
       "street": "P.O. Box 1475",

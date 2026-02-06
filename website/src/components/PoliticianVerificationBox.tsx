@@ -32,7 +32,7 @@ const PoliticianRow = styled(YStack, {
 })
 
 const PoliticianLabel = styled(Text, {
-  fontSize: '$2',
+  fontSize: '$3',
   fontWeight: '500',
   color: '$placeholderColor',
 })

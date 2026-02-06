@@ -44,6 +44,9 @@ export default function Settings() {
   const [settings, setSettings] = useState<WebsiteGameSettings>(DEFAULT_GAME_SETTINGS)
   const [isLoading, setIsLoading] = useState(true)
   const [hasChanges, setHasChanges] = useState(false)
+  const [practiceSpecificEnabled, setPracticeSpecificEnabled] = useState(false)
+  const [questionNumbersInput, setQuestionNumbersInput] = useState('')
+  const [questionNumbersError, setQuestionNumbersError] = useState<string | null>(null)
   const { theme, setTheme } = useThemeContext()
   // Merge base theme colors with settings-specific colors
   const colors = useMemo(() => ({
@@ -60,6 +63,10 @@ export default function Settings() {
       const savedSettings = yield* storageService.getGameSettings()
       if (mounted) {
         setSettings(savedSettings)
+        if (savedSettings.questionNumbers != null && savedSettings.questionNumbers.length > 0) {
+          setPracticeSpecificEnabled(true)
+          setQuestionNumbersInput(savedSettings.questionNumbers.join(', '))
+        }
         setIsLoading(false)
       }
     })
@@ -126,6 +133,54 @@ export default function Settings() {
     setTheme(value ? 'dark' : 'light')
   }, [setTheme])
 
+  const parseQuestionNumbers = useCallback((input: string): { numbers: number[]; error: string | null } => {
+    if (input.trim() === '') return { numbers: [], error: null }
+
+    const parts = input.split(',').map((s) => s.trim()).filter((s) => s !== '')
+    const numbers: number[] = []
+
+    for (const part of parts) {
+      const n = parseInt(part, 10)
+      if (isNaN(n) || String(n) !== part) {
+        return { numbers: [], error: `"${part}" is not a valid number` }
+      }
+      if (n < 1 || n > TOTAL_QUESTION_COUNT) {
+        return { numbers: [], error: `Question ${n} is out of range (1-${TOTAL_QUESTION_COUNT})` }
+      }
+      numbers.push(n)
+    }
+
+    const unique = [...new Set(numbers)]
+    return { numbers: unique, error: null }
+  }, [])
+
+  const handlePracticeSpecificToggle = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const enabled = event.target.checked
+    setPracticeSpecificEnabled(enabled)
+
+    if (!enabled) {
+      setQuestionNumbersInput('')
+      setQuestionNumbersError(null)
+      setSettings((prev) => ({ ...prev, questionNumbers: undefined }))
+    }
+    setHasChanges(true)
+  }, [])
+
+  const handleQuestionNumbersChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const input = event.target.value
+    setQuestionNumbersInput(input)
+
+    const { numbers, error } = parseQuestionNumbers(input)
+    setQuestionNumbersError(error)
+
+    if (error === null && numbers.length > 0) {
+      setSettings((prev) => ({ ...prev, questionNumbers: numbers }))
+    } else if (error === null && numbers.length === 0) {
+      setSettings((prev) => ({ ...prev, questionNumbers: undefined }))
+    }
+    setHasChanges(true)
+  }, [parseQuestionNumbers])
+
   const handleStartGame = useCallback(() => {
     const navigateToGame = () => router.push('/game')
 
@@ -145,6 +200,9 @@ export default function Settings() {
 
   const resetToDefaults = useCallback(() => {
     setSettings(DEFAULT_GAME_SETTINGS)
+    setPracticeSpecificEnabled(false)
+    setQuestionNumbersInput('')
+    setQuestionNumbersError(null)
     setHasChanges(true)
 
     // Reset dark mode via theme context
@@ -179,7 +237,7 @@ export default function Settings() {
     borderRadius: 6,
     backgroundColor: colors.inputBg,
     color: colors.text,
-    fontSize: 14,
+    fontSize: 16,
     outline: 'none',
   }
 
@@ -197,11 +255,11 @@ export default function Settings() {
             <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>
               Location Settings
             </h2>
-            <p style={{ fontSize: 14, color: colors.textLight }}>
+            <p style={{ fontSize: 16, color: colors.textLight }}>
               Select your state and congressional district to get personalized questions about your
               specific representative, senators, and governor.
             </p>
-            <div style={{ fontSize: 14, color: colors.linkText }}>
+            <div style={{ fontSize: 16, color: colors.linkText }}>
               Don&apos;t know your congressional district?{' '}
               <a
                 href="https://www.govtrack.us/congress/members/map"
@@ -241,7 +299,7 @@ export default function Settings() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label
                   htmlFor="max-questions"
-                  style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted }}
+                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
                 >
                   Questions per game:
                 </label>
@@ -260,7 +318,7 @@ export default function Settings() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <label
                   htmlFor="win-threshold"
-                  style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted }}
+                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
                 >
                   Pass threshold:
                 </label>
@@ -289,9 +347,77 @@ export default function Settings() {
               </div>
             </div>
 
-            <div style={{ fontSize: 12, color: colors.textXLight }}>
+            <div style={{ fontSize: 14, color: colors.textXLight }}>
               The game ends when you reach the pass threshold (early win), answer 9 questions incorrectly (early fail), or complete all questions. This matches the 2025 USCIS Civics Test format.
             </div>
+          </div>
+
+          <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
+
+          {/* Practice Specific Questions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>Practice Specific Questions</h2>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <input
+                type="checkbox"
+                id="practice-specific"
+                checked={practiceSpecificEnabled}
+                onChange={handlePracticeSpecificToggle}
+                style={{
+                  width: 16,
+                  height: 16,
+                  accentColor: '#2563eb',
+                  cursor: 'pointer'
+                }}
+              />
+              <label
+                htmlFor="practice-specific"
+                style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted, cursor: 'pointer' }}
+              >
+                Practice specific question numbers
+              </label>
+            </div>
+
+            {practiceSpecificEnabled ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label
+                  htmlFor="question-numbers"
+                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
+                >
+                  Question numbers (comma-separated):
+                </label>
+                <input
+                  id="question-numbers"
+                  type="text"
+                  value={questionNumbersInput}
+                  onChange={handleQuestionNumbersChange}
+                  placeholder="e.g. 1, 5, 20, 81"
+                  style={{
+                    width: '100%',
+                    padding: '8px 12px',
+                    border: `1px solid ${questionNumbersError != null ? '#dc2626' : colors.inputBorder}`,
+                    borderRadius: 6,
+                    backgroundColor: colors.inputBg,
+                    color: colors.text,
+                    fontSize: 16,
+                    outline: 'none',
+                  }}
+                />
+                {questionNumbersError != null ? (
+                  <div style={{ fontSize: 14, color: '#dc2626' }}>
+                    {questionNumbersError}
+                  </div>
+                ) : questionNumbersInput.trim() !== '' ? (
+                  <div style={{ fontSize: 14, color: colors.textLight }}>
+                    {parseQuestionNumbers(questionNumbersInput).numbers.length} question{parseQuestionNumbers(questionNumbersInput).numbers.length !== 1 ? 's' : ''} selected
+                  </div>
+                ) : null}
+                <div style={{ fontSize: 14, color: colors.textXLight }}>
+                  Enter question numbers between 1 and {TOTAL_QUESTION_COUNT} to practice only those questions. Game settings above will be ignored when specific questions are selected.
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
@@ -315,7 +441,7 @@ export default function Settings() {
               />
               <label
                 htmlFor="dark-mode"
-                style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, cursor: 'pointer' }}
+                style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted, cursor: 'pointer' }}
               >
                 Enable dark mode
               </label>
@@ -363,7 +489,7 @@ export default function Settings() {
 
         {hasChanges === true ? (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 14, color: colors.amberText }}>
+            <p style={{ fontSize: 16, color: colors.amberText }}>
               You have unsaved changes. Click &quot;Save Settings&quot; to persist them.
             </p>
           </div>
