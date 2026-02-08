@@ -198,6 +198,12 @@ body {
   }
 }
 
+/* Restore native checkbox/radio rendering after Tamagui reset (all: unset) */
+input[type="checkbox"],
+input[type="radio"] {
+  all: revert;
+}
+
 /* Theme toggle icon switching - CSS controls visibility so server/client HTML matches */
 .theme-icon-sun { display: none; }
 .theme-icon-moon { display: block; }

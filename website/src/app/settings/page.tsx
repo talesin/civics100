@@ -9,7 +9,7 @@ import Layout from '@/components/Layout'
 import StateSelector from '@/components/StateSelector'
 import DistrictSelector from '@/components/DistrictSelector'
 import PoliticianVerificationBox from '@/components/PoliticianVerificationBox'
-import { useThemeContext, themeColors as baseThemeColors } from '@/components/TamaguiProvider'
+import { useThemeContext, themeColors as baseThemeColors, cssColors } from '@/components/TamaguiProvider'
 import { LocalStorageService } from '@/services/LocalStorageService'
 import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings, WIN_THRESHOLD_PERCENTAGE } from '@/types'
 
@@ -223,7 +223,7 @@ export default function Settings() {
               animation: 'spin 1s linear infinite',
               margin: '0 auto 16px'
             }} />
-            <p style={{ color: colors.textMuted }}>Loading settings...</p>
+            <p style={{ color: cssColors.textMuted }}>Loading settings...</p>
           </div>
         </div>
       </Layout>
