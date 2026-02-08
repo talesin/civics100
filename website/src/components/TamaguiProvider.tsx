@@ -2,7 +2,7 @@
 
 import '@tamagui/core/reset.css'
 import { useServerInsertedHTML } from 'next/navigation'
-import React, { createContext, useContext, useMemo } from 'react'
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { NextThemeProvider, useRootTheme, useThemeSetting } from '@tamagui/next-theme'
 import { TamaguiProvider as TamaguiProviderCore } from 'tamagui'
 import tamaguiConfig from '../../tamagui.config'
@@ -113,7 +113,28 @@ export const cssColors = {
 // Inner component that bridges @tamagui/next-theme → ThemeContext
 function ThemeContextBridge({ children }: { readonly children: React.ReactNode }) {
   const themeSetting = useThemeSetting()
-  const theme = (themeSetting.resolvedTheme as ThemeName) ?? 'light'
+
+  // After mount, read the actual visual theme from the DOM class (t_dark)
+  // set by @tamagui/next-theme's pre-hydration script. This avoids the
+  // timing gap where resolvedTheme may be undefined during hydration or
+  // deferred via startTransition when the theme is 'system'.
+  const [domTheme, setDomTheme] = useState<ThemeName>('light')
+
+  useEffect(() => {
+    setDomTheme(
+      document.documentElement.classList.contains('t_dark') ? 'dark' : 'light'
+    )
+  }, [])
+
+  // Prefer context value when available; fall back to DOM-derived theme.
+  const theme: ThemeName = (themeSetting.resolvedTheme as ThemeName) ?? domTheme
+
+  // Keep domTheme in sync so the fallback stays correct during transitions.
+  useEffect(() => {
+    if (themeSetting.resolvedTheme != null) {
+      setDomTheme(themeSetting.resolvedTheme as ThemeName)
+    }
+  }, [themeSetting.resolvedTheme])
 
   const contextValue: ThemeContextValue = useMemo(() => ({
     theme,

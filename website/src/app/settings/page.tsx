@@ -125,12 +125,7 @@ export default function Settings() {
   }, [])
 
   const handleDarkModeChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.checked
-    setSettings((prev) => ({ ...prev, darkMode: value }))
-    setHasChanges(true)
-
-    // Apply dark mode via theme context
-    setTheme(value ? 'dark' : 'light')
+    setTheme(event.target.checked ? 'dark' : 'light')
   }, [setTheme])
 
   const parseQuestionNumbers = useCallback((input: string): { numbers: number[]; error: string | null } => {
@@ -204,10 +199,7 @@ export default function Settings() {
     setQuestionNumbersInput('')
     setQuestionNumbersError(null)
     setHasChanges(true)
-
-    // Reset dark mode via theme context
-    setTheme(DEFAULT_GAME_SETTINGS.darkMode ? 'dark' : 'light')
-  }, [setTheme])
+  }, [])
 
   if (isLoading) {
     return (
@@ -430,7 +422,7 @@ export default function Settings() {
               <input
                 type="checkbox"
                 id="dark-mode"
-                checked={settings.darkMode}
+                checked={theme === 'dark'}
                 onChange={handleDarkModeChange}
                 style={{
                   width: 16,

@@ -13,10 +13,8 @@ export type {
   EarlyFailSession
 } from 'questionnaire'
 
-// Website-specific GameSettings that extends questionnaire GameSettings
-export interface WebsiteGameSettings extends GameSettings {
-  darkMode: boolean
-}
+// Website-specific GameSettings (alias for questionnaire GameSettings)
+export type WebsiteGameSettings = GameSettings
 
 export interface GameStats {
   totalGames: number
@@ -33,8 +31,7 @@ export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
   maxQuestions: 20,
   winThreshold: Math.ceil(20 * WIN_THRESHOLD_PERCENTAGE), // 12 (60% of 20)
   userState: 'CA' as import('civics2json').StateAbbreviation,
-  userDistrict: undefined,
-  darkMode: false
+  userDistrict: undefined
 }
 
 // Statistics types

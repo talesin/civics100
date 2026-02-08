@@ -8,10 +8,7 @@ import { GameService, GameServiceDefault, isSessionCompleted } from 'questionnai
  */
 const convertWebsiteToQuestionnaireSettings = (
   websiteSettings: WebsiteGameSettings
-): GameSettings => {
-  const { darkMode: _darkMode, ...questionnaireSettings } = websiteSettings
-  return questionnaireSettings
-}
+): GameSettings => websiteSettings
 
 /**
  * Create a new web game session using questionnaire's GameService
