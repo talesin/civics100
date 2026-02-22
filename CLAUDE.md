@@ -14,6 +14,8 @@ Guidance for Claude Code when working in this repository.
 | React/Tamagui      | [docs/react-guide.md](./docs/react-guide.md)                                       |
 | OpenAI integration | [docs/openai-guide.md](./docs/openai-guide.md)                                     |
 
+External references are available in the path in the `$REFERENCES` environment variable.
+
 ## Project Overview
 
 Monorepo for parsing and processing U.S. Citizenship and Immigration Services (USCIS) Civics Test data.
