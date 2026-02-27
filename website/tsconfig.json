@@ -61,7 +61,9 @@
     "dist/types/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "playwright.config.ts",
+    "e2e"
   ],
   "references": [
     { "path": "../packages/civics2json" },
