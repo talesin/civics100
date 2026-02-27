@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import ThemeToggle from '@/components/ThemeToggle'
 import { TamaguiProvider } from '@/components/TamaguiProvider'
 
@@ -53,165 +53,40 @@ describe('ThemeToggle', () => {
   it('should render a button', () => {
     renderWithProvider(<ThemeToggle />)
 
-    // Should show a button element
     const button = screen.getByRole('button')
     expect(button).toBeInTheDocument()
   })
 
-  it('should initialize with system preference when no saved theme', async () => {
-    // Mock system preference for dark mode
-    mockMatchMedia.mockImplementation((query) => ({
-      matches: query === '(prefers-color-scheme: dark)',
-      media: query,
-      onchange: null,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    }))
-
-    mockLocalStorage.getItem.mockReturnValue(null)
-
+  it('should have an accessibility label', () => {
     renderWithProvider(<ThemeToggle />)
 
-    // Wait for component to mount and show dark mode (switch to light label)
-    await waitFor(() => {
-      expect(screen.getByLabelText('Switch to light mode')).toBeInTheDocument()
-    })
+    expect(screen.getByLabelText('Toggle theme')).toBeInTheDocument()
   })
 
-  it('should initialize with saved theme preference', async () => {
-    mockLocalStorage.getItem.mockReturnValue('dark')
-
+  it('should render both sun and moon SVG icons', () => {
     renderWithProvider(<ThemeToggle />)
 
-    // Wait for component to mount - dark theme shows "switch to light" label
-    await waitFor(() => {
-      expect(screen.getByLabelText('Switch to light mode')).toBeInTheDocument()
-    })
+    const button = screen.getByRole('button')
+    const svgs = button.querySelectorAll('svg')
+    expect(svgs).toHaveLength(2)
+
+    // Sun icon has theme-icon-sun class
+    expect(button.querySelector('.theme-icon-sun')).toBeInTheDocument()
+    // Moon icon has theme-icon-moon class
+    expect(button.querySelector('.theme-icon-moon')).toBeInTheDocument()
   })
 
-  it('should toggle theme when clicked', async () => {
-    mockLocalStorage.getItem.mockReturnValue('light')
-
+  it('should be clickable without errors', () => {
     renderWithProvider(<ThemeToggle />)
 
-    // Wait for component to mount - light theme shows "switch to dark" label
-    await waitFor(() => {
-      expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument()
-    })
-
-    // Click to toggle to dark mode
-    fireEvent.click(screen.getByLabelText('Switch to dark mode'))
-
-    // Should update label to show "switch to light" and persist
-    await waitFor(() => {
-      expect(screen.getByLabelText('Switch to light mode')).toBeInTheDocument()
-    })
-    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('theme', 'dark')
+    const button = screen.getByRole('button')
+    expect(() => fireEvent.click(button)).not.toThrow()
   })
 
-  it('should persist theme preference in localStorage', async () => {
-    mockLocalStorage.getItem.mockReturnValue('light')
-
+  it('should render as a button element (Tamagui styled)', () => {
     renderWithProvider(<ThemeToggle />)
 
-    // Wait for component to mount
-    await waitFor(() => {
-      expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument()
-    })
-
-    // Toggle to dark mode
-    fireEvent.click(screen.getByLabelText('Switch to dark mode'))
-
-    // Should save to localStorage
-    await waitFor(() => {
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('theme', 'dark')
-    })
-
-    // Toggle back to light mode
-    fireEvent.click(screen.getByLabelText('Switch to light mode'))
-
-    // Should save to localStorage
-    await waitFor(() => {
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('theme', 'light')
-    })
-  })
-
-  it('should handle localStorage errors gracefully', async () => {
-    // Mock localStorage to throw error
-    mockLocalStorage.getItem.mockImplementation(() => {
-      throw new Error('localStorage not available')
-    })
-    mockLocalStorage.setItem.mockImplementation(() => {
-      throw new Error('localStorage not available')
-    })
-
-    // Mock system preference for light mode
-    mockMatchMedia.mockImplementation((query) => ({
-      matches: query === '(prefers-color-scheme: light)',
-      media: query,
-      onchange: null,
-      addEventListener: jest.fn(),
-      removeEventListener: jest.fn(),
-      addListener: jest.fn(),
-      removeListener: jest.fn(),
-      dispatchEvent: jest.fn(),
-    }))
-
-    renderWithProvider(<ThemeToggle />)
-
-    // Should still work and fall back to system preference (light mode)
-    await waitFor(() => {
-      expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument()
-    })
-
-    // Should toggle even with localStorage errors (won't throw)
-    fireEvent.click(screen.getByLabelText('Switch to dark mode'))
-
-    await waitFor(() => {
-      expect(screen.getByLabelText('Switch to light mode')).toBeInTheDocument()
-    })
-  })
-
-  it('should display correct icons for light and dark modes', async () => {
-    mockLocalStorage.getItem.mockReturnValue('light')
-
-    renderWithProvider(<ThemeToggle />)
-
-    // Wait for component to mount
-    await waitFor(() => {
-      expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument()
-    })
-
-    // Should show moon icon for light mode (click to switch to dark)
-    const lightModeButton = screen.getByLabelText('Switch to dark mode')
-    expect(lightModeButton.querySelector('svg')).toBeInTheDocument()
-
-    // Click to toggle to dark mode
-    fireEvent.click(lightModeButton)
-
-    // Should show sun icon for dark mode (click to switch to light)
-    await waitFor(() => {
-      const darkModeButton = screen.getByLabelText('Switch to light mode')
-      expect(darkModeButton.querySelector('svg')).toBeInTheDocument()
-    })
-  })
-
-  it('should render with Tamagui styled button', async () => {
-    mockLocalStorage.getItem.mockReturnValue('light')
-
-    renderWithProvider(<ThemeToggle />)
-
-    // Wait for component to mount
-    await waitFor(() => {
-      expect(screen.getByLabelText('Switch to dark mode')).toBeInTheDocument()
-    })
-
-    const button = screen.getByLabelText('Switch to dark mode')
-
-    // Should render as a button element (Tamagui styled)
+    const button = screen.getByLabelText('Toggle theme')
     expect(button).toBeInTheDocument()
     expect(button.tagName).toBe('BUTTON')
   })

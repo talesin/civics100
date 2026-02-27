@@ -69,7 +69,7 @@ const StatValue = styled(Text, {
 })
 
 const StatLabel = styled(Text, {
-  fontSize: '$2',
+  fontSize: '$4',
   color: '$placeholderColor',
   marginTop: '$1',
 })
@@ -105,7 +105,7 @@ const ProgressBar = styled(YStack, {
 })
 
 const ProgressText = styled(Text, {
-  fontSize: '$2',
+  fontSize: '$4',
   color: '$placeholderColor',
   textAlign: 'center',
 })
@@ -121,7 +121,7 @@ const AchievementBanner = styled(XStack, {
 })
 
 const AchievementText = styled(Text, {
-  fontSize: '$2',
+  fontSize: '$4',
   color: '$warning6',
 })
 
@@ -180,7 +180,7 @@ const Footer = styled(YStack, {
 })
 
 const FooterText = styled(Text, {
-  fontSize: '$1',
+  fontSize: '$4',
   color: '$placeholderColor',
 })
 

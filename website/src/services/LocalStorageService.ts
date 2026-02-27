@@ -40,7 +40,7 @@ const WebsiteGameSettingsSchema = Schema.Struct({
   winThreshold: Schema.Number,
   userState: StateAbbreviationSchema,
   userDistrict: Schema.optionalWith(Schema.String, { as: 'Option' }),
-  darkMode: Schema.Boolean
+  questionNumbers: Schema.optionalWith(Schema.Array(Schema.Number), { as: 'Option' })
 })
 
 // Schema for answer history entries (ts stored as number in localStorage)
@@ -201,7 +201,9 @@ const getGameSettings = (): Effect.Effect<WebsiteGameSettings, never, never> => 
         userDistrict: Option.isSome(decoded.userDistrict)
           ? decoded.userDistrict.value
           : undefined,
-        darkMode: decoded.darkMode
+        questionNumbers: Option.isSome(decoded.questionNumbers)
+          ? decoded.questionNumbers.value
+          : undefined
       }
     }
 

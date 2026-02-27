@@ -130,10 +130,38 @@
   --footer-height: 3rem;
   --container-max-width: 72rem; /* 1152px */
   --content-max-width: 42rem; /* 672px */
+
+  /* Layout Theme Colors */
+  --layout-page-bg: #f9fafb;
+  --layout-header-bg: #ffffff;
+  --layout-header-border: #e5e7eb;
+  --layout-footer-bg: #ffffff;
+  --layout-nav-text: #4b5563;
+  --layout-nav-text-hover: #1f2937;
+  --layout-divider: #d1d5db;
+  --layout-mobile-menu-bg: #ffffff;
+
+  /* Component Theme Colors */
+  --theme-text: #111827;
+  --theme-text-muted: #6b7280;
+  --theme-background: #ffffff;
+  --theme-background-hover: #f9fafb;
+  --theme-card-bg: #ffffff;
+  --theme-border: #d1d5db;
+  --theme-primary: #2563eb;
+  --theme-primary-hover: #1d4ed8;
+  --theme-success: #16a34a;
+  --theme-error: #dc2626;
+  --theme-purple: #9333ea;
+  --theme-success-bg: #dcfce7;
+  --theme-success-text: #166534;
+  --theme-error-bg: #fee2e2;
+  --theme-error-text: #991b1b;
+  --theme-icon-stroke: #9ca3af;
 }
 
 /* Dark Mode Overrides */
-html.dark {
+html.t_dark {
   /* Invert neutral colors for dark mode */
   --color-neutral-50: #111827;
   --color-neutral-100: #1f2937;
@@ -145,6 +173,34 @@ html.dark {
   --color-neutral-700: #e5e7eb;
   --color-neutral-800: #f3f4f6;
   --color-neutral-900: #f9fafb;
+
+  /* Layout Theme Colors */
+  --layout-page-bg: #111827;
+  --layout-header-bg: #1f2937;
+  --layout-header-border: #374151;
+  --layout-footer-bg: #1f2937;
+  --layout-nav-text: #d1d5db;
+  --layout-nav-text-hover: #f9fafb;
+  --layout-divider: #4b5563;
+  --layout-mobile-menu-bg: #1f2937;
+
+  /* Component Theme Colors */
+  --theme-text: #e5e5e5;
+  --theme-text-muted: #a1a1aa;
+  --theme-background: #111827;
+  --theme-background-hover: #1f2937;
+  --theme-card-bg: #1a1a1a;
+  --theme-border: #404040;
+  --theme-primary: #60a5fa;
+  --theme-primary-hover: #3b82f6;
+  --theme-success: #22c55e;
+  --theme-error: #ef4444;
+  --theme-purple: #a78bfa;
+  --theme-success-bg: #166534;
+  --theme-success-text: #bbf7d0;
+  --theme-error-bg: #7f1d1d;
+  --theme-error-text: #fecaca;
+  --theme-icon-stroke: #a1a1aa;
 
   /* Adjust shadows for dark mode */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.15);

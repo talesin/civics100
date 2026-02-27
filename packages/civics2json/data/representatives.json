@@ -936,7 +936,7 @@
     "party": "R",
     "officeRoom": "1711 LHOB",
     "phone": "(202) 225-2501",
-    "committeeAssignment": "Appropriations|Ethics",
+    "committeeAssignment": "Appropriations",
     "website": "https://rutherford.house.gov"
   },
   {
@@ -2986,7 +2986,7 @@
     "party": "R",
     "officeRoom": "1239 LHOB",
     "phone": "(202) 225-4531",
-    "committeeAssignment": "Homeland Security|Judiciary|Transportation and Infrastructure",
+    "committeeAssignment": "Homeland Security|Judiciary|Transportation and Infrastructure|Ethics",
     "website": "https://knott.house.gov/"
   },
   {
@@ -3820,14 +3820,14 @@
     "website": "https://sessions.house.gov"
   },
   {
-    "name": "Sylvester- Vacancy Turner",
+    "name": "Christian Menefee",
     "state": "TX",
     "district": "18th",
     "party": "D",
     "officeRoom": "1318 LHOB",
     "phone": "(202) 225-3816",
     "committeeAssignment": "",
-    "website": "https://clerk.house.gov/members/TX18/vacancy"
+    "website": "http://menefee.house.gov/"
   },
   {
     "name": "Jodey Arrington",
