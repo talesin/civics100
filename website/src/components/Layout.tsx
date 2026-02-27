@@ -58,7 +58,7 @@ const navLinkStyles: React.CSSProperties = {
   color: 'var(--layout-nav-text)',
   padding: '8px 12px',
   borderRadius: 6,
-  fontSize: 14,
+  fontSize: 16,
   fontWeight: 500,
   textDecoration: 'none',
   transition: 'all 200ms',
@@ -123,7 +123,7 @@ const LogoBox = styled(YStack, {
 const LogoText = styled(Text, {
   color: 'white',
   fontWeight: 'bold',
-  fontSize: '$2',
+  fontSize: '$3',
 })
 
 const Title = styled(Text, {
@@ -133,13 +133,14 @@ const Title = styled(Text, {
 })
 
 const FooterText = styled(Text, {
-  fontSize: '$3',
+  fontSize: '$5',
+  fontWeight: '500',
   color: '$color',
   opacity: 0.7,
 })
 
 const FooterSubtext = styled(Text, {
-  fontSize: '$2',
+  fontSize: '$4',
   color: '$color',
   opacity: 0.5,
   textAlign: 'center',
@@ -271,7 +272,7 @@ export default function Layout({
           <YStack alignItems="center" gap="$3">
             <XStack alignItems="center" gap="$2">
               <LogoBox width={24} height={24}>
-                <LogoText fontSize="$1">US</LogoText>
+                <LogoText fontSize="$2">US</LogoText>
               </LogoBox>
               <FooterText>US Civics Test Practice</FooterText>
             </XStack>

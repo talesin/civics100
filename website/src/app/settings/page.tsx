@@ -339,7 +339,7 @@ export default function Settings() {
               </div>
             </div>
 
-            <div style={{ fontSize: 14, color: colors.textXLight }}>
+            <div style={{ fontSize: 16, color: colors.textXLight }}>
               The game ends when you reach the pass threshold (early win), answer 9 questions incorrectly (early fail), or complete all questions. This matches the 2025 USCIS Civics Test format.
             </div>
           </div>
@@ -397,15 +397,15 @@ export default function Settings() {
                   }}
                 />
                 {questionNumbersError != null ? (
-                  <div style={{ fontSize: 14, color: '#dc2626' }}>
+                  <div style={{ fontSize: 16, color: '#dc2626' }}>
                     {questionNumbersError}
                   </div>
                 ) : questionNumbersInput.trim() !== '' ? (
-                  <div style={{ fontSize: 14, color: colors.textLight }}>
+                  <div style={{ fontSize: 16, color: colors.textLight }}>
                     {parseQuestionNumbers(questionNumbersInput).numbers.length} question{parseQuestionNumbers(questionNumbersInput).numbers.length !== 1 ? 's' : ''} selected
                   </div>
                 ) : null}
-                <div style={{ fontSize: 14, color: colors.textXLight }}>
+                <div style={{ fontSize: 16, color: colors.textXLight }}>
                   Enter question numbers between 1 and {TOTAL_QUESTION_COUNT} to practice only those questions. Game settings above will be ignored when specific questions are selected.
                 </div>
               </div>

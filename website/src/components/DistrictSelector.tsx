@@ -50,7 +50,7 @@ interface DistrictSelectorProps {
 }
 
 const Label = styled(Text, {
-  fontSize: '$3',
+  fontSize: '$4',
   fontWeight: '500',
   color: '$color',
 })
@@ -207,7 +207,7 @@ const DistrictSelector = ({
           <Label>Congressional District:</Label>
         </XStack>
         <div style={infoBoxStyles}>
-          <span style={{ fontSize: 14, color: colors.infoText }}>
+          <span style={{ fontSize: 16, color: colors.infoText }}>
             <span style={{ fontWeight: 500 }}>District:</span> {formatDistrictLabel(districts[0])}
           </span>
         </div>
@@ -241,13 +241,13 @@ const DistrictSelector = ({
 
       {selectedDistrict !== null && selectedDistrict !== undefined ? (
         <div style={infoBoxStyles}>
-          <span style={{ fontSize: 14, color: colors.infoText }}>
+          <span style={{ fontSize: 16, color: colors.infoText }}>
             <span style={{ fontWeight: 500 }}>Selected:</span> {formatDistrictLabel(selectedDistrict)}
           </span>
         </div>
       ) : null}
 
-      <span style={{ fontSize: 14, color: colors.helperText }}>
+      <span style={{ fontSize: 16, color: colors.helperText }}>
         Selecting your district will show only your specific representative in relevant questions.
       </span>
     </YStack>
