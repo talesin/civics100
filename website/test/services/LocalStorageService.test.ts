@@ -49,8 +49,7 @@ describe('LocalStorageService', () => {
       const testSettings: WebsiteGameSettings = {
         maxQuestions: 15,
         winThreshold: 8,
-        userState: 'NY',
-        darkMode: true
+        userState: 'NY'
       }
 
       yield* storageService.saveGameSettings(testSettings)
@@ -59,8 +58,7 @@ describe('LocalStorageService', () => {
       expect(settings).toMatchObject({
         maxQuestions: 15,
         winThreshold: 8,
-        userState: 'NY',
-        darkMode: true
+        userState: 'NY'
       })
     })
 
@@ -211,13 +209,13 @@ describe('LocalStorageService', () => {
       }
 
       yield* storageService.saveGameResult(testResult)
-      yield* storageService.saveGameSettings({ ...DEFAULT_GAME_SETTINGS, darkMode: true })
+      yield* storageService.saveGameSettings({ ...DEFAULT_GAME_SETTINGS, maxQuestions: 50 })
 
       // Verify data exists
       const resultsBefore = yield* storageService.getGameResults()
       const settingsBefore = yield* storageService.getGameSettings()
       expect(resultsBefore.length).toBe(1)
-      expect(settingsBefore.darkMode).toBe(true)
+      expect(settingsBefore.maxQuestions).toBe(50)
 
       // Clear all data
       yield* storageService.clearAllData()

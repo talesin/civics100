@@ -77,21 +77,24 @@ const detectExpectedAnswers = (questionText: string): number => {
   // Check for "Name two..." or "What are two..." patterns
   if (
     twoPattern.test(lowerQuestion) ||
-    /^(?:name|what are|give|list)\s+two\b/.test(lowerQuestion)
+    /^(?:name|what are|give|list)\s+two\b/.test(lowerQuestion) ||
+    /\bname\s+two\b/.test(lowerQuestion)
   ) {
     return 2
   }
 
   if (
     fourPattern.test(lowerQuestion) ||
-    /^(?:name|what are|give|list)\s+four\b/.test(lowerQuestion)
+    /^(?:name|what are|give|list)\s+four\b/.test(lowerQuestion) ||
+    /\bname\s+four\b/.test(lowerQuestion)
   ) {
     return 4
   }
 
   if (
     fivePattern.test(lowerQuestion) ||
-    /^(?:name|what are|give|list)\s+five\b/.test(lowerQuestion)
+    /^(?:name|what are|give|list)\s+five\b/.test(lowerQuestion) ||
+    /\bname\s+five\b/.test(lowerQuestion)
   ) {
     return 5
   }

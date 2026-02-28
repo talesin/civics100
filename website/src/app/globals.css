@@ -5,7 +5,7 @@
   --foreground: #171717;
 }
 
-html.dark {
+html.t_dark {
   --background: #0a0a0a;
   --foreground: #ededed;
 }
@@ -198,8 +198,20 @@ body {
   }
 }
 
+/* Restore native checkbox/radio rendering after Tamagui reset (all: unset) */
+input[type="checkbox"],
+input[type="radio"] {
+  all: revert;
+}
+
+/* Theme toggle icon switching - CSS controls visibility so server/client HTML matches */
+.theme-icon-sun { display: none; }
+.theme-icon-moon { display: block; }
+html.t_dark .theme-icon-sun { display: block; }
+html.t_dark .theme-icon-moon { display: none; }
+
 /* Dark mode improvements */
-html.dark .progress-bar {
+html.t_dark .progress-bar {
   box-shadow: 0 2px 4px rgba(59, 130, 246, 0.5);
 }
 
