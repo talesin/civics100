@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test'
 // Without this, inherited npm_config_* vars break SWC binary resolution and
 // cause ENOWORKSPACES errors in monorepo setups.
 for (const key of Object.keys(process.env)) {
-  if (key.startsWith('npm_')) {
+  if (key.startsWith('npm_config_')) {
     delete process.env[key]
   }
 }
