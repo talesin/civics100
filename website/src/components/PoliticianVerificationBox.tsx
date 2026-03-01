@@ -22,7 +22,7 @@ const VerificationBox = styled(YStack, {
 })
 
 const Title = styled(Text, {
-  fontSize: '$5',
+  fontSize: '$6',
   fontWeight: '600',
   color: '$color',
 })
@@ -32,18 +32,18 @@ const PoliticianRow = styled(YStack, {
 })
 
 const PoliticianLabel = styled(Text, {
-  fontSize: '$4',
+  fontSize: '$5',
   fontWeight: '500',
   color: '$placeholderColor',
 })
 
 const PoliticianName = styled(Text, {
-  fontSize: '$4',
+  fontSize: '$5',
   color: '$color',
 })
 
 const NoPoliticianText = styled(Text, {
-  fontSize: '$4',
+  fontSize: '$5',
   color: '$placeholderColor',
   fontStyle: 'italic',
 })

@@ -50,7 +50,7 @@ interface DistrictSelectorProps {
 }
 
 const Label = styled(Text, {
-  fontSize: '$4',
+  fontSize: '$5',
   fontWeight: '500',
   color: '$color',
 })

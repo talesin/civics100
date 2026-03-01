@@ -133,16 +133,16 @@ const Title = styled(Text, {
 })
 
 const FooterText = styled(Text, {
-  fontSize: '$5',
+  fontSize: '$6',
   fontWeight: '500',
   color: '$color',
   opacity: 0.7,
 })
 
 const FooterSubtext = styled(Text, {
-  fontSize: '$4',
+  fontSize: '$5',
   color: '$color',
-  opacity: 0.5,
+  opacity: 0.6,
   textAlign: 'center',
   maxWidth: 672,
   marginHorizontal: 'auto',
