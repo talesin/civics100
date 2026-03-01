@@ -3,7 +3,7 @@
 import '@tamagui/core/reset.css'
 import { useServerInsertedHTML } from 'next/navigation'
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { NextThemeProvider, useRootTheme, useThemeSetting } from '@tamagui/next-theme'
+import { NextThemeProvider, useThemeSetting } from '@tamagui/next-theme'
 import { TamaguiProvider as TamaguiProviderCore } from 'tamagui'
 import tamaguiConfig from '../../tamagui.config'
 
@@ -150,7 +150,15 @@ function ThemeContextBridge({ children }: { readonly children: React.ReactNode }
 }
 
 export const TamaguiProvider = ({ children }: { readonly children: React.ReactNode }): React.ReactElement => {
-  const [theme, setTheme] = useRootTheme()
+  const [theme, setTheme] = useState<ThemeName>('light')
+
+  // Sync Tamagui's internal theme from DOM after hydration.
+  // The next-themes pre-hydration script sets t_dark on <html> before React
+  // hydrates, so we read the actual class once on mount to avoid a mismatch.
+  useEffect(() => {
+    const cl = document.documentElement.classList
+    setTheme(cl.contains('t_dark') ? 'dark' : 'light')
+  }, [])
 
   useServerInsertedHTML(() => {
     const styles = tamaguiConfig.getNewCSS()
