@@ -41,7 +41,7 @@ const DetectButton = styled(XStack, {
 })
 
 const DetectButtonText = styled(Text, {
-  fontSize: '$3',
+  fontSize: '$4',
   color: '$primary',
 })
 
@@ -54,17 +54,17 @@ const InfoBox = styled(XStack, {
 })
 
 const InfoText = styled(Text, {
-  fontSize: '$4',
+  fontSize: '$5',
   color: '$placeholderColor',
 })
 
 const HelperText = styled(Text, {
-  fontSize: '$4',
+  fontSize: '$5',
   color: '$placeholderColor',
 })
 
 const Label = styled(Text, {
-  fontSize: '$4',
+  fontSize: '$5',
   fontWeight: '500',
   color: '$color',
 })
