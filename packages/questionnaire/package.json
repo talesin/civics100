@@ -30,9 +30,9 @@
     "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
-    "@effect/cli": "^0.63.4",
-    "@effect/platform": "^0.84.3",
-    "@effect/platform-node": "^0.83.3",
+    "@effect/cli": "^0.73.2",
+    "@effect/platform": "^0.94.5",
+    "@effect/platform-node": "^0.104.1",
     "civics2json": "*",
     "distractions": "*",
     "effect": "^3.19.19",
