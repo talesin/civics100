@@ -25,7 +25,8 @@ describe('QuestionDataService', () => {
         answers: expect.any(Array),
         correctAnswerIndex: expect.any(Number),
         questionNumber: 1,
-        totalQuestions: 5
+        totalQuestions: 5,
+        originalQuestionNumber: expect.any(Number)
       })
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
@@ -89,7 +90,8 @@ describe('QuestionDataService', () => {
         answers: expect.any(Array),
         correctAnswerIndex: expect.any(Number),
         questionNumber: 1,
-        totalQuestions: 10
+        totalQuestions: 10,
+        originalQuestionNumber: expect.any(Number)
       })
     }).pipe(Effect.provide(testLayer), Effect.runPromise)
   })
