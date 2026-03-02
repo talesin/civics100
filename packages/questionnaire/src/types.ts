@@ -225,5 +225,6 @@ export type QuestionDisplay = {
   correctAnswerIndex: number | ReadonlyArray<number>
   questionNumber: number
   totalQuestions: number
+  originalQuestionNumber: number
   expectedAnswers?: number | undefined
 }

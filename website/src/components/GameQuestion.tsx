@@ -350,6 +350,9 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
     <QuestionCard elevated>
       {/* Question Text */}
       <YStack marginBottom="$4">
+        <Text fontSize="$3" color="$placeholderColor" marginBottom="$1" data-testid="question-number">
+          Question #{question.originalQuestionNumber}
+        </Text>
         <QuestionTitle>
           {question.questionText}
         </QuestionTitle>

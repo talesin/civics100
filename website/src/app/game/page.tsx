@@ -97,6 +97,7 @@ export default function Game() {
   const [showEarlyWinOption, setShowEarlyWinOption] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [gameSettings, setGameSettings] = useState<WebsiteGameSettings>(DEFAULT_GAME_SETTINGS)
+  const [settingsLoaded, setSettingsLoaded] = useState(false)
 
   const { theme } = useThemeContext()
   const baseColors = themeColors[theme]
@@ -141,7 +142,8 @@ export default function Game() {
         const gameQuestions = yield* questionService.generateGameQuestions(
           gameSettings.maxQuestions,
           gameSettings.userState,
-          gameSettings.userDistrict
+          gameSettings.userDistrict,
+          gameSettings.questionNumbers
         )
 
         if (!mountedRef.current) return
@@ -203,6 +205,7 @@ export default function Game() {
         const savedSettings = yield* localStorage.getGameSettings()
         if (mountedRef.current) {
           setGameSettings(savedSettings)
+          setSettingsLoaded(true)
         }
       }),
       (error) => {
@@ -214,8 +217,10 @@ export default function Game() {
   }, [])
 
   useEffect(() => {
-    initializeGame()
-  }, [initializeGame])
+    if (settingsLoaded) {
+      initializeGame()
+    }
+  }, [settingsLoaded, initializeGame])
 
   // Cleanup timeout on unmount
   useEffect(() => {
@@ -493,7 +498,7 @@ export default function Game() {
   }
 
   return (
-    <Layout title={`Question ${currentQuestionIndex + 1} of ${questions.length}`}>
+    <Layout title={`Question ${currentQuestionIndex + 1}/${questions.length} (#${currentQuestion.originalQuestionNumber})`}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         {/* Question Component with Animation */}
         <div

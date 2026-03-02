@@ -28,15 +28,16 @@ const generateGameQuestions = (gameService: GameService) =>
     questionCount: number,
     userState: StateAbbreviation,
     userDistrict?: string | undefined,
+    questionNumbers?: readonly number[] | undefined,
     pairedAnswers: PairedAnswers = {}
   ) {
-    const settings = convertToQuestionnaireSettings(questionCount, userState, userDistrict)
+    const settings = convertToQuestionnaireSettings(questionCount, userState, userDistrict, questionNumbers)
 
     const { questions } = yield* gameService.createGameSession(settings, pairedAnswers)
 
     // Transform questions to UI format
     const questionDisplays: QuestionDisplay[] = questions.map((question, index) =>
-      gameService.transformQuestionToDisplay(question, index + 1, questionCount)
+      gameService.transformQuestionToDisplay(question, index + 1, questions.length)
     )
 
     return questionDisplays
@@ -65,6 +66,7 @@ export const TestQuestionDataServiceLayer = (fn?: {
     questionCount: number,
     userState: StateAbbreviation,
     userDistrict?: string | undefined,
+    questionNumbers?: readonly number[] | undefined,
     pairedAnswers?: PairedAnswers
   ) => Effect.Effect<QuestionDisplay[], never, never>
 }) =>

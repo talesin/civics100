@@ -158,6 +158,7 @@ export class GameService extends Effect.Service<GameService>()('GameService', {
       correctAnswerIndex: question.correctAnswer,
       questionNumber,
       totalQuestions,
+      originalQuestionNumber: parseInt(question.questionNumber, 10),
       expectedAnswers: question.expectedAnswers
     }),
     validateAnswerSelection: (selectedAnswers: number | ReadonlyArray<number>, correctAnswer: number | ReadonlyArray<number>, expectedAnswers?: number) => {
@@ -272,6 +273,7 @@ export const TestGameServiceLayer = (fn?: any) =>
           correctAnswerIndex: question.correctAnswer,
           questionNumber,
           totalQuestions,
+          originalQuestionNumber: parseInt(question.questionNumber, 10),
           expectedAnswers: question.expectedAnswers
         })),
       validateAnswerSelection:
