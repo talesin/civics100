@@ -35,22 +35,22 @@
     "@effect/platform-node": "^0.83.3",
     "civics2json": "*",
     "distractions": "*",
-    "effect": "^3.14.14",
-    "ts-essentials": "^10.0.4"
+    "effect": "^3.19.19",
+    "ts-essentials": "^10.1.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
     "@types/jest": "^30.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
     "eslint": "^9.25.1",
-    "eslint-config-prettier": "^10.1.2",
-    "eslint-plugin-prettier": "^5.2.6",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
     "jest": "^29.7.0",
-    "prettier": "^3.5.3",
-    "ts-jest": "^29.3.4",
+    "prettier": "^3.8.1",
+    "ts-jest": "^29.4.6",
     "ts-node": "^10.9.2",
-    "tsup": "^8.5.0",
+    "tsup": "^8.5.1",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.31.1"
+    "typescript-eslint": "^8.56.1"
   }
 }
