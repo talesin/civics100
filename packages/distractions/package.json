@@ -31,7 +31,7 @@
     "@effect/platform": "^0.84.3",
     "@effect/platform-node": "^0.83.3",
     "civics2json": "*",
-    "effect": "^3.14.14",
+    "effect": "^3.19.19",
     "openai": "^5.12.2",
     "sentence-similarity": "^3.1.0",
     "similarity-score": "^1.0.0",

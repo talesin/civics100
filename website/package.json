@@ -28,7 +28,7 @@
     "@tamagui/next-plugin": "^1.144.4",
     "@tamagui/next-theme": "^1.144.4",
     "civics2json": "*",
-    "effect": "^3.16.13",
+    "effect": "^3.19.19",
     "next": "^15.3.5",
     "questionnaire": "*",
     "react": "^19.2.4",

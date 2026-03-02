@@ -32,7 +32,7 @@
     "@effect/cli": "^0.63.4",
     "@effect/platform": "^0.84.3",
     "@effect/platform-node": "^0.83.3",
-    "effect": "^3.14.14",
+    "effect": "^3.19.19",
     "fast-xml-parser": "^5.4.1",
     "linkedom": "^0.18.12",
     "ts-essentials": "^10.1.1",
