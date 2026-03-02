@@ -16,6 +16,7 @@
     "test:e2e": "npm run test:e2e --workspace=website",
     "dev": "npm run dev --workspace=website",
     "refresh": "npm run clean && npm install && npm run build",
+    "refresh:website": "npm run clean --workspace=website && npm install && npm run build",
     "regen-distractors": "npx tsx packages/distractors/cli/index.ts --use-openai"
   },
   "dependencies": {

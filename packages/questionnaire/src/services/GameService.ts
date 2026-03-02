@@ -283,6 +283,7 @@ const transformQuestionToDisplay = (
     correctAnswerIndex: question.correctAnswer,
     questionNumber,
     totalQuestions,
+    originalQuestionNumber: parseInt(question.questionNumber, 10),
     expectedAnswers: question.expectedAnswers
   }
 }
@@ -378,7 +379,8 @@ export const TestGameServiceLayer = (fn?: {
           answers: [],
           correctAnswerIndex: 0,
           questionNumber,
-          totalQuestions
+          totalQuestions,
+          originalQuestionNumber: 1
         })),
       generateSessionId: fn?.generateSessionId ?? Effect.succeed('test-session-id'),
       validateAnswerSelection: fn?.validateAnswerSelection ?? validateAnswerSelection
