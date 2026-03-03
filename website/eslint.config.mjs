@@ -1,21 +1,7 @@
 import tseslint from 'typescript-eslint'
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
-import js from '@eslint/js'
-import { FlatCompat } from '@eslint/eslintrc'
-import typescriptEslint from '@typescript-eslint/eslint-plugin'
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
 import prettier from 'eslint-plugin-prettier'
 import eslintConfigPrettier from "eslint-config-prettier/flat"
-import next from '@next/eslint-plugin-next'
-import react from 'eslint-plugin-react'
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all
-})
 
 /** @type {import('eslint').Linter.Config[]} */
 export default tseslint.config(
@@ -29,27 +15,24 @@ export default tseslint.config(
       'jest.config.ts',
       '**/coverage',
       '**/*.js',
-      '.next/**'
+      '.next/**',
+      'e2e/**',
+      'playwright.config.ts',
+      'postcss.config.mjs'
     ]
   },
   { files: ['**/*.ts', '**/*.tsx'] },
 
-  ...compat.extends(
-    'eslint:recommended',
-    'plugin:@typescript-eslint/eslint-recommended',
-    'plugin:@typescript-eslint/recommended',
-    'plugin:react/recommended',
-    // 'plugin:prettier/recommended',
-    'plugin:@next/next/recommended',
-    'next/core-web-vitals',
-    'next/typescript'
-  ),
+  // eslint-config-next/core-web-vitals provides: react, react-hooks, import,
+  // jsx-a11y, @next/next, @typescript-eslint plugins with recommended rules
+  ...nextCoreWebVitals,
+
+  // typescript-eslint recommended (extends the next config's @typescript-eslint)
+  ...tseslint.configs.recommended,
+
   {
     plugins: {
-      '@typescript-eslint': typescriptEslint,
-      prettier,
-      'react': react,
-      '@next/next': next
+      prettier
     },
 
     settings: {
@@ -77,6 +60,9 @@ export default tseslint.config(
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
       ],
       '@typescript-eslint/no-require-imports': 'error',
+      // New rules from eslint-config-next@16 — disabled to maintain status quo
+      'react-hooks/set-state-in-effect': 'off',
+      '@typescript-eslint/no-empty-object-type': 'off',
       '@typescript-eslint/strict-boolean-expressions': [
         "error",
         {
@@ -88,6 +74,14 @@ export default tseslint.config(
           "allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing": false
         }
       ]
+    }
+  },
+
+  // Relax strict-boolean-expressions in test files (not linted by old next lint)
+  {
+    files: ['test/**/*.ts', 'test/**/*.tsx'],
+    rules: {
+      '@typescript-eslint/strict-boolean-expressions': 'off'
     }
   }
 )
