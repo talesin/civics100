@@ -32,7 +32,7 @@
     "@effect/platform-node": "^0.104.1",
     "civics2json": "*",
     "effect": "^3.19.19",
-    "openai": "^5.12.2",
+    "openai": "^6.25.0",
     "sentence-similarity": "^3.1.0",
     "similarity-score": "^1.0.0",
     "ts-essentials": "^10.1.1"

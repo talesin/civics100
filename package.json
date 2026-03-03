@@ -19,10 +19,7 @@
     "refresh:website": "npm run clean --workspace=website && npm install && npm run build",
     "regen-distractors": "npx tsx packages/distractors/cli/index.ts --use-openai"
   },
-  "dependencies": {
-    "entities": "^6.0.0"
-  },
-  "overrides": {
-    "entities": "^6.0.0"
+  "devDependencies": {
+    "ts-node": "^10.9.2"
   }
 }
