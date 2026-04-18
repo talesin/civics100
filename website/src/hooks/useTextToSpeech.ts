@@ -19,13 +19,10 @@ const PAUSE_BETWEEN_SEGMENTS_MS = 400
 const isSupported = (): boolean =>
   typeof window !== 'undefined' && 'speechSynthesis' in window
 
-const buildSegments = (questionText: string, answers: ReadonlyArray<string>): string[] => {
-  const segments = [questionText]
-  for (let i = 0; i < answers.length; i++) {
-    segments.push(`${String.fromCharCode(65 + i)}. ${answers[i]}`)
-  }
-  return segments
-}
+const buildSegments = (questionText: string, answers: ReadonlyArray<string>): readonly string[] => [
+  questionText,
+  ...answers.map((answer, i) => `${String.fromCharCode(65 + i)}. ${answer}`)
+]
 
 const DEFAULT_RATE = 0.95
 

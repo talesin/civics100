@@ -37,7 +37,7 @@ const StateAbbreviationSchema = Schema.String.pipe(
 
 const TtsSettingsSchema = Schema.Struct({
   voiceURI: Schema.NullOr(Schema.String),
-  rate: Schema.Number,
+  rate: Schema.Number.pipe(Schema.clamp(0.5, 2.0)),
 })
 
 const WebsiteGameSettingsSchema = Schema.Struct({
@@ -221,6 +221,8 @@ const saveTtsSettings = (settings: TtsSettings): Effect.Effect<void, never, neve
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return
 
+    yield* migrateStorageIfNeeded()
+
     const jsonString = yield* safeJsonStringify(settings)
     if (jsonString !== undefined) {
       yield* Effect.try({
@@ -234,6 +236,8 @@ const saveTtsSettings = (settings: TtsSettings): Effect.Effect<void, never, neve
 const getTtsSettings = (): Effect.Effect<TtsSettings, never, never> => {
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return DEFAULT_TTS_SETTINGS
+
+    yield* migrateStorageIfNeeded()
 
     const json = yield* Effect.try({
       try: () => localStorage.getItem(STORAGE_KEYS.TTS_SETTINGS),

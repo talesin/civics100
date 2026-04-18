@@ -36,8 +36,8 @@ export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
 
 // TTS (text-to-speech) settings — stored separately from GameSettings
 export interface TtsSettings {
-  voiceURI: string | null  // SpeechSynthesisVoice.voiceURI, null = auto-select
-  rate: number             // 0.5 to 2.0
+  readonly voiceURI: string | null  // SpeechSynthesisVoice.voiceURI, null = auto-select (null for JSON round-trip compatibility)
+  readonly rate: number             // 0.5 to 2.0
 }
 
 export const DEFAULT_TTS_SETTINGS: TtsSettings = {

@@ -6,7 +6,7 @@ interface SpeakerButtonProps {
 }
 
 // Speaker icon (idle) - simple speaker shape
-const SpeakerIcon = () => (
+const SpeakerIcon: React.FC = () => (
   <svg width={22} height={22} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
@@ -18,7 +18,7 @@ const SpeakerIcon = () => (
 )
 
 // Speaker icon with sound waves (speaking)
-const SpeakerWavesIcon = () => (
+const SpeakerWavesIcon: React.FC = () => (
   <svg width={22} height={22} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
       strokeLinecap="round"
@@ -52,7 +52,7 @@ const pulseKeyframes = `
 }
 `
 
-export default function SpeakerButton({ onPress, isSpeaking }: SpeakerButtonProps) {
+const SpeakerButton: React.FC<SpeakerButtonProps> = ({ onPress, isSpeaking }) => {
   return (
     <>
       {isSpeaking ? <style>{pulseKeyframes}</style> : null}
@@ -70,3 +70,5 @@ export default function SpeakerButton({ onPress, isSpeaking }: SpeakerButtonProp
     </>
   )
 }
+
+export default SpeakerButton

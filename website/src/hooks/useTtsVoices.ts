@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
  * Returns the list of available English speech synthesis voices.
  * Updates reactively when voices load asynchronously (voiceschanged event).
  */
-export const useTtsVoices = (): SpeechSynthesisVoice[] => {
+export const useTtsVoices = (): readonly SpeechSynthesisVoice[] => {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
 
   useEffect(() => {

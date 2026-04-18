@@ -271,7 +271,7 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
     })
     Effect.runPromise(load.pipe(Effect.provide(LocalStorageService.Default)))
       .then(setTtsSettings)
-      .catch(() => {})
+      .catch((error) => console.error('Failed to load TTS settings:', error))
   }, [])
 
   const { speak, isSpeaking, isSupported: ttsSupported } = useTextToSpeech({
