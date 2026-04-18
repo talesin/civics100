@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { QuestionDisplay as GameQuestionType, QuestionAnswer } from '@/types'
+import { Effect } from 'effect'
+import { QuestionDisplay as GameQuestionType, QuestionAnswer, TtsSettings, DEFAULT_TTS_SETTINGS } from '@/types'
+import { LocalStorageService } from '@/services/LocalStorageService'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { Card, XStack, YStack, Text } from '@/components/tamagui'
@@ -260,10 +262,24 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
   const { playCorrect, playIncorrect } = useGameSounds()
   const { theme } = useThemeContext()
   const isDark = theme === 'dark'
+  const [ttsSettings, setTtsSettings] = useState<TtsSettings>(DEFAULT_TTS_SETTINGS)
+
+  useEffect(() => {
+    const load = Effect.gen(function* () {
+      const storage = yield* LocalStorageService
+      return yield* storage.getTtsSettings()
+    })
+    Effect.runPromise(load.pipe(Effect.provide(LocalStorageService.Default)))
+      .then(setTtsSettings)
+      .catch(() => {})
+  }, [])
+
   const { speak, isSpeaking, isSupported: ttsSupported } = useTextToSpeech({
     questionText: question.questionText,
     answers: question.answers,
     questionId: question.id,
+    voiceURI: ttsSettings.voiceURI,
+    rate: ttsSettings.rate,
   })
 
   const isMultipleChoice = (question.expectedAnswers ?? 1) > 1

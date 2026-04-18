@@ -34,6 +34,17 @@ export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
   userDistrict: undefined
 }
 
+// TTS (text-to-speech) settings — stored separately from GameSettings
+export interface TtsSettings {
+  voiceURI: string | null  // SpeechSynthesisVoice.voiceURI, null = auto-select
+  rate: number             // 0.5 to 2.0
+}
+
+export const DEFAULT_TTS_SETTINGS: TtsSettings = {
+  voiceURI: null,
+  rate: 0.95,
+}
+
 // Statistics types
 export interface QuestionStatistics {
   pairedQuestionNumber: string

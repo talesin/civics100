@@ -4,6 +4,8 @@ interface UseTextToSpeechOptions {
   readonly questionText: string
   readonly answers: ReadonlyArray<string>
   readonly questionId: string
+  readonly voiceURI?: string | null
+  readonly rate?: number
 }
 
 interface UseTextToSpeechReturn {
@@ -25,10 +27,14 @@ const buildSegments = (questionText: string, answers: ReadonlyArray<string>): st
   return segments
 }
 
+const DEFAULT_RATE = 0.95
+
 export const useTextToSpeech = ({
   questionText,
   answers,
   questionId,
+  voiceURI,
+  rate = DEFAULT_RATE,
 }: UseTextToSpeechOptions): UseTextToSpeechReturn => {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const voiceRef = useRef<SpeechSynthesisVoice | null>(null)
@@ -36,16 +42,20 @@ export const useTextToSpeech = ({
   const cancelledRef = useRef(false)
   const supported = isSupported()
 
-  // Select an English voice when voices become available
+  // Select voice: use voiceURI if provided, otherwise auto-select English
   useEffect(() => {
     if (!supported) return
 
     const selectVoice = () => {
       const voices = speechSynthesis.getVoices()
-      voiceRef.current =
-        voices.find((v) => v.lang === 'en-US') ??
-        voices.find((v) => v.lang.startsWith('en')) ??
-        null
+      if (voiceURI != null) {
+        voiceRef.current = voices.find((v) => v.voiceURI === voiceURI) ?? null
+      } else {
+        voiceRef.current =
+          voices.find((v) => v.lang === 'en-US') ??
+          voices.find((v) => v.lang.startsWith('en')) ??
+          null
+      }
     }
 
     selectVoice()
@@ -53,7 +63,7 @@ export const useTextToSpeech = ({
     return () => {
       speechSynthesis.removeEventListener('voiceschanged', selectVoice)
     }
-  }, [supported])
+  }, [supported, voiceURI])
 
   const cancel = useCallback(() => {
     cancelledRef.current = true
@@ -92,7 +102,7 @@ export const useTextToSpeech = ({
       if (voiceRef.current !== null) {
         utterance.voice = voiceRef.current
       }
-      utterance.rate = 0.95
+      utterance.rate = rate
       utterance.pitch = 1
 
       utterance.onend = () => {
@@ -111,7 +121,7 @@ export const useTextToSpeech = ({
     }
 
     speakSegment()
-  }, [supported, isSpeaking, cancel, questionText, answers])
+  }, [supported, isSpeaking, cancel, questionText, answers, rate])
 
   // Cancel on question change or unmount
   useEffect(() => {
