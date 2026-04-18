@@ -13,6 +13,19 @@
     "member_full": "Alsobrooks (D-MD)"
   },
   {
+    "last_name": "Armstrong",
+    "first_name": "Alan",
+    "party": "R",
+    "state": "OK",
+    "address": "G12 Dirksen Senate Office Building Washington DC 20510",
+    "phone": "(202) 224-4721",
+    "email": "https://www.armstrong.senate.gov/",
+    "website": "https://www.armstrong.senate.gov/",
+    "class": "Class II",
+    "bioguide_id": "A000383",
+    "member_full": "Armstrong (R-OK)"
+  },
+  {
     "last_name": "Baldwin",
     "first_name": "Tammy",
     "party": "D",
@@ -817,19 +830,6 @@
     "class": "Class I",
     "bioguide_id": "M001242",
     "member_full": "Moreno (R-OH)"
-  },
-  {
-    "last_name": "Mullin",
-    "first_name": "Markwayne",
-    "party": "R",
-    "state": "OK",
-    "address": "330 Hart Senate Office Building Washington DC 20510",
-    "phone": "(202) 224-4721",
-    "email": "https://www.mullin.senate.gov/contact/",
-    "website": "https://www.mullin.senate.gov/",
-    "class": "Class II",
-    "bioguide_id": "M001190",
-    "member_full": "Mullin (R-OK)"
   },
   {
     "last_name": "Murkowski",

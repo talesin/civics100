@@ -1,5 +1,5 @@
 import { Effect, Layer, Option, Schema } from 'effect'
-import { GameResult, WebsiteGameSettings, DEFAULT_GAME_SETTINGS } from '@/types'
+import { GameResult, WebsiteGameSettings, DEFAULT_GAME_SETTINGS, TtsSettings, DEFAULT_TTS_SETTINGS } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 import type { StateAbbreviation } from 'civics2json'
 
@@ -35,6 +35,11 @@ const StateAbbreviationSchema = Schema.String.pipe(
   })
 ) as Schema.Schema<StateAbbreviation, string, never>
 
+const TtsSettingsSchema = Schema.Struct({
+  voiceURI: Schema.NullOr(Schema.String),
+  rate: Schema.Number.pipe(Schema.clamp(0.5, 2.0)),
+})
+
 const WebsiteGameSettingsSchema = Schema.Struct({
   maxQuestions: Schema.Number,
   winThreshold: Schema.Number,
@@ -63,6 +68,7 @@ const STORAGE_KEYS = {
   GAME_RESULTS: 'civics100_game_results',
   GAME_SETTINGS: 'civics100_game_settings',
   PAIRED_ANSWERS: 'civics100_paired_answers',
+  TTS_SETTINGS: 'civics100_tts_settings',
   VERSION: 'civics100_storage_version'
 } as const
 
@@ -211,6 +217,45 @@ const getGameSettings = (): Effect.Effect<WebsiteGameSettings, never, never> => 
   })
 }
 
+const saveTtsSettings = (settings: TtsSettings): Effect.Effect<void, never, never> => {
+  return Effect.gen(function* () {
+    if (!checkStorageAvailable()) return
+
+    yield* migrateStorageIfNeeded()
+
+    const jsonString = yield* safeJsonStringify(settings)
+    if (jsonString !== undefined) {
+      yield* Effect.try({
+        try: () => localStorage.setItem(STORAGE_KEYS.TTS_SETTINGS, jsonString),
+        catch: () => void 0
+      }).pipe(Effect.catchAll(() => Effect.succeed(void 0)))
+    }
+  })
+}
+
+const getTtsSettings = (): Effect.Effect<TtsSettings, never, never> => {
+  return Effect.gen(function* () {
+    if (!checkStorageAvailable()) return DEFAULT_TTS_SETTINGS
+
+    yield* migrateStorageIfNeeded()
+
+    const json = yield* Effect.try({
+      try: () => localStorage.getItem(STORAGE_KEYS.TTS_SETTINGS),
+      catch: () => null
+    }).pipe(Effect.catchAll(() => Effect.succeed(null)))
+
+    const parsed = safeJsonParse(json)
+    const raw = Option.getOrElse(parsed, () => ({}))
+
+    const decoded = Schema.decodeUnknownOption(TtsSettingsSchema)(raw)
+    if (Option.isSome(decoded)) {
+      return decoded.value
+    }
+
+    return DEFAULT_TTS_SETTINGS
+  })
+}
+
 const clearAllData = (): Effect.Effect<void, never, never> => {
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return
@@ -331,6 +376,8 @@ export class LocalStorageService extends Effect.Service<LocalStorageService>()(
       getGameResults,
       saveGameSettings,
       getGameSettings,
+      saveTtsSettings,
+      getTtsSettings,
       savePairedAnswers,
       getPairedAnswers,
       clearAllData,
@@ -346,6 +393,8 @@ export const TestLocalStorageServiceLayer = (fn?: {
   getGameResults?: LocalStorageService['getGameResults']
   saveGameSettings?: LocalStorageService['saveGameSettings']
   getGameSettings?: LocalStorageService['getGameSettings']
+  saveTtsSettings?: LocalStorageService['saveTtsSettings']
+  getTtsSettings?: LocalStorageService['getTtsSettings']
   savePairedAnswers?: LocalStorageService['savePairedAnswers']
   getPairedAnswers?: LocalStorageService['getPairedAnswers']
   clearAllData?: LocalStorageService['clearAllData']
@@ -361,6 +410,8 @@ export const TestLocalStorageServiceLayer = (fn?: {
       getGameResults: fn?.getGameResults ?? (() => Effect.succeed([])),
       saveGameSettings: fn?.saveGameSettings ?? (() => Effect.succeed(void 0)),
       getGameSettings: fn?.getGameSettings ?? (() => Effect.succeed(DEFAULT_GAME_SETTINGS)),
+      saveTtsSettings: fn?.saveTtsSettings ?? (() => Effect.succeed(void 0)),
+      getTtsSettings: fn?.getTtsSettings ?? (() => Effect.succeed(DEFAULT_TTS_SETTINGS)),
       savePairedAnswers: fn?.savePairedAnswers ?? (() => Effect.succeed(void 0)),
       getPairedAnswers: fn?.getPairedAnswers ?? (() => Effect.succeed({})),
       clearAllData: fn?.clearAllData ?? (() => Effect.succeed(void 0)),

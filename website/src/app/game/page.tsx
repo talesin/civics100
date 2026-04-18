@@ -111,9 +111,11 @@ export default function Game() {
   const sessionRef = useRef(session)
   const currentQuestionIndexRef = useRef(currentQuestionIndex)
   const questionsRef = useRef(questions)
-  sessionRef.current = session
-  currentQuestionIndexRef.current = currentQuestionIndex
-  questionsRef.current = questions
+  useEffect(() => {
+    sessionRef.current = session
+    currentQuestionIndexRef.current = currentQuestionIndex
+    questionsRef.current = questions
+  }, [session, currentQuestionIndex, questions])
 
   // Cleanup mounted ref on unmount
   useEffect(() => {
