@@ -243,10 +243,10 @@
     "name": "Kevin Kiley",
     "state": "CA",
     "district": "3rd",
-    "party": "R",
+    "party": "I",
     "officeRoom": "2445 RHOB",
     "phone": "(202) 225-2523",
-    "committeeAssignment": "Education and Workforce|Judiciary|Transportation and Infrastructure",
+    "committeeAssignment": "",
     "website": "https://kiley.house.gov"
   },
   {
@@ -350,14 +350,14 @@
     "website": "https://gray.house.gov/"
   },
   {
-    "name": "Eric Swalwell",
+    "name": "Eric- Vacancy Swalwell",
     "state": "CA",
     "district": "14th",
     "party": "D",
     "officeRoom": "174 CHOB",
     "phone": "(202) 225-5065",
-    "committeeAssignment": "Homeland Security|Judiciary|Select Subcomm to Investigate Questions about Jan 6, 2021",
-    "website": "https://swalwell.house.gov"
+    "committeeAssignment": "",
+    "website": "https://clerk.house.gov/Members#Vacancies"
   },
   {
     "name": "Kevin Mullin",
@@ -436,7 +436,7 @@
     "party": "R",
     "officeRoom": "2465 RHOB",
     "phone": "(202) 225-4695",
-    "committeeAssignment": "Appropriations|Joint Committee of Congress on the Library",
+    "committeeAssignment": "Agriculture|Appropriations|Joint Committee of Congress on the Library",
     "website": "https://valadao.house.gov"
   },
   {
@@ -1236,7 +1236,7 @@
     "party": "R",
     "officeRoom": "1719 LHOB",
     "phone": "(202) 225-4272",
-    "committeeAssignment": "Armed Services|Foreign Affairs|Science, Space, and Technology",
+    "committeeAssignment": "Armed Services|Oversight and Government Reform|Science, Space, and Technology",
     "website": "https://mccormick.house.gov"
   },
   {
@@ -1300,14 +1300,14 @@
     "website": "https://davidscott.house.gov/"
   },
   {
-    "name": "Marjorie Taylor- Vacancy Greene",
+    "name": "Clay Fuller",
     "state": "GA",
     "district": "14th",
     "party": "R",
     "officeRoom": "2201 RHOB",
     "phone": "(202) 225-5211",
     "committeeAssignment": "",
-    "website": "https://clerk.house.gov/members/GA14/vacancy"
+    "website": "https://fuller.house.gov/"
   },
   {
     "name": "James Moylan",
@@ -1546,7 +1546,7 @@
     "party": "R",
     "officeRoom": "349 CHOB",
     "phone": "(202) 225-3915",
-    "committeeAssignment": "Ways and Means",
+    "committeeAssignment": "Transportation and Infrastructure|Ways and Means",
     "website": "https://yakym.house.gov"
   },
   {
@@ -2356,7 +2356,7 @@
     "party": "R",
     "officeRoom": "1529 LHOB",
     "phone": "(202) 225-3211",
-    "committeeAssignment": "Financial Services|Small Business",
+    "committeeAssignment": "Financial Services|Natural Resources",
     "website": "https://downing.house.gov/"
   },
   {
@@ -2476,7 +2476,7 @@
     "party": "D",
     "officeRoom": "1022 LHOB",
     "phone": "(202) 225-4765",
-    "committeeAssignment": "Armed Services|Small Business|Veterans' Affairs",
+    "committeeAssignment": "Armed Services|Veterans' Affairs",
     "website": "https://conaway.house.gov/"
   },
   {
@@ -2606,7 +2606,7 @@
     "party": "R",
     "officeRoom": "122 CHOB",
     "phone": "(202) 225-3826",
-    "committeeAssignment": "Appropriations|Small Business",
+    "committeeAssignment": "Appropriations|Homeland Security",
     "website": "https://lalota.house.gov"
   },
   {
@@ -3086,7 +3086,7 @@
     "party": "R",
     "officeRoom": "143 CHOB",
     "phone": "(202) 225-3876",
-    "committeeAssignment": "Science, Space, and Technology|Ways and Means",
+    "committeeAssignment": "Foreign Affairs|Ways and Means",
     "website": "https://maxmiller.house.gov"
   },
   {
@@ -3826,7 +3826,7 @@
     "party": "D",
     "officeRoom": "1318 LHOB",
     "phone": "(202) 225-3816",
-    "committeeAssignment": "",
+    "committeeAssignment": "Science, Space, and Technology",
     "website": "http://menefee.house.gov/"
   },
   {
@@ -3870,14 +3870,14 @@
     "website": "https://nehls.house.gov"
   },
   {
-    "name": "Tony Gonzales",
+    "name": "Tony- Vacancy Gonzales",
     "state": "TX",
     "district": "23rd",
     "party": "R",
     "officeRoom": "2239 RHOB",
     "phone": "(202) 225-4511",
-    "committeeAssignment": "Appropriations|Homeland Security",
-    "website": "https://gonzales.house.gov"
+    "committeeAssignment": "",
+    "website": "https://clerk.house.gov/Members#Vacancies"
   },
   {
     "name": "Beth Van Duyne",
@@ -4156,7 +4156,7 @@
     "party": "D",
     "officeRoom": "1226 LHOB",
     "phone": "(202) 225-4376",
-    "committeeAssignment": "Science, Space, and Technology|Ways and Means",
+    "committeeAssignment": "Ways and Means",
     "website": "https://beyer.house.gov"
   },
   {

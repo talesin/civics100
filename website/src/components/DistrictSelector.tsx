@@ -72,7 +72,9 @@ const DistrictSelector = ({
 
   // Use ref to avoid infinite loop - callback changes should not trigger effect
   const onDistrictChangeRef = useRef(onDistrictChange)
-  onDistrictChangeRef.current = onDistrictChange
+  useEffect(() => {
+    onDistrictChangeRef.current = onDistrictChange
+  }, [onDistrictChange])
 
   // Load districts when state changes
   useEffect(() => {

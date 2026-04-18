@@ -336,6 +336,10 @@
           "state": "MD"
         },
         {
+          "senator": "Alan Armstrong",
+          "state": "OK"
+        },
+        {
           "senator": "Tammy Baldwin",
           "state": "WI"
         },
@@ -582,10 +586,6 @@
         {
           "senator": "Bernie Moreno",
           "state": "OH"
-        },
-        {
-          "senator": "Markwayne Mullin",
-          "state": "OK"
         },
         {
           "senator": "Lisa Murkowski",
@@ -985,7 +985,7 @@
           "district": "13th"
         },
         {
-          "representative": "Eric Swalwell",
+          "representative": "Eric- Vacancy Swalwell",
           "state": "CA",
           "district": "14th"
         },
@@ -1460,7 +1460,7 @@
           "district": "13th"
         },
         {
-          "representative": "Marjorie Taylor- Vacancy Greene",
+          "representative": "Clay Fuller",
           "state": "GA",
           "district": "14th"
         },
@@ -2745,7 +2745,7 @@
           "district": "22nd"
         },
         {
-          "representative": "Tony Gonzales",
+          "representative": "Tony- Vacancy Gonzales",
           "state": "TX",
           "district": "23rd"
         },
