@@ -11,7 +11,8 @@ import DistrictSelector from '@/components/DistrictSelector'
 import PoliticianVerificationBox from '@/components/PoliticianVerificationBox'
 import { useThemeContext, themeColors as baseThemeColors, cssColors } from '@/components/TamaguiProvider'
 import { LocalStorageService } from '@/services/LocalStorageService'
-import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings, WIN_THRESHOLD_PERCENTAGE } from '@/types'
+import { DEFAULT_GAME_SETTINGS, DEFAULT_TTS_SETTINGS, WebsiteGameSettings, TtsSettings, WIN_THRESHOLD_PERCENTAGE } from '@/types'
+import { useTtsVoices } from '@/hooks/useTtsVoices'
 
 // Settings-specific colors that extend the base theme colors
 const settingsThemeColors = {
@@ -47,6 +48,8 @@ export default function Settings() {
   const [practiceSpecificEnabled, setPracticeSpecificEnabled] = useState(false)
   const [questionNumbersInput, setQuestionNumbersInput] = useState('')
   const [questionNumbersError, setQuestionNumbersError] = useState<string | null>(null)
+  const [ttsSettings, setTtsSettings] = useState<TtsSettings>(DEFAULT_TTS_SETTINGS)
+  const voices = useTtsVoices()
   const { theme, setTheme } = useThemeContext()
   // Merge base theme colors with settings-specific colors
   const colors = useMemo(() => ({
@@ -61,8 +64,10 @@ export default function Settings() {
     const loadSettings = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
       const savedSettings = yield* storageService.getGameSettings()
+      const savedTts = yield* storageService.getTtsSettings()
       if (mounted) {
         setSettings(savedSettings)
+        setTtsSettings(savedTts)
         if (savedSettings.questionNumbers != null && savedSettings.questionNumbers.length > 0) {
           setPracticeSpecificEnabled(true)
           setQuestionNumbersInput(savedSettings.questionNumbers.join(', '))
@@ -90,6 +95,7 @@ export default function Settings() {
     const saveEffect = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
       yield* storageService.saveGameSettings(settings)
+      yield* storageService.saveTtsSettings(ttsSettings)
       setHasChanges(false)
     })
 
@@ -98,7 +104,7 @@ export default function Settings() {
         console.error('Failed to save settings:', error)
       }
     )
-  }, [settings])
+  }, [settings, ttsSettings])
 
   const handleStateChange = useCallback((state: StateAbbreviation) => {
     setSettings((prev) => ({ ...prev, userState: state, userDistrict: undefined }))
@@ -127,6 +133,31 @@ export default function Settings() {
   const handleDarkModeChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setTheme(event.target.checked ? 'dark' : 'light')
   }, [setTheme])
+
+  const handleVoiceChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value
+    setTtsSettings((prev) => ({ ...prev, voiceURI: value === '' ? null : value }))
+    setHasChanges(true)
+  }, [])
+
+  const handleRateChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
+    setTtsSettings((prev) => ({ ...prev, rate: parseFloat(event.target.value) }))
+    setHasChanges(true)
+  }, [])
+
+  const handleTtsPreview = useCallback(() => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return
+    speechSynthesis.cancel()
+    const utterance = new SpeechSynthesisUtterance(
+      'What is the supreme law of the land? A. The Constitution.'
+    )
+    if (ttsSettings.voiceURI != null) {
+      const match = speechSynthesis.getVoices().find((v) => v.voiceURI === ttsSettings.voiceURI)
+      if (match != null) utterance.voice = match
+    }
+    utterance.rate = ttsSettings.rate
+    speechSynthesis.speak(utterance)
+  }, [ttsSettings])
 
   const parseQuestionNumbers = useCallback((input: string): { numbers: number[]; error: string | null } => {
     if (input.trim() === '') return { numbers: [], error: null }
@@ -183,6 +214,7 @@ export default function Settings() {
       const saveEffect = Effect.gen(function* () {
         const storageService = yield* LocalStorageService
         yield* storageService.saveGameSettings(settings)
+        yield* storageService.saveTtsSettings(ttsSettings)
       })
 
       Effect.runPromise(saveEffect.pipe(Effect.provide(LocalStorageService.Default)))
@@ -191,10 +223,11 @@ export default function Settings() {
     } else {
       navigateToGame()
     }
-  }, [hasChanges, settings, router])
+  }, [hasChanges, settings, ttsSettings, router])
 
   const resetToDefaults = useCallback(() => {
     setSettings(DEFAULT_GAME_SETTINGS)
+    setTtsSettings(DEFAULT_TTS_SETTINGS)
     setPracticeSpecificEnabled(false)
     setQuestionNumbersInput('')
     setQuestionNumbersError(null)
@@ -437,6 +470,72 @@ export default function Settings() {
               >
                 Enable dark mode
               </label>
+            </div>
+          </div>
+
+          <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
+
+          {/* Voice Settings */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>Voice Settings</h2>
+            <p style={{ fontSize: 16, color: colors.textLight }}>
+              Configure the text-to-speech voice used to read questions and answers aloud.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label
+                  htmlFor="tts-voice"
+                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
+                >
+                  Voice:
+                </label>
+                <select
+                  id="tts-voice"
+                  value={ttsSettings.voiceURI ?? ''}
+                  onChange={handleVoiceChange}
+                  style={selectStyles}
+                >
+                  <option value="">Auto (default)</option>
+                  {voices.map((v) => (
+                    <option key={v.voiceURI} value={v.voiceURI}>
+                      {v.name} ({v.lang})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <label
+                  htmlFor="tts-rate"
+                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
+                >
+                  Speed:
+                </label>
+                <select
+                  id="tts-rate"
+                  value={ttsSettings.rate}
+                  onChange={handleRateChange}
+                  style={selectStyles}
+                >
+                  <option value={0.5}>Slow</option>
+                  <option value={0.75}>Slower</option>
+                  <option value={0.95}>Normal</option>
+                  <option value={1.25}>Faster</option>
+                  <option value={1.5}>Fast</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <button
+                onClick={handleTtsPreview}
+                className="btn-secondary focus-ring"
+                type="button"
+                style={{ padding: '8px 16px', borderRadius: 6, fontWeight: 500, fontSize: 14, transition: 'all 0.2s' }}
+              >
+                Preview voice
+              </button>
             </div>
           </div>
         </div>
