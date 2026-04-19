@@ -336,6 +336,10 @@
           "state": "MD"
         },
         {
+          "senator": "Alan Armstrong",
+          "state": "OK"
+        },
+        {
           "senator": "Tammy Baldwin",
           "state": "WI"
         },
@@ -582,10 +586,6 @@
         {
           "senator": "Bernie Moreno",
           "state": "OH"
-        },
-        {
-          "senator": "Markwayne Mullin",
-          "state": "OK"
         },
         {
           "senator": "Lisa Murkowski",

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from '@jest/globals'
 import { Effect } from 'effect'
 import { LocalStorageService } from '@/services/LocalStorageService'
 import { DEFAULT_GAME_SETTINGS, WebsiteGameSettings, GameResult } from '@/types'
+import { PairedQuestionNumber, type PairedAnswers } from 'questionnaire'
 
 // Get localStorage mock from setup
 const localStorageMock = window.localStorage
@@ -189,6 +190,43 @@ describe('LocalStorageService', () => {
       expect(stats.averageScore).toBe(0)
       expect(stats.bestScore).toBe(0)
       expect(stats.earlyWins).toBe(0)
+    })
+
+    await Effect.runPromise(program.pipe(Effect.provide(LocalStorageService.Default)))
+  })
+
+  it('should round-trip pairedAnswers through localStorage', async () => {
+    const program = Effect.gen(function* () {
+      const storageService = yield* LocalStorageService
+
+      const pqn = PairedQuestionNumber('1-0')
+      const input: PairedAnswers = {
+        [pqn]: [
+          { ts: new Date('2026-04-19T10:00:00.000Z'), correct: true },
+          { ts: new Date('2026-04-19T10:05:00.000Z'), correct: false }
+        ]
+      }
+
+      yield* storageService.savePairedAnswers(input)
+      const loaded = yield* storageService.getPairedAnswers()
+
+      expect(Object.keys(loaded)).toEqual(['1-0'])
+      const history = loaded[pqn]
+      expect(history).toHaveLength(2)
+      expect(history?.[0]?.correct).toBe(true)
+      expect(history?.[0]?.ts).toBeInstanceOf(Date)
+      expect(history?.[0]?.ts.toISOString()).toBe('2026-04-19T10:00:00.000Z')
+      expect(history?.[1]?.correct).toBe(false)
+    })
+
+    await Effect.runPromise(program.pipe(Effect.provide(LocalStorageService.Default)))
+  })
+
+  it('should return empty pairedAnswers when none exist', async () => {
+    const program = Effect.gen(function* () {
+      const storageService = yield* LocalStorageService
+      const loaded = yield* storageService.getPairedAnswers()
+      expect(loaded).toEqual({})
     })
 
     await Effect.runPromise(program.pipe(Effect.provide(LocalStorageService.Default)))

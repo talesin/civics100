@@ -56,46 +56,30 @@ export default function Statistics() {
   const statsColors = statsThemeColors[theme]
   const colors = { ...baseColors, ...statsColors }
 
-  const loadData = useCallback((mountedRef: { current: boolean }) => {
+  const loadData = useCallback(() => {
     runWithServicesAndErrorHandling(
       Effect.gen(function* () {
         const storageService = yield* LocalStorageService
         const statisticsService = yield* StatisticsService
 
-        // Load game settings to get user state
         const gameSettings = yield* storageService.getGameSettings()
-
-        // Load paired answers
         const answers = yield* storageService.getPairedAnswers()
-        if (!mountedRef.current) return
-
         setPairedAnswers(answers)
 
-        // Load all questions using loadQuestions from questionnaire package
         const allQuestions = yield* loadQuestions({
           questions: civicsQuestionsWithDistractors,
           userState: gameSettings.userState,
           userDistrict: gameSettings.userDistrict
         })
 
-        if (!mountedRef.current) return
-
-        // Calculate statistics
         const stats = yield* statisticsService.calculateQuestionStatistics(allQuestions, answers)
         setStatistics([...stats])
 
-        // Get summary
         const summaryStats = yield* statisticsService.getSummaryStatistics(allQuestions, answers)
-        if (!mountedRef.current) return
-
         setSummary(summaryStats)
-        setIsLoading(false)
-      }),
+      }).pipe(Effect.ensuring(Effect.sync(() => setIsLoading(false)))),
       (error) => {
-        if (mountedRef.current) {
-          console.error('Failed to load statistics:', error)
-          setIsLoading(false)
-        }
+        console.error('Failed to load statistics:', error)
       }
     )
   }, [])
@@ -131,11 +115,7 @@ export default function Statistics() {
   }, [statistics, filter, pairedAnswers, searchQuery, sortField, sortAscending])
 
   useEffect(() => {
-    const mountedRef = { current: true }
-    loadData(mountedRef)
-    return () => {
-      mountedRef.current = false
-    }
+    loadData()
   }, [loadData])
 
   useEffect(() => {

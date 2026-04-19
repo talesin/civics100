@@ -43,13 +43,9 @@ const WebsiteGameSettingsSchema = Schema.Struct({
   questionNumbers: Schema.optionalWith(Schema.Array(Schema.Number), { as: 'Option' })
 })
 
-// Schema for answer history entries (ts stored as number in localStorage)
+// Schema for answer history entries (ts stored as ISO string via JSON.stringify of Date)
 const AnswerHistoryEntrySchema = Schema.Struct({
-  ts: Schema.transform(
-    Schema.Number,
-    Schema.DateFromSelf,
-    { decode: (n) => new Date(n), encode: (d) => d.getTime() }
-  ),
+  ts: Schema.DateFromString,
   correct: Schema.Boolean
 })
 
