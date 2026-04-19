@@ -56,50 +56,6 @@ export default function Statistics() {
   const statsColors = statsThemeColors[theme]
   const colors = { ...baseColors, ...statsColors }
 
-  const loadData = useCallback((mountedRef: { current: boolean }) => {
-    runWithServicesAndErrorHandling(
-      Effect.gen(function* () {
-        const storageService = yield* LocalStorageService
-        const statisticsService = yield* StatisticsService
-
-        // Load game settings to get user state
-        const gameSettings = yield* storageService.getGameSettings()
-
-        // Load paired answers
-        const answers = yield* storageService.getPairedAnswers()
-        if (!mountedRef.current) return
-
-        setPairedAnswers(answers)
-
-        // Load all questions using loadQuestions from questionnaire package
-        const allQuestions = yield* loadQuestions({
-          questions: civicsQuestionsWithDistractors,
-          userState: gameSettings.userState,
-          userDistrict: gameSettings.userDistrict
-        })
-
-        if (!mountedRef.current) return
-
-        // Calculate statistics
-        const stats = yield* statisticsService.calculateQuestionStatistics(allQuestions, answers)
-        setStatistics([...stats])
-
-        // Get summary
-        const summaryStats = yield* statisticsService.getSummaryStatistics(allQuestions, answers)
-        if (!mountedRef.current) return
-
-        setSummary(summaryStats)
-        setIsLoading(false)
-      }),
-      (error) => {
-        if (mountedRef.current) {
-          console.error('Failed to load statistics:', error)
-          setIsLoading(false)
-        }
-      }
-    )
-  }, [])
-
   const applyFiltersAndSort = useCallback(() => {
     runWithServicesAndErrorHandling(
       Effect.gen(function* () {
@@ -131,12 +87,40 @@ export default function Statistics() {
   }, [statistics, filter, pairedAnswers, searchQuery, sortField, sortAscending])
 
   useEffect(() => {
-    const mountedRef = { current: true }
-    loadData(mountedRef)
+    let mounted = true
+
+    runWithServicesAndErrorHandling(
+      Effect.gen(function* () {
+        const storageService = yield* LocalStorageService
+        const statisticsService = yield* StatisticsService
+
+        const gameSettings = yield* storageService.getGameSettings()
+        const answers = yield* storageService.getPairedAnswers()
+        if (mounted) setPairedAnswers(answers)
+
+        const allQuestions = yield* loadQuestions({
+          questions: civicsQuestionsWithDistractors,
+          userState: gameSettings.userState,
+          userDistrict: gameSettings.userDistrict
+        })
+
+        const stats = yield* statisticsService.calculateQuestionStatistics(allQuestions, answers)
+        if (mounted) setStatistics([...stats])
+
+        const summaryStats = yield* statisticsService.getSummaryStatistics(allQuestions, answers)
+        if (mounted) setSummary(summaryStats)
+      }).pipe(Effect.ensuring(Effect.sync(() => {
+        if (mounted) setIsLoading(false)
+      }))),
+      (error) => {
+        console.error('Failed to load statistics:', error)
+      }
+    )
+
     return () => {
-      mountedRef.current = false
+      mounted = false
     }
-  }, [loadData])
+  }, [])
 
   useEffect(() => {
     applyFiltersAndSort()
