@@ -65,6 +65,14 @@ const tokens = createTokens({
     // Base colors
     white: '#ffffff',
     black: '#000000',
+
+    // Editorial palette
+    editorialInk: '#111827',
+    editorialPaper: '#ffffff',
+    editorialRule: '#e5e7eb',
+    editorialMuted: '#6b7280',
+    editorialAccent: '#1e3a8a',
+    editorialAccentDark: '#93c5fd',
   },
 
   space: {

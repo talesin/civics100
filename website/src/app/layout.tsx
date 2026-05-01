@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Newsreader } from 'next/font/google'
 import { TamaguiProvider } from '@/components/TamaguiProvider'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 import { OfflineIndicator } from '@/components/OfflineIndicator'
@@ -14,6 +14,14 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin']
+})
+
+const newsreader = Newsreader({
+  variable: '--font-serif',
+  subsets: ['latin'],
+  style: ['normal', 'italic'],
+  weight: ['400', '500', '600'],
+  display: 'swap',
 })
 
 export const viewport: Viewport = {
@@ -48,7 +56,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased`}>
         <TamaguiProvider>
           <OfflineIndicator />
           {children}
