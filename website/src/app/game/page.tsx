@@ -13,7 +13,7 @@ import { QuestionDataService } from '@/services/QuestionDataService'
 import { runWithServicesAndErrorHandling } from '@/services/ServiceProvider'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
-import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
+import { Trophy, Keyboard, ArrowRight, AlertTriangle } from 'lucide-react'
 import {
   DEFAULT_GAME_SETTINGS,
   GameSession,
@@ -46,8 +46,30 @@ const loadingSpinnerStyles: React.CSSProperties = {
   height: 48,
   borderRadius: '50%',
   border: '2px solid transparent',
-  borderBottomColor: '#2563eb',
+  borderBottomColor: 'var(--editorial-accent)',
   animation: 'spin 1s linear infinite',
+  margin: '0 auto 16px',
+}
+
+const transitionIconBgStyles: React.CSSProperties = {
+  width: 64,
+  height: 64,
+  backgroundColor: 'var(--editorial-accent-subtle)',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  margin: '0 auto 16px',
+}
+
+const errorIconBgStyles: React.CSSProperties = {
+  width: 64,
+  height: 64,
+  backgroundColor: 'var(--theme-error-bg)',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   margin: '0 auto 16px',
 }
 
@@ -57,34 +79,6 @@ const transitionIconContainerStyles: React.CSSProperties = {
 
 const errorIconContainerStyles: React.CSSProperties = {
   textAlign: 'center',
-}
-
-// Extended theme colors for game-specific UI (beyond what TamaguiProvider exports)
-const gameThemeColors = {
-  light: {
-    iconBgBlue: '#dbeafe',
-    iconBlue: '#2563eb',
-    iconBgRed: '#fee2e2',
-    iconRed: '#dc2626',
-    successBg: 'linear-gradient(to right, #f0fdf4, #eff6ff)',
-    successBorder: '#bbf7d0',
-    successText: '#166534',
-    successTextLight: '#15803d',
-    modalBg: 'rgba(0, 0, 0, 0.5)',
-    keyboardBg: '#f3f4f6',
-  },
-  dark: {
-    iconBgBlue: 'rgba(30, 64, 175, 0.3)',
-    iconBlue: '#60a5fa',
-    iconBgRed: 'rgba(185, 28, 28, 0.3)',
-    iconRed: '#f87171',
-    successBg: 'linear-gradient(to right, rgba(21, 128, 61, 0.2), rgba(30, 64, 175, 0.2))',
-    successBorder: '#166534',
-    successText: '#86efac',
-    successTextLight: '#bbf7d0',
-    modalBg: 'rgba(0, 0, 0, 0.7)',
-    keyboardBg: '#374151',
-  },
 }
 
 export default function Game() {
@@ -99,10 +93,6 @@ export default function Game() {
   const [gameSettings, setGameSettings] = useState<WebsiteGameSettings>(DEFAULT_GAME_SETTINGS)
   const [settingsLoaded, setSettingsLoaded] = useState(false)
 
-  const { theme } = useThemeContext()
-  const baseColors = themeColors[theme]
-  const gameColors = gameThemeColors[theme]
-  const colors = useMemo(() => ({ ...baseColors, ...gameColors }), [baseColors, gameColors])
   const { playComplete, playEarlyWin } = useGameSounds()
   const transitionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const mountedRef = useRef(true)
@@ -360,30 +350,6 @@ export default function Game() {
   // Current question based on index
   const currentQuestion = questions[currentQuestionIndex]
 
-  // Memoized styles for transition and error states that depend on theme colors
-  // Must be called before any conditional returns to comply with React's rules of hooks
-  const transitionIconBgStyles = useMemo((): React.CSSProperties => ({
-    width: 64,
-    height: 64,
-    backgroundColor: colors.iconBgBlue,
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 16px',
-  }), [colors.iconBgBlue])
-
-  const errorIconBgStyles = useMemo((): React.CSSProperties => ({
-    width: 64,
-    height: 64,
-    backgroundColor: colors.iconBgRed,
-    borderRadius: '50%',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 16px',
-  }), [colors.iconBgRed])
-
   // Memoize displaySession to avoid creating new object every render
   // Must be called before any conditional returns to comply with React's rules of hooks
   // Note: The early returns below guarantee session is non-null when displaySession is used
@@ -403,7 +369,7 @@ export default function Game() {
         <div style={loadingContainerStyles}>
           <div style={loadingTextContainerStyles}>
             <div style={loadingSpinnerStyles} />
-            <p style={{ color: colors.textMuted }}>Preparing your civics test...</p>
+            <p style={{ color: 'var(--editorial-muted)' }}>Preparing your civics test...</p>
           </div>
         </div>
       </Layout>
@@ -418,22 +384,10 @@ export default function Game() {
           <div style={loadingTextContainerStyles}>
             <div style={transitionIconContainerStyles}>
               <div style={transitionIconBgStyles}>
-                <svg
-                  style={{ width: 32, height: 32, color: colors.iconBlue }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 7l5 5m0 0l-5 5m5-5H6"
-                  />
-                </svg>
+                <ArrowRight size={32} strokeWidth={1.5} color="var(--editorial-accent)" />
               </div>
             </div>
-            <p style={{ color: colors.textMuted }}>Loading next question...</p>
+            <p style={{ color: 'var(--editorial-muted)' }}>Loading next question...</p>
           </div>
         </div>
       </Layout>
@@ -459,38 +413,16 @@ export default function Game() {
       <Layout title="Game Error">
         <div style={errorIconContainerStyles}>
           <div style={errorIconBgStyles}>
-            <svg
-              style={{ width: 32, height: 32, color: colors.iconRed }}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
-              />
-            </svg>
+            <AlertTriangle size={32} strokeWidth={1.5} color="var(--theme-error)" />
           </div>
-          <h2 style={{ fontSize: 20, fontWeight: 600, color: colors.text, marginBottom: 8 }}>Game Error</h2>
-          <p style={{ color: colors.iconRed, marginBottom: 24 }}>
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--editorial-ink)', marginBottom: 8 }}>Game Error</h2>
+          <p style={{ color: 'var(--theme-error)', marginBottom: 24 }}>
             There was an error loading the game. Please try again.
           </p>
           <button
             onClick={handleRestart}
-            style={{
-              backgroundColor: '#2563eb',
-              color: 'white',
-              fontWeight: 500,
-              padding: '8px 16px',
-              borderRadius: 8,
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
-            onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+            className="btn-primary focus-ring"
+            style={{ padding: '8px 16px', borderRadius: 6, fontWeight: 500, cursor: 'pointer' }}
           >
             Restart Game
           </button>
@@ -520,51 +452,32 @@ export default function Game() {
         {/* Early Win Option */}
         {showEarlyWinOption && gameState === 'answered' ? (
           <div className="animate-fade-in" style={{
-            background: colors.successBg,
-            border: `1px solid ${colors.successBorder}`,
+            backgroundColor: 'var(--theme-success-bg)',
+            border: '1px solid var(--theme-success)',
             borderRadius: 8,
             padding: 24
           }}>
             <div style={{ textAlign: 'center' }}>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: colors.successText, marginBottom: 8 }}>
-                🎉 Congratulations! You can pass now!
+              <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--theme-success-text)', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                <Trophy size={20} strokeWidth={1.5} />
+                Congratulations! You can pass now!
               </h3>
-              <p style={{ color: colors.successTextLight, marginBottom: 16, fontSize: 14 }}>
+              <p style={{ color: 'var(--editorial-muted)', marginBottom: 16, fontSize: 14 }}>
                 You&apos;ve answered {session.correctAnswers} out of {gameSettings.winThreshold} questions correctly to pass. You can finish
                 now or continue to answer all {questions.length} questions.
               </p>
               <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
                 <button
                   onClick={handleEarlyFinish}
-                  style={{
-                    backgroundColor: '#16a34a',
-                    color: 'white',
-                    fontWeight: 500,
-                    padding: '8px 16px',
-                    borderRadius: 8,
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#15803d'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#16a34a'}
+                  className="btn-success focus-ring"
+                  style={{ padding: '8px 16px', borderRadius: 6, fontWeight: 500, cursor: 'pointer' }}
                 >
                   Finish Now
                 </button>
                 <button
                   onClick={handleNext}
-                  style={{
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    fontWeight: 500,
-                    padding: '8px 16px',
-                    borderRadius: 8,
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'background-color 0.2s'
-                  }}
-                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
-                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                  className="btn-primary focus-ring"
+                  style={{ padding: '8px 16px', borderRadius: 6, fontWeight: 500, cursor: 'pointer' }}
                 >
                   Continue
                 </button>
@@ -591,58 +504,48 @@ export default function Game() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: colors.modalBg,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 50
           }}>
             <div style={{
-              backgroundColor: colors.cardBg,
+              backgroundColor: 'var(--theme-card-bg)',
+              border: '1px solid var(--editorial-rule)',
               borderRadius: 8,
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
               padding: 24,
               maxWidth: 448,
               margin: 16
             }}>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: colors.text, marginBottom: 16 }}>
-                ⌨️ Keyboard Shortcuts
+              <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--editorial-ink)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Keyboard size={18} strokeWidth={1.5} />
+                Keyboard Shortcuts
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14, color: colors.textMuted, marginBottom: 24 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14, color: 'var(--editorial-muted)', marginBottom: 24 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Select answers:</span>
-                  <span style={{ fontFamily: 'monospace', backgroundColor: colors.keyboardBg, padding: '4px 8px', borderRadius: 4 }}>
+                  <span style={{ fontFamily: 'monospace', backgroundColor: 'var(--color-neutral-100)', padding: '4px 8px', borderRadius: 4 }}>
                     1-4 or A-D
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Next question:</span>
-                  <span style={{ fontFamily: 'monospace', backgroundColor: colors.keyboardBg, padding: '4px 8px', borderRadius: 4 }}>
+                  <span style={{ fontFamily: 'monospace', backgroundColor: 'var(--color-neutral-100)', padding: '4px 8px', borderRadius: 4 }}>
                     Enter or Space
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Restart game:</span>
-                  <span style={{ fontFamily: 'monospace', backgroundColor: colors.keyboardBg, padding: '4px 8px', borderRadius: 4 }}>
+                  <span style={{ fontFamily: 'monospace', backgroundColor: 'var(--color-neutral-100)', padding: '4px 8px', borderRadius: 4 }}>
                     R
                   </span>
                 </div>
               </div>
               <button
                 onClick={() => setShowKeyboardHelp(false)}
-                style={{
-                  width: '100%',
-                  backgroundColor: '#2563eb',
-                  color: 'white',
-                  fontWeight: 500,
-                  padding: '8px 16px',
-                  borderRadius: 8,
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'background-color 0.2s'
-                }}
-                onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#1d4ed8'}
-                onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#2563eb'}
+                className="btn-primary focus-ring"
+                style={{ width: '100%', fontWeight: 500, padding: '8px 16px', borderRadius: 6, cursor: 'pointer' }}
               >
                 Got it!
               </button>
@@ -654,31 +557,22 @@ export default function Game() {
         <button
           onClick={() => setShowKeyboardHelp(true)}
           title="Show keyboard shortcuts"
+          className="btn-secondary focus-ring"
           style={{
             position: 'fixed',
             bottom: 16,
             right: 16,
-            backgroundColor: '#4b5563',
-            color: 'white',
             padding: 12,
             borderRadius: '50%',
-            border: 'none',
             cursor: 'pointer',
-            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-            transition: 'background-color 0.2s',
-            zIndex: 40
+            boxShadow: 'var(--shadow-md)',
+            zIndex: 40,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#374151'}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#4b5563'}
         >
-          <svg style={{ width: 20, height: 20 }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 9l4-4 4 4m0 6l-4 4-4-4"
-            />
-          </svg>
+          <Keyboard size={20} strokeWidth={1.5} />
         </button>
       </div>
     </Layout>

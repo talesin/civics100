@@ -3,34 +3,43 @@
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Effect } from 'effect'
+import { motion } from 'framer-motion'
+import { CheckCircle, BarChart2, BookOpen, Keyboard, Volume2 } from 'lucide-react'
 import Layout from '@/components/Layout'
 import StatsSummary from '@/components/StatsSummary'
 import { LocalStorageService } from '@/services/LocalStorageService'
 import { GameStats } from '@/types'
-import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
-// Extended theme colors for home page specific UI
-const homeThemeColors = {
-  light: {
-    textLight: '#6b7280',     // gray-500
-    badgeBlueBg: '#eff6ff',   // blue-50
-    badgeBlueText: '#1d4ed8', // blue-700
-    badgeGreenBg: '#f0fdf4',  // green-50
-    badgeGreenText: '#15803d', // green-700
-    badgePurpleBg: '#faf5ff', // purple-50
-    badgePurpleText: '#7c3aed', // purple-700
-    link: '#2563eb',          // blue-600
-  },
-  dark: {
-    textLight: '#9ca3af',     // gray-400
-    badgeBlueBg: 'rgba(30, 64, 175, 0.2)',
-    badgeBlueText: '#93c5fd', // blue-300
-    badgeGreenBg: 'rgba(21, 128, 61, 0.2)',
-    badgeGreenText: '#86efac', // green-300
-    badgePurpleBg: 'rgba(124, 58, 237, 0.2)',
-    badgePurpleText: '#c4b5fd', // purple-300
-    link: '#60a5fa',          // blue-400
-  },
+const fadeUp = {
+  hidden: { opacity: 0, y: 8 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.28, ease: 'easeOut' as const, delay: i * 0.05 },
+  }),
+}
+
+const cardStyle: React.CSSProperties = {
+  backgroundColor: 'var(--editorial-paper)',
+  border: '1px solid var(--editorial-rule)',
+  borderRadius: 6,
+  padding: '32px 28px',
+  display: 'flex',
+  flexDirection: 'column',
+}
+
+const sectionHeadingStyle: React.CSSProperties = {
+  fontFamily: 'var(--font-family-serif)',
+  fontSize: 20,
+  fontWeight: 500,
+  color: 'var(--editorial-ink)',
+  marginBottom: 20,
+  letterSpacing: '-0.01em',
+}
+
+const dividerStyle: React.CSSProperties = {
+  borderTop: '1px solid var(--editorial-rule)',
+  margin: '0 0 20px',
 }
 
 export default function Home() {
@@ -43,10 +52,6 @@ export default function Home() {
     earlyFailures: 0
   })
   const [isLoading, setIsLoading] = useState(true)
-  const { theme } = useThemeContext()
-  const baseColors = themeColors[theme]
-  const homeColors = homeThemeColors[theme]
-  const colors = { ...baseColors, ...homeColors }
 
   useEffect(() => {
     let mounted = true
@@ -69,34 +74,20 @@ export default function Home() {
       }
     )
 
-    return () => {
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [])
-
-  const handleStartGame = () => {
-    router.push('/settings')
-  }
-
-  const handleQuickStart = () => {
-    router.push('/game')
-  }
-
-  const handleViewResults = () => {
-    router.push('/results')
-  }
 
   if (isLoading) {
     return (
       <Layout>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 320 }}>
           <div style={{
-            width: 48,
-            height: 48,
+            width: 28,
+            height: 28,
             borderRadius: '50%',
-            border: '2px solid transparent',
-            borderBottomColor: '#2563eb',
-            animation: 'spin 1s linear infinite'
+            border: '2px solid var(--editorial-rule)',
+            borderTopColor: 'var(--editorial-accent)',
+            animation: 'spin 0.8s linear infinite'
           }} />
         </div>
       </Layout>
@@ -105,435 +96,336 @@ export default function Home() {
 
   return (
     <Layout title="US Civics Test">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={{ marginBottom: 24 }}>
-            <div className="animate-bounce-in" style={{
-              width: 80,
-              height: 80,
-              background: 'linear-gradient(to bottom right, #2563eb, #dc2626)',
-              borderRadius: 16,
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 40, maxWidth: 900, margin: '0 auto' }}>
+
+        {/* Hero */}
+        <motion.div
+          custom={0}
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          style={{ paddingTop: 16, paddingBottom: 8 }}
+        >
+          <p style={{
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'var(--editorial-accent)',
+            marginBottom: 16,
+          }}>
+            U.S. Citizenship Practice Test
+          </p>
+          <h1 style={{
+            fontFamily: 'var(--font-family-serif)',
+            fontSize: 'clamp(2.5rem, 6vw, 4rem)',
+            fontWeight: 500,
+            lineHeight: 1.1,
+            letterSpacing: '-0.02em',
+            color: 'var(--editorial-ink)',
+            marginBottom: 20,
+          }}>
+            Know Your Country
+          </h1>
+          <p style={{
+            fontSize: 'clamp(1rem, 2vw, 1.125rem)',
+            color: 'var(--editorial-muted)',
+            lineHeight: 1.65,
+            maxWidth: 560,
+            marginBottom: 24,
+          }}>
+            Practice with official USCIS civics questions covering American government,
+            history, and civic ideals — the same content used in the naturalization interview.
+          </p>
+          <p style={{
+            fontSize: 13,
+            color: 'var(--editorial-muted)',
+            letterSpacing: '0.01em',
+          }}>
+            128 questions&ensp;·&ensp;60% to pass&ensp;·&ensp;12 correct answers to win early
+          </p>
+        </motion.div>
+
+        {/* Hairline rule */}
+        <motion.div custom={1} initial="hidden" animate="visible" variants={fadeUp}>
+          <div style={{ borderTop: '1px solid var(--editorial-rule)' }} />
+        </motion.div>
+
+        {/* Action cards */}
+        <motion.div
+          custom={2}
+          initial="hidden"
+          animate="visible"
+          variants={fadeUp}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 380px), 1fr))',
+            gap: 20,
+          }}
+        >
+          {/* Take the Test */}
+          <div style={cardStyle}>
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 4,
+              backgroundColor: 'var(--editorial-accent-subtle)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 24px',
-              boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+              marginBottom: 20,
             }}>
-              <span style={{ color: 'white', fontSize: 30 }}>🇺🇸</span>
+              <CheckCircle size={20} color="var(--editorial-accent)" strokeWidth={1.5} />
             </div>
-            <h1 className="text-gradient" style={{
-              fontSize: 'clamp(2.25rem, 5vw, 3.75rem)',
-              fontWeight: 'bold',
-              color: colors.text,
-              marginBottom: 16
+            <h2 style={{
+              fontFamily: 'var(--font-family-serif)',
+              fontSize: 22,
+              fontWeight: 500,
+              color: 'var(--editorial-ink)',
+              marginBottom: 10,
+              letterSpacing: '-0.01em',
             }}>
-              US Civics Test
-            </h1>
-            <p className="text-balance" style={{
-              fontSize: 'clamp(1.125rem, 2vw, 1.25rem)',
-              color: colors.textMuted,
-              marginBottom: 32,
-              maxWidth: 768,
-              marginLeft: 'auto',
-              marginRight: 'auto'
+              Take the Test
+            </h2>
+            <p style={{
+              fontSize: 14,
+              color: 'var(--editorial-muted)',
+              lineHeight: 1.65,
+              marginBottom: 24,
+              flex: 1,
             }}>
-              Test your knowledge of American civics and history. Answer questions about the
-              Constitution, government structure, and American history to see if you can pass the
-              citizenship test.
+              Start a new civics test with up to 20 questions. Pass with 12 correct answers,
+              or the test ends early if you miss 9.
             </p>
-          </div>
-
-          <div style={{
-            display: 'flex',
-            flexWrap: 'wrap',
-            justifyContent: 'center',
-            gap: 8,
-            fontSize: 14,
-            color: colors.textLight,
-            marginBottom: 32
-          }}>
-            <span style={{
-              backgroundColor: colors.badgeBlueBg,
-              color: colors.badgeBlueText,
-              padding: '4px 12px',
-              borderRadius: 9999
-            }}>
-              📚 128 Questions
-            </span>
-            <span style={{
-              backgroundColor: colors.badgeGreenBg,
-              color: colors.badgeGreenText,
-              padding: '4px 12px',
-              borderRadius: 9999
-            }}>
-              ✅ 60% to Pass
-            </span>
-            <span style={{
-              backgroundColor: colors.badgePurpleBg,
-              color: colors.badgePurpleText,
-              padding: '4px 12px',
-              borderRadius: 9999
-            }}>
-              ⚡ 12 Early Win
-            </span>
-          </div>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 400px), 1fr))',
-          gap: 24,
-          marginBottom: 32
-        }}>
-          <div className="card card-interactive">
-            <div style={{ marginBottom: 24 }}>
-              <div style={{
-                width: 64,
-                height: 64,
-                background: 'linear-gradient(to bottom right, #3b82f6, #2563eb)',
-                borderRadius: 16,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-              }}>
-                <svg
-                  style={{ width: 32, height: 32, color: 'white' }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <h2 style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-                color: colors.text,
-                marginBottom: 12
-              }}>
-                Take the Test
-              </h2>
-              <p className="text-balance" style={{
-                color: colors.textMuted,
-                marginBottom: 24
-              }}>
-                Start a new civics test with up to 20 questions (configurable in settings). You need
-                12 correct answers (60%) to pass, or you can continue to answer all 20 questions.
-                Note: The test will automatically end if you answer 9 questions incorrectly.
-              </p>
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 8,
-                justifyContent: 'center',
-                marginBottom: 24
-              }}>
-                <span style={{
-                  fontSize: 12,
-                  backgroundColor: colors.badgeBlueBg,
-                  color: colors.badgeBlueText,
-                  padding: '4px 8px',
-                  borderRadius: 4
-                }}>
-                  🎯 Interactive
-                </span>
-                <span style={{
-                  fontSize: 12,
-                  backgroundColor: colors.badgeBlueBg,
-                  color: colors.badgeBlueText,
-                  padding: '4px 8px',
-                  borderRadius: 4
-                }}>
-                  🔊 Audio Feedback
-                </span>
-                <span style={{
-                  fontSize: 12,
-                  backgroundColor: colors.badgeBlueBg,
-                  color: colors.badgeBlueText,
-                  padding: '4px 8px',
-                  borderRadius: 4
-                }}>
-                  ⌨️ Keyboard Support
-                </span>
-              </div>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--editorial-muted)' }}>
+                <Volume2 size={13} strokeWidth={1.5} /> Audio
+              </span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--editorial-muted)' }}>
+                <Keyboard size={13} strokeWidth={1.5} /> Keyboard
+              </span>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <button
-                onClick={handleStartGame}
+                onClick={() => router.push('/settings')}
                 className="btn-primary focus-ring"
                 style={{
                   width: '100%',
-                  padding: '12px 24px',
-                  borderRadius: 8,
+                  padding: '11px 20px',
+                  borderRadius: 5,
                   fontWeight: 600,
-                  fontSize: 16,
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  fontSize: 14,
+                  cursor: 'pointer',
                 }}
               >
-                Customize & Start Test
+                Customize &amp; Start
               </button>
               <button
-                onClick={handleQuickStart}
+                onClick={() => router.push('/game')}
                 className="btn-secondary focus-ring"
                 style={{
                   width: '100%',
-                  padding: '8px 16px',
-                  borderRadius: 8,
+                  padding: '9px 16px',
+                  borderRadius: 5,
                   fontWeight: 500,
-                  fontSize: 14,
-                  boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                  fontSize: 13,
+                  cursor: 'pointer',
                 }}
               >
-                Quick Start (Default Settings)
+                Quick Start
               </button>
             </div>
           </div>
 
-          <div className="card card-interactive">
-            <div style={{ marginBottom: 24 }}>
-              <div style={{
-                width: 64,
-                height: 64,
-                background: 'linear-gradient(to bottom right, #22c55e, #16a34a)',
-                borderRadius: 16,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                margin: '0 auto 16px',
-                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-              }}>
-                <svg
-                  style={{ width: 32, height: 32, color: 'white' }}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                  />
-                </svg>
-              </div>
-              <h2 style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-                color: colors.text,
-                marginBottom: 12
-              }}>
-                View Results
-              </h2>
-              <p className="text-balance" style={{
-                color: colors.textMuted,
-                marginBottom: 24
-              }}>
-                Review your past test results, track your progress, and see detailed statistics
-                about your civics knowledge.
-              </p>
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
-                gap: 8,
-                justifyContent: 'center',
-                marginBottom: 24
-              }}>
-                <span style={{
-                  fontSize: 12,
-                  backgroundColor: colors.badgeGreenBg,
-                  color: colors.badgeGreenText,
-                  padding: '4px 8px',
-                  borderRadius: 4
-                }}>
-                  📊 Statistics
-                </span>
-                <span style={{
-                  fontSize: 12,
-                  backgroundColor: colors.badgeGreenBg,
-                  color: colors.badgeGreenText,
-                  padding: '4px 8px',
-                  borderRadius: 4
-                }}>
-                  📈 Progress Tracking
-                </span>
-                <span style={{
-                  fontSize: 12,
-                  backgroundColor: colors.badgeGreenBg,
-                  color: colors.badgeGreenText,
-                  padding: '4px 8px',
-                  borderRadius: 4
-                }}>
-                  🏆 Achievements
-                </span>
-              </div>
+          {/* View Results */}
+          <div style={cardStyle}>
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 4,
+              backgroundColor: 'var(--editorial-accent-subtle)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 20,
+            }}>
+              <BarChart2 size={20} color="var(--editorial-accent)" strokeWidth={1.5} />
             </div>
+            <h2 style={{
+              fontFamily: 'var(--font-family-serif)',
+              fontSize: 22,
+              fontWeight: 500,
+              color: 'var(--editorial-ink)',
+              marginBottom: 10,
+              letterSpacing: '-0.01em',
+            }}>
+              View Results
+            </h2>
+            <p style={{
+              fontSize: 14,
+              color: 'var(--editorial-muted)',
+              lineHeight: 1.65,
+              marginBottom: 24,
+              flex: 1,
+            }}>
+              Review past tests, track your progress over time, and see detailed statistics
+              about your civics knowledge.
+            </p>
             <button
-              onClick={handleViewResults}
-              className="btn-success focus-ring"
+              onClick={() => router.push('/results')}
+              className="btn-primary focus-ring"
               style={{
                 width: '100%',
-                padding: '12px 24px',
-                borderRadius: 8,
+                padding: '11px 20px',
+                borderRadius: 5,
                 fontWeight: 600,
-                fontSize: 16,
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                fontSize: 14,
+                cursor: 'pointer',
+                marginTop: 'auto',
               }}
             >
               View Results
             </button>
           </div>
-        </div>
+        </motion.div>
 
-        <StatsSummary stats={stats} />
+        {/* Stats */}
+        <motion.div custom={3} initial="hidden" animate="visible" variants={fadeUp}>
+          <StatsSummary stats={stats} />
+        </motion.div>
 
-        <div style={{
-          backgroundColor: colors.cardBg,
-          borderRadius: 8,
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          padding: 24
-        }}>
-          <h3 style={{
-            fontSize: 18,
-            fontWeight: 600,
-            color: colors.text,
-            marginBottom: 16
-          }}>
-            About the Test
-          </h3>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-            gap: 24,
-            fontSize: 14,
-            color: colors.textMuted
-          }}>
-            <div>
-              <h4 style={{ fontWeight: 500, color: colors.text, marginBottom: 8 }}>Test Format</h4>
-              <ul style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <li>• Up to 20 questions from pool of 128</li>
-                <li>• Pass with 12 correct answers (60%)</li>
-                <li>• Questions from 2025 USCIS civics test</li>
-                <li>• Version M-1778 (09/25)</li>
-              </ul>
+        {/* About */}
+        <motion.div custom={4} initial="hidden" animate="visible" variants={fadeUp}>
+          <div style={{ borderTop: '1px solid var(--editorial-rule)', paddingTop: 32 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
+              <BookOpen size={16} color="var(--editorial-muted)" strokeWidth={1.5} />
+              <h3 style={sectionHeadingStyle}>About the Test</h3>
             </div>
-            <div>
-              <h4 style={{ fontWeight: 500, color: colors.text, marginBottom: 8 }}>Topics Covered</h4>
-              <ul style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <li>• American Government</li>
-                <li>• American History</li>
-                <li>• Symbols and Holidays</li>
-              </ul>
-            </div>
-            <div>
-              <h4 style={{ fontWeight: 500, color: colors.text, marginBottom: 8 }}>Dynamic Content</h4>
-              <ul style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <li>• Current senators and representatives</li>
-                <li>• Updated from official government sources</li>
-                <li>• Track your progress over time</li>
-              </ul>
+            <div style={{ borderTop: '1px solid var(--editorial-rule)', marginBottom: 0 }} />
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: 0,
+            }}>
+              {[
+                {
+                  title: 'Test Format',
+                  items: [
+                    'Up to 20 questions from a pool of 128',
+                    'Pass with 12 correct answers (60%)',
+                    'Questions from 2025 USCIS civics test',
+                    'Version M-1778 (09/25)',
+                  ]
+                },
+                {
+                  title: 'Topics Covered',
+                  items: [
+                    'American Government',
+                    'American History',
+                    'Symbols and Holidays',
+                  ]
+                },
+                {
+                  title: 'Dynamic Content',
+                  items: [
+                    'Current senators and representatives',
+                    'Updated from official government sources',
+                    'Track your progress over time',
+                  ]
+                },
+              ].map((section) => (
+                <div key={section.title} style={{
+                  padding: '20px 0',
+                  borderBottom: '1px solid var(--editorial-rule)',
+                }}>
+                  <h4 style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: 'var(--editorial-accent)',
+                    marginBottom: 12,
+                  }}>
+                    {section.title}
+                  </h4>
+                  <ul style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {section.items.map((item) => (
+                      <li key={item} style={{ fontSize: 13, color: 'var(--editorial-muted)', lineHeight: 1.5 }}>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
-        <div style={{
-          backgroundColor: colors.cardBg,
-          borderRadius: 8,
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          padding: 24
-        }}>
-          <h3 style={{
-            fontSize: 18,
-            fontWeight: 600,
-            color: colors.text,
-            marginBottom: 16
-          }}>
-            Official Sources
-          </h3>
-          <div style={{ fontSize: 14, color: colors.textMuted }}>
-            <p style={{ marginBottom: 12 }}>
-              All test questions and state-specific data are sourced from official U.S. government
-              websites:
+        {/* Official Sources */}
+        <motion.div custom={5} initial="hidden" animate="visible" variants={fadeUp}>
+          <div style={{ borderTop: '1px solid var(--editorial-rule)', paddingTop: 32 }}>
+            <h3 style={sectionHeadingStyle}>Official Sources</h3>
+            <div style={dividerStyle} />
+            <p style={{ fontSize: 13, color: 'var(--editorial-muted)', marginBottom: 16, lineHeight: 1.6 }}>
+              All questions and political data are sourced directly from official U.S. government websites.
             </p>
-            <style>{`
-              .source-link { text-decoration: none; }
-              .source-link:hover { text-decoration: underline; }
-            `}</style>
-            <ul style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <li>
-                •{' '}
-                <a
-                  href="https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: colors.link }}
-                  className="source-link"
-                >
-                  USCIS 128 Civics Questions (2025)
-                </a>{' '}
-                - Official 2025 test questions for naturalization
-              </li>
-              <li>
-                •{' '}
-                <a
-                  href="https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: colors.link }}
-                  className="source-link"
-                >
-                  USCIS Test Updates
-                </a>{' '}
-                - Current test changes and updates
-              </li>
-              <li>
-                •{' '}
-                <a
-                  href="https://www.senate.gov/senators/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: colors.link }}
-                  className="source-link"
-                >
-                  U.S. Senate
-                </a>{' '}
-                - Current senators by state
-              </li>
-              <li>
-                •{' '}
-                <a
-                  href="https://www.house.gov/representatives"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: colors.link }}
-                  className="source-link"
-                >
-                  U.S. House of Representatives
-                </a>{' '}
-                - Current representatives by district
-              </li>
-              <li>
-                •{' '}
-                <a
-                  href="https://www.usa.gov/state-governments"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ color: colors.link }}
-                  className="source-link"
-                >
-                  USA.gov State Governments
-                </a>{' '}
-                - State government information and governors
-              </li>
+            <ul style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {[
+                {
+                  href: 'https://www.uscis.gov/sites/default/files/document/questions-and-answers/2025-Civics-Test-128-Questions-and-Answers.pdf',
+                  label: 'USCIS 128 Civics Questions (2025)',
+                  desc: 'Official 2025 test questions for naturalization',
+                },
+                {
+                  href: 'https://www.uscis.gov/citizenship/find-study-materials-and-resources/check-for-test-updates',
+                  label: 'USCIS Test Updates',
+                  desc: 'Current test changes and updates',
+                },
+                {
+                  href: 'https://www.senate.gov/senators/',
+                  label: 'U.S. Senate',
+                  desc: 'Current senators by state',
+                },
+                {
+                  href: 'https://www.house.gov/representatives',
+                  label: 'U.S. House of Representatives',
+                  desc: 'Current representatives by district',
+                },
+                {
+                  href: 'https://www.usa.gov/state-governments',
+                  label: 'USA.gov State Governments',
+                  desc: 'State government information and governors',
+                },
+              ].map(({ href, label, desc }) => (
+                <li key={href} style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 2,
+                  paddingBottom: 10,
+                  borderBottom: '1px solid var(--editorial-rule)',
+                }}>
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      fontSize: 13,
+                      color: 'var(--editorial-accent)',
+                      textDecoration: 'none',
+                      fontWeight: 500,
+                    }}
+                    onMouseEnter={(e) => ((e.target as HTMLAnchorElement).style.textDecoration = 'underline')}
+                    onMouseLeave={(e) => ((e.target as HTMLAnchorElement).style.textDecoration = 'none')}
+                  >
+                    {label}
+                  </a>
+                  <span style={{ fontSize: 12, color: 'var(--editorial-muted)' }}>{desc}</span>
+                </li>
+              ))}
             </ul>
           </div>
-        </div>
+        </motion.div>
+
       </div>
     </Layout>
   )

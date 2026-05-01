@@ -2,7 +2,7 @@ import React from 'react'
 import { GameResult } from '@/types'
 import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
-import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
+import { CheckCircle, XCircle, Star } from 'lucide-react'
 
 interface GameResultsProps {
   readonly result: GameResult
@@ -118,11 +118,14 @@ const AchievementBanner = styled(XStack, {
   padding: '$4',
   marginBottom: '$4',
   width: '100%',
+  gap: '$2',
+  alignItems: 'center',
 })
 
 const AchievementText = styled(Text, {
   fontSize: '$5',
   color: '$warning6',
+  flex: 1,
 })
 
 const ButtonContainer = styled(XStack, {
@@ -185,35 +188,32 @@ const FooterText = styled(Text, {
 })
 
 export default function GameResults({ result, onPlayAgain, onViewHistory }: GameResultsProps) {
-  const { theme } = useThemeContext()
-  const colors = themeColors[theme]
-
   const getResultMessage = () => {
     if (result.isEarlyFail === true) {
-      return '📚 Test ended - You answered 9 questions incorrectly. Keep studying and try again!'
+      return 'Test ended — you answered 9 questions incorrectly. Keep studying and try again!'
     } else if (result.isEarlyWin === true) {
-      return `🎉 Excellent! You passed with ${result.correctAnswers} correct answers!`
+      return `Excellent! You passed with ${result.correctAnswers} correct answers!`
     } else if (result.percentage >= 60) {
-      return '✅ Congratulations! You passed the civics test!'
+      return 'Congratulations! You passed the civics test!'
     } else {
-      return '📚 Keep studying! You need 60% to pass.'
+      return 'Keep studying! You need 60% to pass.'
     }
   }
 
   const getResultColor = (): string => {
     if (result.isEarlyFail === true) {
-      return colors.error
+      return 'var(--theme-error)'
     } else if (result.isEarlyWin === true || result.percentage >= 60) {
-      return colors.success
+      return 'var(--theme-success)'
     } else {
-      return colors.error
+      return 'var(--theme-error)'
     }
   }
 
   const getScoreColor = (): string => {
-    if (result.percentage >= 80) return colors.success
-    if (result.percentage >= 60) return colors.primary
-    return colors.error
+    if (result.percentage >= 80) return 'var(--theme-success)'
+    if (result.percentage >= 60) return 'var(--theme-primary)'
+    return 'var(--theme-error)'
   }
 
   const isSuccess = result.isEarlyFail !== true && (result.isEarlyWin === true || result.percentage >= 60)
@@ -223,40 +223,22 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
       <YStack marginBottom="$4" alignItems="center">
         {isSuccess ? (
           <IconCircle variant="success" data-testid="result-icon-success">
-            <svg
-              width={40}
-              height={40}
-              fill="none"
-              stroke={colors.success}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
+            <CheckCircle
+              size={40}
+              strokeWidth={1.5}
+              color="var(--theme-success)"
+            />
           </IconCircle>
         ) : (
           <IconCircle variant="failure" data-testid="result-icon-failure">
-            <svg
-              width={40}
-              height={40}
-              fill="none"
-              stroke={colors.error}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <XCircle
+              size={40}
+              strokeWidth={1.5}
+              color="var(--theme-error)"
+            />
           </IconCircle>
         )}
-        <Title>Game Complete!</Title>
+        <Title>Test Complete</Title>
         <ResultMessage color={getResultColor()}>
           {getResultMessage()}
         </ResultMessage>
@@ -291,8 +273,9 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
 
       {result.isEarlyWin === true ? (
         <AchievementBanner>
+          <Star size={16} strokeWidth={1.5} color="var(--color-warning-500)" />
           <AchievementText>
-            🌟 Early Win Achievement! You answered {result.correctAnswers} questions correctly and chose to finish early.
+            Early Win! You answered {result.correctAnswers} questions correctly and chose to finish early.
           </AchievementText>
         </AchievementBanner>
       ) : null}

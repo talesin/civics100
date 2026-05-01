@@ -1,119 +1,115 @@
 // Service Worker for Civics 100 PWA
-// Cache-first strategy with offline fallback
+// Strategy:
+//   - Navigation (HTML): network-first → cache fallback (prevents stale chunk errors after deploy)
+//   - /_next/static/ assets: cache-first (content-addressed, immutable)
+//   - Everything else: network-first → cache fallback
 
-const CACHE_NAME = 'civics100-v1';
+// Bump this on every deploy to evict old cached HTML.
+// A timestamp string works; a build ID injected at build time is better.
+const CACHE_VERSION = 'civics100-v2';
+const STATIC_CACHE = `${CACHE_VERSION}-static`;
 
-// Critical pages to precache on install
 const PRECACHE_URLS = [
-  '/',
-  '/game/',
-  '/settings/',
-  '/results/',
-  '/statistics/',
   '/offline.html',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
 ];
 
-// Install event - precache critical resources
+// Install: precache only truly static assets (not HTML pages)
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Precaching critical resources');
+    caches.open(STATIC_CACHE).then((cache) => {
       return cache.addAll(PRECACHE_URLS);
     })
   );
-  // Activate immediately
   self.skipWaiting();
 });
 
-// Activate event - clean up old caches
+// Activate: delete every cache that doesn't belong to this version
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => {
-            console.log('[SW] Removing old cache:', name);
-            return caches.delete(name);
+    caches.keys().then((names) =>
+      Promise.all(
+        names
+          .filter((n) => !n.startsWith(CACHE_VERSION))
+          .map((n) => {
+            console.log('[SW] Removing old cache:', n);
+            return caches.delete(n);
           })
-      );
-    })
+      )
+    ).then(() => self.clients.claim())
   );
-  // Take control of all pages immediately
-  self.clients.claim();
 });
 
-// Fetch event - cache-first for same-origin GET requests
+// Fetch
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Only handle same-origin GET requests
-  if (request.method !== 'GET' || url.origin !== self.location.origin) {
+  if (request.method !== 'GET' || url.origin !== self.location.origin) return;
+  if (url.protocol === 'chrome-extension:') return;
+
+  // Immutable hashed assets → cache-first (safe forever)
+  if (url.pathname.startsWith('/_next/static/')) {
+    event.respondWith(cacheFirst(request, STATIC_CACHE));
     return;
   }
 
-  // Skip Chrome extension requests
-  if (url.protocol === 'chrome-extension:') {
+  // HTML navigation → network-first (must be fresh after a deploy)
+  if (request.mode === 'navigate') {
+    event.respondWith(networkFirstNavigate(request));
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        // Return cached response and update cache in background (stale-while-revalidate)
-        event.waitUntil(
-          fetch(request)
-            .then((response) => {
-              if (response.ok) {
-                // Clone response before caching - response body can only be consumed once
-                const responseClone = response.clone();
-                caches.open(CACHE_NAME).then((cache) => {
-                  cache.put(request, responseClone);
-                });
-              }
-            })
-            .catch(() => {
-              // Network unavailable, that's fine - we have cache
-            })
-        );
-        return cachedResponse;
-      }
-
-      // Not in cache - try network
-      return fetch(request)
-        .then((response) => {
-          // Cache successful responses
-          if (response.ok) {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          // Network failed and not in cache
-          // For navigation requests, show offline page
-          if (request.mode === 'navigate') {
-            return caches.match('/offline.html');
-          }
-          // For other requests, return a simple error response
-          return new Response('Offline', {
-            status: 503,
-            statusText: 'Service Unavailable',
-          });
-        });
-    })
-  );
+  // Everything else (API, icons, manifest) → network-first
+  event.respondWith(networkFirst(request, STATIC_CACHE));
 });
 
-// Handle messages from the main thread
-self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') {
-    self.skipWaiting();
+// Cache-first: return cached response or fetch+cache
+async function cacheFirst(request, cacheName) {
+  const cached = await caches.match(request);
+  if (cached) return cached;
+  const response = await fetch(request);
+  if (response.ok) {
+    const cache = await caches.open(cacheName);
+    cache.put(request, response.clone());
   }
+  return response;
+}
+
+// Network-first for navigation: fetch HTML fresh, fall back to cache or offline page
+async function networkFirstNavigate(request) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(STATIC_CACHE);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    if (cached) return cached;
+    const offline = await caches.match('/offline.html');
+    return offline ?? new Response('Offline', { status: 503 });
+  }
+}
+
+// Network-first for other requests
+async function networkFirst(request, cacheName) {
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const cache = await caches.open(cacheName);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await caches.match(request);
+    return cached ?? new Response('Offline', { status: 503 });
+  }
+}
+
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
 });

@@ -1,8 +1,7 @@
-import React, { useMemo, useCallback } from 'react'
+import React, { useCallback } from 'react'
 import { QuestionStatistics, QuestionSortField } from '@/types'
 import { YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
-import { useThemeContext } from '@/components/TamaguiProvider'
 
 interface QuestionStatisticsTableProps {
   readonly statistics: ReadonlyArray<QuestionStatistics>
@@ -22,11 +21,47 @@ const EmptyText = styled(Text, {
   fontSize: '$3',
 })
 
-// Base table styles (non-theme-dependent)
 const tableStyles: React.CSSProperties = {
   minWidth: '100%',
   borderCollapse: 'separate',
   borderSpacing: 0,
+}
+
+const theadStyles: React.CSSProperties = {
+  backgroundColor: 'var(--theme-background-hover)',
+}
+
+const thBaseStyles: React.CSSProperties = {
+  padding: '12px 16px',
+  textAlign: 'left',
+  fontSize: 12,
+  fontWeight: 500,
+  color: 'var(--editorial-muted)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  borderBottom: '1px solid var(--editorial-rule)',
+}
+
+const thSortableStyles: React.CSSProperties = {
+  ...thBaseStyles,
+  cursor: 'pointer',
+}
+
+const tbodyStyles: React.CSSProperties = {
+  backgroundColor: 'var(--theme-card-bg)',
+}
+
+const tdBaseStyles: React.CSSProperties = {
+  padding: '16px',
+  fontSize: 14,
+  color: 'var(--editorial-ink)',
+  borderBottom: '1px solid var(--editorial-rule)',
+}
+
+const tdNumberStyles: React.CSSProperties = {
+  ...tdBaseStyles,
+  whiteSpace: 'nowrap',
+  fontWeight: 500,
 }
 
 const trStyles: React.CSSProperties = {
@@ -34,59 +69,27 @@ const trStyles: React.CSSProperties = {
   transition: 'background-color 150ms',
 }
 
-// Theme-aware style generators
-const getTheadStyles = (isDark: boolean): React.CSSProperties => ({
-  backgroundColor: isDark ? '#262626' : '#f9fafb',
-})
+const getAccuracyClass = (accuracy: number, timesAsked: number): string => {
+  if (timesAsked === 0) return 'accuracy-none'
+  if (accuracy >= 0.8) return 'accuracy-high'
+  if (accuracy >= 0.6) return 'accuracy-mid'
+  return 'accuracy-low'
+}
 
-const getThStyles = (isDark: boolean): React.CSSProperties => ({
-  padding: '12px 16px',
-  textAlign: 'left',
-  fontSize: 12,
-  fontWeight: 500,
-  color: isDark ? '#d1d5db' : '#374151',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-  borderBottom: `1px solid ${isDark ? '#404040' : '#e5e7eb'}`,
-})
+const getProbabilityClass = (probability: number): string => {
+  if (probability >= 8) return 'prob-very-high'
+  if (probability >= 5) return 'prob-high'
+  if (probability >= 2) return 'prob-mid'
+  return 'prob-low'
+}
 
-const getThSortableStyles = (isDark: boolean): React.CSSProperties => ({
-  ...getThStyles(isDark),
-  cursor: 'pointer',
-})
+const formatAccuracy = (accuracy: number) => `${Math.round(accuracy * 100)}%`
+const formatProbability = (probability: number) => `${probability.toFixed(2)}%`
 
-const getTbodyStyles = (isDark: boolean): React.CSSProperties => ({
-  backgroundColor: isDark ? '#1a1a1a' : 'white',
-})
-
-const getTdStyles = (isDark: boolean): React.CSSProperties => ({
-  padding: '16px',
-  fontSize: 14,
-  color: isDark ? '#e5e5e5' : '#1f2937',
-  borderBottom: `1px solid ${isDark ? '#404040' : '#e5e7eb'}`,
-})
-
-const getTdNumberStyles = (isDark: boolean): React.CSSProperties => ({
-  ...getTdStyles(isDark),
-  whiteSpace: 'nowrap',
-  fontWeight: 500,
-})
-
-const getAccuracyColors = (isDark: boolean) => ({
-  high: isDark ? '#4ade80' : '#16a34a',    // green
-  medium: isDark ? '#60a5fa' : '#2563eb',   // blue
-  low: isDark ? '#fb923c' : '#ea580c',      // orange
-  none: isDark ? '#a1a1aa' : '#6b7280',     // gray
-})
-
-const getProbabilityColors = (isDark: boolean) => ({
-  veryHigh: isDark ? '#f87171' : '#dc2626', // red
-  high: isDark ? '#fb923c' : '#ea580c',     // orange
-  medium: isDark ? '#60a5fa' : '#2563eb',   // blue
-  low: isDark ? '#9ca3af' : '#4b5563',      // gray
-})
-
-const getMutedColor = (isDark: boolean): string => isDark ? '#a1a1aa' : '#6b7280'
+const truncateText = (text: string, maxLength: number) => {
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + '...'
+}
 
 const QuestionStatisticsTable = ({
   statistics,
@@ -95,21 +98,6 @@ const QuestionStatisticsTable = ({
   onSort,
   onQuestionClick
 }: QuestionStatisticsTableProps): React.ReactElement | null => {
-  const { theme } = useThemeContext()
-  const isDark = theme === 'dark'
-
-  // Memoize theme-aware styles
-  const theadStyles = useMemo(() => getTheadStyles(isDark), [isDark])
-  const thStyles = useMemo(() => getThStyles(isDark), [isDark])
-  const thSortableStyles = useMemo(() => getThSortableStyles(isDark), [isDark])
-  const tbodyStyles = useMemo(() => getTbodyStyles(isDark), [isDark])
-  const tdStyles = useMemo(() => getTdStyles(isDark), [isDark])
-  const tdNumberStyles = useMemo(() => getTdNumberStyles(isDark), [isDark])
-  const accuracyColors = useMemo(() => getAccuracyColors(isDark), [isDark])
-  const probabilityColors = useMemo(() => getProbabilityColors(isDark), [isDark])
-  const mutedColor = useMemo(() => getMutedColor(isDark), [isDark])
-
-  // Keyboard handler for sortable columns
   const handleSortKeyDown = useCallback((field: QuestionSortField) => (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
@@ -121,12 +109,7 @@ const QuestionStatisticsTable = ({
     if (sortField !== field) {
       return (
         <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ opacity: 0.3 }}>
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
         </svg>
       )
     }
@@ -134,12 +117,7 @@ const QuestionStatisticsTable = ({
     if (sortAscending) {
       return (
         <svg width={16} height={16} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M5 15l7-7 7 7"
-          />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
         </svg>
       )
     }
@@ -151,33 +129,6 @@ const QuestionStatisticsTable = ({
     )
   }
 
-  const getAccuracyColor = (accuracy: number): string => {
-    if (accuracy >= 0.8) return accuracyColors.high
-    if (accuracy >= 0.6) return accuracyColors.medium
-    if (accuracy > 0) return accuracyColors.low
-    return accuracyColors.none
-  }
-
-  const getProbabilityColor = (probability: number): string => {
-    if (probability >= 8) return probabilityColors.veryHigh
-    if (probability >= 5) return probabilityColors.high
-    if (probability >= 2) return probabilityColors.medium
-    return probabilityColors.low
-  }
-
-  const formatAccuracy = (accuracy: number) => {
-    return `${Math.round(accuracy * 100)}%`
-  }
-
-  const formatProbability = (probability: number) => {
-    return `${probability.toFixed(2)}%`
-  }
-
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text
-    return text.substring(0, maxLength) + '...'
-  }
-
   if (statistics.length === 0) {
     return (
       <EmptyContainer>
@@ -186,16 +137,11 @@ const QuestionStatisticsTable = ({
     )
   }
 
-  // CSS hover class for interactive elements
-  const hoverClassName = isDark ? 'stat-table-hover-dark' : 'stat-table-hover-light'
-
   return (
     <div style={{ overflowX: 'auto' }}>
       <style>{`
-        .stat-table-hover-light:hover { background-color: #f3f4f6 !important; }
-        .stat-table-hover-dark:hover { background-color: #333333 !important; }
-        .stat-row-hover-light:hover { background-color: #f9fafb !important; }
-        .stat-row-hover-dark:hover { background-color: #262626 !important; }
+        .stat-th-sortable:hover { background-color: var(--editorial-accent-subtle); }
+        .stat-row-hover:hover { background-color: var(--theme-background-hover); }
       `}</style>
       <table style={tableStyles} aria-label="Question statistics">
         <thead style={theadStyles}>
@@ -208,7 +154,7 @@ const QuestionStatisticsTable = ({
               tabIndex={0}
               role="columnheader"
               aria-sort={sortField === QuestionSortField.QuestionNumber ? (sortAscending ? 'ascending' : 'descending') : 'none'}
-              className={hoverClassName}
+              className="stat-th-sortable"
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Question #</span>
@@ -216,9 +162,7 @@ const QuestionStatisticsTable = ({
               </div>
             </th>
 
-            <th scope="col" style={thStyles}>
-              Question
-            </th>
+            <th scope="col" style={thBaseStyles}>Question</th>
 
             <th
               scope="col"
@@ -228,7 +172,7 @@ const QuestionStatisticsTable = ({
               tabIndex={0}
               role="columnheader"
               aria-sort={sortField === QuestionSortField.TimesAsked ? (sortAscending ? 'ascending' : 'descending') : 'none'}
-              className={hoverClassName}
+              className="stat-th-sortable"
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Asked</span>
@@ -236,9 +180,7 @@ const QuestionStatisticsTable = ({
               </div>
             </th>
 
-            <th scope="col" style={thStyles}>
-              Correct
-            </th>
+            <th scope="col" style={thBaseStyles}>Correct</th>
 
             <th
               scope="col"
@@ -248,7 +190,7 @@ const QuestionStatisticsTable = ({
               tabIndex={0}
               role="columnheader"
               aria-sort={sortField === QuestionSortField.Accuracy ? (sortAscending ? 'ascending' : 'descending') : 'none'}
-              className={hoverClassName}
+              className="stat-th-sortable"
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Accuracy</span>
@@ -264,7 +206,7 @@ const QuestionStatisticsTable = ({
               tabIndex={0}
               role="columnheader"
               aria-sort={sortField === QuestionSortField.Probability ? (sortAscending ? 'ascending' : 'descending') : 'none'}
-              className={hoverClassName}
+              className="stat-th-sortable"
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 <span>Next Time %</span>
@@ -286,41 +228,41 @@ const QuestionStatisticsTable = ({
               }}
               style={trStyles}
               tabIndex={0}
-              className={isDark ? 'stat-row-hover-dark' : 'stat-row-hover-light'}
+              className="stat-row-hover"
             >
               <th scope="row" style={tdNumberStyles}>
                 {stat.questionNumber}
               </th>
 
-              <td style={tdStyles}>
+              <td style={tdBaseStyles}>
                 <div style={{ maxWidth: 448 }}>
                   <div style={{ fontWeight: 500 }}>{truncateText(stat.questionText, 80)}</div>
-                  <div style={{ fontSize: 12, color: mutedColor, marginTop: 4 }}>
+                  <div style={{ fontSize: 12, color: 'var(--editorial-muted)', marginTop: 4 }}>
                     Answer: {truncateText(stat.correctAnswerText, 60)}
                   </div>
                 </div>
               </td>
 
-              <td style={{ ...tdStyles, whiteSpace: 'nowrap' }}>
+              <td style={{ ...tdBaseStyles, whiteSpace: 'nowrap' }}>
                 {stat.timesAsked > 0 ? stat.timesAsked : '-'}
               </td>
 
-              <td style={{ ...tdStyles, whiteSpace: 'nowrap' }}>
+              <td style={{ ...tdBaseStyles, whiteSpace: 'nowrap' }}>
                 {stat.timesCorrect > 0 ? stat.timesCorrect : '-'}
               </td>
 
-              <td style={{ ...tdStyles, whiteSpace: 'nowrap', fontWeight: 500 }}>
+              <td style={{ ...tdBaseStyles, whiteSpace: 'nowrap', fontWeight: 500 }}>
                 {stat.timesAsked > 0 ? (
-                  <span style={{ color: getAccuracyColor(stat.accuracy) }}>
+                  <span className={getAccuracyClass(stat.accuracy, stat.timesAsked)}>
                     {formatAccuracy(stat.accuracy)}
                   </span>
                 ) : (
-                  <span style={{ color: mutedColor }}>-</span>
+                  <span className="accuracy-none">-</span>
                 )}
               </td>
 
-              <td style={{ ...tdStyles, whiteSpace: 'nowrap', fontWeight: 500 }}>
-                <span style={{ color: getProbabilityColor(stat.selectionProbability) }}>
+              <td style={{ ...tdBaseStyles, whiteSpace: 'nowrap', fontWeight: 500 }}>
+                <span className={getProbabilityClass(stat.selectionProbability)}>
                   {formatProbability(stat.selectionProbability)}
                 </span>
               </td>

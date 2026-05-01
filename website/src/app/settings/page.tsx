@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Effect } from 'effect'
 import { StateAbbreviation } from 'civics2json'
@@ -9,36 +9,10 @@ import Layout from '@/components/Layout'
 import StateSelector from '@/components/StateSelector'
 import DistrictSelector from '@/components/DistrictSelector'
 import PoliticianVerificationBox from '@/components/PoliticianVerificationBox'
-import { useThemeContext, themeColors as baseThemeColors, cssColors } from '@/components/TamaguiProvider'
+import { useThemeContext } from '@/components/TamaguiProvider'
 import { LocalStorageService } from '@/services/LocalStorageService'
 import { DEFAULT_GAME_SETTINGS, DEFAULT_TTS_SETTINGS, WebsiteGameSettings, TtsSettings, WIN_THRESHOLD_PERCENTAGE } from '@/types'
 import { useTtsVoices } from '@/hooks/useTtsVoices'
-
-// Settings-specific colors that extend the base theme colors
-const settingsThemeColors = {
-  light: {
-    textLight: '#6b7280',
-    textXLight: '#9ca3af',
-    linkText: '#2563eb',
-    linkHover: '#1e40af',
-    borderColor: '#e5e7eb',
-    inputBg: '#ffffff',
-    inputBorder: '#d1d5db',
-    checkboxBg: '#f3f4f6',
-    amberText: '#d97706',
-  },
-  dark: {
-    textLight: '#9ca3af',
-    textXLight: '#9ca3af',
-    linkText: '#60a5fa',
-    linkHover: '#93c5fd',
-    borderColor: '#374151',
-    inputBg: '#1f2937',
-    inputBorder: '#4b5563',
-    checkboxBg: '#374151',
-    amberText: '#fbbf24',
-  },
-}
 
 export default function Settings() {
   const router = useRouter()
@@ -51,13 +25,7 @@ export default function Settings() {
   const [ttsSettings, setTtsSettings] = useState<TtsSettings>(DEFAULT_TTS_SETTINGS)
   const voices = useTtsVoices()
   const { theme, setTheme } = useThemeContext()
-  // Merge base theme colors with settings-specific colors
-  const colors = useMemo(() => ({
-    ...baseThemeColors[theme],
-    ...settingsThemeColors[theme]
-  }), [theme])
 
-  // Load settings from LocalStorageService on component mount
   useEffect(() => {
     let mounted = true
 
@@ -90,7 +58,6 @@ export default function Settings() {
     }
   }, [])
 
-  // Save settings to LocalStorageService
   const saveSettings = useCallback(() => {
     const saveEffect = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
@@ -118,7 +85,6 @@ export default function Settings() {
 
   const handleMaxQuestionsChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
     const value = parseInt(event.target.value)
-    // Auto-calculate winThreshold as 60% of maxQuestions
     const newWinThreshold = Math.ceil(value * WIN_THRESHOLD_PERCENTAGE)
     setSettings((prev) => ({ ...prev, maxQuestions: value, winThreshold: newWinThreshold }))
     setHasChanges(true)
@@ -239,64 +205,57 @@ export default function Settings() {
       <Layout title="Game Settings">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{
-              width: 48,
-              height: 48,
-              borderRadius: '50%',
-              border: '2px solid transparent',
-              borderBottomColor: '#2563eb',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 16px'
-            }} />
-            <p style={{ color: cssColors.textMuted }}>Loading settings...</p>
+            <div className="spinner" style={{ margin: '0 auto 16px' }} />
+            <p style={{ color: 'var(--editorial-muted)' }}>Loading settings...</p>
           </div>
         </div>
       </Layout>
     )
   }
 
-  const selectStyles: React.CSSProperties = {
-    width: '100%',
-    padding: '8px 12px',
-    border: `1px solid ${colors.inputBorder}`,
-    borderRadius: 6,
-    backgroundColor: colors.inputBg,
-    color: colors.text,
-    fontSize: 16,
-    outline: 'none',
+  const sectionHeadingStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-family-serif)',
+    fontSize: 18,
+    fontWeight: 500,
+    color: 'var(--editorial-ink)',
+    letterSpacing: '-0.01em',
+  }
+
+  const dividerStyle: React.CSSProperties = {
+    border: 'none',
+    borderTop: '1px solid var(--editorial-rule)',
+    margin: 0,
   }
 
   return (
     <Layout title="Game Settings">
       <div style={{ maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
         <div style={{ textAlign: 'center' }}>
-          <h1 style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>Game Settings</h1>
-          <p style={{ color: colors.textMuted }}>Customize your civics test experience</p>
+          <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '-0.01em', marginBottom: 6 }}>
+            Game Settings
+          </h1>
+          <p style={{ color: 'var(--editorial-muted)', fontSize: 14 }}>Customize your civics test experience</p>
         </div>
 
         <div className="card card-elevated" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-          {/* State Selection */}
+          {/* Location Settings */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>
-              Location Settings
-            </h2>
-            <p style={{ fontSize: 16, color: colors.textLight }}>
+            <h2 style={sectionHeadingStyle}>Location Settings</h2>
+            <p style={{ fontSize: 14, color: 'var(--editorial-muted)' }}>
               Select your state and congressional district to get personalized questions about your
               specific representative, senators, and governor.
             </p>
-            <div style={{ fontSize: 16, color: colors.linkText }}>
+            <p style={{ fontSize: 14, color: 'var(--editorial-muted)' }}>
               Don&apos;t know your congressional district?{' '}
               <a
                 href="https://www.govtrack.us/congress/members/map"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ textDecoration: 'underline', transition: 'color 0.2s' }}
-                onMouseOver={(e) => e.currentTarget.style.color = colors.linkHover}
-                onMouseOut={(e) => e.currentTarget.style.color = colors.linkText}
+                style={{ color: 'var(--editorial-accent)', textDecoration: 'underline' }}
               >
                 Find your district on GovTrack →
               </a>
-            </div>
+            </p>
             <StateSelector
               selectedState={settings.userState}
               onStateChange={handleStateChange}
@@ -314,25 +273,22 @@ export default function Settings() {
             />
           </div>
 
-          <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
+          <hr style={dividerStyle} />
 
           {/* Game Settings */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>Game Settings</h2>
+            <h2 style={sectionHeadingStyle}>Game Settings</h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label
-                  htmlFor="max-questions"
-                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
-                >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label htmlFor="max-questions" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
                   Questions per game:
                 </label>
                 <select
                   id="max-questions"
                   value={settings.maxQuestions}
                   onChange={handleMaxQuestionsChange}
-                  style={selectStyles}
+                  className="input-editorial"
                 >
                   <option value={20}>20 questions (Official 2025 minimum)</option>
                   <option value={50}>50 questions</option>
@@ -340,18 +296,15 @@ export default function Settings() {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label
-                  htmlFor="win-threshold"
-                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
-                >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label htmlFor="win-threshold" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
                   Pass threshold:
                 </label>
                 <select
                   id="win-threshold"
                   value={settings.winThreshold}
                   onChange={handleWinThresholdChange}
-                  style={selectStyles}
+                  className="input-editorial"
                 >
                   <option value={Math.ceil(settings.maxQuestions * WIN_THRESHOLD_PERCENTAGE)}>
                     {Math.ceil(settings.maxQuestions * WIN_THRESHOLD_PERCENTAGE)} correct (60%)
@@ -372,44 +325,33 @@ export default function Settings() {
               </div>
             </div>
 
-            <div style={{ fontSize: 16, color: colors.textXLight }}>
+            <p style={{ fontSize: 13, color: 'var(--editorial-muted)' }}>
               The game ends when you reach the pass threshold (early win), answer 9 questions incorrectly (early fail), or complete all questions. This matches the 2025 USCIS Civics Test format.
-            </div>
+            </p>
           </div>
 
-          <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
+          <hr style={dividerStyle} />
 
           {/* Practice Specific Questions */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>Practice Specific Questions</h2>
+            <h2 style={sectionHeadingStyle}>Practice Specific Questions</h2>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <input
                 type="checkbox"
                 id="practice-specific"
                 checked={practiceSpecificEnabled}
                 onChange={handlePracticeSpecificToggle}
-                style={{
-                  width: 16,
-                  height: 16,
-                  accentColor: '#2563eb',
-                  cursor: 'pointer'
-                }}
+                style={{ width: 16, height: 16, accentColor: 'var(--editorial-accent)', cursor: 'pointer' }}
               />
-              <label
-                htmlFor="practice-specific"
-                style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted, cursor: 'pointer' }}
-              >
+              <label htmlFor="practice-specific" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)', cursor: 'pointer' }}>
                 Practice specific question numbers
               </label>
             </div>
 
             {practiceSpecificEnabled ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label
-                  htmlFor="question-numbers"
-                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
-                >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label htmlFor="question-numbers" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
                   Question numbers (comma-separated):
                 </label>
                 <input
@@ -418,83 +360,62 @@ export default function Settings() {
                   value={questionNumbersInput}
                   onChange={handleQuestionNumbersChange}
                   placeholder="e.g. 1, 5, 20, 81"
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    border: `1px solid ${questionNumbersError != null ? '#dc2626' : colors.inputBorder}`,
-                    borderRadius: 6,
-                    backgroundColor: colors.inputBg,
-                    color: colors.text,
-                    fontSize: 16,
-                    outline: 'none',
-                  }}
+                  className="input-editorial"
+                  style={questionNumbersError != null ? { borderColor: 'var(--theme-error)' } : undefined}
                 />
                 {questionNumbersError != null ? (
-                  <div style={{ fontSize: 16, color: '#dc2626' }}>
-                    {questionNumbersError}
-                  </div>
+                  <p style={{ fontSize: 13, color: 'var(--theme-error)' }}>{questionNumbersError}</p>
                 ) : questionNumbersInput.trim() !== '' ? (
-                  <div style={{ fontSize: 16, color: colors.textLight }}>
+                  <p style={{ fontSize: 13, color: 'var(--editorial-muted)' }}>
                     {parseQuestionNumbers(questionNumbersInput).numbers.length} question{parseQuestionNumbers(questionNumbersInput).numbers.length !== 1 ? 's' : ''} selected
-                  </div>
+                  </p>
                 ) : null}
-                <div style={{ fontSize: 16, color: colors.textXLight }}>
+                <p style={{ fontSize: 13, color: 'var(--editorial-muted)' }}>
                   Enter question numbers between 1 and {TOTAL_QUESTION_COUNT} to practice only those questions. Game settings above will be ignored when specific questions are selected.
-                </div>
+                </p>
               </div>
             ) : null}
           </div>
 
-          <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
+          <hr style={dividerStyle} />
 
-          {/* Appearance Settings */}
+          {/* Appearance */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>Appearance</h2>
+            <h2 style={sectionHeadingStyle}>Appearance</h2>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <input
                 type="checkbox"
                 id="dark-mode"
                 checked={theme === 'dark'}
                 onChange={handleDarkModeChange}
-                style={{
-                  width: 16,
-                  height: 16,
-                  accentColor: '#2563eb',
-                  cursor: 'pointer'
-                }}
+                style={{ width: 16, height: 16, accentColor: 'var(--editorial-accent)', cursor: 'pointer' }}
               />
-              <label
-                htmlFor="dark-mode"
-                style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted, cursor: 'pointer' }}
-              >
+              <label htmlFor="dark-mode" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)', cursor: 'pointer' }}>
                 Enable dark mode
               </label>
             </div>
           </div>
 
-          <hr style={{ border: 'none', borderTop: `1px solid ${colors.borderColor}`, margin: 0 }} />
+          <hr style={dividerStyle} />
 
           {/* Voice Settings */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 600, color: colors.text }}>Voice Settings</h2>
-            <p style={{ fontSize: 16, color: colors.textLight }}>
+            <h2 style={sectionHeadingStyle}>Voice Settings</h2>
+            <p style={{ fontSize: 14, color: 'var(--editorial-muted)' }}>
               Configure the text-to-speech voice used to read questions and answers aloud.
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label
-                  htmlFor="tts-voice"
-                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
-                >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label htmlFor="tts-voice" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
                   Voice:
                 </label>
                 <select
                   id="tts-voice"
                   value={ttsSettings.voiceURI ?? ''}
                   onChange={handleVoiceChange}
-                  style={selectStyles}
+                  className="input-editorial"
                 >
                   <option value="">Auto (default)</option>
                   {voices.map((v) => (
@@ -505,18 +426,15 @@ export default function Settings() {
                 </select>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label
-                  htmlFor="tts-rate"
-                  style={{ fontSize: 16, fontWeight: 500, color: colors.textMuted }}
-                >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label htmlFor="tts-rate" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
                   Speed:
                 </label>
                 <select
                   id="tts-rate"
                   value={ttsSettings.rate}
                   onChange={handleRateChange}
-                  style={selectStyles}
+                  className="input-editorial"
                 >
                   <option value={0.5}>Slow</option>
                   <option value={0.75}>Slower</option>
@@ -532,7 +450,7 @@ export default function Settings() {
                 onClick={handleTtsPreview}
                 className="btn-secondary focus-ring"
                 type="button"
-                style={{ padding: '8px 16px', borderRadius: 6, fontWeight: 500, fontSize: 14, transition: 'all 0.2s' }}
+                style={{ padding: '8px 16px', borderRadius: 6, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
               >
                 Preview voice
               </button>
@@ -546,7 +464,7 @@ export default function Settings() {
             <button
               onClick={resetToDefaults}
               className="btn-secondary focus-ring"
-              style={{ padding: '12px 24px', borderRadius: 8, fontWeight: 500, transition: 'all 0.2s' }}
+              style={{ padding: '12px 24px', borderRadius: 6, fontWeight: 500, cursor: 'pointer' }}
             >
               Reset to Defaults
             </button>
@@ -558,9 +476,8 @@ export default function Settings() {
                 className="btn-secondary focus-ring"
                 style={{
                   padding: '12px 24px',
-                  borderRadius: 8,
+                  borderRadius: 6,
                   fontWeight: 500,
-                  transition: 'all 0.2s',
                   opacity: hasChanges ? 1 : 0.5,
                   cursor: hasChanges ? 'pointer' : 'not-allowed'
                 }}
@@ -570,7 +487,7 @@ export default function Settings() {
               <button
                 onClick={handleStartGame}
                 className="btn-primary focus-ring"
-                style={{ padding: '12px 24px', borderRadius: 8, fontWeight: 500, transition: 'all 0.2s' }}
+                style={{ padding: '12px 24px', borderRadius: 6, fontWeight: 500, cursor: 'pointer' }}
               >
                 Start Game
               </button>
@@ -580,7 +497,7 @@ export default function Settings() {
 
         {hasChanges === true ? (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 16, color: colors.amberText }}>
+            <p style={{ fontSize: 14, color: 'var(--theme-warning)' }}>
               You have unsaved changes. Click &quot;Save Settings&quot; to persist them.
             </p>
           </div>

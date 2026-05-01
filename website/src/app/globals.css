@@ -14,6 +14,36 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Restore block display for semantic elements that Tamagui's CSS reset overrides */
+p, li, h1, h2, h3, h4, h5, h6, ul, ol {
+  display: block;
+}
+
+/* Editorial input / select style */
+.input-editorial {
+  display: block;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--editorial-rule);
+  border-radius: 5px;
+  background: var(--editorial-paper);
+  color: var(--editorial-ink);
+  font-size: 14px;
+  line-height: 1.5;
+  transition: border-color 150ms ease;
+  box-sizing: border-box;
+}
+
+.input-editorial:focus {
+  outline: none;
+  border-color: var(--editorial-accent);
+}
+
+.input-editorial:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -315,3 +345,71 @@ html.t_dark .progress-bar {
   background: var(--color-primary-500);
   color: white;
 }
+
+/* Loading spinner */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-bottom-color: var(--editorial-accent);
+  animation: spin 1s linear infinite;
+}
+
+/* Purple button variant */
+.btn-purple {
+  background-color: var(--theme-purple);
+  color: white;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+.btn-purple:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+/* Badge pill variants */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.badge-pass { background-color: var(--theme-success-bg); color: var(--theme-success-text); }
+.badge-fail { background-color: var(--theme-error-bg); color: var(--theme-error-text); }
+.badge-warn { background-color: var(--theme-warning-bg); color: var(--theme-warning-text); }
+
+/* Answer button states for GameQuestion */
+.answer-btn {
+  width: 100%;
+  text-align: left;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--editorial-rule);
+  transition: all 200ms;
+  display: block;
+  background: var(--editorial-paper);
+  color: var(--editorial-ink);
+}
+.answer-btn:not(:disabled):hover { border-color: var(--editorial-accent); }
+.answer-selected { border-color: var(--editorial-accent) !important; background: var(--editorial-accent-subtle) !important; color: var(--editorial-accent) !important; }
+.answer-correct  { border-color: var(--theme-success) !important; background: var(--theme-success-bg) !important; color: var(--theme-success-text) !important; }
+.answer-incorrect { border-color: var(--theme-error) !important; background: var(--theme-error-bg) !important; color: var(--theme-error-text) !important; }
+.answer-dimmed   { border-color: var(--editorial-rule) !important; background: var(--color-neutral-100) !important; color: var(--editorial-muted) !important; }
+
+/* Question statistics accuracy / probability color utilities */
+.accuracy-high { color: var(--theme-success); }
+.accuracy-mid  { color: var(--theme-primary); }
+.accuracy-low  { color: var(--theme-warning); }
+.accuracy-none { color: var(--editorial-muted); }
+
+.prob-very-high { color: var(--theme-error); }
+.prob-high      { color: var(--theme-warning); }
+.prob-mid       { color: var(--theme-primary); }
+.prob-low       { color: var(--editorial-muted); }
