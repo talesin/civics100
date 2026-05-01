@@ -2,74 +2,71 @@
 
 import React from 'react'
 import { useInstallPrompt } from '@/hooks/useInstallPrompt'
-import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
+
+const bannerStyles: React.CSSProperties = {
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: 'var(--theme-primary)',
+  padding: '12px 16px',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+  zIndex: 9998,
+  boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)'
+}
+
+const contentStyles: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 12,
+  flex: 1
+}
+
+const textStyles: React.CSSProperties = {
+  color: 'var(--theme-background)',
+  fontSize: 14,
+  fontWeight: 500,
+  flex: 1
+}
+
+const buttonContainerStyles: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'row',
+  gap: 8
+}
+
+const ghostButtonStyles: React.CSSProperties = {
+  background: 'transparent',
+  border: 'none',
+  padding: '8px 12px',
+  borderRadius: 6,
+  cursor: 'pointer',
+  color: 'var(--theme-background)',
+  fontSize: 14,
+  fontWeight: 600
+}
+
+const primaryButtonStyles: React.CSSProperties = {
+  background: 'var(--theme-background)',
+  border: 'none',
+  padding: '8px 12px',
+  borderRadius: 6,
+  cursor: 'pointer',
+  color: 'var(--theme-primary)',
+  fontSize: 14,
+  fontWeight: 600
+}
 
 export function InstallPrompt() {
   const { canInstall, promptInstall, dismissPrompt } = useInstallPrompt()
-  const { theme } = useThemeContext()
-  const colors = themeColors[theme]
 
   if (!canInstall) {
     return null
-  }
-
-  const bannerStyles: React.CSSProperties = {
-    position: 'fixed',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: colors.primary,
-    padding: '12px 16px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    zIndex: 9998,
-    boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.1)'
-  }
-
-  const contentStyles: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1
-  }
-
-  const textStyles: React.CSSProperties = {
-    color: colors.background,
-    fontSize: 14,
-    fontWeight: 500,
-    flex: 1
-  }
-
-  const buttonContainerStyles: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: 8
-  }
-
-  const ghostButtonStyles: React.CSSProperties = {
-    background: 'transparent',
-    border: 'none',
-    padding: '8px 12px',
-    borderRadius: 6,
-    cursor: 'pointer',
-    color: colors.background,
-    fontSize: 14,
-    fontWeight: 600
-  }
-
-  const primaryButtonStyles: React.CSSProperties = {
-    background: colors.background,
-    border: 'none',
-    padding: '8px 12px',
-    borderRadius: 6,
-    cursor: 'pointer',
-    color: colors.primary,
-    fontSize: 14,
-    fontWeight: 600
   }
 
   return (
@@ -80,7 +77,7 @@ export function InstallPrompt() {
           height={24}
           viewBox="0 0 24 24"
           fill="none"
-          stroke={colors.background}
+          stroke="var(--theme-background)"
           strokeWidth={2}
           strokeLinecap="round"
           strokeLinejoin="round"

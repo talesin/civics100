@@ -9,31 +9,8 @@ import { LocalStorageService } from '@/services/LocalStorageService'
 import { StatisticsService } from '@/services/StatisticsService'
 import { runWithServicesAndErrorHandling } from '@/services/ServiceProvider'
 import { QuestionStatistics, QuestionFilter, QuestionSortField } from '@/types'
-import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 import type { PairedAnswers } from 'questionnaire'
 import { loadQuestions, civicsQuestionsWithDistractors } from 'questionnaire'
-
-// Extended theme colors for statistics-specific UI
-const statsThemeColors = {
-  light: {
-    textLight: '#6b7280',
-    inputBg: '#ffffff',
-    inputBorder: '#d1d5db',
-    blueText: '#2563eb',
-    purpleText: '#9333ea',
-    greenText: '#16a34a',
-    orangeText: '#ea580c',
-  },
-  dark: {
-    textLight: '#9ca3af',
-    inputBg: '#374151',
-    inputBorder: '#4b5563',
-    blueText: '#60a5fa',
-    purpleText: '#c084fc',
-    greenText: '#4ade80',
-    orangeText: '#fb923c',
-  },
-}
 
 export default function Statistics() {
   const [statistics, setStatistics] = useState<QuestionStatistics[]>([])
@@ -51,20 +28,14 @@ export default function Statistics() {
     questionsMastered: 0,
     questionsNeedingPractice: 0
   })
-  const { theme } = useThemeContext()
-  const baseColors = themeColors[theme]
-  const statsColors = statsThemeColors[theme]
-  const colors = { ...baseColors, ...statsColors }
 
   const applyFiltersAndSort = useCallback(() => {
     runWithServicesAndErrorHandling(
       Effect.gen(function* () {
         const statisticsService = yield* StatisticsService
 
-        // Apply filter
         let filtered = statisticsService.filterQuestions(statistics, filter, pairedAnswers)
 
-        // Apply search
         if (searchQuery.trim() !== '') {
           const query = searchQuery.toLowerCase()
           filtered = filtered.filter(
@@ -75,9 +46,7 @@ export default function Statistics() {
           )
         }
 
-        // Apply sort
         const sorted = statisticsService.sortQuestions(filtered, sortField, sortAscending)
-
         setFilteredStatistics([...sorted])
       }),
       (error) => {
@@ -135,23 +104,11 @@ export default function Statistics() {
     }
   }
 
-  const cardStyles: React.CSSProperties = {
-    backgroundColor: colors.cardBg,
+  const cardStyle: React.CSSProperties = {
+    backgroundColor: 'var(--theme-card-bg)',
+    border: '1px solid var(--editorial-rule)',
     borderRadius: 8,
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
     padding: 24,
-  }
-
-  const inputStyles: React.CSSProperties = {
-    width: '100%',
-    padding: '8px 12px',
-    border: `1px solid ${colors.inputBorder}`,
-    borderRadius: 6,
-    boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    backgroundColor: colors.inputBg,
-    color: colors.text,
-    fontSize: 14,
-    outline: 'none',
   }
 
   if (isLoading) {
@@ -159,16 +116,8 @@ export default function Statistics() {
       <Layout title="Loading Statistics...">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
           <div style={{ textAlign: 'center' }}>
-            <div style={{
-              width: 48,
-              height: 48,
-              borderRadius: '50%',
-              border: '2px solid transparent',
-              borderBottomColor: '#2563eb',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 16px'
-            }} />
-            <p style={{ color: colors.textMuted }}>Loading question statistics...</p>
+            <div className="spinner" style={{ margin: '0 auto 16px' }} />
+            <p style={{ color: 'var(--editorial-muted)' }}>Loading question statistics...</p>
           </div>
         </div>
       </Layout>
@@ -178,92 +127,75 @@ export default function Statistics() {
   return (
     <Layout title="Question Statistics">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* Header */}
         <div>
-          <h1 style={{ fontSize: 30, fontWeight: 'bold', color: colors.text, marginBottom: 8 }}>
+          <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '-0.01em', marginBottom: 6 }}>
             Question Statistics
           </h1>
-          <p style={{ color: colors.textLight }}>
+          <p style={{ color: 'var(--editorial-muted)', fontSize: 14 }}>
             Detailed breakdown of your performance on each question
           </p>
         </div>
 
         {/* Summary Cards */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 16
-        }}>
-          <div style={cardStyles}>
-            <div style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, marginBottom: 4 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
+          <div style={cardStyle}>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
               Total Questions
             </div>
-            <div style={{ fontSize: 30, fontWeight: 'bold', color: colors.blueText }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--theme-primary)' }}>
               {summary.totalQuestions}
             </div>
           </div>
 
-          <div style={cardStyles}>
-            <div style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, marginBottom: 4 }}>
+          <div style={cardStyle}>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
               Questions Attempted
             </div>
-            <div style={{ fontSize: 30, fontWeight: 'bold', color: colors.purpleText }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--theme-purple)' }}>
               {summary.questionsAttempted}
             </div>
           </div>
 
-          <div style={cardStyles}>
-            <div style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, marginBottom: 4 }}>
+          <div style={cardStyle}>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
               Mastered
             </div>
-            <div style={{ fontSize: 30, fontWeight: 'bold', color: colors.greenText }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--theme-success)' }}>
               {summary.questionsMastered}
             </div>
-            <div style={{ fontSize: 12, color: colors.textMuted, marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: 'var(--editorial-muted)', marginTop: 4 }}>
               3+ consecutive correct
             </div>
           </div>
 
-          <div style={cardStyles}>
-            <div style={{ fontSize: 14, fontWeight: 500, color: colors.textMuted, marginBottom: 4 }}>
+          <div style={cardStyle}>
+            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
               Need Practice
             </div>
-            <div style={{ fontSize: 30, fontWeight: 'bold', color: colors.orangeText }}>
+            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--theme-warning)' }}>
               {summary.questionsNeedingPractice}
             </div>
-            <div style={{ fontSize: 12, color: colors.textMuted, marginTop: 4 }}>&lt;60% accuracy</div>
+            <div style={{ fontSize: 12, color: 'var(--editorial-muted)', marginTop: 4 }}>&lt;60% accuracy</div>
           </div>
         </div>
 
         {/* Filters and Search */}
-        <div style={{
-          backgroundColor: colors.cardBg,
-          borderRadius: 8,
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          padding: 16
-        }}>
+        <div style={{ ...cardStyle, padding: 16 }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
-            {/* Filter Dropdown */}
             <div style={{ flexShrink: 0 }}>
-              <label style={{
-                display: 'block',
-                fontSize: 14,
-                fontWeight: 500,
-                color: colors.textMuted,
-                marginBottom: 4
-              }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
                 Filter
               </label>
               <select
                 value={filter}
                 onChange={(e) => {
                   const value = e.target.value
-                  // Type guard: only set filter if value is a valid QuestionFilter
                   if (Object.values(QuestionFilter).includes(value as QuestionFilter)) {
                     setFilter(value as QuestionFilter)
                   }
                 }}
-                style={{ ...inputStyles, width: 192 }}
+                className="input-editorial"
+                style={{ width: 192 }}
               >
                 <option value={QuestionFilter.All}>All Questions</option>
                 <option value={QuestionFilter.Mastered}>Mastered</option>
@@ -272,15 +204,8 @@ export default function Statistics() {
               </select>
             </div>
 
-            {/* Search Input */}
             <div style={{ flexGrow: 1, minWidth: 200 }}>
-              <label style={{
-                display: 'block',
-                fontSize: 14,
-                fontWeight: 500,
-                color: colors.textMuted,
-                marginBottom: 4
-              }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
                 Search
               </label>
               <input
@@ -288,24 +213,18 @@ export default function Statistics() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search questions..."
-                style={inputStyles}
+                className="input-editorial"
               />
             </div>
           </div>
 
-          {/* Results count */}
-          <div style={{ marginTop: 12, fontSize: 14, color: colors.textLight }}>
+          <div style={{ marginTop: 10, fontSize: 13, color: 'var(--editorial-muted)' }}>
             Showing {filteredStatistics.length} of {statistics.length} questions
           </div>
         </div>
 
         {/* Statistics Table */}
-        <div style={{
-          backgroundColor: colors.cardBg,
-          borderRadius: 8,
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          overflow: 'hidden'
-        }}>
+        <div style={{ backgroundColor: 'var(--theme-card-bg)', border: '1px solid var(--editorial-rule)', borderRadius: 8, overflow: 'hidden' }}>
           <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 28rem)' }}>
             <QuestionStatisticsTable
               statistics={filteredStatistics}
@@ -318,7 +237,6 @@ export default function Statistics() {
         </div>
       </div>
 
-      {/* Question Detail Modal */}
       {selectedQuestion !== null ? (
         <QuestionDetailModal
           question={selectedQuestion}

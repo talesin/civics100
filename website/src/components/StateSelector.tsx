@@ -3,7 +3,6 @@ import { StateAbbreviation } from 'civics2json'
 import { StatesByAbbreviation } from 'civics2json'
 import { XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
-import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
 interface StateSelectorProps {
   readonly selectedState: StateAbbreviation
@@ -81,8 +80,6 @@ const StateSelector = ({
   onStateChange,
   className = ''
 }: StateSelectorProps): React.ReactElement => {
-  const { theme } = useThemeContext()
-  const colors = themeColors[theme]
   const [isDetectingLocation, setIsDetectingLocation] = useState(false)
   const [hasLocationPermission, setHasLocationPermission] = useState<boolean | null>(null)
   const isMountedRef = useRef(true)
@@ -264,17 +261,7 @@ const StateSelector = ({
           id="state-selector"
           value={selectedState}
           onChange={handleStateChange}
-          style={{
-            width: '100%',
-            padding: '8px 12px',
-            borderWidth: 1,
-            borderStyle: 'solid',
-            borderColor: colors.border,
-            borderRadius: 6,
-            backgroundColor: colors.cardBg,
-            fontSize: 16,
-            color: colors.text,
-          }}
+          className="input-editorial"
         >
           {stateOptions.map((option) => (
             <option key={option.value} value={option.value}>

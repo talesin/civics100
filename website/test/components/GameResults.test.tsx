@@ -37,7 +37,7 @@ describe('GameResults', () => {
 
     expect(screen.getByText(/Excellent! You passed with 12 correct answers!/)).toBeInTheDocument()
     expect(
-      screen.getByText(/Early Win Achievement! You answered 12 questions correctly/)
+      screen.getByText(/Early Win! You answered 12 questions correctly/)
     ).toBeInTheDocument()
   })
 
@@ -62,7 +62,7 @@ describe('GameResults', () => {
 
     expect(screen.getByText(/Excellent! You passed with 30 correct answers!/)).toBeInTheDocument()
     expect(
-      screen.getByText(/Early Win Achievement! You answered 30 questions correctly/)
+      screen.getByText(/Early Win! You answered 30 questions correctly/)
     ).toBeInTheDocument()
   })
 
@@ -87,7 +87,7 @@ describe('GameResults', () => {
 
     expect(screen.getByText(/Excellent! You passed with 60 correct answers!/)).toBeInTheDocument()
     expect(
-      screen.getByText(/Early Win Achievement! You answered 60 questions correctly/)
+      screen.getByText(/Early Win! You answered 60 questions correctly/)
     ).toBeInTheDocument()
   })
 
@@ -111,7 +111,7 @@ describe('GameResults', () => {
     )
 
     expect(
-      screen.getByText(/Test ended - You answered 9 questions incorrectly/)
+      screen.getByText(/Test ended — you answered 9 questions incorrectly/)
     ).toBeInTheDocument()
   })
 
@@ -391,7 +391,7 @@ describe('GameResults', () => {
       />
     )
 
-    expect(screen.getByText(/Early Win Achievement!/)).toBeInTheDocument()
+    expect(screen.getByText(/Early Win!/)).toBeInTheDocument()
 
     // Now test with regular completion
     const regularResult: GameResult = {
@@ -409,6 +409,6 @@ describe('GameResults', () => {
       </TamaguiProvider>
     )
 
-    expect(screen.queryByText(/Early Win Achievement!/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Early Win!/)).not.toBeInTheDocument()
   })
 })

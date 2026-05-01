@@ -3,6 +3,7 @@ import { GameSession } from '@/types'
 import { isSessionCompleted } from 'questionnaire'
 import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
+import { Trophy } from 'lucide-react'
 
 interface GameControlsProps {
   readonly session: GameSession
@@ -106,8 +107,9 @@ export default function GameControls({
 
       {session.correctAnswers >= session.settings.winThreshold && !isSessionCompleted(session) ? (
         <SuccessMessage>
-          <SuccessText>
-            🎉 You&apos;ve reached {session.settings.winThreshold} correct answers! You can continue or finish now.
+          <SuccessText style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Trophy size={14} strokeWidth={1.5} />
+            You&apos;ve reached {session.settings.winThreshold} correct answers! You can continue or finish now.
           </SuccessText>
         </SuccessMessage>
       ) : null}

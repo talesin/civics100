@@ -167,6 +167,9 @@
   --theme-error-bg: #fee2e2;
   --theme-error-text: #991b1b;
   --theme-icon-stroke: #9ca3af;
+  --theme-warning: #ea580c;
+  --theme-warning-bg: #fef3c7;
+  --theme-warning-text: #92400e;
 }
 
 /* Dark Mode Overrides */
@@ -210,6 +213,9 @@ html.t_dark {
   --theme-error-bg: #7f1d1d;
   --theme-error-text: #fecaca;
   --theme-icon-stroke: #a1a1aa;
+  --theme-warning: #fb923c;
+  --theme-warning-bg: rgba(146, 64, 14, 0.25);
+  --theme-warning-text: #fde68a;
 
   /* Editorial Design Tokens - Dark Mode */
   --editorial-ink: #e2e8f0;

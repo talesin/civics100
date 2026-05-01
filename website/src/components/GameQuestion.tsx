@@ -6,9 +6,9 @@ import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { Card, XStack, YStack, Text } from '@/components/tamagui'
 import { styled } from 'tamagui'
-import { useThemeContext } from '@/components/TamaguiProvider'
 import { useTextToSpeech } from '@/hooks/useTextToSpeech'
 import SpeakerButton from '@/components/SpeakerButton'
+import { Check } from 'lucide-react'
 
 interface GameQuestionProps {
   readonly question: GameQuestionType
@@ -145,123 +145,35 @@ const validateAnswerSelection = (
   return selectedArray.every((answer) => correctArray.includes(answer))
 }
 
-// Theme-aware answer button color definitions
-const getAnswerButtonColors = (isDark: boolean) => ({
-  // Default state (not answered, not selected)
-  default: {
-    border: isDark ? '#404040' : '#d1d5db',
-    bg: isDark ? '#262626' : 'white',
-    text: isDark ? '#e5e5e5' : '#1f2937',
-  },
-  // Selected state (multiple choice, before submit)
-  selected: {
-    border: isDark ? '#60a5fa' : '#3b82f6',
-    bg: isDark ? '#1e3a5f' : '#eff6ff',
-    text: isDark ? '#93c5fd' : '#1e40af',
-  },
-  // Correct answer (after submit)
-  correct: {
-    border: isDark ? '#4ade80' : '#22c55e',
-    bg: isDark ? '#14532d' : '#f0fdf4',
-    text: isDark ? '#86efac' : '#166534',
-  },
-  // Incorrect answer (after submit, user selected wrong)
-  incorrect: {
-    border: isDark ? '#f87171' : '#ef4444',
-    bg: isDark ? '#7f1d1d' : '#fef2f2',
-    text: isDark ? '#fecaca' : '#991b1b',
-  },
-  // Disabled/dimmed state (other options after answering)
-  disabled: {
-    border: isDark ? '#404040' : '#d1d5db',
-    bg: isDark ? '#1a1a1a' : '#f3f4f6',
-    text: isDark ? '#71717a' : '#6b7280',
-  },
-})
-
-// Button styles as React.CSSProperties
-const getAnswerButtonStyles = (
+const getAnswerButtonClass = (
   answerIndex: number,
   selectedAnswers: number[],
   hasAnswered: boolean,
   disabled: boolean,
   isMultipleChoice: boolean,
-  correctIndices: number[],
-  isDark: boolean
-): React.CSSProperties => {
-  const colors = getAnswerButtonColors(isDark)
-
-  const baseStyles: React.CSSProperties = {
-    width: '100%',
-    textAlign: 'left',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderStyle: 'solid',
-    transition: 'all 200ms',
-    cursor: hasAnswered || disabled ? 'default' : 'pointer',
-    display: 'block',
-  }
-
+  correctIndices: number[]
+): string => {
   const isSelected = selectedAnswers.includes(answerIndex)
   const isCorrectAnswer = correctIndices.includes(answerIndex)
 
   if (!hasAnswered && !disabled) {
-    if (isSelected && isMultipleChoice) {
-      return {
-        ...baseStyles,
-        borderColor: colors.selected.border,
-        backgroundColor: colors.selected.bg,
-        color: colors.selected.text,
-      }
-    }
-    return {
-      ...baseStyles,
-      borderColor: colors.default.border,
-      backgroundColor: colors.default.bg,
-      color: colors.default.text,
-    }
+    if (isSelected && isMultipleChoice) return 'answer-btn answer-selected'
+    return 'answer-btn'
   }
 
   if (hasAnswered) {
-    if (isCorrectAnswer) {
-      return {
-        ...baseStyles,
-        borderColor: colors.correct.border,
-        backgroundColor: colors.correct.bg,
-        color: colors.correct.text,
-      }
-    } else if (isSelected) {
-      return {
-        ...baseStyles,
-        borderColor: colors.incorrect.border,
-        backgroundColor: colors.incorrect.bg,
-        color: colors.incorrect.text,
-      }
-    } else {
-      return {
-        ...baseStyles,
-        borderColor: colors.disabled.border,
-        backgroundColor: colors.disabled.bg,
-        color: colors.disabled.text,
-      }
-    }
+    if (isCorrectAnswer) return 'answer-btn answer-correct'
+    if (isSelected) return 'answer-btn answer-incorrect'
+    return 'answer-btn answer-dimmed'
   }
 
-  return {
-    ...baseStyles,
-    borderColor: colors.disabled.border,
-    backgroundColor: colors.disabled.bg,
-    color: colors.disabled.text,
-  }
+  return 'answer-btn answer-dimmed'
 }
 
 export default function GameQuestion({ question, onAnswer, disabled = false }: GameQuestionProps) {
   const [selectedAnswers, setSelectedAnswers] = useState<number[]>([])
   const [hasAnswered, setHasAnswered] = useState(false)
   const { playCorrect, playIncorrect } = useGameSounds()
-  const { theme } = useThemeContext()
-  const isDark = theme === 'dark'
   const [ttsSettings, setTtsSettings] = useState<TtsSettings>(DEFAULT_TTS_SETTINGS)
 
   useEffect(() => {
@@ -405,7 +317,8 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
             key={index}
             onClick={() => handleAnswerSelect(index)}
             disabled={hasAnswered || disabled}
-            style={getAnswerButtonStyles(index, selectedAnswers, hasAnswered, disabled, isMultipleChoice, correctIndices, isDark)}
+            className={getAnswerButtonClass(index, selectedAnswers, hasAnswered, disabled, isMultipleChoice, correctIndices)}
+            style={{ cursor: hasAnswered || disabled ? 'default' : 'pointer' }}
             role={isMultipleChoice ? "checkbox" : "radio"}
             aria-checked={selectedAnswers.includes(index)}
             aria-describedby={hasAnswered ? 'answer-feedback' : undefined}
@@ -417,16 +330,16 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
                 width: 32,
                 height: 32,
                 borderRadius: isMultipleChoice ? 6 : 16,
-                borderWidth: 2,
-                borderStyle: 'solid',
-                borderColor: 'currentColor',
+                border: '2px solid currentColor',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: 14,
                 fontWeight: 'bold',
               }}>
-                {isMultipleChoice && selectedAnswers.includes(index) ? '✓' : String.fromCharCode(65 + index)}
+                {isMultipleChoice && selectedAnswers.includes(index)
+                  ? <Check size={16} strokeWidth={2} />
+                  : String.fromCharCode(65 + index)}
               </span>
               <span style={{ fontSize: 14, textAlign: 'left', lineHeight: 1.5, flex: 1 }}>
                 {answer}

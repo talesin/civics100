@@ -1,11 +1,10 @@
-import React, { useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useEffect, useRef, useCallback } from 'react'
 import { QuestionStatistics } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 import { PairedQuestionNumber } from 'questionnaire'
 import { MASTERY_THRESHOLD, NEEDS_PRACTICE_THRESHOLD } from '@/services/StatisticsService'
 import { XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
-import { useThemeContext, themeColors } from '@/components/TamaguiProvider'
 
 interface QuestionDetailModalProps {
   readonly question: QuestionStatistics
@@ -28,8 +27,33 @@ const overlayStyles: React.CSSProperties = {
   padding: 16,
 }
 
-// Note: Modal container styles are now defined dynamically in the component
-// to support theme-aware colors
+const modalContainerStyles: React.CSSProperties = {
+  backgroundColor: 'var(--editorial-paper)',
+  borderRadius: 16,
+  maxWidth: 768,
+  width: '100%',
+  maxHeight: '90vh',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
+}
+
+const thStyles: React.CSSProperties = {
+  padding: '8px 16px',
+  textAlign: 'left',
+  fontSize: 12,
+  fontWeight: 500,
+  color: 'var(--editorial-muted)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  backgroundColor: 'var(--theme-background-hover)',
+}
+
+const tdStyles: React.CSSProperties = {
+  padding: '8px 16px',
+  fontSize: 14,
+  borderTop: '1px solid var(--editorial-rule)',
+}
 
 const Header = styled(XStack, {
   // Note: sticky positioning handled via inline styles on web
@@ -226,43 +250,12 @@ const QuestionDetailModal = ({
   pairedAnswers,
   onClose
 }: QuestionDetailModalProps): React.ReactElement => {
-  const { theme } = useThemeContext()
-  const colors = themeColors[theme]
   const history = pairedAnswers[PairedQuestionNumber(question.pairedQuestionNumber)] ?? []
 
   // Refs for focus management
   const modalRef = useRef<HTMLDivElement>(null)
   const previousActiveElement = useRef<Element | null>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
-
-  // Theme-aware dynamic styles
-  const dynamicModalStyles = useMemo((): React.CSSProperties => ({
-    backgroundColor: colors.cardBg,
-    borderRadius: 16,
-    maxWidth: 768,
-    width: '100%',
-    maxHeight: '90vh',
-    overflow: 'hidden',
-    display: 'flex',
-    flexDirection: 'column',
-  }), [colors.cardBg])
-
-  const dynamicThStyles = useMemo((): React.CSSProperties => ({
-    padding: '8px 16px',
-    textAlign: 'left',
-    fontSize: 12,
-    fontWeight: 500,
-    color: colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    backgroundColor: colors.backgroundHover,
-  }), [colors.textMuted, colors.backgroundHover])
-
-  const dynamicTdStyles = useMemo((): React.CSSProperties => ({
-    padding: '8px 16px',
-    fontSize: 14,
-    borderTop: `1px solid ${colors.border}`,
-  }), [colors.border])
 
   // Handle ESC key and focus trap
   useEffect(() => {
@@ -372,7 +365,7 @@ const QuestionDetailModal = ({
     <div style={overlayStyles} onClick={handleClose} aria-hidden="true">
       <div
         ref={modalRef}
-        style={dynamicModalStyles}
+        style={modalContainerStyles}
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -403,7 +396,7 @@ const QuestionDetailModal = ({
               borderRadius: 4,
             }}
           >
-            <svg width={24} height={24} fill="none" stroke={colors.iconStroke} viewBox="0 0 24 24">
+            <svg width={24} height={24} fill="none" stroke="var(--editorial-ink)" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -431,21 +424,21 @@ const QuestionDetailModal = ({
           <StatsGrid>
             <StatItem>
               <StatLabel>Times Asked</StatLabel>
-              <StatValue color={colors.text}>{question.timesAsked}</StatValue>
+              <StatValue style={{ color: 'var(--editorial-ink)' }}>{question.timesAsked}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Correct</StatLabel>
-              <StatValue color={colors.success}>{question.timesCorrect}</StatValue>
+              <StatValue style={{ color: 'var(--theme-success)' }}>{question.timesCorrect}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Accuracy</StatLabel>
-              <StatValue color={colors.primary}>
+              <StatValue style={{ color: 'var(--theme-primary)' }}>
                 {question.timesAsked > 0 ? `${Math.round(question.accuracy * 100)}%` : '-'}
               </StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Next Time %</StatLabel>
-              <StatValue color={colors.purple}>{question.selectionProbability.toFixed(2)}%</StatValue>
+              <StatValue style={{ color: 'var(--theme-purple)' }}>{question.selectionProbability.toFixed(2)}%</StatValue>
             </StatItem>
           </StatsGrid>
 
@@ -474,54 +467,32 @@ const QuestionDetailModal = ({
             {history.length > 0 ? (
               <YStack
                 borderWidth={1}
-                borderColor={colors.border}
+                borderColor="$borderColor"
                 borderRadius="$3"
                 overflow="hidden"
               >
                 <table style={tableStyles}>
                   <thead>
                     <tr>
-                      <th style={dynamicThStyles}>#</th>
-                      <th style={dynamicThStyles}>Date & Time</th>
-                      <th style={dynamicThStyles}>Result</th>
+                      <th style={thStyles}>#</th>
+                      <th style={thStyles}>Date & Time</th>
+                      <th style={thStyles}>Result</th>
                     </tr>
                   </thead>
                   <tbody>
                     {[...history].reverse().map((answer, index) => (
                       <tr key={index}>
-                        <td style={{ ...dynamicTdStyles, color: colors.textMuted, whiteSpace: 'nowrap' }}>
+                        <td style={{ ...tdStyles, color: 'var(--editorial-muted)', whiteSpace: 'nowrap' }}>
                           {history.length - index}
                         </td>
-                        <td style={{ ...dynamicTdStyles, color: colors.text, whiteSpace: 'nowrap' }}>
+                        <td style={{ ...tdStyles, color: 'var(--editorial-ink)', whiteSpace: 'nowrap' }}>
                           {formatDate(answer.ts)}
                         </td>
-                        <td style={dynamicTdStyles}>
+                        <td style={tdStyles}>
                           {answer.correct === true ? (
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              padding: '2px 10px',
-                              borderRadius: 9999,
-                              fontSize: 12,
-                              fontWeight: 500,
-                              backgroundColor: colors.successBg,
-                              color: colors.successText,
-                            }}>
-                              Correct
-                            </span>
+                            <span className="badge badge-pass">Correct</span>
                           ) : (
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              padding: '2px 10px',
-                              borderRadius: 9999,
-                              fontSize: 12,
-                              fontWeight: 500,
-                              backgroundColor: colors.errorBg,
-                              color: colors.errorText,
-                            }}>
-                              Incorrect
-                            </span>
+                            <span className="badge badge-fail">Incorrect</span>
                           )}
                         </td>
                       </tr>
