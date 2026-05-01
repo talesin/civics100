@@ -2,18 +2,9 @@
 
 import React from 'react'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
-import { useThemeContext } from '@/components/TamaguiProvider'
-
-// Warning colors that work well in both light and dark modes
-const warningColors = {
-  light: { bg: '#fbbf24', text: '#78350f' }, // amber-400, amber-900
-  dark: { bg: '#d97706', text: '#fffbeb' } // amber-600, amber-50
-}
 
 export function OfflineIndicator() {
   const isOnline = useOnlineStatus()
-  const { theme } = useThemeContext()
-  const colors = warningColors[theme]
 
   if (isOnline) {
     return null
@@ -24,7 +15,7 @@ export function OfflineIndicator() {
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: colors.bg,
+    backgroundColor: 'var(--theme-warning)',
     padding: '8px 16px',
     display: 'flex',
     flexDirection: 'row',
@@ -41,7 +32,7 @@ export function OfflineIndicator() {
         height={16}
         viewBox="0 0 24 24"
         fill="none"
-        stroke={colors.text}
+        stroke="var(--theme-warning-text)"
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -54,7 +45,7 @@ export function OfflineIndicator() {
         <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
         <line x1="12" y1="20" x2="12.01" y2="20" />
       </svg>
-      <span style={{ color: colors.text, fontSize: 14, fontWeight: 600 }}>
+      <span style={{ color: 'var(--theme-warning-text)', fontSize: 14, fontWeight: 600 }}>
         You are offline
       </span>
     </div>

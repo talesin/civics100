@@ -33,34 +33,32 @@ export type AppServices =
 /**
  * Helper function to run Effect programs with all required services
  * This provides a consistent way to execute Effects in React components
- *
- * Only accepts Effects that require services provided by AppServiceLayer.
- * TypeScript will error at compile time if an effect requires a service not listed.
  */
-export const runWithServices = <A, E>(
-  effect: Effect.Effect<A, E, AppServices>
+export const runWithServices = <A, E, R>(
+  effect: Effect.Effect<A, E, R>
 ): Promise<A> => {
-  return Effect.runPromise(effect.pipe(Effect.provide(AppServiceLayer)))
+  // TypeScript cannot statically reduce Exclude<R, AppServices> to never for a generic R,
+  // so we assert after providing. The cast is safe: AppServiceLayer provides all AppServices.
+  const provided = effect.pipe(Effect.provide(AppServiceLayer)) as unknown as Effect.Effect<A, E, never>
+  return Effect.runPromise(provided)
 }
 
 /**
  * Helper function to run Effect programs with all required services and custom error handling
  * This provides a consistent way to execute Effects in React components with error handling
- *
- * Only accepts Effects that require services provided by AppServiceLayer.
- * TypeScript will error at compile time if an effect requires a service not listed.
  */
-export const runWithServicesAndErrorHandling = <A, E>(
-  effect: Effect.Effect<A, E, AppServices>,
+export const runWithServicesAndErrorHandling = <A, E, R>(
+  effect: Effect.Effect<A, E, R>,
   onError: (error: unknown) => void = (error) => console.error('Service error:', error)
 ): Promise<A | undefined> => {
-  return Effect.runPromise(
-    effect.pipe(
-      Effect.provide(AppServiceLayer),
-      Effect.catchAll((error: unknown) => {
-        onError(error)
-        return Effect.succeed(undefined)
-      })
-    )
-  )
+  // TypeScript cannot statically reduce Exclude<R, AppServices> to never for a generic R,
+  // so we assert after providing. The cast is safe: AppServiceLayer provides all AppServices.
+  const provided = effect.pipe(
+    Effect.provide(AppServiceLayer),
+    Effect.catchAll((error: unknown) => {
+      onError(error)
+      return Effect.succeed(undefined)
+    })
+  ) as unknown as Effect.Effect<A | undefined, never, never>
+  return Effect.runPromise(provided)
 }

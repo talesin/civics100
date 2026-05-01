@@ -76,7 +76,7 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps): Re
         style={{
           width: 64,
           height: 64,
-          backgroundColor: '#fee2e2',
+          backgroundColor: 'var(--theme-error-bg)',
           borderRadius: '50%',
           display: 'flex',
           alignItems: 'center',
@@ -85,7 +85,7 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps): Re
         }}
       >
         <svg
-          style={{ width: 32, height: 32, color: '#dc2626' }}
+          style={{ width: 32, height: 32, color: 'var(--theme-error)' }}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -103,7 +103,7 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps): Re
         style={{
           fontSize: 24,
           fontWeight: 600,
-          color: '#111827',
+          color: 'var(--editorial-ink)',
           marginBottom: 8
         }}
       >
@@ -112,7 +112,7 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps): Re
 
       <p
         style={{
-          color: '#6b7280',
+          color: 'var(--editorial-muted)',
           marginBottom: 24,
           maxWidth: 400
         }}
@@ -123,11 +123,11 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps): Re
       {error !== null && process.env.NODE_ENV === 'development' ? (
         <pre
           style={{
-            backgroundColor: '#f3f4f6',
+            backgroundColor: 'var(--editorial-paper)',
             padding: 16,
             borderRadius: 8,
             fontSize: 12,
-            color: '#dc2626',
+            color: 'var(--theme-error)',
             marginBottom: 24,
             maxWidth: '100%',
             overflow: 'auto',
@@ -139,38 +139,24 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps): Re
       ) : null}
 
       <div style={{ display: 'flex', gap: 12 }}>
-        <button
-          onClick={onRetry}
-          style={{
-            backgroundColor: '#2563eb',
-            color: 'white',
-            fontWeight: 500,
-            padding: '12px 24px',
-            borderRadius: 8,
-            border: 'none',
-            cursor: 'pointer',
-            transition: 'background-color 0.2s'
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#1d4ed8')}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
-        >
+        <button onClick={onRetry} className="btn-primary">
           Try Again
         </button>
 
         <button
           onClick={() => (window.location.href = '/')}
           style={{
-            backgroundColor: '#f3f4f6',
-            color: '#374151',
+            backgroundColor: 'var(--editorial-paper)',
+            color: 'var(--editorial-ink)',
             fontWeight: 500,
             padding: '12px 24px',
             borderRadius: 8,
-            border: '1px solid #d1d5db',
+            border: '1px solid var(--editorial-rule)',
             cursor: 'pointer',
             transition: 'background-color 0.2s'
           }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e5e7eb')}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#f3f4f6')}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--theme-background-hover)')}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--editorial-paper)')}
         >
           Go Home
         </button>
