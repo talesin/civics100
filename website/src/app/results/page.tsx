@@ -82,12 +82,6 @@ export default function Results() {
     return 'Failed'
   }
 
-  const getScoreColor = (percentage: number): string => {
-    if (percentage >= 80) return 'var(--theme-success)'
-    if (percentage >= 60) return 'var(--theme-primary)'
-    return 'var(--theme-error)'
-  }
-
   if (isLoading) {
     return (
       <Layout title="Loading Results...">
@@ -98,50 +92,64 @@ export default function Results() {
     )
   }
 
-  const cardStyle: React.CSSProperties = {
-    backgroundColor: 'var(--theme-card-bg)',
-    border: '1px solid var(--editorial-rule)',
-    borderRadius: 8,
+  const eyebrowStyle: React.CSSProperties = {
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    color: 'var(--editorial-accent)',
+    marginBottom: 10,
+  }
+
+  const sectionTitleStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-family-serif)',
+    fontSize: 22,
+    fontWeight: 500,
+    color: 'var(--editorial-ink)',
+    letterSpacing: '-0.01em',
+  }
+
+  const clearButtonStyle: React.CSSProperties = {
+    background: 'none',
+    border: 'none',
+    padding: '6px 4px',
+    fontSize: 13,
+    color: 'var(--editorial-muted)',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    fontFamily: 'inherit',
   }
 
   return (
     <Layout title="Test Results">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
-          <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '-0.01em' }}>
-            Your Test Results
-          </h1>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 900, margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <p style={eyebrowStyle}>Archive</p>
+            <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(2rem, 5vw, 2.75rem)', fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+              Your Test Results
+            </h1>
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
             <button
               onClick={() => (window.location.href = '/statistics')}
-              className="btn-purple focus-ring"
-              style={{ padding: '7px 14px', borderRadius: 6, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
+              className="btn-editorial-ghost focus-ring"
             >
               View Question Stats
             </button>
             <button
               onClick={() => (window.location.href = '/game')}
-              className="btn-primary focus-ring"
-              style={{ padding: '7px 14px', borderRadius: 6, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
+              className="btn-editorial focus-ring"
             >
               Take New Test
             </button>
-            {results.length > 0 ? (
-              <button
-                onClick={handleClearData}
-                className="btn-error focus-ring"
-                style={{ padding: '7px 14px', borderRadius: 6, fontWeight: 500, fontSize: 14, cursor: 'pointer' }}
-              >
-                Clear All Data
-              </button>
-            ) : null}
           </div>
         </div>
 
         <StatsSummary stats={stats} />
 
         {results.length === 0 ? (
-          <div style={{ ...cardStyle, padding: 40, textAlign: 'center' }}>
+          <div style={{ borderTop: '1px solid var(--editorial-rule)', padding: '48px 16px 16px', textAlign: 'center' }}>
             <div style={{
               width: 56,
               height: 56,
@@ -150,45 +158,45 @@ export default function Results() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 16px'
+              margin: '0 auto 20px'
             }}>
-              <FileText size={28} strokeWidth={1.5} color="var(--editorial-accent)" />
+              <FileText size={26} strokeWidth={1.5} color="var(--editorial-accent)" />
             </div>
-            <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--editorial-ink)', marginBottom: 8 }}>
+            <p style={{ ...eyebrowStyle, marginBottom: 8 }}>Archive</p>
+            <h3 style={{ ...sectionTitleStyle, marginBottom: 10 }}>
               No Test Results Yet
             </h3>
-            <p style={{ color: 'var(--editorial-muted)', marginBottom: 24 }}>
+            <p style={{ color: 'var(--editorial-muted)', marginBottom: 24, fontSize: 14, lineHeight: 1.6 }}>
               You haven&apos;t taken any civics tests yet. Take your first test to see your results here.
             </p>
             <button
               onClick={() => (window.location.href = '/game')}
-              className="btn-primary focus-ring"
-              style={{ padding: '10px 24px', borderRadius: 6, fontWeight: 500, cursor: 'pointer' }}
+              className="btn-editorial focus-ring"
             >
               Take Your First Test
             </button>
           </div>
         ) : (
-          <div style={{ ...cardStyle, overflow: 'hidden' }}>
-            <div style={{ padding: '14px 24px', borderBottom: '1px solid var(--editorial-rule)' }}>
-              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--editorial-ink)' }}>
-                Test History ({results.length} tests)
-              </h3>
+          <div>
+            <div style={{ borderTop: '1px solid var(--editorial-rule)', paddingTop: 20, marginBottom: 0 }}>
+              <p style={eyebrowStyle}>Archive · {results.length} {results.length === 1 ? 'Test' : 'Tests'}</p>
+              <h3 style={{ ...sectionTitleStyle, marginBottom: 16 }}>Test History</h3>
+              <div style={{ borderTop: '1px solid var(--editorial-rule)' }} />
             </div>
             <div>
               {results.map((result, index) => (
                 <div
                   key={result.sessionId}
                   style={{
-                    padding: '14px 24px',
-                    borderBottom: index < results.length - 1 ? '1px solid var(--editorial-rule)' : undefined,
+                    padding: '18px 0',
+                    borderBottom: '1px solid var(--editorial-rule)',
                   }}
                   className="results-row"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-ink)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '0.02em' }}>
                           Test #{results.length - index}
                         </span>
                         <span className={getBadgeClass(result)}>
@@ -199,34 +207,41 @@ export default function Results() {
                           {result.completedAt.toLocaleTimeString()}
                         </span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 20, fontSize: 14 }}>
-                        <span style={{ fontWeight: 600, color: getScoreColor(result.percentage) }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, fontSize: 14, flexWrap: 'wrap' }}>
+                        <span style={{
+                          fontFamily: 'var(--font-family-serif)',
+                          fontSize: 24,
+                          fontWeight: 500,
+                          color: result.percentage >= 60 ? 'var(--editorial-ink)' : 'var(--theme-error)',
+                          letterSpacing: '-0.02em',
+                          lineHeight: 1,
+                        }}>
                           {result.percentage}%
                         </span>
-                        <span style={{ color: 'var(--editorial-muted)' }}>
+                        <span style={{ color: 'var(--editorial-muted)', fontSize: 13 }}>
                           {result.correctAnswers}/{result.totalQuestions} correct
                         </span>
                         {result.isEarlyWin === true ? (
-                          <span style={{ color: 'var(--theme-warning)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 3 }}>
+                          <span style={{ color: 'var(--editorial-accent)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <Star size={12} strokeWidth={1.5} />
                             Early completion
                           </span>
                         ) : null}
                       </div>
                     </div>
-                    <div style={{ flexShrink: 0, position: 'relative', width: 56, height: 56 }}>
-                      <svg style={{ width: 56, height: 56, transform: 'rotate(-90deg)', position: 'absolute', top: 0, left: 0 }} viewBox="0 0 36 36">
+                    <div style={{ flexShrink: 0, position: 'relative', width: 52, height: 52 }}>
+                      <svg style={{ width: 52, height: 52, transform: 'rotate(-90deg)', position: 'absolute', top: 0, left: 0 }} viewBox="0 0 36 36">
                         <path
                           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                           fill="none"
                           stroke="var(--editorial-rule)"
-                          strokeWidth="3"
+                          strokeWidth="2"
                         />
                         <path
                           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                           fill="none"
-                          stroke={result.percentage >= 60 ? 'var(--theme-success)' : 'var(--theme-error)'}
-                          strokeWidth="3"
+                          stroke={result.percentage >= 60 ? 'var(--editorial-accent)' : 'var(--theme-error)'}
+                          strokeWidth="2"
                           strokeDasharray={`${result.percentage}, 100`}
                         />
                       </svg>
@@ -235,9 +250,10 @@ export default function Results() {
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
+                        fontFamily: 'var(--font-family-serif)',
                         fontSize: 11,
-                        fontWeight: 'bold',
-                        color: getScoreColor(result.percentage),
+                        fontWeight: 500,
+                        color: 'var(--editorial-ink)',
                       }}>
                         {result.percentage}%
                       </span>
@@ -245,6 +261,11 @@ export default function Results() {
                   </div>
                 </div>
               ))}
+            </div>
+            <div style={{ paddingTop: 16, display: 'flex', justifyContent: 'flex-end' }}>
+              <button onClick={handleClearData} className="focus-ring" style={clearButtonStyle}>
+                Clear all data
+              </button>
             </div>
           </div>
         )}

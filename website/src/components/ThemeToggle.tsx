@@ -36,7 +36,7 @@ export default function ThemeToggle() {
   // control visibility based on the html.t_dark class set before hydration.
   return (
     <ThemeButton onPress={toggleTheme} accessibilityLabel="Toggle theme">
-      <span className="theme-icon-sun" style={{ display: 'none', color: 'var(--editorial-muted)' }}>
+      <span className="theme-icon-sun" style={{ color: 'var(--editorial-muted)' }}>
         <Sun size={18} strokeWidth={1.5} />
       </span>
       <span className="theme-icon-moon" style={{ color: 'var(--editorial-muted)' }}>

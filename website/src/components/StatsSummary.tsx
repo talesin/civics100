@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import { GameStats } from '@/types'
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
 import { TrendingUp } from 'lucide-react'
 
 interface StatsSummaryProps {
@@ -8,25 +7,27 @@ interface StatsSummaryProps {
 }
 
 function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
-  const count = useMotionValue(0)
-  const rounded = useTransform(count, (v) => Math.round(v))
-  const ref = useRef<HTMLSpanElement>(null)
+  const [display, setDisplay] = useState(value)
 
   useEffect(() => {
-    const controls = animate(count, value, {
-      duration: 0.9,
-      ease: 'easeOut',
-    })
-    return controls.stop
-  }, [value, count])
+    const start = display
+    const delta = value - start
+    if (delta === 0) return
+    const duration = 900
+    const startedAt = performance.now()
+    let raf = 0
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - startedAt) / duration)
+      const eased = 1 - Math.pow(1 - t, 3)
+      setDisplay(Math.round(start + delta * eased))
+      if (t < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
 
-  return (
-    <motion.span ref={ref}>
-      {rounded.get() === 0 && value === 0 ? '0' : null}
-      <motion.span>{rounded}</motion.span>
-      {suffix}
-    </motion.span>
-  )
+  return <span>{display}{suffix}</span>
 }
 
 const sectionHeadingStyle: React.CSSProperties = {
