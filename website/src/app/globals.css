@@ -236,8 +236,8 @@ input[type="radio"] {
 
 /* Theme toggle icon switching - CSS controls visibility so server/client HTML matches */
 .theme-icon-sun { display: none; }
-.theme-icon-moon { display: block; }
-html.t_dark .theme-icon-sun { display: block; }
+.theme-icon-moon { display: flex; align-items: center; justify-content: center; line-height: 0; }
+html.t_dark .theme-icon-sun { display: flex; align-items: center; justify-content: center; line-height: 0; }
 html.t_dark .theme-icon-moon { display: none; }
 
 /* Dark mode improvements */
