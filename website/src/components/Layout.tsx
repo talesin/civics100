@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, Settings } from 'lucide-react'
 import ThemeToggle from './ThemeToggle'
 import { ErrorBoundary } from './ErrorBoundary'
 
@@ -96,6 +96,17 @@ const dividerStyles: React.CSSProperties = {
   margin: '0 4px',
 }
 
+const iconLinkStyles: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: 6,
+  borderRadius: 4,
+  color: 'var(--editorial-muted)',
+  textDecoration: 'none',
+  transition: 'color 150ms ease',
+}
+
 const mobileMenuButtonStyles: React.CSSProperties = {
   padding: 6,
   borderRadius: 4,
@@ -178,11 +189,17 @@ export default function Layout({
                   <Link href="/results" style={navLinkStyles}>Results</Link>
                   <Link href="/statistics" style={navLinkStyles}>Statistics</Link>
                 </nav>
+                <Link href="/settings" aria-label="Settings" style={iconLinkStyles}>
+                  <Settings size={18} strokeWidth={1.5} />
+                </Link>
                 <div style={dividerStyles} />
                 <ThemeToggle />
               </div>
 
               <div className="md:hidden" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Link href="/settings" aria-label="Settings" style={iconLinkStyles}>
+                  <Settings size={18} strokeWidth={1.5} />
+                </Link>
                 <ThemeToggle />
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -200,8 +217,9 @@ export default function Layout({
               <div className="md:hidden" id="mobile-menu" data-testid="mobile-menu">
                 <div style={mobileMenuStyles}>
                   <Link href="/" onClick={() => setMobileMenuOpen(false)} style={mobileNavLinkStyles}>Home</Link>
-                  <Link href="/results" onClick={() => setMobileMenuOpen(false)} style={{ ...mobileNavLinkStyles, borderBottom: 'none' }}>Results</Link>
-                  <Link href="/statistics" onClick={() => setMobileMenuOpen(false)} style={{ ...mobileNavLinkStyles, borderBottom: 'none' }}>Statistics</Link>
+                  <Link href="/results" onClick={() => setMobileMenuOpen(false)} style={mobileNavLinkStyles}>Results</Link>
+                  <Link href="/statistics" onClick={() => setMobileMenuOpen(false)} style={mobileNavLinkStyles}>Statistics</Link>
+                  <Link href="/settings" onClick={() => setMobileMenuOpen(false)} style={{ ...mobileNavLinkStyles, borderBottom: 'none' }}>Settings</Link>
                 </div>
               </div>
             ) : null}

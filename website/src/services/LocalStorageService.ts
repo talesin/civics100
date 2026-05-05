@@ -213,6 +213,19 @@ const getGameSettings = (): Effect.Effect<WebsiteGameSettings, never, never> => 
   })
 }
 
+const hasSavedSettings = (): Effect.Effect<boolean, never, never> => {
+  return Effect.gen(function* () {
+    if (!checkStorageAvailable()) return false
+
+    const json = yield* Effect.try({
+      try: () => localStorage.getItem(STORAGE_KEYS.GAME_SETTINGS),
+      catch: () => null
+    }).pipe(Effect.catchAll(() => Effect.succeed(null)))
+
+    return json !== null
+  })
+}
+
 const saveTtsSettings = (settings: TtsSettings): Effect.Effect<void, never, never> => {
   return Effect.gen(function* () {
     if (!checkStorageAvailable()) return
@@ -372,6 +385,7 @@ export class LocalStorageService extends Effect.Service<LocalStorageService>()(
       getGameResults,
       saveGameSettings,
       getGameSettings,
+      hasSavedSettings,
       saveTtsSettings,
       getTtsSettings,
       savePairedAnswers,
@@ -389,6 +403,7 @@ export const TestLocalStorageServiceLayer = (fn?: {
   getGameResults?: LocalStorageService['getGameResults']
   saveGameSettings?: LocalStorageService['saveGameSettings']
   getGameSettings?: LocalStorageService['getGameSettings']
+  hasSavedSettings?: LocalStorageService['hasSavedSettings']
   saveTtsSettings?: LocalStorageService['saveTtsSettings']
   getTtsSettings?: LocalStorageService['getTtsSettings']
   savePairedAnswers?: LocalStorageService['savePairedAnswers']
@@ -406,6 +421,7 @@ export const TestLocalStorageServiceLayer = (fn?: {
       getGameResults: fn?.getGameResults ?? (() => Effect.succeed([])),
       saveGameSettings: fn?.saveGameSettings ?? (() => Effect.succeed(void 0)),
       getGameSettings: fn?.getGameSettings ?? (() => Effect.succeed(DEFAULT_GAME_SETTINGS)),
+      hasSavedSettings: fn?.hasSavedSettings ?? (() => Effect.succeed(false)),
       saveTtsSettings: fn?.saveTtsSettings ?? (() => Effect.succeed(void 0)),
       getTtsSettings: fn?.getTtsSettings ?? (() => Effect.succeed(DEFAULT_TTS_SETTINGS)),
       savePairedAnswers: fn?.savePairedAnswers ?? (() => Effect.succeed(void 0)),

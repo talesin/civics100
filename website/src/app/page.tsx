@@ -51,21 +51,24 @@ export default function Home() {
     earlyWins: 0,
     earlyFailures: 0
   })
+  const [hasConfigured, setHasConfigured] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     let mounted = true
 
-    const loadStats = Effect.gen(function* () {
+    const loadHomeData = Effect.gen(function* () {
       const storageService = yield* LocalStorageService
       const gameStats = yield* storageService.getGameStats()
+      const settingsConfigured = yield* storageService.hasSavedSettings()
       if (mounted) {
         setStats(gameStats)
+        setHasConfigured(settingsConfigured)
         setIsLoading(false)
       }
     })
 
-    Effect.runPromise(loadStats.pipe(Effect.provide(LocalStorageService.Default))).catch(
+    Effect.runPromise(loadHomeData.pipe(Effect.provide(LocalStorageService.Default))).catch(
       (error) => {
         if (mounted) {
           console.error(error)
@@ -205,36 +208,13 @@ export default function Home() {
                 <Keyboard size={13} strokeWidth={1.5} /> Keyboard
               </span>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <button
-                onClick={() => router.push('/settings')}
-                className="btn-primary focus-ring"
-                style={{
-                  width: '100%',
-                  padding: '11px 20px',
-                  borderRadius: 5,
-                  fontWeight: 600,
-                  fontSize: 14,
-                  cursor: 'pointer',
-                }}
-              >
-                Customize &amp; Start
-              </button>
-              <button
-                onClick={() => router.push('/game')}
-                className="btn-secondary focus-ring"
-                style={{
-                  width: '100%',
-                  padding: '9px 16px',
-                  borderRadius: 5,
-                  fontWeight: 500,
-                  fontSize: 13,
-                  cursor: 'pointer',
-                }}
-              >
-                Quick Start
-              </button>
-            </div>
+            <button
+              onClick={() => router.push(hasConfigured ? '/game' : '/settings')}
+              className="btn-editorial focus-ring"
+              style={{ width: '100%' }}
+            >
+              Start
+            </button>
           </div>
 
           {/* View Results */}
@@ -273,16 +253,8 @@ export default function Home() {
             </p>
             <button
               onClick={() => router.push('/results')}
-              className="btn-primary focus-ring"
-              style={{
-                width: '100%',
-                padding: '11px 20px',
-                borderRadius: 5,
-                fontWeight: 600,
-                fontSize: 14,
-                cursor: 'pointer',
-                marginTop: 'auto',
-              }}
+              className="btn-editorial-ghost focus-ring"
+              style={{ width: '100%', marginTop: 'auto' }}
             >
               View Results
             </button>

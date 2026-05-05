@@ -12,6 +12,12 @@ import { QuestionStatistics, QuestionFilter, QuestionSortField } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 import { loadQuestions, civicsQuestionsWithDistractors } from 'questionnaire'
 
+type SummaryCell = {
+  readonly label: string
+  readonly value: number
+  readonly helper?: string
+}
+
 export default function Statistics() {
   const [statistics, setStatistics] = useState<QuestionStatistics[]>([])
   const [filteredStatistics, setFilteredStatistics] = useState<QuestionStatistics[]>([])
@@ -104,12 +110,48 @@ export default function Statistics() {
     }
   }
 
-  const cardStyle: React.CSSProperties = {
-    backgroundColor: 'var(--theme-card-bg)',
-    border: '1px solid var(--editorial-rule)',
-    borderRadius: 8,
-    padding: 24,
+  const eyebrowStyle: React.CSSProperties = {
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    color: 'var(--editorial-accent)',
+    marginBottom: 10,
   }
+
+  const statValueStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-family-serif)',
+    fontSize: 'clamp(2rem, 4vw, 2.5rem)',
+    fontWeight: 500,
+    color: 'var(--editorial-ink)',
+    letterSpacing: '-0.02em',
+    lineHeight: 1,
+    display: 'block',
+    marginBottom: 6,
+  }
+
+  const statLabelStyle: React.CSSProperties = {
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    color: 'var(--editorial-muted)',
+    display: 'block',
+    marginBottom: 6,
+  }
+
+  const statHelperStyle: React.CSSProperties = {
+    fontSize: 12,
+    color: 'var(--editorial-muted)',
+    marginTop: 6,
+  }
+
+  const summaryCells: ReadonlyArray<SummaryCell> = [
+    { label: 'Total Questions', value: summary.totalQuestions },
+    { label: 'Attempted', value: summary.questionsAttempted },
+    { label: 'Mastered', value: summary.questionsMastered, helper: '3+ consecutive correct' },
+    { label: 'Need Practice', value: summary.questionsNeedingPractice, helper: '<60% accuracy' },
+  ]
 
   if (isLoading) {
     return (
@@ -126,64 +168,36 @@ export default function Statistics() {
 
   return (
     <Layout title="Question Statistics">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 1100, margin: '0 auto' }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '-0.01em', marginBottom: 6 }}>
+          <p style={eyebrowStyle}>Performance · Civics Questions</p>
+          <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(2rem, 5vw, 2.75rem)', fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 10 }}>
             Question Statistics
           </h1>
-          <p style={{ color: 'var(--editorial-muted)', fontSize: 14 }}>
-            Detailed breakdown of your performance on each question
+          <p style={{ color: 'var(--editorial-muted)', fontSize: 14, lineHeight: 1.6 }}>
+            Detailed breakdown of your performance on each question.
           </p>
         </div>
 
-        {/* Summary Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
-          <div style={cardStyle}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
-              Total Questions
+        {/* Summary Strip */}
+        <div className="stats-strip">
+          {summaryCells.map((cell) => (
+            <div key={cell.label} className="stats-strip-cell">
+              <span style={statLabelStyle}>{cell.label}</span>
+              <span style={statValueStyle}>{cell.value}</span>
+              {cell.helper !== undefined ? (
+                <span style={statHelperStyle}>{cell.helper}</span>
+              ) : null}
             </div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--theme-primary)' }}>
-              {summary.totalQuestions}
-            </div>
-          </div>
-
-          <div style={cardStyle}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
-              Questions Attempted
-            </div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--theme-purple)' }}>
-              {summary.questionsAttempted}
-            </div>
-          </div>
-
-          <div style={cardStyle}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
-              Mastered
-            </div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--theme-success)' }}>
-              {summary.questionsMastered}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--editorial-muted)', marginTop: 4 }}>
-              3+ consecutive correct
-            </div>
-          </div>
-
-          <div style={cardStyle}>
-            <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
-              Need Practice
-            </div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: 'var(--theme-warning)' }}>
-              {summary.questionsNeedingPractice}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--editorial-muted)', marginTop: 4 }}>&lt;60% accuracy</div>
-          </div>
+          ))}
         </div>
 
         {/* Filters and Search */}
-        <div style={{ ...cardStyle, padding: 16 }}>
+        <div style={{ borderTop: '1px solid var(--editorial-rule)', paddingTop: 20 }}>
+          <p style={eyebrowStyle}>Filter · Search</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
             <div style={{ flexShrink: 0 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 6 }}>
                 Filter
               </label>
               <select
@@ -205,7 +219,7 @@ export default function Statistics() {
             </div>
 
             <div style={{ flexGrow: 1, minWidth: 200 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 4 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 6 }}>
                 Search
               </label>
               <input
@@ -218,13 +232,13 @@ export default function Statistics() {
             </div>
           </div>
 
-          <div style={{ marginTop: 10, fontSize: 13, color: 'var(--editorial-muted)' }}>
+          <div style={{ marginTop: 12, fontSize: 13, color: 'var(--editorial-muted)' }}>
             Showing {filteredStatistics.length} of {statistics.length} questions
           </div>
         </div>
 
         {/* Statistics Table */}
-        <div style={{ backgroundColor: 'var(--theme-card-bg)', border: '1px solid var(--editorial-rule)', borderRadius: 8, overflow: 'hidden' }}>
+        <div style={{ borderTop: '1px solid var(--editorial-rule)', borderBottom: '1px solid var(--editorial-rule)' }}>
           <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 28rem)' }}>
             <QuestionStatisticsTable
               statistics={filteredStatistics}
@@ -247,3 +261,5 @@ export default function Statistics() {
     </Layout>
   )
 }
+// SENTINEL_1777939102
+// ZSENTINEL_1777940798
