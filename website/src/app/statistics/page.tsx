@@ -12,6 +12,12 @@ import { QuestionStatistics, QuestionFilter, QuestionSortField } from '@/types'
 import type { PairedAnswers } from 'questionnaire'
 import { loadQuestions, civicsQuestionsWithDistractors } from 'questionnaire'
 
+type SummaryCell = {
+  readonly label: string
+  readonly value: number
+  readonly helper?: string
+}
+
 export default function Statistics() {
   const [statistics, setStatistics] = useState<QuestionStatistics[]>([])
   const [filteredStatistics, setFilteredStatistics] = useState<QuestionStatistics[]>([])
@@ -140,9 +146,9 @@ export default function Statistics() {
     marginTop: 6,
   }
 
-  const summaryCells = [
-    { label: 'Total Questions', value: summary.totalQuestions, helper: undefined as string | undefined },
-    { label: 'Attempted', value: summary.questionsAttempted, helper: undefined },
+  const summaryCells: ReadonlyArray<SummaryCell> = [
+    { label: 'Total Questions', value: summary.totalQuestions },
+    { label: 'Attempted', value: summary.questionsAttempted },
     { label: 'Mastered', value: summary.questionsMastered, helper: '3+ consecutive correct' },
     { label: 'Need Practice', value: summary.questionsNeedingPractice, helper: '<60% accuracy' },
   ]
@@ -174,21 +180,9 @@ export default function Statistics() {
         </div>
 
         {/* Summary Strip */}
-        <div style={{
-          borderTop: '1px solid var(--editorial-rule)',
-          borderBottom: '1px solid var(--editorial-rule)',
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
-        }}>
-          {summaryCells.map((cell, i) => (
-            <div
-              key={cell.label}
-              style={{
-                padding: '24px 20px 24px 0',
-                paddingLeft: i === 0 ? 0 : 20,
-                borderRight: i < summaryCells.length - 1 ? '1px solid var(--editorial-rule)' : 'none',
-              }}
-            >
+        <div className="stats-strip">
+          {summaryCells.map((cell) => (
+            <div key={cell.label} className="stats-strip-cell">
               <span style={statLabelStyle}>{cell.label}</span>
               <span style={statValueStyle}>{cell.value}</span>
               {cell.helper !== undefined ? (
@@ -267,3 +261,5 @@ export default function Statistics() {
     </Layout>
   )
 }
+// SENTINEL_1777939102
+// ZSENTINEL_1777940798
