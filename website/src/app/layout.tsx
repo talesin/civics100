@@ -4,6 +4,7 @@ import { TamaguiProvider } from '@/components/TamaguiProvider'
 import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration'
 import { OfflineIndicator } from '@/components/OfflineIndicator'
 import { InstallPrompt } from '@/components/InstallPrompt'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import './globals.css'
 
 const geistSans = Geist({
@@ -62,6 +63,7 @@ export default function RootLayout({
           {children}
           <InstallPrompt />
         </TamaguiProvider>
+        <SpeedInsights />
         <ServiceWorkerRegistration />
       </body>
     </html>
