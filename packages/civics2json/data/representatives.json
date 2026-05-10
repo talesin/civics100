@@ -246,7 +246,7 @@
     "party": "I",
     "officeRoom": "2445 RHOB",
     "phone": "(202) 225-2523",
-    "committeeAssignment": "",
+    "committeeAssignment": "Education and Workforce|Judiciary|Transportation and Infrastructure",
     "website": "https://kiley.house.gov"
   },
   {
@@ -357,7 +357,7 @@
     "officeRoom": "174 CHOB",
     "phone": "(202) 225-5065",
     "committeeAssignment": "",
-    "website": "https://clerk.house.gov/Members#Vacancies"
+    "website": "https://clerk.house.gov/members/CA14/vacancy"
   },
   {
     "name": "Kevin Mullin",
@@ -1080,14 +1080,14 @@
     "website": "https://donalds.house.gov"
   },
   {
-    "name": "Sheila Cherfilus-McCormick",
+    "name": "Sheila- Vacancy Cherfilus-McCormick",
     "state": "FL",
     "district": "20th",
     "party": "D",
     "officeRoom": "2442 RHOB",
     "phone": "(202) 225-1313",
-    "committeeAssignment": "Foreign Affairs|Veterans' Affairs",
-    "website": "https://cherfilus-mccormick.house.gov/"
+    "committeeAssignment": "",
+    "website": "https://clerk.house.gov/members/FL20/vacancy"
   },
   {
     "name": "Brian Mast",
@@ -1290,13 +1290,13 @@
     "website": "https://allen.house.gov"
   },
   {
-    "name": "David Scott",
+    "name": "David- Vacancy Scott",
     "state": "GA",
     "district": "13th",
     "party": "D",
     "officeRoom": "468 CHOB",
     "phone": "(202) 225-2939",
-    "committeeAssignment": "Agriculture|Financial Services",
+    "committeeAssignment": "",
     "website": "https://davidscott.house.gov/"
   },
   {
@@ -1306,7 +1306,7 @@
     "party": "R",
     "officeRoom": "2201 RHOB",
     "phone": "(202) 225-5211",
-    "committeeAssignment": "",
+    "committeeAssignment": "Transportation and Infrastructure|Small Business",
     "website": "https://fuller.house.gov/"
   },
   {
@@ -1546,7 +1546,7 @@
     "party": "R",
     "officeRoom": "349 CHOB",
     "phone": "(202) 225-3915",
-    "committeeAssignment": "Transportation and Infrastructure|Ways and Means",
+    "committeeAssignment": "Ways and Means",
     "website": "https://yakym.house.gov"
   },
   {
@@ -1586,7 +1586,7 @@
     "party": "R",
     "officeRoom": "224 CHOB",
     "phone": "(202) 225-3021",
-    "committeeAssignment": "Foreign Affairs|Transportation and Infrastructure",
+    "committeeAssignment": "Appropriations|Transportation and Infrastructure",
     "website": "https://shreve.house.gov/"
   },
   {
@@ -2550,14 +2550,14 @@
     "website": "https://mciver.house.gov/"
   },
   {
-    "name": "Mikie- Vacancy Sherrill",
+    "name": "Analilia Mejia",
     "state": "NJ",
     "district": "11th",
     "party": "D",
     "officeRoom": "1427 LHOB",
     "phone": "(202) 225-5034",
-    "committeeAssignment": "",
-    "website": "https://clerk.house.gov/members/NJ11/vacancy"
+    "committeeAssignment": "Homeland Security",
+    "website": "https://mejia.house.gov/"
   },
   {
     "name": "Bonnie Watson Coleman",
@@ -3156,7 +3156,7 @@
     "party": "R",
     "officeRoom": "2065 RHOB",
     "phone": "(202) 225-5731",
-    "committeeAssignment": "Appropriations",
+    "committeeAssignment": "Appropriations|Homeland Security",
     "website": "https://joyce.house.gov"
   },
   {
@@ -3627,7 +3627,7 @@
     "officeRoom": "2446 RHOB",
     "phone": "(202) 225-2811",
     "committeeAssignment": "Homeland Security|Science, Space, and Technology",
-    "website": "https://vanepps.house.gov/"
+    "website": "https://vanepps.house.gov"
   },
   {
     "name": "David Kustoff",
@@ -3877,7 +3877,7 @@
     "officeRoom": "2239 RHOB",
     "phone": "(202) 225-4511",
     "committeeAssignment": "",
-    "website": "https://clerk.house.gov/Members#Vacancies"
+    "website": "https://clerk.house.gov/members/TX23/vacancy"
   },
   {
     "name": "Beth Van Duyne",
