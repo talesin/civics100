@@ -336,6 +336,10 @@
           "state": "MD"
         },
         {
+          "senator": "Alan Armstrong",
+          "state": "OK"
+        },
+        {
           "senator": "Tammy Baldwin",
           "state": "WI"
         },
@@ -582,10 +586,6 @@
         {
           "senator": "Bernie Moreno",
           "state": "OH"
-        },
-        {
-          "senator": "Markwayne Mullin",
-          "state": "OK"
         },
         {
           "senator": "Lisa Murkowski",
@@ -1350,7 +1350,7 @@
           "district": "19th"
         },
         {
-          "representative": "Sheila Cherfilus-McCormick",
+          "representative": "Sheila- Vacancy Cherfilus-McCormick",
           "state": "FL",
           "district": "20th"
         },
@@ -1455,7 +1455,7 @@
           "district": "12th"
         },
         {
-          "representative": "David Scott",
+          "representative": "David- Vacancy Scott",
           "state": "GA",
           "district": "13th"
         },
@@ -2085,7 +2085,7 @@
           "district": "10th"
         },
         {
-          "representative": "Mikie- Vacancy Sherrill",
+          "representative": "Analilia Mejia",
           "state": "NJ",
           "district": "11th"
         },
