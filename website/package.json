@@ -27,6 +27,7 @@
     "@tamagui/config": "^1.144.4",
     "@tamagui/next-plugin": "^1.144.4",
     "@tamagui/next-theme": "^1.144.4",
+    "@vercel/speed-insights": "^1.2.0",
     "civics2json": "*",
     "effect": "^3.19.19",
     "framer-motion": "^12.38.0",
