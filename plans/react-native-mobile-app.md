@@ -125,6 +125,49 @@ succeeds** — Phase 1 must retest `expo export` on the in-workspace app and add
 - **Expect the first run to be slow:** `expo run:ios|android` auto-runs prebuild (CNG, ~2–5 min on first invocation) to generate `ios/`+`android/`; later runs skip it unless native config changes ([Ch 01 § CNG](/references/expo/01-overview-and-core-concepts.md#cng), [Ch 09 § Creating a Dev Build](/references/expo/09-development-builds-and-debugging.md#creating-a-dev-build)). This is a **dev-client** build, not Expo Go ([Ch 09 § Dev Build vs Expo Go](/references/expo/09-development-builds-and-debugging.md#dev-build-vs-expo-go)).
 - **Exit:** `expo run:ios` and `run:android` boot and render data; **`npx expo export` succeeds locally** (it exercises the same resolution path EAS uses — if effect's `.` export still fails, add the `resolveRequest` shim now, before EAS, per the Phase-0 carry-forward and [Ch 16 § eas.json](/references/expo/16-eas-build.md#eas-json)); website still builds untouched.
 
+#### Phase 1 — STATUS (updated 2026-06-30): ✅ DONE except the device boot (deferred, no simulator here)
+
+Executed in the Linux container (network available; no Xcode/Android SDK). `apps/mobile`
+is a real workspace member and every in-container gate is green:
+
+- ✅ **Workspace wiring:** root `workspaces` → `["packages/*","apps/*","website"]`; root
+  `tsconfig.json` references `./apps/mobile`. App identity fixed: `slug` **civics100**,
+  `ios.bundleIdentifier`/`android.package` **com.civics100.app**.
+- ✅ **Config files** (lifted from the spike, de-shimmed): `package.json` (locked SDK-56
+  matrix), `app.config.ts` (TS dynamic; `newArchEnabled`/`jsEngine` widened locally since
+  they're absent from the SDK-56 `ExpoConfig` type), `babel.config.js`
+  (`react-native-worklets/plugin` last), `metro.config.js` (`withTamagui` +
+  `watchFolders`/`nodeModulesPaths` + `unstable_enablePackageExports`; **`extraNodeModules`
+  shim dropped** — hoisting replaces it; a commented `resolveRequest` effect-shim is parked
+  but **unused**), `tamagui.config.ts`. **Plugins kept minimal** (`expo-router` only;
+  svg/async-storage autolink). **`react-native-svg` removed from the `plugins` array** — it
+  has no config plugin and autolinks.
+- ✅ **Animations split corrected for `tsc`:** TypeScript can't resolve RN platform
+  extensions, so the web/default driver is `animations.ts` (css) with `animations.native.ts`
+  (moti) as the native override — `animations.web.ts` renamed to `animations.ts`. Native
+  Metro still picks `.native.ts` (verified: identical bundle hash before/after).
+- ✅ **expo-router placeholder:** `app/_layout.tsx` (TamaguiProvider + SafeAreaProvider +
+  Stack), `app/index.tsx` reads `questionnaire/data` and runs a guarded
+  `Effect.runPromise(loadQuestions(...))` probe + a `bouncy` enter animation.
+- ✅ **Resolution gate — the predicted #4 friction DID NOT bite.** `npx expo export`
+  succeeds for **both ios and android** (2372 modules, ~8 MB Hermes bytecode). Inside the
+  workspace effect's `.` export resolves cleanly — **no `resolveRequest` shim needed.**
+  Bundle is **CLEAN** (0 `@effect/platform-node`/`@effect/cli` hits) with real data present
+  (positive control: "supreme law of the land" found in the `.hbc`). `tsc --noEmit` green;
+  `npm ls tamagui` = single `1.144.4`.
+- ⚠️ **Install side-effects of the required `--legacy-peer-deps` (carry-forward #2):** a
+  plain `npm install` now ERESOLVE-fails (confirmed: `@tamagui/animations-css@1.144.4` →
+  `react-dom@19.2.7` peers `react@^19.2.7` vs mobile's `react@19.2.3`). Fixed repo-wide with
+  a root **`.npmrc` (`legacy-peer-deps=true`)** so `npm install` works again. That flag
+  skips npm's auto-peer install, which dropped `@testing-library/dom` (RTL 16 peer) and
+  broke 2 website tests — fixed by declaring **`@testing-library/dom@^10.4.1`** explicitly in
+  `website/devDependencies` (RTL 16 wants it direct anyway). **Website re-verified green:**
+  lint + 49 Jest tests + `next build` (all 5 routes, Turbopack). These two files
+  (`.npmrc`, `website/package.json` devDep) are the only changes beyond the planned set.
+- ⏸ **REMAINING (1E) — DEVICE ONLY:** `npx expo run:ios` / `run:android` to boot the
+  dev-client and read the placeholder + animation + probes off a real Hermes device. Needs a
+  Mac/simulator. This also closes Phase-0's open **0f** gate. Everything it depends on is green.
+
 ### Phase 2 — `packages/app` + shared Tamagui config
 - Create `packages/app` (ESM, `dist/` build matching siblings, version `*`).
 - **Move** `website/tamagui.config.ts` → `packages/app/src/tamagui.config.ts`; extract the animation driver to `animations.web.ts`/`animations.native.ts` (config imports `./animations`, resolved per platform). The `createTokens({color, space, size, radius, zIndex})` block (incl. editorial palette) is neutral and moves wholesale.

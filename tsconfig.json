@@ -4,6 +4,7 @@
     { "path": "./packages/civics2json" },
     { "path": "./packages/distractions" },
     { "path": "./packages/questionnaire" },
+    { "path": "./apps/mobile" },
     { "path": "./website" }
   ]
 }
