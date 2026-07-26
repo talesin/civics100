@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   },
   // Add Tamagui packages to transpilation
   transpilePackages: [
+    'app',
     'civics2json',
     'questionnaire',
     'tamagui',

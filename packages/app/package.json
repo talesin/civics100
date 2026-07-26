@@ -1,0 +1,50 @@
+{
+  "name": "app",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Shared Tamagui UI and config consumed by website (Next.js) and apps/mobile (Expo)",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./tamagui.config": {
+      "types": "./src/tamagui.config.ts",
+      "import": "./src/tamagui.config.ts",
+      "default": "./src/tamagui.config.ts"
+    }
+  },
+  "scripts": {
+    "clean": "rm -rf node_modules/ coverage/",
+    "lint": "npx eslint .",
+    "lint:fix": "npx eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck",
+    "list-todos": "find src/ -iname '*.ts' -o -iname '*.tsx' | xargs grep --color -inHE '(TODO|FIXME|HACK)' || true"
+  },
+  "peerDependencies": {
+    "@tamagui/animations-css": "1.144.4",
+    "@tamagui/animations-moti": "1.144.4",
+    "react": "*",
+    "tamagui": "1.144.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.1",
+    "@tamagui/animations-css": "1.144.4",
+    "@tamagui/animations-moti": "1.144.4",
+    "@types/react": "^19.2.14",
+    "@typescript-eslint/eslint-plugin": "^8.56.1",
+    "eslint": "^9.25.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "prettier": "^3.8.1",
+    "react": "^19.2.4",
+    "tamagui": "1.144.4",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.56.1"
+  }
+}

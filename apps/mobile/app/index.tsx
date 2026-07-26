@@ -9,10 +9,13 @@
  *      Wrapped in try/catch so a resolution/runtime failure renders a red row, not a
  *      white screen — that red row IS the on-device evidence to read off.
  *   3. One `animation="bouncy"` enter animation, exercising the native moti/reanimated-4
- *      driver wired via animations.native.ts.
+ *      driver wired via animations.native.ts (now living in packages/app).
+ *   4. `SharedBadge` from packages/app — the Phase-2 exit criterion: a shared Tamagui
+ *      component rendering on native from the same source the website compiles.
  *
  * Phase 5 replaces this with the real shared screens from packages/app.
  */
+import { SharedBadge } from 'app'
 import { useEffect, useState } from 'react'
 import { Effect } from 'effect'
 import { rawCivicsQuestions, TOTAL_QUESTION_COUNT } from 'questionnaire/data'
@@ -78,23 +81,18 @@ export default function Index() {
       paddingHorizontal="$6"
       gap="$4"
     >
-      {/* Native-driver animation + $token props */}
+      {/* Native-driver bouncy animation wrapping the shared packages/app component */}
       <YStack
         animation="bouncy"
         enterStyle={{ opacity: 0, scale: 0.9, y: -10 }}
         opacity={1}
         scale={1}
         y={0}
-        backgroundColor="$primary"
-        borderRadius="$4"
-        padding="$4"
       >
-        <Text color="$background" fontSize={20} fontWeight="700">
-          Civics Test — apps/mobile
-        </Text>
-        <Text color="$background" fontSize={13}>
-          Phase 1 scaffold: Tamagui + questionnaire data on Hermes
-        </Text>
+        <SharedBadge
+          label="Civics Test — apps/mobile"
+          detail="Phase 2: shared packages/app config + component"
+        />
       </YStack>
 
       {/* Probe results */}

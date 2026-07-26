@@ -8,7 +8,8 @@
     "ios": "expo run:ios",
     "android": "expo run:android",
     "export": "expo export",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --noEmit"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -16,6 +17,7 @@
     "@tamagui/animations-moti": "1.144.4",
     "@tamagui/babel-plugin": "1.144.4",
     "@tamagui/metro-plugin": "1.144.4",
+    "app": "*",
     "expo": "~56.0.12",
     "expo-constants": "~56.0.18",
     "expo-linking": "~56.0.14",

@@ -174,6 +174,48 @@ is a real workspace member and every in-container gate is green:
 - Re-point `website` and `next.config.ts` `transpilePackages` (already lists Tamagui packages — add `app`) at the shared config.
 - **Exit:** website renders byte-identical (visual diff on 5 screens); a `packages/app` Tamagui component renders in `apps/mobile`.
 
+#### Phase 2 — STATUS (updated 2026-07-26): ✅ DONE — all in-container gates green
+
+- ✅ **`packages/app` created — SOURCE distribution** (user-approved deviation from the
+  "dist/ build matching siblings" wording above): `exports` point at `src/*.ts`, no build
+  step. Rationale: a tsup bundle would inline `./animations` and destroy the `.native.ts`
+  platform split, and stale-dist would hurt the Phases-4/5 dev loop; source-shipping is
+  the standard Tamagui monorepo pattern this plan's architecture cites. Next compiles it
+  via `transpilePackages`, Metro natively. Layout: `src/tamagui.config.ts` (canonical,
+  imports `./animations`), `src/animations.ts` (css) + `src/animations.native.ts` (moti)
+  lifted verbatim from apps/mobile, `src/components/SharedBadge.tsx` + barrel `index.ts`.
+  Peers: `react "*"`, tamagui/animations-css/animations-moti pinned exact **1.144.4**
+  (same pins duplicated as devDeps so `tsc --noEmit`/lint are self-sufficient).
+- ✅ **Website re-pointed (4 files + 1 delete):** `TamaguiProvider.tsx` imports
+  `app/tamagui.config`; `transpilePackages += 'app'`; `"app": "*"` dep; Jest
+  `moduleNameMapper` routes `^app(/.*)?$` at the package source (its exports map is
+  ESM-only, which jest-resolve can't consume); `website/tamagui.config.ts` deleted.
+- ✅ **apps/mobile re-pointed:** the 216-line Phase-1 config copy replaced by a thin local
+  re-export of `app/tamagui.config` (kept local because metro/babel hardcode
+  `config: './tamagui.config.ts'` and the Tamagui static compiler loads it in Node —
+  upstream Tamagui convention); `animations{,.native}.ts` deleted (moved);
+  `index.tsx` mounts `SharedBadge` inside the existing `bouncy` wrapper.
+- ✅ **Byte-identical gate:** `getCSS()` diff before/after = **empty** (6097 bytes).
+  Rendered DOM of all 5 routes identical after normalizing build-varying artifacts
+  (flight-payload module IDs, CSS-module class hashes — expected noise when the module
+  graph changes). Website lint + 49 Jest tests + `next build` (5 routes) green.
+- ✅ **Native gate:** mobile `tsc --noEmit` green; `expo export` both platforms green —
+  the Tamagui compiler resolved the config **through the bare `app` re-export** (predicted
+  risk #1 didn't bite; no relative-path fallback needed). Sourcemap `sources` proof:
+  `packages/app/src/animations.native.ts` + SharedBadge.tsx bundled; css driver +
+  `@tamagui/animations-css` **absent**; 0 `@effect/platform-node`/`@effect/cli` modules;
+  positive control ("supreme law of the land") present in both `.hbc`.
+- ✅ **Root `npm test` fixed** (was broken since Phase 1: npm errors on workspaces missing
+  a `test` script): apps/mobile gained `"test": "tsc --noEmit"`; packages/app `test` =
+  typecheck (Phase 3 replaces it with the real contract suite). All 6 workspaces green.
+- **Carry-forwards:** (1) **Never add an `./animations` subpath to `packages/app`
+  "exports"** — Metro doesn't apply `.native` substitution to exports-map targets; the
+  platform split only works via package-internal relative imports. With
+  `unstable_enablePackageExports` on, every new public subpath must be added to the
+  exports map explicitly (matters for Phases 3–5). (2) SharedBadge's on-device render
+  rides on the still-open 0f/1E device gate. (3) Root `build`/`build:vercel` intentionally
+  exclude `app` (nothing to build — source-shipped).
+
 ### Phase 3 — Platform abstraction (Effect service swap)
 - Move neutral services into `packages/app/src/services`: `SessionService`, `QuestionDataService`, `StatisticsService`, `DistrictDataService` (all already wrap `questionnaire`/JSON).
 - For coupled services keep one tag, two layers:

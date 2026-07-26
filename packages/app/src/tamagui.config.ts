@@ -1,5 +1,8 @@
-import { createAnimations } from '@tamagui/animations-css'
+// Canonical Tamagui config, shared by website (Next.js) and apps/mobile (Expo).
+// The animation driver is imported from `./animations`, resolved per platform
+// (animations.ts = css on web, animations.native.ts = moti on iOS/Android).
 import { createTamagui, createTokens } from 'tamagui'
+import { animations } from './animations'
 
 // Map Tailwind design tokens to Tamagui tokens
 const tokens = createTokens({
@@ -72,24 +75,24 @@ const tokens = createTokens({
     editorialRule: '#e5e7eb',
     editorialMuted: '#6b7280',
     editorialAccent: '#1e3a8a',
-    editorialAccentDark: '#93c5fd',
+    editorialAccentDark: '#93c5fd'
   },
 
   space: {
     0: 0,
-    1: 4,     // 0.25rem
-    2: 8,     // 0.5rem
-    3: 12,    // 0.75rem
-    4: 16,    // 1rem
-    true: 16, // default space (1rem)
-    5: 20,    // 1.25rem
-    6: 24,    // 1.5rem
-    8: 32,    // 2rem
-    10: 40,   // 2.5rem
-    12: 48,   // 3rem
-    16: 64,   // 4rem
-    20: 80,   // 5rem
-    24: 96,   // 6rem
+    1: 4,
+    2: 8,
+    3: 12,
+    4: 16,
+    true: 16,
+    5: 20,
+    6: 24,
+    8: 32,
+    10: 40,
+    12: 48,
+    16: 64,
+    20: 80,
+    24: 96
   },
 
   size: {
@@ -98,60 +101,37 @@ const tokens = createTokens({
     2: 24,
     3: 28,
     4: 32,
-    true: 32, // default size
+    true: 32,
     5: 36,
     6: 40,
     7: 44,
     8: 48,
     9: 52,
     10: 56,
-    12: 64,
+    12: 64
   },
 
   radius: {
     0: 0,
-    1: 2,     // sm
-    2: 4,     // base
-    3: 6,     // md
-    4: 8,     // lg
-    5: 12,    // xl
-    6: 16,    // 2xl
-    round: 9999,
+    1: 2,
+    2: 4,
+    3: 6,
+    4: 8,
+    5: 12,
+    6: 16,
+    round: 9999
   },
 
   zIndex: {
     0: 0,
-    1: 1000,   // dropdown
-    2: 1020,   // sticky
-    3: 1030,   // fixed
-    4: 1040,   // modal-backdrop
-    5: 1050,   // modal
-  },
+    1: 1000,
+    2: 1020,
+    3: 1030,
+    4: 1040,
+    5: 1050
+  }
 })
 
-// Create animations matching Tailwind's custom animations
-const animations = createAnimations({
-  fast: {
-    type: 'timing',
-    duration: 150,
-  },
-  medium: {
-    type: 'timing',
-    duration: 200,
-  },
-  slow: {
-    type: 'timing',
-    duration: 300,
-  },
-  bouncy: {
-    type: 'spring',
-    damping: 10,
-    mass: 0.9,
-    stiffness: 100,
-  },
-})
-
-// Create themes for light and dark modes
 const lightTheme = {
   background: tokens.color.white,
   backgroundHover: tokens.color.gray1,
@@ -168,7 +148,6 @@ const lightTheme = {
 
   placeholderColor: tokens.color.gray5,
 
-  // Semantic
   primary: tokens.color.bluePrimary,
   primaryHover: tokens.color.blueDark,
   secondary: tokens.color.redSecondary,
@@ -176,7 +155,7 @@ const lightTheme = {
 
   success: tokens.color.success,
   warning: tokens.color.warning,
-  error: tokens.color.error,
+  error: tokens.color.error
 }
 
 const darkTheme = {
@@ -195,7 +174,6 @@ const darkTheme = {
 
   placeholderColor: tokens.color.gray6,
 
-  // Semantic
   primary: tokens.color.blueLight,
   primaryHover: tokens.color.bluePrimary,
   secondary: tokens.color.redLight,
@@ -203,14 +181,14 @@ const darkTheme = {
 
   success: tokens.color.success,
   warning: tokens.color.warning,
-  error: tokens.color.error,
+  error: tokens.color.error
 }
 
 const config = createTamagui({
   tokens,
   themes: {
     light: lightTheme,
-    dark: darkTheme,
+    dark: darkTheme
   },
   media: {
     xs: { maxWidth: 640 },
@@ -221,14 +199,17 @@ const config = createTamagui({
     gtXs: { minWidth: 641 },
     gtSm: { minWidth: 769 },
     gtMd: { minWidth: 1025 },
-    gtLg: { minWidth: 1281 },
+    gtLg: { minWidth: 1281 }
   },
-  animations,
+  animations
 })
 
 export type AppConfig = typeof config
 
 declare module 'tamagui' {
+  // Tamagui's documented augmentation pattern: the empty extends is what registers
+  // the app's tokens/themes with tamagui's types.
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface TamaguiCustomConfig extends AppConfig {}
 }
 

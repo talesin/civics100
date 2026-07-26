@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@effect/platform": "^0.94.5",
+    "app": "*",
     "@tamagui/animations-css": "^1.144.4",
     "@tamagui/config": "^1.144.4",
     "@tamagui/next-plugin": "^1.144.4",

@@ -5,7 +5,7 @@ import { useServerInsertedHTML } from 'next/navigation'
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { NextThemeProvider, useThemeSetting } from '@tamagui/next-theme'
 import { TamaguiProvider as TamaguiProviderCore } from 'tamagui'
-import tamaguiConfig from '../../tamagui.config'
+import tamaguiConfig from 'app/tamagui.config'
 
 type ThemeName = 'light' | 'dark'
 
