@@ -6,7 +6,9 @@
     "moduleResolution": "bundler",
     "noEmit": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "app": ["../../packages/app/src/index.ts"],
+      "app/*": ["../../packages/app/src/*"]
     }
   },
   "include": [

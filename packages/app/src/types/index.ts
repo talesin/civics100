@@ -1,0 +1,76 @@
+import { GameSettings } from 'questionnaire'
+
+// Re-export types from questionnaire package for consistency
+export type {
+  GameSession,
+  GameResult,
+  UserAnswer as QuestionAnswer,
+  QuestionDisplay,
+  GameSettings,
+  InProgressSession,
+  CompletedNormalSession,
+  EarlyWinSession,
+  EarlyFailSession
+} from 'questionnaire'
+
+// Website-specific GameSettings (alias for questionnaire GameSettings)
+export type WebsiteGameSettings = GameSettings
+
+export interface GameStats {
+  totalGames: number
+  averageScore: number
+  bestScore: number
+  earlyWins: number
+  earlyFailures: number
+}
+
+// Win threshold percentage used for calculating pass requirements
+export const WIN_THRESHOLD_PERCENTAGE = 0.6
+
+export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
+  maxQuestions: 20,
+  winThreshold: Math.ceil(20 * WIN_THRESHOLD_PERCENTAGE), // 12 (60% of 20)
+  userState: 'CA' as import('civics2json').StateAbbreviation,
+  userDistrict: undefined
+}
+
+// TTS (text-to-speech) settings — stored separately from GameSettings
+export interface TtsSettings {
+  // Platform voice identifier (web: SpeechSynthesisVoice.voiceURI; native: expo-speech
+  // voice identifier). null = auto-select (null for JSON round-trip compatibility).
+  readonly voiceURI: string | null
+  readonly rate: number // 0.5 to 2.0
+}
+
+export const DEFAULT_TTS_SETTINGS: TtsSettings = {
+  voiceURI: null,
+  rate: 0.95
+}
+
+// Statistics types
+export interface QuestionStatistics {
+  pairedQuestionNumber: string
+  questionNumber: string
+  questionText: string
+  correctAnswerText: string
+  timesAsked: number
+  timesCorrect: number
+  timesIncorrect: number
+  accuracy: number
+  selectionProbability: number
+  lastAsked?: Date
+}
+
+export enum QuestionFilter {
+  All = 'all',
+  Mastered = 'mastered',
+  NeedsPractice = 'needs-practice',
+  NeverAsked = 'never-asked'
+}
+
+export enum QuestionSortField {
+  QuestionNumber = 'question-number',
+  TimesAsked = 'times-asked',
+  Accuracy = 'accuracy',
+  Probability = 'probability'
+}

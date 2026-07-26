@@ -16,6 +16,21 @@
       "types": "./src/tamagui.config.ts",
       "import": "./src/tamagui.config.ts",
       "default": "./src/tamagui.config.ts"
+    },
+    "./services": {
+      "types": "./src/services/index.ts",
+      "import": "./src/services/index.ts",
+      "default": "./src/services/index.ts"
+    },
+    "./types": {
+      "types": "./src/types/index.ts",
+      "import": "./src/types/index.ts",
+      "default": "./src/types/index.ts"
+    },
+    "./hooks": {
+      "types": "./src/hooks/index.ts",
+      "import": "./src/hooks/index.ts",
+      "default": "./src/hooks/index.ts"
     }
   },
   "scripts": {
@@ -27,16 +42,30 @@
     "list-todos": "find src/ -iname '*.ts' -o -iname '*.tsx' | xargs grep --color -inHE '(TODO|FIXME|HACK)' || true"
   },
   "peerDependencies": {
+    "@react-native-async-storage/async-storage": "*",
     "@tamagui/animations-css": "1.144.4",
     "@tamagui/animations-moti": "1.144.4",
+    "civics2json": "*",
+    "effect": "^3.19.19",
+    "questionnaire": "*",
     "react": "*",
     "tamagui": "1.144.4"
   },
+  "peerDependenciesMeta": {
+    "@react-native-async-storage/async-storage": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@eslint/js": "^9.25.1",
+    "@jest/globals": "^29.7.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
     "@tamagui/animations-css": "1.144.4",
     "@tamagui/animations-moti": "1.144.4",
     "@types/react": "^19.2.14",
+    "civics2json": "*",
+    "effect": "^3.19.19",
+    "questionnaire": "*",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "eslint": "^9.25.1",
     "eslint-config-prettier": "^10.1.8",

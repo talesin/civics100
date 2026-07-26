@@ -225,6 +225,63 @@ is a real workspace member and every in-container gate is green:
 - Generalize `ServiceProvider.ts`'s `AppServiceLayer` into `makeAppServiceLayer(platformLayers)` + move `runWithServices*` to `packages/app`.
 - **Exit:** a shared save→read `GameResult` Effect passes against both web (jsdom) and native (`jest-expo` + AsyncStorage mock) layers; existing website Jest tests using `TestLocalStorageServiceLayer` still pass. (`jest-expo` is chosen over the references' default Vitest deliberately — it keeps parity with the existing Jest suites already aggregated by `npm run test --workspaces` and lets the native layer reuse `TestLocalStorageServiceLayer` verbatim.)
 
+#### Phase 3 — STATUS (updated 2026-07-26): ✅ DONE — all in-container gates green
+
+Decisions (user-confirmed): **NavigationService deferred to Phase 5** as nav-callback props
+(no Effect tag — `useRouter()` is a React hook and can't live in a long-lived Layer);
+**native TTS/Sound ship as honest stubs** (`isSupported: false` / no-op) — Phase 6 fills in
+expo-speech/expo-audio in the same `adapter.native.ts` files; no new expo libs installed.
+
+- ✅ **Premise correction:** the exit criterion's "existing tests using
+  `TestLocalStorageServiceLayer`" was a false premise — that export was dead (nothing
+  imported it). The real behavioral gate used instead: the existing `.Default`-based
+  `LocalStorageService.test.ts` passing **unchanged** against the restructured service
+  (it did). The `Test*ServiceLayer`s moved with their services and remain available.
+- ✅ **Services moved** to `packages/app/src/services` behind new exports subpaths
+  `app/services`, `app/types`, `app/hooks` (each targets a non-split `index.ts`, per the
+  Phase-2 carry-forward). Website keeps one-line re-export shims at every old path
+  (`src/services/*`, `src/types/index.ts`, 3 hooks = 42 lines total) — **zero consumer
+  files changed**.
+- ✅ **LocalStorageService restructured** better than the planned "mechanical re-impl of
+  13 methods": a 4-method `StorageBackend` port (get/set/remove/isAvailable) with the 13
+  methods written once (`makeService.ts`); only the backend splits into `backend.ts`
+  (localStorage) / `backend.native.ts` (AsyncStorage, `Effect.tryPromise`). API change:
+  `checkStorageAvailable` is now `() => Effect<boolean>` (verified zero consumers; sync is
+  unimplementable over AsyncStorage).
+- ✅ **TtsService/SoundService extracted**: web adapters lift speechSynthesis/AudioContext
+  out of the hooks; `useTextToSpeech` keeps React state while the segment chain (400ms
+  pauses) runs in a forked fiber — **fiber interruption replaced the cancelledRef/timeout
+  machinery**. Hooks live in `app/hooks`; AudioContext is now an app-wide singleton via
+  the runtime (previously per-component).
+- ✅ **`makeAppServiceLayer(platformLayers?)` + `AppRuntime` (ManagedRuntime)** in
+  `ServiceLayer.ts`; `runWithServices*` keep exact signatures but run through the memoizing
+  runtime. `ServiceProvider.ts` is a shim. Tag-collision hazard (questionnaire's internal
+  `'QuestionDataService'`) documented in the barrel.
+- ✅ **Contract suite (exit criterion)**: parameterized `describeStorageContract` factory
+  (13 cases incl. TTS round-trip + availability) in `app/services/testing/`, run by the
+  website jsdom suite AND a new **jest-expo ~56.0.5** harness in `apps/mobile` whose haste
+  platform resolution picks `backend.native.ts` — same mechanism as Metro. Extras: an
+  AsyncStorage write-through probe, a `.native.ts` resolution canary, and a verified
+  negative control (hiding `backend.native.ts` fails 8 tests). Mobile `test` =
+  `tsc --noEmit && jest`.
+- ✅ **All gates green**: root `npm test` = 6 workspaces (mobile 15, website 51);
+  website lint/build (5 routes); `expo export` ios+android clean bundles (0
+  platform-node/cli hits, data positive-control present); Playwright chromium e2e 3/3 —
+  the full-game e2e exercised the AppRuntime path end-to-end.
+- **Unplanned fixes:** (1) `npm install` pruned a stray `@effect/cluster`, exposing that
+  `@effect/platform-node`'s peers were never lockfile-satisfied under `legacy-peer-deps`
+  (latent since Phase 1) — declared `@effect/{cluster,rpc,sql,workflow,experimental}`
+  explicitly in `civics2json` devDeps. (2) Website Jest needed a `^questionnaire/data$`
+  mock mapping (barrel now pulls `DistrictDataService`). (3) The e2e assertion
+  `text=Game Complete!` was stale — app has always rendered "Test Complete"; assertion
+  now checks `text=Final Score`. (4) `apps/mobile/tsconfig.json` gained `app`/`app/*`
+  paths (test-only deep imports; Metro unaffected).
+- **Phase 5/6 carry-forwards:** contract factory imports questionnaire **type-only**
+  (keep it that way — the native runner has no questionnaire mock); jest-expo's
+  `transformIgnorePatterns` must be re-copied from the preset if jest-expo is upgraded;
+  native adapters' `.native.ts` files are the exact Phase-6 fill-in points; device gates
+  0f/1E still open (no simulator in-container).
+
 ### Phase 4 — Port design system to Tamagui tokens (the long pole)
 - Map every `var(--editorial-*)` usage to the matching `$editorial*` Tamagui token (the values already exist as tokens — this is a mapping, not a redesign).
 - Drive `light`/`dark` via Tamagui themes, replacing the `html.t_dark` switch on both platforms.

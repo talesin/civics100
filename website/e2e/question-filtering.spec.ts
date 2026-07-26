@@ -115,8 +115,9 @@ test.describe('Question number filtering', () => {
       expect(selectedNumbers).toContain(num)
     }
 
-    // Verify game completed — results screen appears
-    await expect(page.locator('text=Game Complete!')).toBeVisible({ timeout: 10000 })
+    // Verify game completed — results screen appears (GameResults shows the
+    // final-score summary; the app renders "Test Complete", not "Game Complete!")
+    await expect(page.locator('text=Final Score')).toBeVisible({ timeout: 10000 })
   })
 
   test('default game shows full question count', async ({ page }) => {

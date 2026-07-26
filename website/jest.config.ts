@@ -25,6 +25,7 @@ const config: Config = {
     '^app$': '<rootDir>/../packages/app/src/index.ts',
     '^app/(.*)$': '<rootDir>/../packages/app/src/$1',
     '^questionnaire$': '<rootDir>/test/mocks/questionnaire.ts',
+    '^questionnaire/data$': '<rootDir>/test/mocks/questionnaire-data.ts',
     '^slash$': '<rootDir>/test/mocks/slash.js',
     '\\.(css|less|scss|sass)$': '<rootDir>/test/mocks/styleMock.js'
   },

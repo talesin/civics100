@@ -9,7 +9,8 @@
     "android": "expo run:android",
     "export": "expo export",
     "typecheck": "tsc --noEmit",
-    "test": "tsc --noEmit"
+    "test": "tsc --noEmit && jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -18,6 +19,7 @@
     "@tamagui/babel-plugin": "1.144.4",
     "@tamagui/metro-plugin": "1.144.4",
     "app": "*",
+    "effect": "^3.19.19",
     "expo": "~56.0.12",
     "expo-constants": "~56.0.18",
     "expo-linking": "~56.0.14",
@@ -36,7 +38,11 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.0",
+    "@jest/globals": "^29.7.0",
+    "@react-native/jest-preset": "^0.85.0",
     "@types/react": "~19.2.2",
+    "jest": "^29.7.0",
+    "jest-expo": "~56.0.5",
     "typescript": "~6.0.3"
   }
 }
