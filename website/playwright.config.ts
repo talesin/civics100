@@ -12,6 +12,8 @@ for (const key of Object.keys(process.env)) {
 
 export default defineConfig({
   testDir: './e2e',
+  // Visual regression specs run under playwright.visual.config.ts only.
+  testIgnore: '**/visual/**',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,

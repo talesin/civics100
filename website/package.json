@@ -19,6 +19,8 @@
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:headed": "npx playwright test --headed",
     "test:e2e:report": "npx playwright show-report",
+    "test:visual": "npx playwright test --config playwright.visual.config.ts",
+    "test:visual:update": "npx playwright test --config playwright.visual.config.ts --update-snapshots",
     "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
