@@ -18,6 +18,7 @@ export default tseslint.config(
       '.next/**',
       'e2e/**',
       'playwright.config.ts',
+      'playwright.visual.config.ts',
       'postcss.config.mjs'
     ]
   },

@@ -78,14 +78,21 @@ export async function seedPage(page: Page, theme: ThemeName): Promise<void> {
 
   await page.addInitScript(
     ([themeName, settings, results, paired]) => {
-      // Seeded mulberry32 PRNG — must be installed before any app module loads.
-      let s = 0xc0ffee
-      Math.random = () => {
-        s |= 0
-        s = (s + 0x6d2b79f5) | 0
-        let t = Math.imul(s ^ (s >>> 15), 1 | s)
-        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+      // Constant Math.random — must be installed before any app module loads.
+      // Effect's default Random service is seeded from a SINGLE Math.random()
+      // call at module load (effect/internal/defaultServices.js). A sequential
+      // PRNG stub proved flaky here: the seed became sensitive to how many
+      // other callers consumed the sequence first, which varies slightly
+      // between page loads. A constant makes the seed — and therefore every
+      // questionnaire shuffle — identical regardless of call order. No app
+      // code relies on Math.random distinctness (verified: zero call sites).
+      Math.random = () => 0.42
+
+      // Never let the service worker install: its controllerchange handler
+      // (ServiceWorkerRegistration.tsx) reloads the page, destroying the
+      // execution context mid-shot on whichever routes lose the race.
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register = () => new Promise<never>(() => {})
       }
 
       window.localStorage.setItem('theme', themeName as string)
