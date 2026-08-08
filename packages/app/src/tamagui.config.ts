@@ -36,9 +36,11 @@ const tokens = createTokens({
     // Success
     green1: '#f0fdf4',
     green2: '#dcfce7',
+    green3: '#bbf7d0',
     success: '#22c55e',
     green6: '#16a34a',
     green7: '#15803d',
+    green8: '#166534',
 
     // Error
     errorLight: '#fef2f2',
@@ -50,8 +52,18 @@ const tokens = createTokens({
     // Warning
     warning1: '#fffbeb',
     warning2: '#fef3c7',
+    warning3: '#fde68a',
     warning: '#f59e0b',
     warning6: '#d97706',
+    warning8: '#92400e',
+
+    // Orange (--theme-warning is orange, not amber)
+    orange4: '#fb923c',
+    orange6: '#ea580c',
+
+    // Purple
+    purple4: '#a78bfa',
+    purple6: '#9333ea',
 
     // Neutral/Gray
     gray1: '#f9fafb',
@@ -69,13 +81,23 @@ const tokens = createTokens({
     white: '#ffffff',
     black: '#000000',
 
-    // Editorial palette
+    // Card surface (--theme-card-bg dark)
+    cardBgDark: '#1a1a1a',
+
+    // Editorial palette (light values + dark counterparts; the theme blocks
+    // below select per mode — values mirror design-tokens.css exactly)
     editorialInk: '#111827',
     editorialPaper: '#ffffff',
     editorialRule: '#e5e7eb',
     editorialMuted: '#6b7280',
     editorialAccent: '#1e3a8a',
-    editorialAccentDark: '#93c5fd'
+    editorialAccentDark: '#93c5fd',
+    editorialInkDark: '#e2e8f0',
+    editorialPaperDark: '#0f172a',
+    editorialRuleDark: '#1e293b',
+    editorialMutedDark: '#94a3b8',
+    editorialAccentSubtle: '#eff6ff',
+    editorialAccentSubtleDark: 'rgba(30, 58, 138, 0.25)'
   },
 
   space: {
@@ -155,7 +177,30 @@ const lightTheme = {
 
   success: tokens.color.success,
   warning: tokens.color.warning,
-  error: tokens.color.error
+  error: tokens.color.error,
+
+  // Editorial palette (1:1 with the --editorial-* CSS vars in design-tokens.css)
+  editorialInk: tokens.color.editorialInk,
+  editorialPaper: tokens.color.editorialPaper,
+  editorialRule: tokens.color.editorialRule,
+  editorialMuted: tokens.color.editorialMuted,
+  editorialAccent: tokens.color.editorialAccent,
+  editorialAccentSubtle: tokens.color.editorialAccentSubtle,
+
+  // Exact-parity keys for the --theme-*/--color-* CSS vars whose values differ
+  // from the pre-existing keys above (which are in use and cannot change).
+  themeError: tokens.color.error6,
+  themeErrorBg: tokens.color.error1,
+  themeSuccess: tokens.color.green6,
+  themeSuccessBg: tokens.color.green2,
+  themeSuccessText: tokens.color.green8,
+  themeWarning: tokens.color.orange6,
+  themeWarningText: tokens.color.warning8,
+  themePrimary: tokens.color.bluePrimary,
+  themePurple: tokens.color.purple6,
+  themeCardBg: tokens.color.white,
+  neutral100: tokens.color.gray2,
+  shadowMd: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
 }
 
 const darkTheme = {
@@ -181,7 +226,29 @@ const darkTheme = {
 
   success: tokens.color.success,
   warning: tokens.color.warning,
-  error: tokens.color.error
+  error: tokens.color.error,
+
+  // Editorial palette — dark values from design-tokens.css html.t_dark
+  editorialInk: tokens.color.editorialInkDark,
+  editorialPaper: tokens.color.editorialPaperDark,
+  editorialRule: tokens.color.editorialRuleDark,
+  editorialMuted: tokens.color.editorialMutedDark,
+  editorialAccent: tokens.color.editorialAccentDark,
+  editorialAccentSubtle: tokens.color.editorialAccentSubtleDark,
+
+  // Exact-parity keys — dark values from design-tokens.css html.t_dark
+  themeError: tokens.color.error,
+  themeErrorBg: tokens.color.red9,
+  themeSuccess: tokens.color.success,
+  themeSuccessBg: tokens.color.green8,
+  themeSuccessText: tokens.color.green3,
+  themeWarning: tokens.color.orange4,
+  themeWarningText: tokens.color.warning3,
+  themePrimary: tokens.color.blue5,
+  themePurple: tokens.color.purple4,
+  themeCardBg: tokens.color.cardBgDark,
+  neutral100: tokens.color.gray9,
+  shadowMd: '0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2)'
 }
 
 const config = createTamagui({
