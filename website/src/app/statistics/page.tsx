@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { Effect } from 'effect'
+import { useTheme } from 'tamagui'
 import Layout from '@/components/Layout'
+import { EditorialInput, EditorialSelect, LoadingSpinner } from '@/components/tamagui'
 import QuestionStatisticsTable from '@/components/QuestionStatisticsTable'
 import QuestionDetailModal from '@/components/QuestionDetailModal'
 import { LocalStorageService } from '@/services/LocalStorageService'
@@ -110,20 +112,26 @@ export default function Statistics() {
     }
   }
 
+  const theme = useTheme()
+  const ink = theme.editorialInk?.get() as string
+  const muted = theme.editorialMuted?.get() as string
+  const accent = theme.editorialAccent?.get() as string
+  const rule = `1px solid ${theme.editorialRule?.get() as string}`
+
   const eyebrowStyle: React.CSSProperties = {
     fontSize: 11,
     fontWeight: 600,
     letterSpacing: '0.12em',
     textTransform: 'uppercase',
-    color: 'var(--editorial-accent)',
+    color: accent,
     marginBottom: 10,
   }
 
   const statValueStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-family-serif)',
+    fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
     fontSize: 'clamp(2rem, 4vw, 2.5rem)',
     fontWeight: 500,
-    color: 'var(--editorial-ink)',
+    color: ink,
     letterSpacing: '-0.02em',
     lineHeight: 1,
     display: 'block',
@@ -135,14 +143,14 @@ export default function Statistics() {
     fontWeight: 600,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
-    color: 'var(--editorial-muted)',
+    color: muted,
     display: 'block',
     marginBottom: 6,
   }
 
   const statHelperStyle: React.CSSProperties = {
     fontSize: 12,
-    color: 'var(--editorial-muted)',
+    color: muted,
     marginTop: 6,
   }
 
@@ -158,8 +166,8 @@ export default function Statistics() {
       <Layout title="Loading Statistics...">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
           <div style={{ textAlign: 'center' }}>
-            <div className="spinner" style={{ margin: '0 auto 16px' }} />
-            <p style={{ color: 'var(--editorial-muted)' }}>Loading question statistics...</p>
+            <LoadingSpinner marginHorizontal="auto" marginBottom={16} />
+            <p style={{ color: muted }}>Loading question statistics...</p>
           </div>
         </div>
       </Layout>
@@ -171,10 +179,10 @@ export default function Statistics() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 1100, margin: '0 auto' }}>
         <div>
           <p style={eyebrowStyle}>Performance · Civics Questions</p>
-          <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(2rem, 5vw, 2.75rem)', fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 10 }}>
+          <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(2rem, 5vw, 2.75rem)', fontWeight: 500, color: ink, letterSpacing: '-0.02em', lineHeight: 1.1, marginBottom: 10 }}> {/* PHASE5: $fontFamily */}
             Question Statistics
           </h1>
-          <p style={{ color: 'var(--editorial-muted)', fontSize: 14, lineHeight: 1.6 }}>
+          <p style={{ color: muted, fontSize: 14, lineHeight: 1.6 }}>
             Detailed breakdown of your performance on each question.
           </p>
         </div>
@@ -193,14 +201,14 @@ export default function Statistics() {
         </div>
 
         {/* Filters and Search */}
-        <div style={{ borderTop: '1px solid var(--editorial-rule)', paddingTop: 20 }}>
+        <div style={{ borderTop: rule, paddingTop: 20 }}>
           <p style={eyebrowStyle}>Filter · Search</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
             <div style={{ flexShrink: 0 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: muted, marginBottom: 6 }}>
                 Filter
               </label>
-              <select
+              <EditorialSelect
                 value={filter}
                 onChange={(e) => {
                   const value = e.target.value
@@ -208,37 +216,35 @@ export default function Statistics() {
                     setFilter(value as QuestionFilter)
                   }
                 }}
-                className="input-editorial"
                 style={{ width: 192 }}
               >
                 <option value={QuestionFilter.All}>All Questions</option>
                 <option value={QuestionFilter.Mastered}>Mastered</option>
                 <option value={QuestionFilter.NeedsPractice}>Needs Practice</option>
                 <option value={QuestionFilter.NeverAsked}>Never Asked</option>
-              </select>
+              </EditorialSelect>
             </div>
 
             <div style={{ flexGrow: 1, minWidth: 200 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--editorial-muted)', marginBottom: 6 }}>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: muted, marginBottom: 6 }}>
                 Search
               </label>
-              <input
+              <EditorialInput
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search questions..."
-                className="input-editorial"
               />
             </div>
           </div>
 
-          <div style={{ marginTop: 12, fontSize: 13, color: 'var(--editorial-muted)' }}>
+          <div style={{ marginTop: 12, fontSize: 13, color: muted }}>
             Showing {filteredStatistics.length} of {statistics.length} questions
           </div>
         </div>
 
         {/* Statistics Table */}
-        <div style={{ borderTop: '1px solid var(--editorial-rule)', borderBottom: '1px solid var(--editorial-rule)' }}>
+        <div style={{ borderTop: rule, borderBottom: rule }}>
           <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 28rem)' }}>
             <QuestionStatisticsTable
               statistics={filteredStatistics}

@@ -240,12 +240,15 @@ input[type="radio"] {
 html.t_dark .theme-icon-sun { display: flex; align-items: center; justify-content: center; line-height: 0; }
 html.t_dark .theme-icon-moon { display: none; }
 
-/* Editorial stats strip — top/bottom hairlines + inter-cell rules that follow the actual column count */
+/* Editorial stats strip — top/bottom hairlines + inter-cell rules that follow
+   the actual column count. Web-only utility (grid + 480/768px breakpoints have
+   no Tamagui equivalent); --editorialRule is the Tamagui-generated theme
+   variable, so this no longer reads design-tokens.css. */
 .stats-strip {
   display: grid;
   grid-template-columns: 1fr;
-  border-top: 1px solid var(--editorial-rule);
-  border-bottom: 1px solid var(--editorial-rule);
+  border-top: 1px solid var(--editorialRule);
+  border-bottom: 1px solid var(--editorialRule);
 }
 
 .stats-strip-cell {
@@ -254,7 +257,7 @@ html.t_dark .theme-icon-moon { display: none; }
 
 /* 1-column (mobile): row separators between stacked cells */
 .stats-strip-cell + .stats-strip-cell {
-  border-top: 1px solid var(--editorial-rule);
+  border-top: 1px solid var(--editorialRule);
 }
 
 @media (min-width: 480px) {
@@ -262,9 +265,9 @@ html.t_dark .theme-icon-moon { display: none; }
   /* clear the mobile row separator */
   .stats-strip-cell + .stats-strip-cell { border-top: none; }
   /* row separator only between rows (cells 3+) */
-  .stats-strip-cell:nth-child(n+3) { border-top: 1px solid var(--editorial-rule); }
+  .stats-strip-cell:nth-child(n+3) { border-top: 1px solid var(--editorialRule); }
   /* column separator only on the right column */
-  .stats-strip-cell:nth-child(2n) { border-left: 1px solid var(--editorial-rule); }
+  .stats-strip-cell:nth-child(2n) { border-left: 1px solid var(--editorialRule); }
 }
 
 @media (min-width: 768px) {
@@ -273,7 +276,7 @@ html.t_dark .theme-icon-moon { display: none; }
   .stats-strip-cell:nth-child(n+3) { border-top: none; }
   .stats-strip-cell:nth-child(2n) { border-left: none; }
   /* column separator between every adjacent pair of cells */
-  .stats-strip-cell + .stats-strip-cell { border-left: 1px solid var(--editorial-rule); }
+  .stats-strip-cell + .stats-strip-cell { border-left: 1px solid var(--editorialRule); }
 }
 
 /* Dark mode improvements */

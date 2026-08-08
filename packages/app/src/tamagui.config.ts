@@ -52,6 +52,7 @@ const tokens = createTokens({
     // Warning
     warning1: '#fffbeb',
     warning2: '#fef3c7',
+    warningBgDark: 'rgba(146, 64, 14, 0.25)',
     warning3: '#fde68a',
     warning: '#f59e0b',
     warning6: '#d97706',
@@ -196,6 +197,7 @@ const lightTheme = {
   themeSuccessBg: tokens.color.green2,
   themeSuccessText: tokens.color.green8,
   themeWarning: tokens.color.orange6,
+  themeWarningBg: tokens.color.warning2,
   themeWarningText: tokens.color.warning8,
   themePrimary: tokens.color.bluePrimary,
   themePurple: tokens.color.purple6,
@@ -245,6 +247,7 @@ const darkTheme = {
   themeSuccessBg: tokens.color.green8,
   themeSuccessText: tokens.color.green3,
   themeWarning: tokens.color.orange4,
+  themeWarningBg: tokens.color.warningBgDark,
   themeWarningText: tokens.color.warning3,
   themePrimary: tokens.color.blue5,
   themePurple: tokens.color.purple4,

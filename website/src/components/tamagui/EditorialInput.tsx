@@ -1,5 +1,5 @@
 import React from 'react'
-import { GetProps, styled } from 'tamagui'
+import { styled } from 'tamagui'
 import { Text as TamaguiText } from 'tamagui'
 
 // Port of .input-editorial (globals.css). Text-based so fontSize/color style
@@ -33,25 +33,20 @@ const EditorialInputFrame = styled(TamaguiText, {
   },
 })
 
-type FrameProps = GetProps<typeof EditorialInputFrame>
-
 // Tamagui's Text prop types omit DOM form attributes (value, onChange, ...)
 // even though the css driver forwards them to the element; recast per tag.
 export const EditorialInput = EditorialInputFrame as unknown as React.ComponentType<
-  Omit<React.InputHTMLAttributes<HTMLInputElement>, 'style' | 'color'> & {
-    readonly style?: FrameProps['style']
-  }
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, 'color'>
 >
 
 const EditorialSelectFrame = EditorialInputFrame as unknown as React.ComponentType<
-  Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'style' | 'color'> & {
+  Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'color'> & {
     readonly tag: 'select'
-    readonly style?: FrameProps['style']
   }
 >
 
 export function EditorialSelect(
-  props: Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'style' | 'color'>
+  props: Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'color'>
 ): React.ReactElement {
   return <EditorialSelectFrame tag="select" {...props} />
 }

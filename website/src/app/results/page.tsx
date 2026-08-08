@@ -2,11 +2,43 @@
 
 import React, { useState, useEffect } from 'react'
 import { Effect } from 'effect'
+import { styled, useTheme } from 'tamagui'
 import Layout from '@/components/Layout'
 import StatsSummary from '@/components/StatsSummary'
+import { EditorialButton, LoadingSpinner, Text } from '@/components/tamagui'
 import { LocalStorageService } from '@/services/LocalStorageService'
 import { GameResult, GameStats } from '@/types'
 import { Star, FileText } from 'lucide-react'
+
+// Port of .badge/.badge-pass/.badge-fail/.badge-warn (globals.css).
+const ResultBadge = styled(Text, {
+  tag: 'span',
+  display: 'inline-flex',
+  paddingVertical: 2,
+  paddingHorizontal: 10,
+  borderRadius: 9999,
+  fontSize: 12,
+  fontWeight: '500',
+
+  variants: {
+    result: {
+      pass: {
+        backgroundColor: '$themeSuccessBg',
+        color: '$themeSuccessText',
+      },
+      fail: {
+        backgroundColor: '$themeErrorBg',
+        color: '$themeErrorText',
+      },
+      warn: {
+        backgroundColor: '$themeWarningBg',
+        color: '$themeWarningText',
+      },
+    },
+  } as const,
+})
+
+type BadgeResult = 'pass' | 'fail' | 'warn'
 
 export default function Results() {
   const [results, setResults] = useState<GameResult[]>([])
@@ -69,10 +101,10 @@ export default function Results() {
     }
   }
 
-  const getBadgeClass = (result: GameResult): string => {
-    if (result.isEarlyFail === true || result.isEarlyWin === true) return 'badge badge-warn'
-    if (result.percentage >= 60) return 'badge badge-pass'
-    return 'badge badge-fail'
+  const getBadgeResult = (result: GameResult): BadgeResult => {
+    if (result.isEarlyFail === true || result.isEarlyWin === true) return 'warn'
+    if (result.percentage >= 60) return 'pass'
+    return 'fail'
   }
 
   const getBadgeLabel = (result: GameResult): string => {
@@ -82,11 +114,18 @@ export default function Results() {
     return 'Failed'
   }
 
+  const theme = useTheme()
+  const ink = theme.editorialInk?.get() as string
+  const muted = theme.editorialMuted?.get() as string
+  const accent = theme.editorialAccent?.get() as string
+  const themeError = theme.themeError?.get() as string
+  const rule = `1px solid ${theme.editorialRule?.get() as string}`
+
   if (isLoading) {
     return (
       <Layout title="Loading Results...">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
-          <div className="spinner" />
+          <LoadingSpinner />
         </div>
       </Layout>
     )
@@ -97,15 +136,15 @@ export default function Results() {
     fontWeight: 600,
     letterSpacing: '0.12em',
     textTransform: 'uppercase',
-    color: 'var(--editorial-accent)',
+    color: accent,
     marginBottom: 10,
   }
 
   const sectionTitleStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-family-serif)',
+    fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
     fontSize: 22,
     fontWeight: 500,
-    color: 'var(--editorial-ink)',
+    color: ink,
     letterSpacing: '-0.01em',
   }
 
@@ -114,7 +153,7 @@ export default function Results() {
     border: 'none',
     padding: '6px 4px',
     fontSize: 13,
-    color: 'var(--editorial-muted)',
+    color: muted,
     textDecoration: 'underline',
     cursor: 'pointer',
     fontFamily: 'inherit',
@@ -131,57 +170,48 @@ export default function Results() {
             </h1>
           </div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <button
-              onClick={() => (window.location.href = '/statistics')}
-              className="btn-editorial-ghost focus-ring"
-            >
+            <EditorialButton ghost onPress={() => (window.location.href = '/statistics')}>
               View Question Stats
-            </button>
-            <button
-              onClick={() => (window.location.href = '/game')}
-              className="btn-editorial focus-ring"
-            >
+            </EditorialButton>
+            <EditorialButton onPress={() => (window.location.href = '/game')}>
               Take New Test
-            </button>
+            </EditorialButton>
           </div>
         </div>
 
         <StatsSummary stats={stats} />
 
         {results.length === 0 ? (
-          <div style={{ borderTop: '1px solid var(--editorial-rule)', padding: '48px 16px 16px', textAlign: 'center' }}>
+          <div style={{ borderTop: rule, padding: '48px 16px 16px', textAlign: 'center' }}>
             <div style={{
               width: 56,
               height: 56,
-              backgroundColor: 'var(--editorial-accent-subtle)',
+              backgroundColor: theme.editorialAccentSubtle?.get() as string,
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               margin: '0 auto 20px'
             }}>
-              <FileText size={26} strokeWidth={1.5} color="var(--editorial-accent)" />
+              <FileText size={26} strokeWidth={1.5} color={accent} />
             </div>
             <p style={{ ...eyebrowStyle, marginBottom: 8 }}>Archive</p>
             <h3 style={{ ...sectionTitleStyle, marginBottom: 10 }}>
               No Test Results Yet
             </h3>
-            <p style={{ color: 'var(--editorial-muted)', marginBottom: 24, fontSize: 14, lineHeight: 1.6 }}>
+            <p style={{ color: muted, marginBottom: 24, fontSize: 14, lineHeight: 1.6 }}>
               You haven&apos;t taken any civics tests yet. Take your first test to see your results here.
             </p>
-            <button
-              onClick={() => (window.location.href = '/game')}
-              className="btn-editorial focus-ring"
-            >
+            <EditorialButton onPress={() => (window.location.href = '/game')}>
               Take Your First Test
-            </button>
+            </EditorialButton>
           </div>
         ) : (
           <div>
-            <div style={{ borderTop: '1px solid var(--editorial-rule)', paddingTop: 20, marginBottom: 0 }}>
+            <div style={{ borderTop: rule, paddingTop: 20, marginBottom: 0 }}>
               <p style={eyebrowStyle}>Archive · {results.length} {results.length === 1 ? 'Test' : 'Tests'}</p>
               <h3 style={{ ...sectionTitleStyle, marginBottom: 16 }}>Test History</h3>
-              <div style={{ borderTop: '1px solid var(--editorial-rule)' }} />
+              <div style={{ borderTop: rule }} />
             </div>
             <div>
               {results.map((result, index) => (
@@ -189,40 +219,40 @@ export default function Results() {
                   key={result.sessionId}
                   style={{
                     padding: '18px 0',
-                    borderBottom: '1px solid var(--editorial-rule)',
+                    borderBottom: rule,
                   }}
                   className="results-row"
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '0.02em' }}>
+                        <span style={{ fontSize: 13, fontWeight: 500, color: ink, letterSpacing: '0.02em' }}>
                           Test #{results.length - index}
                         </span>
-                        <span className={getBadgeClass(result)}>
+                        <ResultBadge result={getBadgeResult(result)}>
                           {getBadgeLabel(result)}
-                        </span>
-                        <span style={{ fontSize: 12, color: 'var(--editorial-muted)' }}>
+                        </ResultBadge>
+                        <span style={{ fontSize: 12, color: muted }}>
                           {result.completedAt.toLocaleDateString()} at{' '}
                           {result.completedAt.toLocaleTimeString()}
                         </span>
                       </div>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 16, fontSize: 14, flexWrap: 'wrap' }}>
                         <span style={{
-                          fontFamily: 'var(--font-family-serif)',
+                          fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
                           fontSize: 24,
                           fontWeight: 500,
-                          color: result.percentage >= 60 ? 'var(--editorial-ink)' : 'var(--theme-error)',
+                          color: result.percentage >= 60 ? ink : themeError,
                           letterSpacing: '-0.02em',
                           lineHeight: 1,
                         }}>
                           {result.percentage}%
                         </span>
-                        <span style={{ color: 'var(--editorial-muted)', fontSize: 13 }}>
+                        <span style={{ color: muted, fontSize: 13 }}>
                           {result.correctAnswers}/{result.totalQuestions} correct
                         </span>
                         {result.isEarlyWin === true ? (
-                          <span style={{ color: 'var(--editorial-accent)', fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <span style={{ color: accent, fontSize: 12, display: 'flex', alignItems: 'center', gap: 4 }}>
                             <Star size={12} strokeWidth={1.5} />
                             Early completion
                           </span>
@@ -234,13 +264,13 @@ export default function Results() {
                         <path
                           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                           fill="none"
-                          stroke="var(--editorial-rule)"
+                          stroke={theme.editorialRule?.get() as string}
                           strokeWidth="2"
                         />
                         <path
                           d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                           fill="none"
-                          stroke={result.percentage >= 60 ? 'var(--editorial-accent)' : 'var(--theme-error)'}
+                          stroke={result.percentage >= 60 ? accent : themeError}
                           strokeWidth="2"
                           strokeDasharray={`${result.percentage}, 100`}
                         />
@@ -250,10 +280,10 @@ export default function Results() {
                         top: '50%',
                         left: '50%',
                         transform: 'translate(-50%, -50%)',
-                        fontFamily: 'var(--font-family-serif)',
+                        fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
                         fontSize: 11,
                         fontWeight: 500,
-                        color: 'var(--editorial-ink)',
+                        color: ink,
                       }}>
                         {result.percentage}%
                       </span>
