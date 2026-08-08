@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { GameStats } from '@/types'
 import { TrendingUp } from 'lucide-react'
+import { useTheme } from 'tamagui'
 
 interface StatsSummaryProps {
   readonly stats: GameStats
@@ -30,46 +31,55 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
   return <span>{display}{suffix}</span>
 }
 
-const sectionHeadingStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-family-serif)',
-  fontSize: 20,
-  fontWeight: 500,
-  color: 'var(--editorial-ink)',
-  letterSpacing: '-0.01em',
-}
-
-const statValueStyle: React.CSSProperties = {
-  fontFamily: 'var(--font-family-serif)',
-  fontSize: 'clamp(2rem, 5vw, 3rem)',
-  fontWeight: 400,
-  lineHeight: 1,
-  letterSpacing: '-0.02em',
-  color: 'var(--editorial-ink)',
-  display: 'block',
-  marginBottom: 6,
-}
-
-const statLabelStyle: React.CSSProperties = {
-  fontSize: 11,
-  fontWeight: 600,
-  letterSpacing: '0.08em',
-  textTransform: 'uppercase',
-  color: 'var(--editorial-muted)',
-}
-
+// Kept as a native div/span grid: the stat strip needs CSS grid auto-fit and
+// clamp() type sizing, which Tamagui props can't express. Theme colors are
+// resolved with useTheme().get() so nothing here reads design-tokens.css.
 export default function StatsSummary({ stats }: StatsSummaryProps) {
+  const theme = useTheme()
+  const ink = theme.editorialInk?.get() as string
+  const muted = theme.editorialMuted?.get() as string
+  const accent = theme.editorialAccent?.get() as string
+  const rule = `1px solid ${theme.editorialRule?.get() as string}`
+
+  const sectionHeadingStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
+    fontSize: 20,
+    fontWeight: 500,
+    color: ink,
+    letterSpacing: '-0.01em',
+  }
+
+  const statValueStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
+    fontSize: 'clamp(2rem, 5vw, 3rem)',
+    fontWeight: 400,
+    lineHeight: 1,
+    letterSpacing: '-0.02em',
+    color: ink,
+    display: 'block',
+    marginBottom: 6,
+  }
+
+  const statLabelStyle: React.CSSProperties = {
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    color: muted,
+  }
+
   if (stats.totalGames === 0) {
     return (
       <div style={{
-        borderTop: '1px solid var(--editorial-rule)',
+        borderTop: rule,
         paddingTop: 32,
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-          <TrendingUp size={16} color="var(--editorial-muted)" strokeWidth={1.5} />
+          <TrendingUp size={16} color={muted} strokeWidth={1.5} />
           <h3 style={sectionHeadingStyle}>Your Statistics</h3>
         </div>
-        <div style={{ borderTop: '1px solid var(--editorial-rule)', paddingTop: 20 }}>
-          <p style={{ fontSize: 14, color: 'var(--editorial-muted)' }}>
+        <div style={{ borderTop: rule, paddingTop: 20 }}>
+          <p style={{ fontSize: 14, color: muted }}>
             No tests taken yet. Start your first civics test to track your progress.
           </p>
         </div>
@@ -87,33 +97,33 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
 
   return (
     <div style={{
-      borderTop: '1px solid var(--editorial-rule)',
+      borderTop: rule,
       paddingTop: 32,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24 }}>
-        <TrendingUp size={16} color="var(--editorial-muted)" strokeWidth={1.5} />
+        <TrendingUp size={16} color={muted} strokeWidth={1.5} />
         <h3 style={sectionHeadingStyle}>Your Statistics</h3>
       </div>
 
-      <div style={{ borderTop: '1px solid var(--editorial-rule)' }} />
+      <div style={{ borderTop: rule }} />
 
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-        borderBottom: '1px solid var(--editorial-rule)',
+        borderBottom: rule,
       }}>
         {statItems.map((item, i) => (
           <div
             key={item.label}
             style={{
               padding: '20px 16px 20px 0',
-              borderRight: i < statItems.length - 1 ? '1px solid var(--editorial-rule)' : 'none',
+              borderRight: i < statItems.length - 1 ? rule : 'none',
               paddingRight: i < statItems.length - 1 ? 16 : 0,
             }}
           >
             <span style={{
               ...statValueStyle,
-              color: item.accent === true ? 'var(--editorial-accent)' : 'var(--editorial-ink)',
+              color: item.accent === true ? accent : ink,
             }}>
               <AnimatedNumber value={item.value} suffix={item.suffix} />
             </span>
@@ -125,15 +135,15 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
       {(stats.averageScore >= 60 || stats.bestScore === 100) === true ? (
         <div style={{ paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {stats.averageScore >= 60 ? (
-            <p style={{ fontSize: 13, color: 'var(--editorial-muted)', lineHeight: 1.5 }}>
-              <span style={{ color: 'var(--editorial-accent)', fontWeight: 600 }}>Consistently passing</span>
+            <p style={{ fontSize: 13, color: muted, lineHeight: 1.5 }}>
+              <span style={{ color: accent, fontWeight: 600 }}>Consistently passing</span>
               {' — you are consistently passing the civics test with an average score of '}
-              <strong style={{ color: 'var(--editorial-ink)' }}>{stats.averageScore}%</strong>.
+              <strong style={{ color: ink }}>{stats.averageScore}%</strong>.
             </p>
           ) : null}
           {stats.bestScore === 100 ? (
-            <p style={{ fontSize: 13, color: 'var(--editorial-muted)', lineHeight: 1.5 }}>
-              <span style={{ color: 'var(--editorial-accent)', fontWeight: 600 }}>Perfect score achieved</span>
+            <p style={{ fontSize: 13, color: muted, lineHeight: 1.5 }}>
+              <span style={{ color: accent, fontWeight: 600 }}>Perfect score achieved</span>
               {' — you have answered every question correctly in a single session.'}
             </p>
           ) : null}

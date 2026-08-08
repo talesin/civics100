@@ -387,6 +387,15 @@ html.t_dark .progress-bar {
   to { transform: rotate(360deg); }
 }
 
+/* Speaking-state pulse for SpeakerButton (web only; moti loop on native) */
+@keyframes speaker-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.speaker-pulse {
+  animation: speaker-pulse 1.5s ease-in-out infinite;
+}
+
 .spinner {
   width: 48px;
   height: 48px;

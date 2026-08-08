@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import { QuestionStatistics, QuestionSortField } from '@/types'
 import { YStack, Text } from '@/components/tamagui'
-import { styled } from 'tamagui'
+import { styled, useTheme } from 'tamagui'
 
 interface QuestionStatisticsTableProps {
   readonly statistics: ReadonlyArray<QuestionStatistics>
@@ -27,60 +27,58 @@ const tableStyles: React.CSSProperties = {
   borderSpacing: 0,
 }
 
-const theadStyles: React.CSSProperties = {
-  backgroundColor: 'var(--theme-background-hover)',
-}
-
-const thBaseStyles: React.CSSProperties = {
-  padding: '12px 16px',
-  textAlign: 'left',
-  fontSize: 12,
-  fontWeight: 500,
-  color: 'var(--editorial-muted)',
-  textTransform: 'uppercase',
-  letterSpacing: '0.05em',
-  borderBottom: '1px solid var(--editorial-rule)',
-}
-
-const thSortableStyles: React.CSSProperties = {
-  ...thBaseStyles,
-  cursor: 'pointer',
-}
-
-const tbodyStyles: React.CSSProperties = {
-  backgroundColor: 'var(--theme-card-bg)',
-}
-
-const tdBaseStyles: React.CSSProperties = {
-  padding: '16px',
-  fontSize: 14,
-  color: 'var(--editorial-ink)',
-  borderBottom: '1px solid var(--editorial-rule)',
-}
-
-const tdNumberStyles: React.CSSProperties = {
-  ...tdBaseStyles,
-  whiteSpace: 'nowrap',
-  fontWeight: 500,
-}
-
 const trStyles: React.CSSProperties = {
   cursor: 'pointer',
   transition: 'background-color 150ms',
 }
 
-const getAccuracyClass = (accuracy: number, timesAsked: number): string => {
-  if (timesAsked === 0) return 'accuracy-none'
-  if (accuracy >= 0.8) return 'accuracy-high'
-  if (accuracy >= 0.6) return 'accuracy-mid'
-  return 'accuracy-low'
+// Ports of the .accuracy-* / .prob-* color utilities. fontSize/fontWeight are
+// set explicitly to the values the spans used to inherit from their <td>.
+const AccuracyText = styled(Text, {
+  tag: 'span',
+  fontSize: 14,
+  fontWeight: '500',
+
+  variants: {
+    level: {
+      high: { color: '$themeSuccess' },
+      mid: { color: '$themePrimary' },
+      low: { color: '$themeWarning' },
+      none: { color: '$editorialMuted' },
+    },
+  } as const,
+})
+
+const ProbabilityText = styled(Text, {
+  tag: 'span',
+  fontSize: 14,
+  fontWeight: '500',
+
+  variants: {
+    level: {
+      veryHigh: { color: '$themeError' },
+      high: { color: '$themeWarning' },
+      mid: { color: '$themePrimary' },
+      low: { color: '$editorialMuted' },
+    },
+  } as const,
+})
+
+type AccuracyLevel = 'high' | 'mid' | 'low' | 'none'
+type ProbabilityLevel = 'veryHigh' | 'high' | 'mid' | 'low'
+
+const getAccuracyLevel = (accuracy: number, timesAsked: number): AccuracyLevel => {
+  if (timesAsked === 0) return 'none'
+  if (accuracy >= 0.8) return 'high'
+  if (accuracy >= 0.6) return 'mid'
+  return 'low'
 }
 
-const getProbabilityClass = (probability: number): string => {
-  if (probability >= 8) return 'prob-very-high'
-  if (probability >= 5) return 'prob-high'
-  if (probability >= 2) return 'prob-mid'
-  return 'prob-low'
+const getProbabilityLevel = (probability: number): ProbabilityLevel => {
+  if (probability >= 8) return 'veryHigh'
+  if (probability >= 5) return 'high'
+  if (probability >= 2) return 'mid'
+  return 'low'
 }
 
 const formatAccuracy = (accuracy: number) => `${Math.round(accuracy * 100)}%`
@@ -98,6 +96,47 @@ const QuestionStatisticsTable = ({
   onSort,
   onQuestionClick
 }: QuestionStatisticsTableProps): React.ReactElement | null => {
+  const theme = useTheme()
+
+  // Theme-aware styles for the native <table> skeleton (real table semantics
+  // can't be expressed with Tamagui stacks); .get() emits CSS variable refs.
+  const theadStyles: React.CSSProperties = {
+    backgroundColor: theme.backgroundHover?.get() as string,
+  }
+
+  const thBaseStyles: React.CSSProperties = {
+    padding: '12px 16px',
+    textAlign: 'left',
+    fontSize: 12,
+    fontWeight: 500,
+    color: theme.editorialMuted?.get() as string,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    borderBottom: `1px solid ${theme.editorialRule?.get() as string}`,
+  }
+
+  const thSortableStyles: React.CSSProperties = {
+    ...thBaseStyles,
+    cursor: 'pointer',
+  }
+
+  const tbodyStyles: React.CSSProperties = {
+    backgroundColor: theme.themeCardBg?.get() as string,
+  }
+
+  const tdBaseStyles: React.CSSProperties = {
+    padding: '16px',
+    fontSize: 14,
+    color: theme.editorialInk?.get() as string,
+    borderBottom: `1px solid ${theme.editorialRule?.get() as string}`,
+  }
+
+  const tdNumberStyles: React.CSSProperties = {
+    ...tdBaseStyles,
+    whiteSpace: 'nowrap',
+    fontWeight: 500,
+  }
+
   const handleSortKeyDown = useCallback((field: QuestionSortField) => (event: React.KeyboardEvent) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault()
@@ -139,9 +178,11 @@ const QuestionStatisticsTable = ({
 
   return (
     <div style={{ overflowX: 'auto' }}>
+      {/* Hover styles for native th/tr (no Tamagui hoverStyle on table
+          elements); colors resolve through the Tamagui theme variables. */}
       <style>{`
-        .stat-th-sortable:hover { background-color: var(--editorial-accent-subtle); }
-        .stat-row-hover:hover { background-color: var(--theme-background-hover); }
+        .stat-th-sortable:hover { background-color: ${theme.editorialAccentSubtle?.get() as string}; }
+        .stat-row-hover:hover { background-color: ${theme.backgroundHover?.get() as string}; }
       `}</style>
       <table style={tableStyles} aria-label="Question statistics">
         <thead style={theadStyles}>
@@ -237,7 +278,7 @@ const QuestionStatisticsTable = ({
               <td style={tdBaseStyles}>
                 <div style={{ maxWidth: 448 }}>
                   <div style={{ fontWeight: 500 }}>{truncateText(stat.questionText, 80)}</div>
-                  <div style={{ fontSize: 12, color: 'var(--editorial-muted)', marginTop: 4 }}>
+                  <div style={{ fontSize: 12, color: theme.editorialMuted?.get() as string, marginTop: 4 }}>
                     Answer: {truncateText(stat.correctAnswerText, 60)}
                   </div>
                 </div>
@@ -253,18 +294,18 @@ const QuestionStatisticsTable = ({
 
               <td style={{ ...tdBaseStyles, whiteSpace: 'nowrap', fontWeight: 500 }}>
                 {stat.timesAsked > 0 ? (
-                  <span className={getAccuracyClass(stat.accuracy, stat.timesAsked)}>
+                  <AccuracyText level={getAccuracyLevel(stat.accuracy, stat.timesAsked)}>
                     {formatAccuracy(stat.accuracy)}
-                  </span>
+                  </AccuracyText>
                 ) : (
-                  <span className="accuracy-none">-</span>
+                  <AccuracyText level="none">-</AccuracyText>
                 )}
               </td>
 
               <td style={{ ...tdBaseStyles, whiteSpace: 'nowrap', fontWeight: 500 }}>
-                <span className={getProbabilityClass(stat.selectionProbability)}>
+                <ProbabilityText level={getProbabilityLevel(stat.selectionProbability)}>
                   {formatProbability(stat.selectionProbability)}
-                </span>
+                </ProbabilityText>
               </td>
             </tr>
           ))}

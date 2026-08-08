@@ -41,33 +41,21 @@ const buttonBaseStyle: React.CSSProperties = {
   color: 'inherit',
 }
 
-const pulseStyle: React.CSSProperties = {
-  animation: 'speaker-pulse 1.5s ease-in-out infinite',
-}
-
-const pulseKeyframes = `
-@keyframes speaker-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-`
-
+// PHASE5: the .speaker-pulse keyframes (globals.css) become a moti/reanimated
+// opacity loop on native.
 const SpeakerButton: React.FC<SpeakerButtonProps> = ({ onPress, isSpeaking }) => {
   return (
-    <>
-      {isSpeaking ? <style>{pulseKeyframes}</style> : null}
-      <button
-        onClick={onPress}
-        onKeyDown={(e) => e.stopPropagation()}
-        aria-label={isSpeaking ? 'Stop reading' : 'Read question aloud'}
-        style={buttonBaseStyle}
-        type="button"
-      >
-        <div style={isSpeaking ? pulseStyle : undefined}>
-          {isSpeaking ? <SpeakerWavesIcon /> : <SpeakerIcon />}
-        </div>
-      </button>
-    </>
+    <button
+      onClick={onPress}
+      onKeyDown={(e) => e.stopPropagation()}
+      aria-label={isSpeaking ? 'Stop reading' : 'Read question aloud'}
+      style={buttonBaseStyle}
+      type="button"
+    >
+      <div className={isSpeaking ? 'speaker-pulse' : undefined}>
+        {isSpeaking ? <SpeakerWavesIcon /> : <SpeakerIcon />}
+      </div>
+    </button>
   )
 }
 
