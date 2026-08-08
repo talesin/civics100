@@ -4,8 +4,8 @@ import {
   getDistrictsForState,
   formatDistrictLabel
 } from '@/services/DistrictDataService'
-import { XStack, YStack, Text } from '@/components/tamagui'
-import { styled } from 'tamagui'
+import { XStack, YStack, Text, EditorialSelect } from '@/components/tamagui'
+import { styled, useTheme } from 'tamagui'
 
 type NonEmptyArray<T> = [T, ...T[]];
 
@@ -24,6 +24,32 @@ const Label = styled(Text, {
   fontSize: '$5',
   fontWeight: '500',
   color: '$color',
+})
+
+const LoadingBox = styled(XStack, {
+  alignItems: 'center',
+  gap: 8,
+  paddingVertical: 8,
+  paddingHorizontal: 12,
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: '$editorialRule',
+  borderRadius: 6,
+  backgroundColor: '$backgroundHover',
+})
+
+const ErrorBox = styled(YStack, {
+  backgroundColor: '$themeErrorBg',
+  paddingVertical: 8,
+  paddingHorizontal: 12,
+  borderRadius: 6,
+})
+
+const InfoBox = styled(XStack, {
+  backgroundColor: '$backgroundHover',
+  paddingVertical: 8,
+  paddingHorizontal: 12,
+  borderRadius: 6,
 })
 
 const DistrictSelector = ({
@@ -73,28 +99,7 @@ const DistrictSelector = ({
     onDistrictChange(value === '' ? undefined : value)
   }
 
-  const loadingBoxStyles: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-    padding: '8px 12px',
-    border: '1px solid var(--editorial-rule)',
-    borderRadius: 6,
-    backgroundColor: 'var(--theme-background-hover)',
-  }
-
-  const errorBoxStyles: React.CSSProperties = {
-    backgroundColor: 'var(--theme-error-bg)',
-    padding: '8px 12px',
-    borderRadius: 6,
-  }
-
-  const infoBoxStyles: React.CSSProperties = {
-    display: 'flex',
-    backgroundColor: 'var(--theme-background-hover)',
-    padding: '8px 12px',
-    borderRadius: 6,
-  }
+  const theme = useTheme()
 
   // Don't render if no districts loaded yet or error occurred
   if (isLoading) {
@@ -103,8 +108,8 @@ const DistrictSelector = ({
         <XStack alignItems="center" justifyContent="space-between">
           <Label>Congressional District:</Label>
         </XStack>
-        <div style={loadingBoxStyles}>
-          <svg width={16} height={16} fill="none" viewBox="0 0 24 24" style={{ animation: 'spin 1s linear infinite', color: 'var(--editorial-muted)' }}>
+        <LoadingBox>
+          <svg width={16} height={16} fill="none" viewBox="0 0 24 24" style={{ animation: 'spin 1s linear infinite', color: theme.editorialMuted?.get() as string }}>
             <circle
               opacity={0.25}
               cx="12"
@@ -119,8 +124,8 @@ const DistrictSelector = ({
               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
             />
           </svg>
-          <span style={{ fontSize: 16, color: 'var(--editorial-muted)' }}>Loading districts...</span>
-        </div>
+          <Text fontSize={16} color="$editorialMuted">Loading districts...</Text>
+        </LoadingBox>
       </YStack>
     )
   }
@@ -131,9 +136,9 @@ const DistrictSelector = ({
         <XStack alignItems="center" justifyContent="space-between">
           <Label>Congressional District:</Label>
         </XStack>
-        <div style={errorBoxStyles}>
-          <span style={{ fontSize: 16, color: 'var(--theme-error)' }}>{error}</span>
-        </div>
+        <ErrorBox>
+          <Text fontSize={16} color="$themeError">{error}</Text>
+        </ErrorBox>
       </YStack>
     )
   }
@@ -150,11 +155,11 @@ const DistrictSelector = ({
         <XStack alignItems="center" justifyContent="space-between">
           <Label>Congressional District:</Label>
         </XStack>
-        <div style={infoBoxStyles}>
-          <span style={{ fontSize: 16, color: 'var(--editorial-ink)' }}>
-            <span style={{ fontWeight: 500 }}>District:</span> {formatDistrictLabel(districts[0])}
-          </span>
-        </div>
+        <InfoBox>
+          <Text fontSize={16} color="$editorialInk">
+            <Text fontWeight="500">District:</Text> {formatDistrictLabel(districts[0])}
+          </Text>
+        </InfoBox>
       </YStack>
     )
   }
@@ -168,11 +173,10 @@ const DistrictSelector = ({
       </XStack>
 
       <YStack position="relative">
-        <select
+        <EditorialSelect
           id="district-selector"
           value={selectedDistrict ?? ''}
           onChange={handleDistrictChange}
-          className="input-editorial"
         >
           <option value="">Select a district...</option>
           {districts.map((district) => (
@@ -180,20 +184,20 @@ const DistrictSelector = ({
               {formatDistrictLabel(district)}
             </option>
           ))}
-        </select>
+        </EditorialSelect>
       </YStack>
 
       {selectedDistrict !== null && selectedDistrict !== undefined ? (
-        <div style={infoBoxStyles}>
-          <span style={{ fontSize: 16, color: 'var(--editorial-ink)' }}>
-            <span style={{ fontWeight: 500 }}>Selected:</span> {formatDistrictLabel(selectedDistrict)}
-          </span>
-        </div>
+        <InfoBox>
+          <Text fontSize={16} color="$editorialInk">
+            <Text fontWeight="500">Selected:</Text> {formatDistrictLabel(selectedDistrict)}
+          </Text>
+        </InfoBox>
       ) : null}
 
-      <span style={{ fontSize: 16, color: 'var(--editorial-muted)' }}>
+      <Text fontSize={16} color="$editorialMuted">
         Selecting your district will show only your specific representative in relevant questions.
-      </span>
+      </Text>
     </YStack>
   )
 }

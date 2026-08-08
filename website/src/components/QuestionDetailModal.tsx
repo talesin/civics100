@@ -4,7 +4,7 @@ import type { PairedAnswers } from 'questionnaire'
 import { PairedQuestionNumber } from 'questionnaire'
 import { MASTERY_THRESHOLD, NEEDS_PRACTICE_THRESHOLD } from '@/services/StatisticsService'
 import { XStack, YStack, Text, Button } from '@/components/tamagui'
-import { styled } from 'tamagui'
+import { styled, useTheme } from 'tamagui'
 
 interface QuestionDetailModalProps {
   readonly question: QuestionStatistics
@@ -28,7 +28,6 @@ const overlayStyles: React.CSSProperties = {
 }
 
 const modalContainerStyles: React.CSSProperties = {
-  backgroundColor: 'var(--editorial-paper)',
   borderRadius: 16,
   maxWidth: 768,
   width: '100%',
@@ -38,21 +37,18 @@ const modalContainerStyles: React.CSSProperties = {
   flexDirection: 'column',
 }
 
-const thStyles: React.CSSProperties = {
+const thBaseStyles: React.CSSProperties = {
   padding: '8px 16px',
   textAlign: 'left',
   fontSize: 12,
   fontWeight: 500,
-  color: 'var(--editorial-muted)',
   textTransform: 'uppercase',
   letterSpacing: '0.05em',
-  backgroundColor: 'var(--theme-background-hover)',
 }
 
-const tdStyles: React.CSSProperties = {
+const tdBaseStyles: React.CSSProperties = {
   padding: '8px 16px',
   fontSize: 14,
-  borderTop: '1px solid var(--editorial-rule)',
 }
 
 const Header = styled(XStack, {
@@ -238,6 +234,30 @@ const EmptyText = styled(Text, {
   paddingVertical: '$6',
 })
 
+// Port of .badge/.badge-pass/.badge-fail (globals.css) for the history table.
+const HistoryBadge = styled(Text, {
+  tag: 'span',
+  display: 'inline-flex',
+  paddingVertical: 2,
+  paddingHorizontal: 10,
+  borderRadius: 9999,
+  fontSize: 12,
+  fontWeight: '500',
+
+  variants: {
+    result: {
+      pass: {
+        backgroundColor: '$themeSuccessBg',
+        color: '$themeSuccessText',
+      },
+      fail: {
+        backgroundColor: '$themeErrorBg',
+        color: '$themeErrorText',
+      },
+    },
+  } as const,
+})
+
 // Table styles - only the static base style; theme-aware styles are computed in component
 const tableStyles: React.CSSProperties = {
   minWidth: '100%',
@@ -251,6 +271,19 @@ const QuestionDetailModal = ({
   onClose
 }: QuestionDetailModalProps): React.ReactElement => {
   const history = pairedAnswers[PairedQuestionNumber(question.pairedQuestionNumber)] ?? []
+  const theme = useTheme()
+
+  // Theme-aware styles for the native table/div skeleton (kept native for
+  // position:fixed and real <table> semantics); .get() emits CSS variable refs.
+  const thStyles: React.CSSProperties = {
+    ...thBaseStyles,
+    color: theme.editorialMuted?.get() as string,
+    backgroundColor: theme.backgroundHover?.get() as string,
+  }
+  const tdStyles: React.CSSProperties = {
+    ...tdBaseStyles,
+    borderTop: `1px solid ${theme.editorialRule?.get() as string}`,
+  }
 
   // Refs for focus management
   const modalRef = useRef<HTMLDivElement>(null)
@@ -365,7 +398,7 @@ const QuestionDetailModal = ({
     <div style={overlayStyles} onClick={handleClose} aria-hidden="true">
       <div
         ref={modalRef}
-        style={modalContainerStyles}
+        style={{ ...modalContainerStyles, backgroundColor: theme.editorialPaper?.get() as string }}
         onClick={(e: React.MouseEvent) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -396,7 +429,7 @@ const QuestionDetailModal = ({
               borderRadius: 4,
             }}
           >
-            <svg width={24} height={24} fill="none" stroke="var(--editorial-ink)" viewBox="0 0 24 24">
+            <svg width={24} height={24} fill="none" stroke={theme.editorialInk?.get() as string} viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -424,21 +457,21 @@ const QuestionDetailModal = ({
           <StatsGrid>
             <StatItem>
               <StatLabel>Times Asked</StatLabel>
-              <StatValue style={{ color: 'var(--editorial-ink)' }}>{question.timesAsked}</StatValue>
+              <StatValue color="$editorialInk">{question.timesAsked}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Correct</StatLabel>
-              <StatValue style={{ color: 'var(--theme-success)' }}>{question.timesCorrect}</StatValue>
+              <StatValue color="$themeSuccess">{question.timesCorrect}</StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Accuracy</StatLabel>
-              <StatValue style={{ color: 'var(--theme-primary)' }}>
+              <StatValue color="$themePrimary">
                 {question.timesAsked > 0 ? `${Math.round(question.accuracy * 100)}%` : '-'}
               </StatValue>
             </StatItem>
             <StatItem>
               <StatLabel>Next Time %</StatLabel>
-              <StatValue style={{ color: 'var(--theme-purple)' }}>{question.selectionProbability.toFixed(2)}%</StatValue>
+              <StatValue color="$themePurple">{question.selectionProbability.toFixed(2)}%</StatValue>
             </StatItem>
           </StatsGrid>
 
@@ -482,17 +515,17 @@ const QuestionDetailModal = ({
                   <tbody>
                     {[...history].reverse().map((answer, index) => (
                       <tr key={index}>
-                        <td style={{ ...tdStyles, color: 'var(--editorial-muted)', whiteSpace: 'nowrap' }}>
+                        <td style={{ ...tdStyles, color: theme.editorialMuted?.get() as string, whiteSpace: 'nowrap' }}>
                           {history.length - index}
                         </td>
-                        <td style={{ ...tdStyles, color: 'var(--editorial-ink)', whiteSpace: 'nowrap' }}>
+                        <td style={{ ...tdStyles, color: theme.editorialInk?.get() as string, whiteSpace: 'nowrap' }}>
                           {formatDate(answer.ts)}
                         </td>
                         <td style={tdStyles}>
                           {answer.correct === true ? (
-                            <span className="badge badge-pass">Correct</span>
+                            <HistoryBadge result="pass">Correct</HistoryBadge>
                           ) : (
-                            <span className="badge badge-fail">Incorrect</span>
+                            <HistoryBadge result="fail">Incorrect</HistoryBadge>
                           )}
                         </td>
                       </tr>

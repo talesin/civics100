@@ -191,6 +191,7 @@ const lightTheme = {
   // from the pre-existing keys above (which are in use and cannot change).
   themeError: tokens.color.error6,
   themeErrorBg: tokens.color.error1,
+  themeErrorText: tokens.color.red8,
   themeSuccess: tokens.color.green6,
   themeSuccessBg: tokens.color.green2,
   themeSuccessText: tokens.color.green8,
@@ -239,6 +240,7 @@ const darkTheme = {
   // Exact-parity keys — dark values from design-tokens.css html.t_dark
   themeError: tokens.color.error,
   themeErrorBg: tokens.color.red9,
+  themeErrorText: tokens.color.red3,
   themeSuccess: tokens.color.success,
   themeSuccessBg: tokens.color.green8,
   themeSuccessText: tokens.color.green3,

@@ -1,11 +1,11 @@
+import React from 'react'
 import { GetProps, styled } from 'tamagui'
 import { Text as TamaguiText } from 'tamagui'
 
 // Port of .input-editorial (globals.css). Text-based so fontSize/color style
 // the control's own value text; no fontFamily is set so form controls keep
-// the UA font, exactly as the class did. Select sites render the same
-// component with tag="select".
-export const EditorialInput = styled(TamaguiText, {
+// the UA font, exactly as the class did.
+const EditorialInputFrame = styled(TamaguiText, {
   name: 'EditorialInput',
   tag: 'input',
 
@@ -33,4 +33,28 @@ export const EditorialInput = styled(TamaguiText, {
   },
 })
 
-export type EditorialInputProps = GetProps<typeof EditorialInput>
+type FrameProps = GetProps<typeof EditorialInputFrame>
+
+// Tamagui's Text prop types omit DOM form attributes (value, onChange, ...)
+// even though the css driver forwards them to the element; recast per tag.
+export const EditorialInput = EditorialInputFrame as unknown as React.ComponentType<
+  Omit<React.InputHTMLAttributes<HTMLInputElement>, 'style' | 'color'> & {
+    readonly style?: FrameProps['style']
+  }
+>
+
+const EditorialSelectFrame = EditorialInputFrame as unknown as React.ComponentType<
+  Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'style' | 'color'> & {
+    readonly tag: 'select'
+    readonly style?: FrameProps['style']
+  }
+>
+
+export function EditorialSelect(
+  props: Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'style' | 'color'>
+): React.ReactElement {
+  return <EditorialSelectFrame tag="select" {...props} />
+}
+
+export type EditorialInputProps = React.ComponentProps<typeof EditorialInput>
+export type EditorialSelectProps = React.ComponentProps<typeof EditorialSelect>

@@ -1,6 +1,8 @@
 'use client'
 
 import React, { Component, ErrorInfo, ReactNode } from 'react'
+import { styled, useTheme, Text as TamaguiText } from 'tamagui'
+import { XStack, YStack, Text } from '@/components/tamagui'
 
 interface Props {
   readonly children: ReactNode
@@ -59,33 +61,68 @@ interface DefaultErrorFallbackProps {
   readonly onRetry: () => void
 }
 
+const FallbackContainer = styled(YStack, {
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: '50vh',
+  padding: 32,
+})
+
+const IconCircle = styled(YStack, {
+  width: 64,
+  height: 64,
+  backgroundColor: '$themeErrorBg',
+  borderRadius: 9999,
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: 24,
+})
+
+const FallbackTitle = styled(Text, {
+  tag: 'h2',
+  fontSize: 24,
+  fontWeight: '600',
+  color: '$editorialInk',
+  marginBottom: 8,
+  textAlign: 'center',
+})
+
+const FallbackMessage = styled(Text, {
+  tag: 'p',
+  color: '$editorialMuted',
+  marginBottom: 24,
+  maxWidth: 400,
+  textAlign: 'center',
+})
+
+// Text-based single element so the label inherits its colors (same reasoning
+// as EditorialButton); no fontSize so the UA button font is kept.
+const GoHomeButton = styled(TamaguiText, {
+  tag: 'button',
+  backgroundColor: '$editorialPaper',
+  color: '$editorialInk',
+  fontWeight: '500',
+  paddingVertical: 12,
+  paddingHorizontal: 24,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: '$editorialRule',
+  cursor: 'pointer',
+
+  hoverStyle: {
+    backgroundColor: '$backgroundHover',
+  },
+})
+
 function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps): React.ReactElement {
+  const theme = useTheme()
+
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '50vh',
-        padding: 32,
-        textAlign: 'center'
-      }}
-    >
-      <div
-        style={{
-          width: 64,
-          height: 64,
-          backgroundColor: 'var(--theme-error-bg)',
-          borderRadius: '50%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 24
-        }}
-      >
+    <FallbackContainer>
+      <IconCircle>
         <svg
-          style={{ width: 32, height: 32, color: 'var(--theme-error)' }}
+          style={{ width: 32, height: 32, color: theme.themeError?.get() as string }}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -97,37 +134,22 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps): Re
             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
           />
         </svg>
-      </div>
+      </IconCircle>
 
-      <h2
-        style={{
-          fontSize: 24,
-          fontWeight: 600,
-          color: 'var(--editorial-ink)',
-          marginBottom: 8
-        }}
-      >
-        Something went wrong
-      </h2>
+      <FallbackTitle>Something went wrong</FallbackTitle>
 
-      <p
-        style={{
-          color: 'var(--editorial-muted)',
-          marginBottom: 24,
-          maxWidth: 400
-        }}
-      >
+      <FallbackMessage>
         An unexpected error occurred. Please try again or refresh the page.
-      </p>
+      </FallbackMessage>
 
       {error !== null && process.env.NODE_ENV === 'development' ? (
         <pre
           style={{
-            backgroundColor: 'var(--editorial-paper)',
+            backgroundColor: theme.editorialPaper?.get() as string,
             padding: 16,
             borderRadius: 8,
             fontSize: 12,
-            color: 'var(--theme-error)',
+            color: theme.themeError?.get() as string,
             marginBottom: 24,
             maxWidth: '100%',
             overflow: 'auto',
@@ -138,30 +160,16 @@ function DefaultErrorFallback({ error, onRetry }: DefaultErrorFallbackProps): Re
         </pre>
       ) : null}
 
-      <div style={{ display: 'flex', gap: 12 }}>
+      <XStack gap={12}>
         <button onClick={onRetry} className="btn-primary">
           Try Again
         </button>
 
-        <button
-          onClick={() => (window.location.href = '/')}
-          style={{
-            backgroundColor: 'var(--editorial-paper)',
-            color: 'var(--editorial-ink)',
-            fontWeight: 500,
-            padding: '12px 24px',
-            borderRadius: 8,
-            border: '1px solid var(--editorial-rule)',
-            cursor: 'pointer',
-            transition: 'background-color 0.2s'
-          }}
-          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = 'var(--theme-background-hover)')}
-          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = 'var(--editorial-paper)')}
-        >
+        <GoHomeButton onPress={() => (window.location.href = '/')}>
           Go Home
-        </button>
-      </div>
-    </div>
+        </GoHomeButton>
+      </XStack>
+    </FallbackContainer>
   )
 }
 
