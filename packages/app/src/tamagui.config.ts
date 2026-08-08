@@ -252,6 +252,12 @@ const darkTheme = {
 }
 
 const config = createTamagui({
+  // Web: emit base-theme CSS as `:root.t_light` / `:root.t_dark` so the theme
+  // variables apply from the <html> class set by @tamagui/next-theme's
+  // pre-hydration script. Without this, Tamagui emits descendant selectors
+  // (`:root .t_light`) that never match — theme keys silently resolve to
+  // nothing. No effect on native (themes resolve in JS there).
+  themeClassNameOnRoot: true,
   tokens,
   themes: {
     light: lightTheme,

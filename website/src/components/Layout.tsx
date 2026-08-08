@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
 import { Menu, X, Settings } from 'lucide-react'
+import { styled, useTheme } from 'tamagui'
+import { YStack, XStack, Text } from '@/components/tamagui'
 import ThemeToggle from './ThemeToggle'
 import { ErrorBoundary } from './ErrorBoundary'
 
@@ -11,37 +13,124 @@ interface LayoutProps {
   readonly className?: string
 }
 
-// All styles use CSS custom properties so server/client HTML is identical.
-// The html.t_dark class (set by NextThemeProvider's injected script) controls values.
+// Colors resolve through Tamagui theme keys; under the css driver they emit
+// var(--...) references whose values are keyed off html.t_dark (set by
+// NextThemeProvider's injected script), so server/client HTML is identical.
 
-const pageStyles: React.CSSProperties = {
+const Page = styled(YStack, {
   minHeight: '100vh',
-  display: 'flex',
-  flexDirection: 'column',
-  backgroundColor: 'var(--editorial-paper)',
-}
+  backgroundColor: '$editorialPaper',
+})
 
-const headerStyles: React.CSSProperties = {
-  backgroundColor: 'var(--editorial-paper)',
-  borderBottom: '1px solid var(--editorial-rule)',
-  position: 'sticky',
-  top: 0,
+const Header = styled(YStack, {
+  tag: 'header',
+  backgroundColor: '$editorialPaper',
+  borderBottomWidth: 1,
+  borderBottomColor: '$editorialRule',
   zIndex: 40,
-}
+})
 
-const containerStyles: React.CSSProperties = {
+const Container = styled(YStack, {
+  // Block, not flex: page content inside uses `margin: 0 auto` + max-width
+  // columns, which stretch to their max-width under block layout but
+  // shrink-to-fit as flex items — flex here shifts every page's column.
+  display: 'block',
   width: '100%',
   maxWidth: 1280,
-  margin: '0 auto',
-  padding: '0 24px',
-}
+  marginHorizontal: 'auto',
+  paddingHorizontal: 24,
+})
 
-const headerContentStyles: React.CSSProperties = {
-  display: 'flex',
+const HeaderContent = styled(XStack, {
   justifyContent: 'space-between',
   alignItems: 'center',
   height: 60,
-}
+})
+
+const LogoMark = styled(YStack, {
+  width: 28,
+  height: 28,
+  borderRadius: 4,
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: '$editorialAccent',
+  flexShrink: 0,
+})
+
+const LogoMarkText = styled(Text, {
+  color: '$white',
+  fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
+  fontWeight: '500',
+  fontSize: 11,
+  letterSpacing: 0.55, // 0.05em at 11px
+})
+
+const TitleText = styled(Text, {
+  fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
+  fontSize: 17,
+  fontWeight: '500',
+  color: '$editorialInk',
+  letterSpacing: -0.17, // -0.01em at 17px
+})
+
+const Divider = styled(YStack, {
+  borderLeftWidth: 1,
+  borderLeftColor: '$editorialRule',
+  height: 20,
+  marginHorizontal: 4,
+})
+
+const MobileMenuButton = styled(XStack, {
+  tag: 'button',
+  padding: 6,
+  borderRadius: 4,
+  backgroundColor: 'transparent',
+  borderWidth: 0,
+  cursor: 'pointer',
+  alignItems: 'center',
+  justifyContent: 'center',
+})
+
+const MobileMenu = styled(YStack, {
+  paddingTop: 8,
+  paddingHorizontal: 12,
+  paddingBottom: 16,
+  backgroundColor: '$editorialPaper',
+  borderTopWidth: 1,
+  borderTopColor: '$editorialRule',
+})
+
+const Main = styled(YStack, {
+  tag: 'main',
+  flex: 1,
+  paddingVertical: 32,
+  paddingHorizontal: 24,
+})
+
+const Footer = styled(YStack, {
+  tag: 'footer',
+  backgroundColor: '$editorialPaper',
+  borderTopWidth: 1,
+  borderTopColor: '$editorialRule',
+  marginTop: 'auto',
+})
+
+const FooterContainer = styled(Container, {
+  display: 'flex',
+  paddingVertical: 24,
+  paddingHorizontal: 24,
+  alignItems: 'center',
+  gap: 8,
+})
+
+const FooterText = styled(Text, {
+  tag: 'p',
+  fontSize: 13,
+  color: '$editorialMuted',
+  textAlign: 'center',
+  maxWidth: 480,
+  lineHeight: 20.8, // 1.6 at 13px
+})
 
 const logoLinkStyles: React.CSSProperties = {
   display: 'flex',
@@ -52,110 +141,6 @@ const logoLinkStyles: React.CSSProperties = {
   borderRadius: 4,
 }
 
-const logoMarkStyles: React.CSSProperties = {
-  width: 28,
-  height: 28,
-  borderRadius: 4,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: 'var(--editorial-accent)',
-  flexShrink: 0,
-}
-
-const logoMarkTextStyles: React.CSSProperties = {
-  color: '#ffffff',
-  fontFamily: 'var(--font-family-serif)',
-  fontWeight: 500,
-  fontSize: 11,
-  letterSpacing: '0.05em',
-}
-
-const titleStyles: React.CSSProperties = {
-  fontFamily: 'var(--font-family-serif)',
-  fontSize: 17,
-  fontWeight: 500,
-  color: 'var(--editorial-ink)',
-  letterSpacing: '-0.01em',
-}
-
-const navLinkStyles: React.CSSProperties = {
-  color: 'var(--editorial-muted)',
-  padding: '6px 10px',
-  borderRadius: 4,
-  fontSize: 14,
-  fontWeight: 500,
-  textDecoration: 'none',
-  transition: 'color 150ms ease',
-  letterSpacing: '0.01em',
-}
-
-const dividerStyles: React.CSSProperties = {
-  borderLeft: '1px solid var(--editorial-rule)',
-  height: 20,
-  margin: '0 4px',
-}
-
-const iconLinkStyles: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  padding: 6,
-  borderRadius: 4,
-  color: 'var(--editorial-muted)',
-  textDecoration: 'none',
-  transition: 'color 150ms ease',
-}
-
-const mobileMenuButtonStyles: React.CSSProperties = {
-  padding: 6,
-  borderRadius: 4,
-  backgroundColor: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  color: 'var(--editorial-muted)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}
-
-const mobileMenuStyles: React.CSSProperties = {
-  padding: '8px 12px 16px',
-  backgroundColor: 'var(--editorial-paper)',
-  borderTop: '1px solid var(--editorial-rule)',
-}
-
-const mobileNavLinkStyles: React.CSSProperties = {
-  display: 'block',
-  color: 'var(--editorial-muted)',
-  padding: '10px 8px',
-  borderRadius: 4,
-  fontSize: 15,
-  fontWeight: 500,
-  textDecoration: 'none',
-  borderBottom: '1px solid var(--editorial-rule)',
-}
-
-const mainStyles: React.CSSProperties = {
-  flex: 1,
-  padding: '32px 24px',
-}
-
-const footerStyles: React.CSSProperties = {
-  backgroundColor: 'var(--editorial-paper)',
-  borderTop: '1px solid var(--editorial-rule)',
-  marginTop: 'auto',
-}
-
-const footerContainerStyles: React.CSSProperties = {
-  ...containerStyles,
-  padding: '24px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: 8,
-}
-
 export default function Layout({
   children,
   title = 'US Civics Test',
@@ -163,23 +148,61 @@ export default function Layout({
   className = ''
 }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const theme = useTheme()
+  // .get() returns 'var(--...)' under the css driver — SSR-safe for the
+  // next/link styles below, which cannot take Tamagui props.
+  const muted = theme.editorialMuted?.get() as string
+  const rule = theme.editorialRule?.get() as string
+
+  const navLinkStyles: React.CSSProperties = {
+    color: muted,
+    padding: '6px 10px',
+    borderRadius: 4,
+    fontSize: 14,
+    fontWeight: 500,
+    textDecoration: 'none',
+    transition: 'color 150ms ease',
+    letterSpacing: '0.01em',
+  }
+
+  const iconLinkStyles: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 6,
+    borderRadius: 4,
+    color: muted,
+    textDecoration: 'none',
+    transition: 'color 150ms ease',
+  }
+
+  const mobileNavLinkStyles: React.CSSProperties = {
+    display: 'block',
+    color: muted,
+    padding: '10px 8px',
+    borderRadius: 4,
+    fontSize: 15,
+    fontWeight: 500,
+    textDecoration: 'none',
+    borderBottom: `1px solid ${rule}`,
+  }
 
   return (
-    <div style={pageStyles} className={className}>
+    <Page className={className}>
       <a href="#main-content" className="skip-link">
         Skip to main content
       </a>
 
       {showHeader ? (
-        <header style={headerStyles}>
-          <div style={containerStyles}>
-            <div style={headerContentStyles}>
+        <Header style={{ position: 'sticky', top: 0 }}>
+          <Container>
+            <HeaderContent>
               <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
                 <Link href="/" style={logoLinkStyles}>
-                  <div style={logoMarkStyles}>
-                    <span style={logoMarkTextStyles}>US</span>
-                  </div>
-                  <span style={titleStyles}>{title}</span>
+                  <LogoMark>
+                    <LogoMarkText>US</LogoMarkText>
+                  </LogoMark>
+                  <TitleText>{title}</TitleText>
                 </Link>
               </div>
 
@@ -192,7 +215,7 @@ export default function Layout({
                 <Link href="/settings" aria-label="Settings" style={iconLinkStyles}>
                   <Settings size={18} strokeWidth={1.5} />
                 </Link>
-                <div style={dividerStyles} />
+                <Divider />
                 <ThemeToggle />
               </div>
 
@@ -201,61 +224,54 @@ export default function Layout({
                   <Settings size={18} strokeWidth={1.5} />
                 </Link>
                 <ThemeToggle />
-                <button
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  style={mobileMenuButtonStyles}
+                <MobileMenuButton
+                  onPress={() => setMobileMenuOpen(!mobileMenuOpen)}
                   aria-expanded={mobileMenuOpen}
                   aria-controls="mobile-menu"
                   aria-label="Toggle main menu"
                 >
-                  {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
-                </button>
+                  {mobileMenuOpen ? <X size={22} color={muted} /> : <Menu size={22} color={muted} />}
+                </MobileMenuButton>
               </div>
-            </div>
+            </HeaderContent>
 
             {mobileMenuOpen ? (
               <div className="md:hidden" id="mobile-menu" data-testid="mobile-menu">
-                <div style={mobileMenuStyles}>
+                <MobileMenu>
                   <Link href="/" onClick={() => setMobileMenuOpen(false)} style={mobileNavLinkStyles}>Home</Link>
                   <Link href="/results" onClick={() => setMobileMenuOpen(false)} style={mobileNavLinkStyles}>Results</Link>
                   <Link href="/statistics" onClick={() => setMobileMenuOpen(false)} style={mobileNavLinkStyles}>Statistics</Link>
                   <Link href="/settings" onClick={() => setMobileMenuOpen(false)} style={{ ...mobileNavLinkStyles, borderBottom: 'none' }}>Settings</Link>
-                </div>
+                </MobileMenu>
               </div>
             ) : null}
-          </div>
-        </header>
+          </Container>
+        </Header>
       ) : null}
 
-      <main id="main-content" style={mainStyles} role="main">
-        <div style={containerStyles}>
+      <Main id="main-content" role="main">
+        <Container>
           <ErrorBoundary>
             {children}
           </ErrorBoundary>
-        </div>
-      </main>
+        </Container>
+      </Main>
 
-      <footer style={footerStyles}>
-        <div style={footerContainerStyles}>
+      <Footer>
+        <FooterContainer>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div style={logoMarkStyles}>
-              <span style={logoMarkTextStyles}>US</span>
-            </div>
-            <span style={{ ...titleStyles, fontSize: 14, color: 'var(--editorial-muted)' }}>
+            <LogoMark>
+              <LogoMarkText>US</LogoMarkText>
+            </LogoMark>
+            <TitleText fontSize={14} letterSpacing={-0.14} color="$editorialMuted">
               US Civics Test Practice
-            </span>
+            </TitleText>
           </div>
-          <p style={{
-            fontSize: 13,
-            color: 'var(--editorial-muted)',
-            textAlign: 'center',
-            maxWidth: 480,
-            lineHeight: 1.6,
-          }}>
+          <FooterText>
             Practice for the U.S. Citizenship Civics Exam with official USCIS questions.
-          </p>
-        </div>
-      </footer>
-    </div>
+          </FooterText>
+        </FooterContainer>
+      </Footer>
+    </Page>
   )
 }

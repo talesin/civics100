@@ -66,3 +66,48 @@ Phase 4 of the React Native port (`plans/react-native-mobile-app.md`): the websi
 - Per batch: `npm run test:visual -w website` (20-shot diff vs committed baseline) + root `npm test` + website lint.
 - Stage 1 & 9 additionally: `apps/mobile` `tsc --noEmit` + `npx expo export` (shared config), website `next build`, functional e2e `npx playwright test --project=chromium`.
 - Exit: zero `var(--` in shared-bound tsx (grep), all gates green, Phase 4 STATUS written.
+
+## STATUS (updated 2026-08-08, session 2) — Stages 0–2 complete; next: Stage 3
+
+**Environment setup required EVERY session before any Playwright run** (image ships
+Chromium rev 1228, Playwright 1.59.1 expects 1217; symlinks are ephemeral):
+`cd ~/.cache/ms-playwright && ln -s chromium-1228 chromium-1217 && ln -s chromium_headless_shell-1228 chromium_headless_shell-1217`
+Never `npx playwright install` (no-network rule). Prefer `--workers=2`; check
+`cat /sys/fs/cgroup/pids.current` before heavy runs (>350 → ask user to relaunch).
+
+- ✅ **Stage 0 committed** (`39c58e7`, tag `phase4-baseline`): 20 baselines, green
+  twice consecutively. Determinism fixes in `visual.helpers.ts`: (1) SW registration
+  stubbed (its controllerchange handler reloads mid-shot); (2) `Math.random` is a
+  CONSTANT 0.42, not a seeded PRNG — Effect seeds Random from ONE Math.random() call
+  at module load, so a sequential stub made the seed order-sensitive (game route
+  flaked). Also: eslint ignore for playwright.visual.config.ts (lint was broken).
+- ✅ **Stage 1 committed** (`291e6c8`): tokens + 6 editorial* keys + exact-parity
+  keys (themeError, themeSuccessBg, neutral100, shadowMd, …) in BOTH themes.
+  NOTE: pre-existing keys (error/success/warning/primary) have DIFFERENT values
+  than --theme-* vars and are in use — conversions must use the theme* keys.
+- ✅ **Stage 2 committed** — all gates green in session 2: visual 20/20 twice
+  consecutively, website lint clean, root `npm test` (66 tests, ThemeToggle jest
+  unchanged), mobile `tsc --noEmit` + `expo export` ios+android. Details:
+  - `website/src/components/Layout.tsx`: styled() conversion. Container must be
+    `display:'block'` (page `margin:0 auto` columns shrink-to-fit under flex →
+    24px shift; FooterContainer restores flex). Responsive `hidden md:flex` /
+    `md:hidden` wrappers stay PLAIN DIVS (XStack's display:flex class defeats
+    `.hidden`). next/link styles use `useTheme().editorialMuted/Rule.get()`
+    (returns `var(--…)` under css driver — verified SSR-safe). Stacks have no
+    `color` prop — icon colors passed to lucide `color=` directly.
+  - `website/src/components/ThemeToggle.tsx`: Tamagui tag="button",
+    dual-icon CSS hack retained; existing tests pass UNCHANGED (no test edits).
+  - `packages/app/src/tamagui.config.ts`: **`themeClassNameOnRoot: true` added.
+    CRITICAL FINDING: Tamagui theme CSS was DEAD on the website** — v1.144 emits
+    descendant selectors (`:root .t_light`) but the class sits ON `<html>`, so no
+    theme key ever resolved anywhere. This setting emits `:root.t_light` and
+    activates all theme keys site-wide. Native unaffected (JS resolution).
+  - **USER DECISION (approved):** activating themes changes game+settings
+    (previously-dead keys now render: keyboard-hint box gets designed gray
+    bg/border, Restart Game becomes a styled chip, some settings text goes
+    muted). Game/settings baselines RE-CAPTURED on disk (8 PNGs);
+    home/results/statistics stay pixel-identical to `phase4-baseline`.
+- **NEXT: Stage 3** (editorial Button variants, EditorialInput, LoadingSpinner)
+  per the stage list above. One commit per stage, user confirms each.
+  Git identity is repo-local: Jeremy Clough <jeremy.clough@gmail.com>; trailer
+  `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
