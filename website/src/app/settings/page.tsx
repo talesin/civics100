@@ -3,9 +3,11 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Effect } from 'effect'
+import { useTheme } from 'tamagui'
 import { StateAbbreviation } from 'civics2json'
 import { TOTAL_QUESTION_COUNT } from 'questionnaire'
 import Layout from '@/components/Layout'
+import { EditorialInput, EditorialSelect, LoadingSpinner } from '@/components/tamagui'
 import StateSelector from '@/components/StateSelector'
 import DistrictSelector from '@/components/DistrictSelector'
 import PoliticianVerificationBox from '@/components/PoliticianVerificationBox'
@@ -25,6 +27,11 @@ export default function Settings() {
   const [ttsSettings, setTtsSettings] = useState<TtsSettings>(DEFAULT_TTS_SETTINGS)
   const voices = useTtsVoices()
   const { theme, setTheme } = useThemeContext()
+  const tamaguiTheme = useTheme()
+  const ink = tamaguiTheme.editorialInk?.get() as string
+  const muted = tamaguiTheme.editorialMuted?.get() as string
+  const accent = tamaguiTheme.editorialAccent?.get() as string
+  const themeError = tamaguiTheme.themeError?.get() as string
 
   useEffect(() => {
     let mounted = true
@@ -205,8 +212,8 @@ export default function Settings() {
       <Layout title="Game Settings">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 384 }}>
           <div style={{ textAlign: 'center' }}>
-            <div className="spinner" style={{ margin: '0 auto 16px' }} />
-            <p style={{ color: 'var(--editorial-muted)' }}>Loading settings...</p>
+            <LoadingSpinner marginHorizontal="auto" marginBottom={16} />
+            <p style={{ color: muted }}>Loading settings...</p>
           </div>
         </div>
       </Layout>
@@ -214,44 +221,57 @@ export default function Settings() {
   }
 
   const sectionHeadingStyle: React.CSSProperties = {
-    fontFamily: 'var(--font-family-serif)',
+    fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
     fontSize: 18,
     fontWeight: 500,
-    color: 'var(--editorial-ink)',
+    color: ink,
     letterSpacing: '-0.01em',
   }
 
   const dividerStyle: React.CSSProperties = {
     border: 'none',
-    borderTop: '1px solid var(--editorial-rule)',
+    borderTop: `1px solid ${tamaguiTheme.editorialRule?.get() as string}`,
     margin: 0,
+  }
+
+  const fieldLabelStyle: React.CSSProperties = {
+    fontSize: 14,
+    fontWeight: 500,
+    color: muted,
+  }
+
+  const checkboxStyle: React.CSSProperties = {
+    width: 16,
+    height: 16,
+    accentColor: accent,
+    cursor: 'pointer',
   }
 
   return (
     <Layout title="Game Settings">
       <div style={{ maxWidth: 672, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
         <div style={{ textAlign: 'center' }}>
-          <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '-0.01em', marginBottom: 6 }}>
+          <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(1.5rem, 4vw, 2rem)', fontWeight: 500, color: ink, letterSpacing: '-0.01em', marginBottom: 6 }}> {/* PHASE5: $fontFamily */}
             Game Settings
           </h1>
-          <p style={{ color: 'var(--editorial-muted)', fontSize: 14 }}>Customize your civics test experience</p>
+          <p style={{ color: muted, fontSize: 14 }}>Customize your civics test experience</p>
         </div>
 
         <div className="card card-elevated" style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           {/* Location Settings */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <h2 style={sectionHeadingStyle}>Location Settings</h2>
-            <p style={{ fontSize: 14, color: 'var(--editorial-muted)' }}>
+            <p style={{ fontSize: 14, color: muted }}>
               Select your state and congressional district to get personalized questions about your
               specific representative, senators, and governor.
             </p>
-            <p style={{ fontSize: 14, color: 'var(--editorial-muted)' }}>
+            <p style={{ fontSize: 14, color: muted }}>
               Don&apos;t know your congressional district?{' '}
               <a
                 href="https://www.govtrack.us/congress/members/map"
                 target="_blank"
                 rel="noopener noreferrer"
-                style={{ color: 'var(--editorial-accent)', textDecoration: 'underline' }}
+                style={{ color: accent, textDecoration: 'underline' }}
               >
                 Find your district on GovTrack →
               </a>
@@ -281,30 +301,28 @@ export default function Settings() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label htmlFor="max-questions" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
+                <label htmlFor="max-questions" style={fieldLabelStyle}>
                   Questions per game:
                 </label>
-                <select
+                <EditorialSelect
                   id="max-questions"
                   value={settings.maxQuestions}
                   onChange={handleMaxQuestionsChange}
-                  className="input-editorial"
                 >
                   <option value={20}>20 questions (Official 2025 minimum)</option>
                   <option value={50}>50 questions</option>
                   <option value={TOTAL_QUESTION_COUNT}>{TOTAL_QUESTION_COUNT} questions (All questions)</option>
-                </select>
+                </EditorialSelect>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label htmlFor="win-threshold" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
+                <label htmlFor="win-threshold" style={fieldLabelStyle}>
                   Pass threshold:
                 </label>
-                <select
+                <EditorialSelect
                   id="win-threshold"
                   value={settings.winThreshold}
                   onChange={handleWinThresholdChange}
-                  className="input-editorial"
                 >
                   <option value={Math.ceil(settings.maxQuestions * WIN_THRESHOLD_PERCENTAGE)}>
                     {Math.ceil(settings.maxQuestions * WIN_THRESHOLD_PERCENTAGE)} correct (60%)
@@ -321,11 +339,11 @@ export default function Settings() {
                   <option value={settings.maxQuestions}>
                     {settings.maxQuestions} correct (100%)
                   </option>
-                </select>
+                </EditorialSelect>
               </div>
             </div>
 
-            <p style={{ fontSize: 13, color: 'var(--editorial-muted)' }}>
+            <p style={{ fontSize: 13, color: muted }}>
               The game ends when you reach the pass threshold (early win), answer 9 questions incorrectly (early fail), or complete all questions. This matches the 2025 USCIS Civics Test format.
             </p>
           </div>
@@ -342,35 +360,34 @@ export default function Settings() {
                 id="practice-specific"
                 checked={practiceSpecificEnabled}
                 onChange={handlePracticeSpecificToggle}
-                style={{ width: 16, height: 16, accentColor: 'var(--editorial-accent)', cursor: 'pointer' }}
+                style={checkboxStyle}
               />
-              <label htmlFor="practice-specific" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)', cursor: 'pointer' }}>
+              <label htmlFor="practice-specific" style={{ ...fieldLabelStyle, cursor: 'pointer' }}>
                 Practice specific question numbers
               </label>
             </div>
 
             {practiceSpecificEnabled ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label htmlFor="question-numbers" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
+                <label htmlFor="question-numbers" style={fieldLabelStyle}>
                   Question numbers (comma-separated):
                 </label>
-                <input
+                <EditorialInput
                   id="question-numbers"
                   type="text"
                   value={questionNumbersInput}
                   onChange={handleQuestionNumbersChange}
                   placeholder="e.g. 1, 5, 20, 81"
-                  className="input-editorial"
-                  style={questionNumbersError != null ? { borderColor: 'var(--theme-error)' } : undefined}
+                  style={questionNumbersError != null ? { borderColor: themeError } : undefined}
                 />
                 {questionNumbersError != null ? (
-                  <p style={{ fontSize: 13, color: 'var(--theme-error)' }}>{questionNumbersError}</p>
+                  <p style={{ fontSize: 13, color: themeError }}>{questionNumbersError}</p>
                 ) : questionNumbersInput.trim() !== '' ? (
-                  <p style={{ fontSize: 13, color: 'var(--editorial-muted)' }}>
+                  <p style={{ fontSize: 13, color: muted }}>
                     {parseQuestionNumbers(questionNumbersInput).numbers.length} question{parseQuestionNumbers(questionNumbersInput).numbers.length !== 1 ? 's' : ''} selected
                   </p>
                 ) : null}
-                <p style={{ fontSize: 13, color: 'var(--editorial-muted)' }}>
+                <p style={{ fontSize: 13, color: muted }}>
                   Enter question numbers between 1 and {TOTAL_QUESTION_COUNT} to practice only those questions. Game settings above will be ignored when specific questions are selected.
                 </p>
               </div>
@@ -389,9 +406,9 @@ export default function Settings() {
                 id="dark-mode"
                 checked={theme === 'dark'}
                 onChange={handleDarkModeChange}
-                style={{ width: 16, height: 16, accentColor: 'var(--editorial-accent)', cursor: 'pointer' }}
+                style={checkboxStyle}
               />
-              <label htmlFor="dark-mode" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)', cursor: 'pointer' }}>
+              <label htmlFor="dark-mode" style={{ ...fieldLabelStyle, cursor: 'pointer' }}>
                 Enable dark mode
               </label>
             </div>
@@ -402,20 +419,19 @@ export default function Settings() {
           {/* Voice Settings */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <h2 style={sectionHeadingStyle}>Voice Settings</h2>
-            <p style={{ fontSize: 14, color: 'var(--editorial-muted)' }}>
+            <p style={{ fontSize: 14, color: muted }}>
               Configure the text-to-speech voice used to read questions and answers aloud.
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label htmlFor="tts-voice" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
+                <label htmlFor="tts-voice" style={fieldLabelStyle}>
                   Voice:
                 </label>
-                <select
+                <EditorialSelect
                   id="tts-voice"
                   value={ttsSettings.voiceURI ?? ''}
                   onChange={handleVoiceChange}
-                  className="input-editorial"
                 >
                   <option value="">Auto (default)</option>
                   {voices.map((v) => (
@@ -423,25 +439,24 @@ export default function Settings() {
                       {v.name} ({v.lang})
                     </option>
                   ))}
-                </select>
+                </EditorialSelect>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label htmlFor="tts-rate" style={{ fontSize: 14, fontWeight: 500, color: 'var(--editorial-muted)' }}>
+                <label htmlFor="tts-rate" style={fieldLabelStyle}>
                   Speed:
                 </label>
-                <select
+                <EditorialSelect
                   id="tts-rate"
                   value={ttsSettings.rate}
                   onChange={handleRateChange}
-                  className="input-editorial"
                 >
                   <option value={0.5}>Slow</option>
                   <option value={0.75}>Slower</option>
                   <option value={0.95}>Normal</option>
                   <option value={1.25}>Faster</option>
                   <option value={1.5}>Fast</option>
-                </select>
+                </EditorialSelect>
               </div>
             </div>
 
@@ -497,7 +512,7 @@ export default function Settings() {
 
         {hasChanges === true ? (
           <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: 14, color: 'var(--theme-warning)' }}>
+            <p style={{ fontSize: 14, color: tamaguiTheme.themeWarning?.get() as string }}>
               You have unsaved changes. Click &quot;Save Settings&quot; to persist them.
             </p>
           </div>

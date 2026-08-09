@@ -3,7 +3,9 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Effect } from 'effect'
+import { styled, useTheme } from 'tamagui'
 import Layout from '@/components/Layout'
+import { YStack, LoadingSpinner } from '@/components/tamagui'
 import GameQuestion from '@/components/GameQuestion'
 import GameControls from '@/components/GameControls'
 import GameResults from '@/components/GameResults'
@@ -41,41 +43,58 @@ const loadingTextContainerStyles: React.CSSProperties = {
   textAlign: 'center',
 }
 
-const loadingSpinnerStyles: React.CSSProperties = {
-  width: 48,
-  height: 48,
-  borderRadius: '50%',
-  border: '2px solid transparent',
-  borderBottomColor: 'var(--editorial-accent)',
-  animation: 'spin 1s linear infinite',
-  margin: '0 auto 16px',
-}
-
-const transitionIconBgStyles: React.CSSProperties = {
+const TransitionIconBg = styled(YStack, {
   width: 64,
   height: 64,
-  backgroundColor: 'var(--editorial-accent-subtle)',
-  borderRadius: '50%',
-  display: 'flex',
+  backgroundColor: '$editorialAccentSubtle',
+  borderRadius: 9999,
   alignItems: 'center',
   justifyContent: 'center',
-  margin: '0 auto 16px',
-}
+  marginHorizontal: 'auto',
+  marginBottom: 16,
+})
 
-const errorIconBgStyles: React.CSSProperties = {
+const ErrorIconBg = styled(YStack, {
   width: 64,
   height: 64,
-  backgroundColor: 'var(--theme-error-bg)',
-  borderRadius: '50%',
-  display: 'flex',
+  backgroundColor: '$themeErrorBg',
+  borderRadius: 9999,
   alignItems: 'center',
   justifyContent: 'center',
-  margin: '0 auto 16px',
-}
+  marginHorizontal: 'auto',
+  marginBottom: 16,
+})
 
-const transitionIconContainerStyles: React.CSSProperties = {
-  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-}
+// Port of .animate-fade-in (globals.css) for the early-win banner.
+const EarlyWinBox = styled(YStack, {
+  backgroundColor: '$themeSuccessBg',
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: '$themeSuccess',
+  borderRadius: 8,
+  padding: 24,
+  animation: 'lazy',
+  enterStyle: { opacity: 0, y: 10 },
+})
+
+const KeyboardHelpOverlay = styled(YStack, {
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  animation: 'lazy',
+  enterStyle: { opacity: 0, y: 10 },
+})
+
+const KeyboardHelpCard = styled(YStack, {
+  backgroundColor: '$themeCardBg',
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: '$editorialRule',
+  borderRadius: 8,
+  padding: 24,
+  maxWidth: 448,
+  margin: 16,
+})
 
 const errorIconContainerStyles: React.CSSProperties = {
   textAlign: 'center',
@@ -83,6 +102,7 @@ const errorIconContainerStyles: React.CSSProperties = {
 
 export default function Game() {
   const router = useRouter()
+  const theme = useTheme()
   const [gameState, setGameState] = useState<GameState>('loading')
   const [session, setSession] = useState<GameSession | null>(null)
   const [questions, setQuestions] = useState<GameQuestionType[]>([])
@@ -368,8 +388,8 @@ export default function Game() {
       <Layout title="Loading Game...">
         <div style={loadingContainerStyles}>
           <div style={loadingTextContainerStyles}>
-            <div style={loadingSpinnerStyles} />
-            <p style={{ color: 'var(--editorial-muted)' }}>Preparing your civics test...</p>
+            <LoadingSpinner marginHorizontal="auto" marginBottom={16} />
+            <p style={{ color: theme.editorialMuted?.get() as string }}>Preparing your civics test...</p>
           </div>
         </div>
       </Layout>
@@ -382,12 +402,12 @@ export default function Game() {
       <Layout title="Loading Next Question...">
         <div style={loadingContainerStyles}>
           <div style={loadingTextContainerStyles}>
-            <div style={transitionIconContainerStyles}>
-              <div style={transitionIconBgStyles}>
-                <ArrowRight size={32} strokeWidth={1.5} color="var(--editorial-accent)" />
-              </div>
-            </div>
-            <p style={{ color: 'var(--editorial-muted)' }}>Loading next question...</p>
+            {/* The old `pulse` animation referenced keyframes that never
+                existed (pre-existing bug) — dropped. */}
+            <TransitionIconBg>
+              <ArrowRight size={32} strokeWidth={1.5} color={theme.editorialAccent?.get() as string} />
+            </TransitionIconBg>
+            <p style={{ color: theme.editorialMuted?.get() as string }}>Loading next question...</p>
           </div>
         </div>
       </Layout>
@@ -412,11 +432,11 @@ export default function Game() {
     return (
       <Layout title="Game Error">
         <div style={errorIconContainerStyles}>
-          <div style={errorIconBgStyles}>
-            <AlertTriangle size={32} strokeWidth={1.5} color="var(--theme-error)" />
-          </div>
-          <h2 style={{ fontSize: 20, fontWeight: 600, color: 'var(--editorial-ink)', marginBottom: 8 }}>Game Error</h2>
-          <p style={{ color: 'var(--theme-error)', marginBottom: 24 }}>
+          <ErrorIconBg>
+            <AlertTriangle size={32} strokeWidth={1.5} color={theme.themeError?.get() as string} />
+          </ErrorIconBg>
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: theme.editorialInk?.get() as string, marginBottom: 8 }}>Game Error</h2>
+          <p style={{ color: theme.themeError?.get() as string, marginBottom: 24 }}>
             There was an error loading the game. Please try again.
           </p>
           <button
@@ -451,18 +471,13 @@ export default function Game() {
 
         {/* Early Win Option */}
         {showEarlyWinOption && gameState === 'answered' ? (
-          <div className="animate-fade-in" style={{
-            backgroundColor: 'var(--theme-success-bg)',
-            border: '1px solid var(--theme-success)',
-            borderRadius: 8,
-            padding: 24
-          }}>
+          <EarlyWinBox>
             <div style={{ textAlign: 'center' }}>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--theme-success-text)', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <h3 style={{ fontSize: 18, fontWeight: 600, color: theme.themeSuccessText?.get() as string, marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                 <Trophy size={20} strokeWidth={1.5} />
                 Congratulations! You can pass now!
               </h3>
-              <p style={{ color: 'var(--editorial-muted)', marginBottom: 16, fontSize: 14 }}>
+              <p style={{ color: theme.editorialMuted?.get() as string, marginBottom: 16, fontSize: 14 }}>
                 You&apos;ve answered {session.correctAnswers} out of {gameSettings.winThreshold} questions correctly to pass. You can finish
                 now or continue to answer all {questions.length} questions.
               </p>
@@ -483,7 +498,7 @@ export default function Game() {
                 </button>
               </div>
             </div>
-          </div>
+          </EarlyWinBox>
         ) : null}
 
         {/* Game Controls - displaySession! is safe because early returns guarantee session is non-null */}
@@ -498,46 +513,30 @@ export default function Game() {
 
         {/* Keyboard Help */}
         {showKeyboardHelp ? (
-          <div className="animate-fade-in" style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 50
-          }}>
-            <div style={{
-              backgroundColor: 'var(--theme-card-bg)',
-              border: '1px solid var(--editorial-rule)',
-              borderRadius: 8,
-              padding: 24,
-              maxWidth: 448,
-              margin: 16
-            }}>
-              <h3 style={{ fontSize: 18, fontWeight: 600, color: 'var(--editorial-ink)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <KeyboardHelpOverlay
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}
+          >
+            <KeyboardHelpCard>
+              <h3 style={{ fontSize: 18, fontWeight: 600, color: theme.editorialInk?.get() as string, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Keyboard size={18} strokeWidth={1.5} />
                 Keyboard Shortcuts
               </h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14, color: 'var(--editorial-muted)', marginBottom: 24 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: 14, color: theme.editorialMuted?.get() as string, marginBottom: 24 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Select answers:</span>
-                  <span style={{ fontFamily: 'monospace', backgroundColor: 'var(--color-neutral-100)', padding: '4px 8px', borderRadius: 4 }}>
+                  <span style={{ fontFamily: 'monospace', backgroundColor: theme.neutral100?.get() as string, padding: '4px 8px', borderRadius: 4 }}>
                     1-4 or A-D
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Next question:</span>
-                  <span style={{ fontFamily: 'monospace', backgroundColor: 'var(--color-neutral-100)', padding: '4px 8px', borderRadius: 4 }}>
+                  <span style={{ fontFamily: 'monospace', backgroundColor: theme.neutral100?.get() as string, padding: '4px 8px', borderRadius: 4 }}>
                     Enter or Space
                   </span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Restart game:</span>
-                  <span style={{ fontFamily: 'monospace', backgroundColor: 'var(--color-neutral-100)', padding: '4px 8px', borderRadius: 4 }}>
+                  <span style={{ fontFamily: 'monospace', backgroundColor: theme.neutral100?.get() as string, padding: '4px 8px', borderRadius: 4 }}>
                     R
                   </span>
                 </div>
@@ -549,8 +548,8 @@ export default function Game() {
               >
                 Got it!
               </button>
-            </div>
-          </div>
+            </KeyboardHelpCard>
+          </KeyboardHelpOverlay>
         ) : null}
 
         {/* Keyboard Help Toggle */}
@@ -565,7 +564,7 @@ export default function Game() {
             padding: 12,
             borderRadius: '50%',
             cursor: 'pointer',
-            boxShadow: 'var(--shadow-md)',
+            boxShadow: theme.shadowMd?.get() as string,
             zIndex: 40,
             display: 'flex',
             alignItems: 'center',

@@ -9,5 +9,6 @@ export const animations = createAnimations({
   fast: { type: 'timing', duration: 150 },
   medium: { type: 'timing', duration: 200 },
   slow: { type: 'timing', duration: 300 },
+  lazy: { type: 'timing', duration: 500 },
   bouncy: { type: 'spring', damping: 10, mass: 0.9, stiffness: 100 }
 })
