@@ -309,60 +309,6 @@ html.t_dark {
   background-color: var(--color-error-700);
 }
 
-/* Editorial Button Variants */
-.btn-editorial {
-  background-color: var(--editorial-ink);
-  color: var(--editorial-paper);
-  border: 1px solid var(--editorial-ink);
-  border-radius: 3px;
-  padding: 12px 22px;
-  font-family: var(--font-family-serif);
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
-}
-
-.btn-editorial:hover:not(:disabled) {
-  background-color: var(--editorial-accent);
-  border-color: var(--editorial-accent);
-}
-
-.btn-editorial:focus-visible {
-  outline: 2px solid var(--editorial-accent);
-  outline-offset: 2px;
-}
-
-.btn-editorial:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-editorial-ghost {
-  background-color: transparent;
-  color: var(--editorial-ink);
-  border: 1px solid var(--editorial-rule);
-  border-radius: 3px;
-  padding: 11px 20px;
-  font-family: var(--font-family-serif);
-  font-size: 14px;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: border-color 150ms ease, color 150ms ease;
-}
-
-.btn-editorial-ghost:hover:not(:disabled) {
-  border-color: var(--editorial-ink);
-  color: var(--editorial-accent);
-}
-
-.btn-editorial-ghost:focus-visible {
-  outline: 2px solid var(--editorial-accent);
-  outline-offset: 2px;
-}
-
 /* Card Components */
 .card {
   background-color: var(--color-neutral-50);

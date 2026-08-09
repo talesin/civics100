@@ -5,7 +5,7 @@ import { LocalStorageService } from '@/services/LocalStorageService'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
 import { Card, XStack, YStack, Text } from '@/components/tamagui'
-import { styled } from 'tamagui'
+import { styled, Text as TamaguiText } from 'tamagui'
 import { useTextToSpeech } from '@/hooks/useTextToSpeech'
 import SpeakerButton from '@/components/SpeakerButton'
 import { Check } from 'lucide-react'
@@ -145,29 +145,89 @@ const validateAnswerSelection = (
   return selectedArray.every((answer) => correctArray.includes(answer))
 }
 
-const getAnswerButtonClass = (
+// Port of .answer-btn + .answer-selected/-correct/-incorrect/-dimmed
+// (globals.css). Text-based single element so the letter chip's
+// `currentColor` border and the answer text inherit the state color.
+const AnswerButtonFrame = styled(TamaguiText, {
+  tag: 'button',
+  width: '100%',
+  textAlign: 'left',
+  padding: 16,
+  borderRadius: 8,
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: '$editorialRule',
+  display: 'block',
+  backgroundColor: '$editorialPaper',
+  color: '$editorialInk',
+
+  hoverStyle: {
+    borderColor: '$editorialAccent',
+  },
+
+  variants: {
+    answerState: {
+      idle: {},
+      selected: {
+        borderColor: '$editorialAccent',
+        backgroundColor: '$editorialAccentSubtle',
+        color: '$editorialAccent',
+        hoverStyle: { borderColor: '$editorialAccent' },
+      },
+      correct: {
+        borderColor: '$themeSuccess',
+        backgroundColor: '$themeSuccessBg',
+        color: '$themeSuccessText',
+        hoverStyle: { borderColor: '$themeSuccess' },
+      },
+      incorrect: {
+        borderColor: '$themeError',
+        backgroundColor: '$themeErrorBg',
+        color: '$themeErrorText',
+        hoverStyle: { borderColor: '$themeError' },
+      },
+      dimmed: {
+        borderColor: '$editorialRule',
+        backgroundColor: '$neutral100',
+        color: '$editorialMuted',
+        hoverStyle: { borderColor: '$editorialRule' },
+      },
+    },
+  } as const,
+})
+
+type AnswerButtonState = 'idle' | 'selected' | 'correct' | 'incorrect' | 'dimmed'
+
+const AnswerButton = AnswerButtonFrame as unknown as React.ComponentType<
+  Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color' | 'style'> & {
+    readonly answerState?: AnswerButtonState
+    readonly style?: React.CSSProperties
+  }
+>
+
+const getAnswerButtonState = (
   answerIndex: number,
   selectedAnswers: number[],
   hasAnswered: boolean,
   disabled: boolean,
   isMultipleChoice: boolean,
   correctIndices: number[]
-): string => {
+): AnswerButtonState => {
   const isSelected = selectedAnswers.includes(answerIndex)
   const isCorrectAnswer = correctIndices.includes(answerIndex)
 
   if (!hasAnswered && !disabled) {
-    if (isSelected && isMultipleChoice) return 'answer-btn answer-selected'
-    return 'answer-btn'
+    if (isSelected && isMultipleChoice) return 'selected'
+    return 'idle'
   }
 
   if (hasAnswered) {
-    if (isCorrectAnswer) return 'answer-btn answer-correct'
-    if (isSelected) return 'answer-btn answer-incorrect'
-    return 'answer-btn answer-dimmed'
+    if (isCorrectAnswer) return 'correct'
+    if (isSelected) return 'incorrect'
+    return 'dimmed'
   }
 
-  return 'answer-btn answer-dimmed'
+  return 'dimmed'
 }
 
 export default function GameQuestion({ question, onAnswer, disabled = false }: GameQuestionProps) {
@@ -313,12 +373,12 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
         aria-required={true}
       >
         {question.answers.map((answer, index) => (
-          <button
+          <AnswerButton
             key={index}
             onClick={() => handleAnswerSelect(index)}
             disabled={hasAnswered || disabled}
-            className={getAnswerButtonClass(index, selectedAnswers, hasAnswered, disabled, isMultipleChoice, correctIndices)}
-            style={{ cursor: hasAnswered || disabled ? 'default' : 'pointer' }}
+            answerState={getAnswerButtonState(index, selectedAnswers, hasAnswered, disabled, isMultipleChoice, correctIndices)}
+            style={{ cursor: hasAnswered || disabled ? 'default' : 'pointer', transition: 'all 200ms' }}
             role={isMultipleChoice ? "checkbox" : "radio"}
             aria-checked={selectedAnswers.includes(index)}
             aria-describedby={hasAnswered ? 'answer-feedback' : undefined}
@@ -345,7 +405,7 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
                 {answer}
               </span>
             </div>
-          </button>
+          </AnswerButton>
         ))}
       </YStack>
 

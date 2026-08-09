@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { StateAbbreviation } from 'civics2json'
 import { StatesByAbbreviation } from 'civics2json'
-import { XStack, YStack, Text } from '@/components/tamagui'
+import { XStack, YStack, Text, EditorialSelect } from '@/components/tamagui'
 import { styled } from 'tamagui'
 
 interface StateSelectorProps {
@@ -257,18 +257,17 @@ const StateSelector = ({
       </XStack>
 
       <YStack position="relative">
-        <select
+        <EditorialSelect
           id="state-selector"
           value={selectedState}
           onChange={handleStateChange}
-          className="input-editorial"
         >
           {stateOptions.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label} {option.isTerritory ? '(Territory)' : ''}
             </option>
           ))}
-        </select>
+        </EditorialSelect>
       </YStack>
 
       {selectedStateInfo !== undefined ? (

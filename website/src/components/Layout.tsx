@@ -14,7 +14,7 @@ interface LayoutProps {
 }
 
 // Colors resolve through Tamagui theme keys; under the css driver they emit
-// var(--...) references whose values are keyed off html.t_dark (set by
+// CSS variable references whose values are keyed off html.t_dark (set by
 // NextThemeProvider's injected script), so server/client HTML is identical.
 
 const Page = styled(YStack, {
@@ -149,8 +149,8 @@ export default function Layout({
 }: LayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const theme = useTheme()
-  // .get() returns 'var(--...)' under the css driver — SSR-safe for the
-  // next/link styles below, which cannot take Tamagui props.
+  // .get() returns a CSS variable reference under the css driver — SSR-safe
+  // for the next/link styles below, which cannot take Tamagui props.
   const muted = theme.editorialMuted?.get() as string
   const rule = theme.editorialRule?.get() as string
 
