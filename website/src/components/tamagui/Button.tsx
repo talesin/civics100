@@ -94,7 +94,7 @@ export const EditorialButton = styled(TamaguiText, {
   borderRadius: 3,
   paddingVertical: 12,
   paddingHorizontal: 22,
-  fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
+  fontFamily: '$serif',
   fontSize: 15,
   fontWeight: '500',
   letterSpacing: 0.3, // 0.02em at 15px

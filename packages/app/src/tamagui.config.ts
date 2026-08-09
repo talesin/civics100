@@ -3,6 +3,7 @@
 // (animations.ts = css on web, animations.native.ts = moti on iOS/Android).
 import { createTamagui, createTokens } from 'tamagui'
 import { animations } from './animations'
+import { serifFont } from './fonts'
 
 // Map Tailwind design tokens to Tamagui tokens
 const tokens = createTokens({
@@ -263,6 +264,13 @@ const config = createTamagui({
   // (`:root .t_light`) that never match — theme keys silently resolve to
   // nothing. No effect on native (themes resolve in JS there).
   themeClassNameOnRoot: true,
+  // Serif only — deliberately no `body`/`heading` fonts and no defaultFont:
+  // adding a default would restyle every Text/Paragraph site-wide. The
+  // driver is platform-split via ./fonts (web = var(--font-family-serif),
+  // native = platform serif until Phase 6 loads Newsreader).
+  fonts: {
+    serif: serifFont
+  },
   tokens,
   themes: {
     light: lightTheme,

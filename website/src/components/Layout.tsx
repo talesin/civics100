@@ -59,14 +59,14 @@ const LogoMark = styled(YStack, {
 
 const LogoMarkText = styled(Text, {
   color: '$white',
-  fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
+  fontFamily: '$serif',
   fontWeight: '500',
   fontSize: 11,
   letterSpacing: 0.55, // 0.05em at 11px
 })
 
 const TitleText = styled(Text, {
-  fontFamily: 'var(--font-family-serif)', // PHASE5: $fontFamily
+  fontFamily: '$serif',
   fontSize: 17,
   fontWeight: '500',
   color: '$editorialInk',

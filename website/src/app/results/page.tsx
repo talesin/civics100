@@ -165,7 +165,7 @@ export default function Results() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
           <div>
             <p style={eyebrowStyle}>Archive</p>
-            <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(2rem, 5vw, 2.75rem)', fontWeight: 500, color: 'var(--editorial-ink)', letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+            <h1 style={{ fontFamily: 'var(--font-family-serif)', fontSize: 'clamp(2rem, 5vw, 2.75rem)', fontWeight: 500, color: ink, letterSpacing: '-0.02em', lineHeight: 1.1 }}> {/* PHASE5: $fontFamily */}
               Your Test Results
             </h1>
           </div>
