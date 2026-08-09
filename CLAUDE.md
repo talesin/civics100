@@ -87,21 +87,23 @@ npx tsx src/index.ts governors fetch [--force]
 
 ## Website Styling (Tamagui)
 
-### Theme Context
+Colors come from Tamagui theme keys (`packages/app/src/tamagui.config.ts`), not
+CSS variables. Use `styled()` components with `$editorial*`/`$theme*` keys, or
+`useTheme().<key>?.get()` for raw DOM elements, SVGs, and props. See
+[docs/react-guide.md](./docs/react-guide.md) for patterns and the key list.
 
-```typescript
-const { theme } = useThemeContext();  // 'light' | 'dark'
-const colors = themeColors[theme];
-```
-
-### Available CSS Classes
+### Remaining CSS Classes (web-only)
 
 - Cards: `card`, `card-elevated`, `card-interactive`
 - Buttons: `btn-primary`, `btn-secondary`, `btn-success`, `btn-error`
-- Utilities: `focus-ring`, `animate-fade-in`, `text-gradient`
+- Utilities: `focus-ring`, `text-gradient`, `stats-strip`
 - Responsive: `hidden`, `md:flex`, `md:hidden`
 
 ### Notes
 
 - Tailwind CSS removed - do not add Tailwind classes
+- Do not add new `var(--...)` references in components (exceptions:
+  `var(--font-family-serif)` until Phase 5, and InstallPrompt/OfflineIndicator)
 - Test both light and dark themes when modifying styles
+- Visual regression: `npm run test:visual -w website` (20 committed baselines;
+  never `--update-snapshots` outside the sandbox container)

@@ -184,71 +184,92 @@ import type { CustomerProps } from './types';
 
 ## Tamagui Styling
 
-This project uses Tamagui for styling with theme-aware patterns.
+Styling comes from Tamagui theme keys (defined in `packages/app/src/tamagui.config.ts`),
+not CSS variables. Components are `styled()` definitions or use theme-resolving props.
 
-### Theme Context
-
-```tsx
-import { useThemeContext } from '@/context/ThemeContext';
-
-export const Card = ({ children }: Props) => {
-  const { theme } = useThemeContext();
-  const colors = themeColors[theme];
-
-  return (
-    <div style={{ backgroundColor: colors.cardBg, color: colors.text }}>
-      {children}
-    </div>
-  );
-};
-```
-
-### Theme Color Maps
-
-Define color maps for light/dark themes:
+### Styled components (preferred)
 
 ```tsx
-const themeColors = {
-  light: {
-    text: '#111827',
-    cardBg: '#ffffff',
-    border: '#e5e7eb',
-    primary: '#3b82f6',
-  },
-  dark: {
-    text: '#ffffff',
-    cardBg: '#1f2937',
-    border: '#374151',
-    primary: '#60a5fa',
-  },
-};
+import { styled } from 'tamagui';
+import { YStack, Text } from '@/components/tamagui';
+
+const InfoBox = styled(YStack, {
+  backgroundColor: '$backgroundHover',
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: '$editorialRule',
+  borderRadius: 6,
+});
+
+const Label = styled(Text, {
+  fontSize: 14,
+  color: '$editorialMuted',
+});
 ```
 
-### CSS Classes (design-tokens.css)
+### Theme values for native elements and props
 
-Available utility classes:
+When a value must go to a raw DOM element, SVG, or a prop (e.g. lucide `color=`),
+resolve it with `useTheme()` — under the css driver `.get()` returns a CSS
+variable reference, so it is SSR-safe and theme-reactive:
 
-| Class                                       | Purpose              |
-| ------------------------------------------- | -------------------- |
-| `card`, `card-elevated`, `card-interactive` | Card styling         |
-| `btn-primary`, `btn-secondary`              | Button variants      |
-| `btn-success`, `btn-error`                  | Status buttons       |
-| `focus-ring`                                | Focus state styling  |
-| `animate-fade-in`, `animate-bounce-in`      | Animations           |
-| `text-gradient`, `text-balance`             | Text utilities       |
-| `hidden`, `md:flex`, `md:hidden`            | Responsive utilities |
+```tsx
+import { useTheme } from 'tamagui';
+
+const theme = useTheme();
+const muted = theme.editorialMuted?.get() as string;
+// <TrendingUp color={muted} />  or  style={{ color: muted }}
+```
+
+### Theme keys
+
+- Editorial palette: `$editorialInk`, `$editorialPaper`, `$editorialRule`,
+  `$editorialMuted`, `$editorialAccent`, `$editorialAccentSubtle`
+- Parity keys (match the retired `--theme-*` values): `$themeError(+Bg/Text)`,
+  `$themeSuccess(+Bg/Text)`, `$themeWarning(+Bg/Text)`, `$themePrimary`,
+  `$themePurple`, `$themeCardBg`, `$neutral100`, `$shadowMd`
+- NOTE: the pre-existing `$error`/`$success`/`$warning`/`$primary` keys have
+  DIFFERENT values than the `theme*` parity keys — do not mix them up.
+
+### Theme context (state only)
+
+```tsx
+import { useThemeContext } from '@/components/TamaguiProvider';
+const { theme, toggleTheme } = useThemeContext(); // 'light' | 'dark'
+```
+
+Use it for logic (e.g. the dark-mode checkbox), never for colors — colors come
+from theme keys.
+
+### Remaining CSS classes (web-only)
+
+| Class                                       | Purpose                                  |
+| ------------------------------------------- | ---------------------------------------- |
+| `card`, `card-elevated`, `card-interactive` | Card styling                             |
+| `btn-primary`, `btn-secondary`              | Button variants                          |
+| `btn-success`, `btn-error`                  | Status buttons                           |
+| `focus-ring`                                | Focus state styling                      |
+| `stats-strip`, `stats-strip-cell`           | Statistics grid (480/768px breakpoints)  |
+| `hidden`, `md:flex`, `md:hidden`            | Responsive utilities                     |
+
+`.btn-editorial*`, `.input-editorial`, `.badge*`, `.answer-btn*`,
+`.accuracy-*/.prob-*`, `.spinner` and `.animate-*` were replaced by Tamagui
+components in Phase 4 — do not reintroduce them.
 
 ### Tamagui Components
 
 Available in `/src/components/tamagui/`:
 
-- `Button`, `Card`, `Text`, `Heading`, `Paragraph`
+- `Button`, `EditorialButton` (+`ghost` variant), `EditorialInput`,
+  `EditorialSelect`, `LoadingSpinner`, `Card`, `Text`, `Heading`, `Paragraph`
 - Layout: `Stack`, `XStack`, `YStack`, `ZStack`
 
 ### Important Notes
 
 - **Tailwind CSS has been removed** - do not add Tailwind classes
-- Use design tokens from CSS variables when possible
+- **Do not add new `var(--...)` references in components** — use theme keys;
+  the only sanctioned exceptions are `var(--font-family-serif)` (until Phase 5
+  wires `createFont`) and the web-only `InstallPrompt`/`OfflineIndicator`
 - Always test both light and dark themes when modifying styles
 
 ---

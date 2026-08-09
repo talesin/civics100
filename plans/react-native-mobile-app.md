@@ -289,6 +289,54 @@ expo-speech/expo-audio in the same `adapter.native.ts` files; no new expo libs i
 - Trim `globals.css`/`design-tokens.css` to genuinely web-only resets.
 - **Exit:** zero `var(--editorial-*)` in components destined for `packages/app`; Playwright visual diffs of all 5 web routes within tolerance (baseline captured **before** this phase — the guardrail for decision #4).
 
+#### Phase 4 — STATUS (updated 2026-08-09): ✅ DONE — all gates green, execution details in `plans/phase4-design-system-port.md`
+
+Ten stages, one commit each (`39c58e7`..Stage 10). Visual harness: 20 committed
+baselines (5 routes × light/dark × desktop/mobile), suite run twice per stage,
+`phase4-baseline` tag; baselines are valid ONLY in the sandbox container's font
+stack. Key outcomes:
+
+- **Tamagui theme CSS was dead on the website** until `themeClassNameOnRoot:
+  true` (Stage 2) — v1.144 emitted `:root .t_light` descendant selectors that
+  never matched the class ON `<html>`. Activation changed game/settings
+  renders (previously-dead keys); those 8 baselines re-captured with user
+  approval.
+- Theme keys: 6 `editorial*` + exact-parity `theme*` keys (`themeError(+Bg/
+  Text)`, `themeSuccess(+Bg/Text)`, `themeWarning(+Bg/Text)`, `themePrimary`,
+  `themePurple`, `themeCardBg`, `neutral100`, `shadowMd`) in BOTH themes.
+  Pre-existing `error`/`success`/`warning`/`primary` keys have different
+  values and remain untouched.
+- New shared-bound primitives (website-local until Phase 5):
+  `EditorialButton` (+ghost), `EditorialInput`/`EditorialSelect` (DOM-typed
+  recasts), `LoadingSpinner` (ring variant, durationMs), `AnswerButton`
+  variants in GameQuestion. Editorial buttons are Text-based single elements
+  (tag=button) so ghost-hover text color inherits.
+- Deleted CSS: `.btn-editorial*`, `.input-editorial`, `.badge*`,
+  `.answer-btn*`, `.accuracy-*/.prob-*`, `.spinner`, `.animate-*` + 6
+  keyframes. Kept: `.stats-strip` (statistics page consumer; its 480/768px
+  grid breakpoints have no Tamagui media equivalent — re-pointed at the
+  Tamagui-generated `--editorialRule` variable), `@keyframes spin`,
+  `.theme-icon-*`, `.btn-primary/secondary/success`, `card*`, all
+  `--editorial-*`/`--theme-*` definitions (InstallPrompt/OfflineIndicator).
+- `animations` gained a `lazy` (500ms timing) key in BOTH driver files
+  (css + moti) for the former `.animate-fade-in`.
+- Exit gate green: zero `var(--` in shared-bound tsx (grep-verified; only
+  InstallPrompt/OfflineIndicator/serif sites remain), root `npm test`,
+  website lint + `next build`, functional e2e 3/3, visual 20/20 ×2, mobile
+  `tsc` + `expo export` ios+android.
+
+**Phase 5 carry-forwards:** (1) `createFont` obligation — 17 tagged
+`// PHASE5: $fontFamily` sites keep literal `var(--font-family-serif)`;
+(2) SpeakerButton `.speaker-pulse` keyframes → moti loop; (3) LoadingSpinner's
+CSS `spin` animation → Tamagui `Spinner`/moti; (4) ThemeToggle dual-icon CSS
+hack needs a state-based render on native; (5) icon `color=` props already
+theme-resolved — ready for `@tamagui/lucide-icons` swap; (6) table-based
+components (QuestionStatisticsTable, QuestionDetailModal history) keep native
+`<table>`/hover `<style>` injection on web — native needs a list rebuild;
+(7) StatsSummary/stats-strip grids are CSS grid — native needs flex rebuilds;
+(8) `EditorialInput`/`EditorialSelect` are DOM-typed — native swaps to
+TextInput/picker equivalents.
+
 ### Phase 5 — Move components + screens into `packages/app`
 - Least-coupled first: `tamagui/*` wrappers, `StatsSummary`, `GameResults`, `QuestionStatisticsTable`, `StateSelector`, `DistrictSelector`, `GameQuestion`, `GameControls`, `PoliticianVerificationBox`, `QuestionDetailModal`, `SpeakerButton`, `ThemeToggle`, `ErrorBoundary`. Swap icons to `@tamagui/lucide-icons`; route `Layout` nav through `NavigationService`.
 - **Keep web-only in `website`:** `OfflineIndicator`, `InstallPrompt`, `ServiceWorkerRegistration`.

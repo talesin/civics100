@@ -67,7 +67,24 @@ Phase 4 of the React Native port (`plans/react-native-mobile-app.md`): the websi
 - Stage 1 & 9 additionally: `apps/mobile` `tsc --noEmit` + `npx expo export` (shared config), website `next build`, functional e2e `npx playwright test --project=chromium`.
 - Exit: zero `var(--` in shared-bound tsx (grep), all gates green, Phase 4 STATUS written.
 
-## STATUS (updated 2026-08-08, session 2) — Stages 0–2 complete; next: Stage 3
+## STATUS (updated 2026-08-09) — ✅ PHASE 4 COMPLETE — all 10 stages committed, exit gate green
+
+Summary + Phase-5 carry-forwards live in `plans/react-native-mobile-app.md`
+(Phase 4 STATUS block). Stage log below (one commit per stage):
+Stage 0 `39c58e7` baselines · Stage 1 `291e6c8` theme wiring · Stage 2
+`b6a05aa` Layout/ThemeToggle + theme activation · Stage 3 `c02af54`
+editorial primitives · Stage 4 `279b17f` leaf batch 1 · Stage 5 `2b61405`
+leaf batch 2 · Stage 6 `86c38e7` statistics/results · Stage 7 `52507f8`
+game/settings · Stage 8 `e0840e4` home/GameResults · Stage 9 `ec79da4`
+stragglers + CSS trim + exit gate · Stage 10 docs/plans.
+
+Plan deviations (all noted in commit messages): `.stats-strip` KEPT (480/768px
+grid breakpoints have no Tamagui media key; re-pointed at Tamagui-generated
+`--editorialRule`); QuestionStatisticsTable th/tr hover kept as a `<style>`
+injection with theme-resolved colors (no Tamagui hoverStyle on native table
+elements); GameQuestion's `.answer-btn` conversion landed in Stage 9 (missed
+in Stage 7's plan line, which guessed the wrong file); GameResults.test.tsx
+needed NO edits (no compile-time style extraction).
 
 **Environment setup required EVERY session before any Playwright run** (image ships
 Chromium rev 1228, Playwright 1.59.1 expects 1217; symlinks are ephemeral):
@@ -107,7 +124,4 @@ Never `npx playwright install` (no-network rule). Prefer `--workers=2`; check
     bg/border, Restart Game becomes a styled chip, some settings text goes
     muted). Game/settings baselines RE-CAPTURED on disk (8 PNGs);
     home/results/statistics stay pixel-identical to `phase4-baseline`.
-- **NEXT: Stage 3** (editorial Button variants, EditorialInput, LoadingSpinner)
-  per the stage list above. One commit per stage, user confirms each.
-  Git identity is repo-local: Jeremy Clough <jeremy.clough@gmail.com>; trailer
-  `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
+- Stages 3–10: see the stage log at the top of this STATUS section.
