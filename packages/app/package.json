@@ -17,6 +17,11 @@
       "import": "./src/tamagui.config.ts",
       "default": "./src/tamagui.config.ts"
     },
+    "./components": {
+      "types": "./src/components/index.ts",
+      "import": "./src/components/index.ts",
+      "default": "./src/components/index.ts"
+    },
     "./services": {
       "types": "./src/services/index.ts",
       "import": "./src/services/index.ts",
@@ -45,14 +50,22 @@
     "@react-native-async-storage/async-storage": "*",
     "@tamagui/animations-css": "1.144.4",
     "@tamagui/animations-moti": "1.144.4",
+    "@tamagui/lucide-icons": "1.144.4",
     "civics2json": "*",
     "effect": "^3.19.19",
+    "lucide-react": "*",
     "questionnaire": "*",
     "react": "*",
     "tamagui": "1.144.4"
   },
   "peerDependenciesMeta": {
     "@react-native-async-storage/async-storage": {
+      "optional": true
+    },
+    "@tamagui/lucide-icons": {
+      "optional": true
+    },
+    "lucide-react": {
       "optional": true
     }
   },
@@ -62,7 +75,9 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "@tamagui/animations-css": "1.144.4",
     "@tamagui/animations-moti": "1.144.4",
+    "@tamagui/lucide-icons": "1.144.4",
     "@types/react": "^19.2.14",
+    "lucide-react": "^1.14.0",
     "civics2json": "*",
     "effect": "^3.19.19",
     "questionnaire": "*",

@@ -3,7 +3,7 @@ import { GameSession } from '@/types'
 import { isSessionCompleted } from 'questionnaire'
 import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled } from 'tamagui'
-import { Trophy } from 'lucide-react'
+import { Trophy } from 'app/components'
 
 interface GameControlsProps {
   readonly session: GameSession

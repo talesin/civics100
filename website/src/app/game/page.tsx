@@ -15,7 +15,7 @@ import { QuestionDataService } from '@/services/QuestionDataService'
 import { runWithServicesAndErrorHandling } from '@/services/ServiceProvider'
 import { useGameSounds } from '@/hooks/useGameSounds'
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation'
-import { Trophy, Keyboard, ArrowRight, AlertTriangle } from 'lucide-react'
+import { Trophy, Keyboard, ArrowRight, AlertTriangle } from 'app/components'
 import {
   DEFAULT_GAME_SETTINGS,
   GameSession,

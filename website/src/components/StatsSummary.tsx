@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { GameStats } from '@/types'
-import { TrendingUp } from 'lucide-react'
+import { TrendingUp } from 'app/components'
 import { useTheme } from 'tamagui'
 
 interface StatsSummaryProps {

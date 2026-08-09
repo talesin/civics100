@@ -1,5 +1,5 @@
 import React from 'react'
-import { Sun, Moon } from 'lucide-react'
+import { Sun, Moon } from 'app/components'
 import { styled, useTheme } from 'tamagui'
 import { XStack } from '@/components/tamagui'
 import { useThemeContext } from '@/components/TamaguiProvider'

@@ -2,7 +2,7 @@ import React from 'react'
 import { GameResult } from '@/types'
 import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
 import { styled, useTheme } from 'tamagui'
-import { CheckCircle, XCircle, Star } from 'lucide-react'
+import { CheckCircle, XCircle, Star } from 'app/components'
 
 interface GameResultsProps {
   readonly result: GameResult

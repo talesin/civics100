@@ -17,6 +17,7 @@
     "@tamagui/animations-css": "1.144.4",
     "@tamagui/animations-moti": "1.144.4",
     "@tamagui/babel-plugin": "1.144.4",
+    "@tamagui/lucide-icons": "1.144.4",
     "@tamagui/metro-plugin": "1.144.4",
     "app": "*",
     "effect": "^3.19.19",

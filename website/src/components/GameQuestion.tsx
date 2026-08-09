@@ -8,7 +8,7 @@ import { Card, XStack, YStack, Text } from '@/components/tamagui'
 import { styled, Text as TamaguiText } from 'tamagui'
 import { useTextToSpeech } from '@/hooks/useTextToSpeech'
 import SpeakerButton from '@/components/SpeakerButton'
-import { Check } from 'lucide-react'
+import { Check } from 'app/components'
 
 interface GameQuestionProps {
   readonly question: GameQuestionType

@@ -16,6 +16,10 @@
  * Phase 5 replaces this with the real shared screens from packages/app.
  */
 import { SharedBadge } from 'app'
+// Phase-5 Stage-1 probe: pulls the platform-split icon module into the native
+// graph — Metro must resolve icons.native.ts (@tamagui/lucide-icons), keeping
+// lucide-react out of the bundle. Verified by sourcemap grep at export time.
+import { CheckCircle } from 'app/components'
 import { useEffect, useState } from 'react'
 import { Effect } from 'effect'
 import { rawCivicsQuestions, TOTAL_QUESTION_COUNT } from 'questionnaire/data'
@@ -102,9 +106,13 @@ export default function Index() {
         ) : (
           probes.map((p) => (
             <XStack key={p.label} gap="$2" alignItems="flex-start">
-              <Text color={p.ok ? '$success' : '$error'} fontWeight="700">
-                {p.ok ? '✓' : '✗'}
-              </Text>
+              {p.ok ? (
+                <CheckCircle size={16} color="$success" />
+              ) : (
+                <Text color="$error" fontWeight="700">
+                  ✗
+                </Text>
+              )}
               <YStack flex={1}>
                 <Text color="$color" fontWeight="600">
                   {p.label}

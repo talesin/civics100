@@ -8,7 +8,7 @@ import StatsSummary from '@/components/StatsSummary'
 import { EditorialButton, LoadingSpinner, Text } from '@/components/tamagui'
 import { LocalStorageService } from '@/services/LocalStorageService'
 import { GameResult, GameStats } from '@/types'
-import { Star, FileText } from 'lucide-react'
+import { Star, FileText } from 'app/components'
 
 // Port of .badge/.badge-pass/.badge-fail/.badge-warn (globals.css).
 const ResultBadge = styled(Text, {

@@ -36,7 +36,17 @@
     "allowUnreachableCode": false,
 
     "skipDefaultLibCheck": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+
+    // @tamagui/lucide-icons ships per-icon types at types/icons/* but its
+    // exports map omits a "types" condition for the ./icons/* subpaths
+    // (icons.native.ts imports them per-icon to keep Metro from bundling the
+    // whole ~1,760-icon barrel).
+    "paths": {
+      "@tamagui/lucide-icons/icons/*": [
+        "../../node_modules/@tamagui/lucide-icons/types/icons/*"
+      ]
+    }
   },
   "include": ["src"]
 }

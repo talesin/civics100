@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Menu, X, Settings } from 'lucide-react'
+import { Menu, X, Settings } from 'app/components'
 import { styled, useTheme } from 'tamagui'
 import { YStack, XStack, Text } from '@/components/tamagui'
 import ThemeToggle from './ThemeToggle'
