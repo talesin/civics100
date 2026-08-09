@@ -21,59 +21,59 @@ export const Button = styled(Stack, {
 
   hoverStyle: {
     backgroundColor: '$primaryHover',
-    opacity: 0.9,
+    opacity: 0.9
   },
 
   pressStyle: {
-    opacity: 0.8,
+    opacity: 0.8
   },
 
   focusStyle: {
     outlineWidth: 2,
     outlineColor: '$borderColorFocus',
-    outlineStyle: 'solid',
+    outlineStyle: 'solid'
   },
 
   disabledStyle: {
     opacity: 0.5,
-    cursor: 'not-allowed',
+    cursor: 'not-allowed'
   },
 
   variants: {
     variant: {
       primary: {
-        backgroundColor: '$primary',
+        backgroundColor: '$primary'
       },
       secondary: {
-        backgroundColor: '$secondary',
+        backgroundColor: '$secondary'
       },
       outline: {
         backgroundColor: 'transparent',
         borderWidth: 1,
-        borderColor: '$borderColor',
+        borderColor: '$borderColor'
       },
       ghost: {
-        backgroundColor: 'transparent',
-      },
+        backgroundColor: 'transparent'
+      }
     },
 
     size: {
       small: {
-        padding: '$2',
+        padding: '$2'
       },
       medium: {
-        padding: '$3',
+        padding: '$3'
       },
       large: {
-        padding: '$4',
-      },
-    },
+        padding: '$4'
+      }
+    }
   },
 
   defaultVariants: {
     variant: 'primary',
-    size: 'medium',
-  },
+    size: 'medium'
+  }
 } as const)
 
 export type ButtonProps = GetProps<typeof Button>
@@ -102,19 +102,19 @@ export const EditorialButton = styled(TamaguiText, {
 
   hoverStyle: {
     backgroundColor: '$editorialAccent',
-    borderColor: '$editorialAccent',
+    borderColor: '$editorialAccent'
   },
 
   focusVisibleStyle: {
     outlineWidth: 2,
     outlineStyle: 'solid',
     outlineColor: '$editorialAccent',
-    outlineOffset: 2,
+    outlineOffset: 2
   },
 
   disabledStyle: {
     opacity: 0.5,
-    cursor: 'not-allowed',
+    cursor: 'not-allowed'
   },
 
   variants: {
@@ -131,11 +131,11 @@ export const EditorialButton = styled(TamaguiText, {
         hoverStyle: {
           backgroundColor: 'transparent',
           borderColor: '$editorialInk',
-          color: '$editorialAccent',
-        },
-      },
-    },
-  } as const,
+          color: '$editorialAccent'
+        }
+      }
+    }
+  } as const
 })
 
 export type EditorialButtonProps = GetProps<typeof EditorialButton>

@@ -1,4 +1,3 @@
-import React from 'react'
 import { GetProps, styled } from 'tamagui'
 import { YStack } from 'tamagui'
 
@@ -20,10 +19,10 @@ const SpinnerFrame = styled(YStack, {
       true: {
         borderColor: '$editorialRule',
         borderBottomColor: '$editorialRule',
-        borderTopColor: '$editorialAccent',
-      },
-    },
-  } as const,
+        borderTopColor: '$editorialAccent'
+      }
+    }
+  } as const
 })
 
 type SpinnerFrameProps = GetProps<typeof SpinnerFrame>

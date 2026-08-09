@@ -24,13 +24,13 @@ const EditorialInputFrame = styled(TamaguiText, {
 
   focusStyle: {
     outlineStyle: 'none',
-    borderColor: '$editorialAccent',
+    borderColor: '$editorialAccent'
   },
 
   disabledStyle: {
     opacity: 0.5,
-    cursor: 'not-allowed',
-  },
+    cursor: 'not-allowed'
+  }
 })
 
 // Tamagui's Text prop types omit DOM form attributes (value, onChange, ...)

@@ -1,3 +1,6 @@
 export { SharedBadge } from './SharedBadge'
 export type { SharedBadgeProps } from './SharedBadge'
 export * from './icons'
+export { default as GameControls } from './GameControls'
+export { default as GameResults } from './GameResults'
+export { default as PoliticianVerificationBox } from './PoliticianVerificationBox'
