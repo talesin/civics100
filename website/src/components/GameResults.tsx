@@ -1,7 +1,7 @@
 import React from 'react'
 import { GameResult } from '@/types'
 import { Card, XStack, YStack, Text, Button } from '@/components/tamagui'
-import { styled } from 'tamagui'
+import { styled, useTheme } from 'tamagui'
 import { CheckCircle, XCircle, Star } from 'lucide-react'
 
 interface GameResultsProps {
@@ -188,6 +188,8 @@ const FooterText = styled(Text, {
 })
 
 export default function GameResults({ result, onPlayAgain, onViewHistory }: GameResultsProps) {
+  const theme = useTheme()
+
   const getResultMessage = () => {
     if (result.isEarlyFail === true) {
       return 'Test ended — you answered 9 questions incorrectly. Keep studying and try again!'
@@ -200,20 +202,21 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
     }
   }
 
-  const getResultColor = (): string => {
+  // Helpers return theme KEY names; Tamagui resolves them via the color prop.
+  const getResultColor = (): '$themeSuccess' | '$themeError' => {
     if (result.isEarlyFail === true) {
-      return 'var(--theme-error)'
+      return '$themeError'
     } else if (result.isEarlyWin === true || result.percentage >= 60) {
-      return 'var(--theme-success)'
+      return '$themeSuccess'
     } else {
-      return 'var(--theme-error)'
+      return '$themeError'
     }
   }
 
-  const getScoreColor = (): string => {
-    if (result.percentage >= 80) return 'var(--theme-success)'
-    if (result.percentage >= 60) return 'var(--theme-primary)'
-    return 'var(--theme-error)'
+  const getScoreColor = (): '$themeSuccess' | '$themePrimary' | '$themeError' => {
+    if (result.percentage >= 80) return '$themeSuccess'
+    if (result.percentage >= 60) return '$themePrimary'
+    return '$themeError'
   }
 
   const isSuccess = result.isEarlyFail !== true && (result.isEarlyWin === true || result.percentage >= 60)
@@ -226,7 +229,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
             <CheckCircle
               size={40}
               strokeWidth={1.5}
-              color="var(--theme-success)"
+              color={theme.themeSuccess?.get() as string}
             />
           </IconCircle>
         ) : (
@@ -234,7 +237,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
             <XCircle
               size={40}
               strokeWidth={1.5}
-              color="var(--theme-error)"
+              color={theme.themeError?.get() as string}
             />
           </IconCircle>
         )}
@@ -273,7 +276,7 @@ export default function GameResults({ result, onPlayAgain, onViewHistory }: Game
 
       {result.isEarlyWin === true ? (
         <AchievementBanner>
-          <Star size={16} strokeWidth={1.5} color="var(--color-warning-500)" />
+          <Star size={16} strokeWidth={1.5} color={theme.warning?.get() as string} />
           <AchievementText>
             Early Win! You answered {result.correctAnswers} questions correctly and chose to finish early.
           </AchievementText>
