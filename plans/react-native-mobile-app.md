@@ -343,6 +343,51 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
+#### Phase 5 — STATUS (updated 2026-08-10): 🔄 IN PROGRESS — Stages 1–4 committed, components phase ~half done
+
+Running as small staged commits on `native`, one commit per stage, user confirms
+each commit. Per-stage gate suite (all must be green before a stage commits):
+root `npm test` ×2 · website `eslint .` + `NODE_ENV=production next build` ·
+functional e2e chromium-only (`--project=chromium --workers=2`) · visual 20/20 ×2
+(`--workers=2`; baselines valid only in the sandbox container) · `tsc --noEmit`
+in packages/app + apps/mobile · `expo export` ios+android `--source-maps`, then
+grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
+/ @effect/platform-node / @effect/cli modules).
+
+- **Stage 1 (997bbbf):** platform-split icon module — `components/icons.ts`
+  (lucide-react, web) / `icons.native.ts` (@tamagui/lucide-icons per-icon
+  subpaths; never expose the split via package.json "exports" — Metro doesn't
+  apply `.native` substitution there).
+- **Stage 2 (82c3ffb):** platform-split serif font — `fonts.ts` (web: literal
+  `var(--font-family-serif)` chain) / `fonts.native.ts` (Georgia until Phase 6
+  expo-font); `fonts: { serif }` in tamagui.config, no defaultFont on purpose.
+- **Stage 3 (09c90aa):** moved `tamagui/*` wrappers + GameControls,
+  PoliticianVerificationBox, GameResults. New exports subpath
+  `./components/tamagui`; website files become one-line shims
+  (`export { X as default } from 'app/components'`).
+- **Stage 4 (a872c9c):** moved+converted SpeakerButton (SVGs → Volume1/Volume2
+  icons, `.speaker-pulse` keyframes → new `pulse` animation-driver key +
+  opacity ping-pong, no moti dep) and StatsSummary (CSS grid → flex-wrap
+  `flexBasis 20% / $xs 50%`, clamp() → `fontSize 48 / $xs 32`, last two
+  component `var(--font-family-serif)` sites → `$serif`).
+- **Pixel-parity lesson (recurs in later stages):** blockified Tamagui
+  Text/flex children lose the body 16px/1.5 line-height strut that old inline
+  spans/svgs got — pages render ~7px short per converted site. Reproduce the
+  old line boxes explicitly (Stage 4: stat label `lineHeight={21} marginTop={3}`
+  = 24px strut box; speaker icon wrapper `height={29}` = 22px svg + strut
+  descent).
+- **Remaining, least-coupled first:** `useKeyboardNavigation` hook (move or
+  platform-split — sole blocker for GameQuestion) → GameQuestion → ThemeToggle
+  (blocked on `useThemeContext` from the non-moving TamaguiProvider: inject via
+  prop or split the provider) → StateSelector (geolocation), DistrictSelector,
+  QuestionDetailModal (focus trap/body scroll + `<table>`),
+  QuestionStatisticsTable (`<table>` + injected `<style>`), ErrorBoundary
+  (`window.location`) → then the 5 shared screens. Keep web-only:
+  OfflineIndicator, InstallPrompt, ServiceWorkerRegistration.
+- NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
+  fixture type errors) — not a gate; `next build`'s TS pass and jest are the
+  real checks.
+
 ### Phase 6 — Native features & polish
 - Wire native layers (AsyncStorage / `expo-speech` / `expo-audio`); `apps/mobile/app/_layout.tsx` tab/stack nav replacing the web header ([Ch 07 § Tabs](/references/expo/07-expo-router-advanced.md#tabs-navigator) / [§ Stack](/references/expo/07-expo-router-advanced.md#stack-navigator)); `expo-font` ([Ch 10 § Fonts](/references/expo/10-ui-and-assets.md#fonts)), safe-area ([Ch 10 § Safe Areas](/references/expo/10-ui-and-assets.md#safe-areas)), status/system bars ([Ch 10 § System Bars](/references/expo/10-ui-and-assets.md#system-bars)), splash/icon ([Ch 10 § Icon & Splash](/references/expo/10-ui-and-assets.md#icon-splash)), light/dark themes ([Ch 10 § Color Themes](/references/expo/10-ui-and-assets.md#color-themes)). Drop `useKeyboardNavigation` on mobile.
 - **Add `expo-haptics`** (promoted from fast-follow — zero config, no plugin): tactile feedback on answer select/submit is an outsized polish win for a quiz, with graceful no-op when unsupported ([Ch 13 § Haptics](/references/expo/13-sdk-device-sensors-system.md#haptics)).
