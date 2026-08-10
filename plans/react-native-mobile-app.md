@@ -388,6 +388,64 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   fixture type errors) — not a gate; `next build`'s TS pass and jest are the
   real checks.
 
+#### Phase 5 — React 19 guidance (added 2026-08-10, validated against `/references/react-dev`)
+
+Review of the new react.dev reference guide against the implemented code found
+nothing significant to change (zero `forwardRef` in the repo; ErrorBoundary is
+already the canonical sanctioned class shape; existing manual memoization stays
+per compiler guidance). Verified: `useEffectEvent` is a **stable export** in
+both installed Reacts (web 19.2.5, mobile 19.2.3) — safe in shared code. The
+small items below fold into the remaining stages; the larger opportunities
+(reducer conversion, React Compiler, useSyncExternalStore) are deliberately
+deferred to `plans/react19-modernization.md` (post-migration).
+
+- **NEW STAGE (next, before further component moves): packages/app hooks
+  linting.** `packages/app/eslint.config.mjs` has NO react-hooks plugin —
+  everything moved so far is unlinted for hooks rules. Declare
+  `eslint-plugin-react-hooks` (^7.1.1, matching the hoisted copy) as a direct
+  devDep of `packages/app` and add its flat `recommended` config (full 17-rule
+  set, incl. `set-state-in-effect` — website keeps that rule off; the shared
+  package starts clean). Fix the violations in already-moved files:
+  `StatsSummary.tsx` (remove the repo's only `exhaustive-deps` suppression at
+  line 29; rework the rAF count-up to track the current value in an effect
+  local, not a stale state read), `SpeakerButton.tsx` (drop the 750 ms
+  `setInterval`-toggled `dim` state; drive the pulse purely via the Stage-4
+  `pulse` animation key), `useTextToSpeech.ts` (`useMemo`-as-lazy-init for the
+  TtsService handle → `useRef` lazy-init pattern). Standard per-stage gate
+  suite.
+- **Mechanical React 19 idioms to apply as each remaining component moves**
+  (not as separate rewrites — same stage as the move, covered by parity gates):
+  - `useKeyboardNavigation`: rewrite as a subscribe-once effect (`[]` deps)
+    with the key handler as a `useEffectEvent` — currently re-subscribes
+    `document.addEventListener` every render (6-dep `useCallback` + callers
+    passing inline arrows). Platform split for `document` still required.
+  - `DistrictSelector`: replace the hand-rolled latest-ref
+    (`onDistrictChangeRef`, lines 66–69) with `useEffectEvent`.
+  - `QuestionDetailModal`: wrap `onClose` in `useEffectEvent` so the
+    focus-trap/body-scroll effect (dep `[onClose]`) stops tearing down whenever
+    the parent re-renders.
+  - `GameQuestion`: reset-on-question effect (lines 315–319) →
+    `key={question.id}` at call sites (canonical fix); keep the effect with a
+    comment only if parity gates object.
+  - ThemeToggle/provider-split stage: the new shared theme context uses the
+    React 19 `<ThemeContext value={...}>` form (`.Provider` at
+    `TamaguiProvider.tsx:61` is the legacy form).
+  - Statistics screen extraction: `filteredStatistics` state+effect
+    (`statistics/page.tsx:40-104`) → `useMemo`/plain derivation (textbook
+    derived-state-in-effect; double-renders per keystroke today).
+  - `StateSelector`: drop `isMountedRef` ceremony; add a cancellation guard to
+    the unabortable `navigator.permissions.query` effect (lines 177–192).
+  - **GameScreen extraction (user decision: move as-is + these cleanups only,
+    NO reducer conversion now):** replace the three mirrored refs
+    (`sessionRef`/`currentQuestionIndexRef`/`questionsRef`, lines 120–128) with
+    one `useEffectEvent` feeding the `setTimeout` body; drop `mountedRef`
+    ceremony; collapse the settings→init effect chain (lines 213–235) by
+    initializing from the settings-load completion path. Direct `localStorage`
+    keyboard-help reads stay (existing backlog item).
+  - `ErrorBoundary`: keep it a class (react.dev's one sanctioned class use;
+    shape already canonical) — only the planned nav-callback prop replaces
+    `window.location.href`.
+
 ### Phase 6 — Native features & polish
 - Wire native layers (AsyncStorage / `expo-speech` / `expo-audio`); `apps/mobile/app/_layout.tsx` tab/stack nav replacing the web header ([Ch 07 § Tabs](/references/expo/07-expo-router-advanced.md#tabs-navigator) / [§ Stack](/references/expo/07-expo-router-advanced.md#stack-navigator)); `expo-font` ([Ch 10 § Fonts](/references/expo/10-ui-and-assets.md#fonts)), safe-area ([Ch 10 § Safe Areas](/references/expo/10-ui-and-assets.md#safe-areas)), status/system bars ([Ch 10 § System Bars](/references/expo/10-ui-and-assets.md#system-bars)), splash/icon ([Ch 10 § Icon & Splash](/references/expo/10-ui-and-assets.md#icon-splash)), light/dark themes ([Ch 10 § Color Themes](/references/expo/10-ui-and-assets.md#color-themes)). Drop `useKeyboardNavigation` on mobile.
 - **Add `expo-haptics`** (promoted from fast-follow — zero config, no plugin): tactile feedback on answer select/submit is an outsized polish win for a quiz, with graceful no-op when unsupported ([Ch 13 § Haptics](/references/expo/13-sdk-device-sensors-system.md#haptics)).

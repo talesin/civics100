@@ -140,6 +140,45 @@ const reducer = (state: State, action: Action): State => {
 const [state, dispatch] = useReducer(reducer, { _tag: 'Idle' });
 ```
 
+### React 19 Idioms
+
+This project runs React 19.2 on both platforms. Authority:
+`$REFERENCES/react-dev/` (react.dev distilled — esp. chapters 06, 07, 10, 15).
+
+- **`ref` is a normal prop — never `forwardRef`** (deprecated in React 19):
+
+  ```tsx
+  const MyInput = ({ ref, ...props }: MyInputProps) => <input ref={ref} {...props} />;
+  ```
+
+- **Provide context by rendering the context itself**, not `.Provider`
+  (legacy form):
+
+  ```tsx
+  <ThemeContext value={contextValue}>{children}</ThemeContext>
+  ```
+
+- **`useEffectEvent` for reading latest props/state inside effects.** When an
+  effect needs a value but must not re-run when it changes (event callbacks,
+  `setTimeout` bodies, subscribe-once listeners), wrap the read in
+  `useEffectEvent` instead of mirroring it into a ref or widening the dep
+  array. Never suppress `react-hooks/exhaustive-deps` — a suppression is a bug.
+
+  ```tsx
+  const onKey = useEffectEvent((event: KeyboardEvent) => handleKey(event, latestState));
+  useEffect(() => {
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []); // subscribe once; onKey always sees latest state
+  ```
+
+- **`useSyncExternalStore` for browser/external stores** (online status, theme
+  class, voice lists) — not `useState` + `useEffect` + listener. Under Next.js
+  SSR the third argument (`getServerSnapshot`) is mandatory.
+
+- **Reset child state with `key`, not effects.** `key={question.id}` replaces
+  a "reset state when prop changes" `useEffect`.
+
 ---
 
 ## Naming
