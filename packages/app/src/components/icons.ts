@@ -25,6 +25,7 @@ export {
   Sun,
   TrendingUp,
   Trophy,
+  Volume1,
   Volume2,
   X,
   XCircle
