@@ -463,6 +463,7 @@ export default function Game() {
           }}
         >
           <GameQuestion
+            key={currentQuestion.id}
             question={currentQuestion}
             onAnswer={handleAnswer}
             disabled={gameState !== 'playing'}
