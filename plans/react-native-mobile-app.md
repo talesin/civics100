@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-08-10): 🔄 IN PROGRESS — Stages 1–4 committed, components phase ~half done
+#### Phase 5 — STATUS (updated 2026-08-11): 🔄 IN PROGRESS — Stages 1–5 committed, components phase ~half done
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -370,6 +370,18 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   opacity ping-pong, no moti dep) and StatsSummary (CSS grid → flex-wrap
   `flexBasis 20% / $xs 50%`, clamp() → `fontSize 48 / $xs 32`, last two
   component `var(--font-family-serif)` sites → `$serif`).
+- **Stage 5 (6312ded):** react-hooks lint for packages/app (the react-dev "NEW STAGE"
+  below) — `eslint-plugin-react-hooks ^7.1.1` direct devDep + `configs.flat.recommended`
+  (16 rules incl. `set-state-in-effect`; website keeps it off). Root `npm run lint` now
+  enforces it. Fixes: StatsSummary rAF count-up starts from a `displayRef` (suppression
+  removed) + a pre-existing prettier error; SpeakerButton's 750ms clock moved into a
+  mount-scoped `PulsingIcon` (no setState in any effect body). Two documented deviations:
+  (a) "drive the pulse purely via the animation key" is UNIMPLEMENTABLE — the v1.144 css
+  driver emits only transitions, never keyframe loops, so a JS clock must remain (now
+  encapsulated + lint-clean, identical visuals); (b) useTextToSpeech uses a lazy
+  `useState` initializer, NOT `useRef` — the `refs` rule correctly rejects render reads,
+  and `isSupported` needs the value during render. Also declared `@eslint/eslintrc`
+  (was hoisting-only).
 - **Pixel-parity lesson (recurs in later stages):** blockified Tamagui
   Text/flex children lose the body 16px/1.5 line-height strut that old inline
   spans/svgs got — pages render ~7px short per converted site. Reproduce the
@@ -399,8 +411,8 @@ small items below fold into the remaining stages; the larger opportunities
 (reducer conversion, React Compiler, useSyncExternalStore) are deliberately
 deferred to `plans/react19-modernization.md` (post-migration).
 
-- **NEW STAGE (next, before further component moves): packages/app hooks
-  linting.** `packages/app/eslint.config.mjs` has NO react-hooks plugin —
+- **✅ DONE as Stage 5 (6312ded) — packages/app hooks linting** (see STATUS
+  above for the two deviations). `packages/app/eslint.config.mjs` has NO react-hooks plugin —
   everything moved so far is unlinted for hooks rules. Declare
   `eslint-plugin-react-hooks` (^7.1.1, matching the hoisted copy) as a direct
   devDep of `packages/app` and add its flat `recommended` config (full 17-rule
