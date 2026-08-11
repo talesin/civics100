@@ -1,0 +1,100 @@
+/**
+ * Web half of the platform-split keyboard-navigation hook. The native half
+ * (useKeyboardNavigation.native.ts) is a same-signature no-op — `document`
+ * does not exist in React Native and Phase 6 drops keyboard nav on mobile.
+ * The options interface and shortcut set live in useKeyboardNavigation.shared.ts.
+ *
+ * The key handler is a useEffectEvent so the document subscription is created
+ * once ([] deps) while the handler always sees the latest props — previously a
+ * 6-dep useCallback re-subscribed the listener on every game-state change.
+ */
+import { useEffect, useEffectEvent } from 'react'
+import { KEYBOARD_SHORTCUTS, type KeyboardNavigationOptions } from './useKeyboardNavigation.shared'
+
+// All keys that should have default behavior prevented
+const CONTROLLED_KEYS = [
+  ...KEYBOARD_SHORTCUTS.ANSWER_NUMBERS,
+  ...KEYBOARD_SHORTCUTS.ANSWER_LETTERS,
+  ...KEYBOARD_SHORTCUTS.NAVIGATION,
+  ...KEYBOARD_SHORTCUTS.RESTART
+] as const
+
+export const useKeyboardNavigation = ({
+  onSelectAnswer,
+  onNext,
+  onRestart,
+  isAnswered,
+  totalAnswers,
+  disabled = false
+}: KeyboardNavigationOptions) => {
+  const handleKeyPress = useEffectEvent((event: KeyboardEvent) => {
+    if (disabled) return
+
+    const key = event.key.toLowerCase()
+
+    // Prevent default behavior for game controls
+    if (CONTROLLED_KEYS.includes(key as (typeof CONTROLLED_KEYS)[number])) {
+      event.preventDefault()
+    }
+
+    // Answer selection when not yet answered
+    if (!isAnswered) {
+      // Number key selection (1-4)
+      const numberKey = parseInt(event.key)
+      if (
+        numberKey >= 1 &&
+        numberKey <= Math.min(totalAnswers, KEYBOARD_SHORTCUTS.ANSWER_NUMBERS.length)
+      ) {
+        onSelectAnswer(numberKey - 1)
+        return
+      }
+
+      // Letter key selection (A-D)
+      const letterIndex = KEYBOARD_SHORTCUTS.ANSWER_LETTERS.indexOf(
+        key as (typeof KEYBOARD_SHORTCUTS.ANSWER_LETTERS)[number]
+      )
+      if (letterIndex !== -1 && letterIndex < totalAnswers) {
+        onSelectAnswer(letterIndex)
+        return
+      }
+    }
+
+    // Navigation controls (Enter/Space for next when answered)
+    if (
+      KEYBOARD_SHORTCUTS.NAVIGATION.includes(key as (typeof KEYBOARD_SHORTCUTS.NAVIGATION)[number])
+    ) {
+      if (isAnswered) {
+        onNext()
+      }
+      return
+    }
+
+    // Restart with 'R' key
+    if (KEYBOARD_SHORTCUTS.RESTART.includes(key as (typeof KEYBOARD_SHORTCUTS.RESTART)[number])) {
+      onRestart()
+      return
+    }
+
+    // Help with '?' or '/' key
+    if (KEYBOARD_SHORTCUTS.HELP.includes(key as (typeof KEYBOARD_SHORTCUTS.HELP)[number])) {
+      // Using console.info for better semantic meaning
+      console.info(
+        'Keyboard shortcuts: 1-4 or A-D to select answers, Enter/Space for next, R to restart'
+      )
+      return
+    }
+  })
+
+  useEffect(() => {
+    const listener = (event: KeyboardEvent) => handleKeyPress(event)
+    document.addEventListener('keydown', listener)
+    return () => {
+      document.removeEventListener('keydown', listener)
+    }
+  }, [])
+
+  return {
+    // Return keyboard shortcut info for potential use in UI
+    shortcuts: KEYBOARD_SHORTCUTS
+  }
+}
