@@ -2,28 +2,14 @@
 
 import '@tamagui/core/reset.css'
 import { useServerInsertedHTML } from 'next/navigation'
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { NextThemeProvider, useThemeSetting } from '@tamagui/next-theme'
 import { TamaguiProvider as TamaguiProviderCore } from 'tamagui'
 import tamaguiConfig from 'app/tamagui.config'
+import { ThemeContext, type ThemeContextValue, type ThemeName } from 'app'
 
-type ThemeName = 'light' | 'dark'
-
-interface ThemeContextValue {
-  theme: ThemeName
-  toggleTheme: () => void
-  setTheme: (theme: ThemeName) => void
-}
-
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
-
-export function useThemeContext() {
-  const context = useContext(ThemeContext)
-  if (context === undefined) {
-    throw new Error('useThemeContext must be used within a TamaguiProvider')
-  }
-  return context
-}
+// Re-export the shared hook so existing '@/components/TamaguiProvider' imports keep working.
+export { useThemeContext } from 'app'
 
 // Inner component that bridges @tamagui/next-theme → ThemeContext
 function ThemeContextBridge({ children }: { readonly children: React.ReactNode }) {
@@ -58,9 +44,9 @@ function ThemeContextBridge({ children }: { readonly children: React.ReactNode }
   }), [theme, themeSetting])
 
   return (
-    <ThemeContext.Provider value={contextValue}>
+    <ThemeContext value={contextValue}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContext>
   )
 }
 
