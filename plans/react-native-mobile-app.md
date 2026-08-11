@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-08-11): 🔄 IN PROGRESS — Stages 1–7 committed, GameQuestion now shared
+#### Phase 5 — STATUS (updated 2026-08-11): 🔄 IN PROGRESS — Stages 1–8 committed, theme context now shared
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -415,15 +415,34 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   bundle, so the hook/icon native halves resolve for the first time
   (`useKeyboardNavigation.native.ts`, `.shared.ts`, `icons.native.ts` present;
   web halves absent; forbidden-module greps still 0).
+- **Stage 8:** theme context split + ThemeToggle → `packages/app`. New
+  `src/ThemeContext.tsx` (React 19 idioms: `use(ThemeContext)`, providers use
+  the `<ThemeContext value>` form; exported from the root `app` entry — no new
+  exports subpath). Website `TamaguiProvider` keeps PROVIDING it (the DOM-sync
+  `ThemeContextBridge` stays website-side where `set-state-in-effect` is off)
+  and re-exports `useThemeContext` so `settings/page.tsx` and the tests are
+  untouched. ThemeToggle is a **platform split**, not the planned state-based
+  single render: the state-based web version hydration-mismatches (server
+  renders the light icon, client resolves dark → React #418, and the recovery
+  re-render wipes next-theme's `t_dark` class from `<html>` because React owns
+  `<html>` in the app router — every dark visual snapshot rendered LIGHT,
+  ~97% pixel diff). So `ThemeToggle.tsx` (web) keeps the dual-icon
+  `.theme-icon-*` CSS hack verbatim (globals.css block retained) and
+  `ThemeToggle.native.tsx` renders state-based off the shared context (no SSR
+  on native). This was the plan's pre-approved fallback. Sourcemap: 
+  `ThemeContext.tsx` + `ThemeToggle.native.tsx` in the native bundle, web half
+  absent, forbidden-module greps 0 (checked against the `sources` array —
+  `sourcesContent` comment hits are false positives). Gate note: heavy suites
+  ran at `--workers=1` this session — zombie accumulation (291, unreapable,
+  parented to PID 1) left too little pids.max headroom for `--workers=2`
+  chromium; e2e 3/3 + visual 20/20 ×2 all green at workers=1.
 - **Pixel-parity lesson (recurs in later stages):** blockified Tamagui
   Text/flex children lose the body 16px/1.5 line-height strut that old inline
   spans/svgs got — pages render ~7px short per converted site. Reproduce the
   old line boxes explicitly (Stage 4: stat label `lineHeight={21} marginTop={3}`
   = 24px strut box; speaker icon wrapper `height={29}` = 22px svg + strut
   descent).
-- **Remaining, least-coupled first:** ThemeToggle
-  (blocked on `useThemeContext` from the non-moving TamaguiProvider: inject via
-  prop or split the provider) → StateSelector (geolocation), DistrictSelector,
+- **Remaining, least-coupled first:** StateSelector (geolocation), DistrictSelector,
   QuestionDetailModal (focus trap/body scroll + `<table>`),
   QuestionStatisticsTable (`<table>` + injected `<style>`), ErrorBoundary
   (`window.location`) → then the 5 shared screens. Keep web-only:
