@@ -23,20 +23,30 @@ const SpeakerPressable = styled(Stack, {
 
 // While speaking, a 750ms interval ping-pongs the icon opacity through the
 // `pulse` animation key, so both drivers (CSS on web, moti on native) render
-// the old 1.5s speaker-pulse keyframe cycle.
-const SpeakerButton: React.FC<SpeakerButtonProps> = ({ onPress, isSpeaking }) => {
-  const theme = useTheme()
-  const iconColor = theme.color?.get() as string
+// the old 1.5s speaker-pulse keyframe cycle. The css driver only emits
+// transitions (no keyframe loops), so a JS clock is required; it lives in a
+// component mounted only while speaking, so the phase resets on each start
+// without any setState in an effect body.
+// height 29 preserves the old inline-svg line box: 22px icon on the baseline
+// plus ~7px of strut descent below it.
+const PulsingIcon: React.FC<{ readonly children: React.ReactNode }> = ({ children }) => {
   const [dim, setDim] = useState(false)
 
   useEffect(() => {
-    if (!isSpeaking) {
-      setDim(false)
-      return undefined
-    }
     const interval = setInterval(() => setDim((d) => !d), 750)
     return () => clearInterval(interval)
-  }, [isSpeaking])
+  }, [])
+
+  return (
+    <YStack animation="pulse" opacity={dim ? 0.5 : 1} height={29} alignItems="center">
+      {children}
+    </YStack>
+  )
+}
+
+const SpeakerButton: React.FC<SpeakerButtonProps> = ({ onPress, isSpeaking }) => {
+  const theme = useTheme()
+  const iconColor = theme.color?.get() as string
 
   return (
     <SpeakerPressable
@@ -49,20 +59,15 @@ const SpeakerButton: React.FC<SpeakerButtonProps> = ({ onPress, isSpeaking }) =>
           } as Record<string, unknown>)
         : {})}
     >
-      {/* height 29 preserves the old inline-svg line box: 22px icon on the
-          baseline plus ~7px of strut descent below it. */}
-      <YStack
-        animation="pulse"
-        opacity={isSpeaking && dim ? 0.5 : 1}
-        height={29}
-        alignItems="center"
-      >
-        {isSpeaking ? (
+      {isSpeaking ? (
+        <PulsingIcon>
           <Volume2 size={22} color={iconColor} strokeWidth={2} />
-        ) : (
+        </PulsingIcon>
+      ) : (
+        <YStack height={29} alignItems="center">
           <Volume1 size={22} color={iconColor} strokeWidth={2} />
-        )}
-      </YStack>
+        </YStack>
+      )}
     </SpeakerPressable>
   )
 }

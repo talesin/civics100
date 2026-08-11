@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTheme } from 'tamagui'
 import { GameStats } from '../types'
 import { Text, XStack, YStack } from './tamagui'
@@ -10,9 +10,12 @@ interface StatsSummaryProps {
 
 function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string }) {
   const [display, setDisplay] = useState(value)
+  // Tracks the currently displayed value so a new tween starts from wherever
+  // the last one left off, without `display` restarting the effect mid-tween.
+  const displayRef = useRef(value)
 
   useEffect(() => {
-    const start = display
+    const start = displayRef.current
     const delta = value - start
     if (delta === 0) return undefined
     const duration = 900
@@ -21,12 +24,13 @@ function AnimatedNumber({ value, suffix = '' }: { value: number; suffix?: string
     const tick = (now: number) => {
       const t = Math.min(1, (now - startedAt) / duration)
       const eased = 1 - Math.pow(1 - t, 3)
-      setDisplay(Math.round(start + delta * eased))
+      const next = Math.round(start + delta * eased)
+      displayRef.current = next
+      setDisplay(next)
       if (t < 1) raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   return (
@@ -74,7 +78,12 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
 
   const statItems = [
     { value: stats.totalGames, suffix: '', label: 'Tests Taken' },
-    { value: stats.averageScore, suffix: '%', label: 'Average Score', accent: stats.averageScore >= 60 },
+    {
+      value: stats.averageScore,
+      suffix: '%',
+      label: 'Average Score',
+      accent: stats.averageScore >= 60
+    },
     { value: stats.bestScore, suffix: '%', label: 'Best Score', accent: stats.bestScore === 100 },
     { value: stats.earlyWins, suffix: '', label: 'Early Wins' },
     { value: stats.earlyFailures, suffix: '', label: 'Early Failures' }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Effect, Fiber } from 'effect'
 import { AppRuntime } from '../services/ServiceLayer'
 import { TtsService } from '../services/TtsService'
@@ -41,10 +41,11 @@ export const useTextToSpeech = ({
 }: UseTextToSpeechOptions): UseTextToSpeechReturn => {
   const [isSpeaking, setIsSpeaking] = useState(false)
   const fiberRef = useRef<Fiber.RuntimeFiber<void> | null>(null)
-  // Guard SSR: don't build the runtime during server render.
-  const tts = useMemo(
-    () => (typeof window === 'undefined' ? null : AppRuntime.runSync(TtsService)),
-    []
+  // Guard SSR: don't build the runtime during server render. Lazy useState
+  // initializer = the render-safe once-only init (the value is needed during
+  // render for `isSupported`, so a ref would violate react-hooks/refs).
+  const [tts] = useState<TtsService | null>(() =>
+    typeof window === 'undefined' ? null : AppRuntime.runSync(TtsService)
   )
   const supported = tts !== null && tts.isSupported()
 

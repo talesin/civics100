@@ -6,6 +6,7 @@ import js from '@eslint/js'
 import { FlatCompat } from '@eslint/eslintrc'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import prettier from 'eslint-plugin-prettier'
+import reactHooks from 'eslint-plugin-react-hooks'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -37,6 +38,9 @@ export default [
     'plugin:@typescript-eslint/recommended',
     'plugin:prettier/recommended'
   ),
+  // Full recommended set (incl. set-state-in-effect, which website keeps off) —
+  // shared code starts clean and stays clean.
+  reactHooks.configs.flat.recommended,
   {
     plugins: {
       '@typescript-eslint': typescriptEslint,
