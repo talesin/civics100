@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-08-11): 🔄 IN PROGRESS — Stages 1–5 committed, components phase ~half done
+#### Phase 5 — STATUS (updated 2026-08-11): 🔄 IN PROGRESS — Stages 1–6 committed, components phase ~half done
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -382,14 +382,27 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   `useState` initializer, NOT `useRef` — the `refs` rule correctly rejects render reads,
   and `isSupported` needs the value during render. Also declared `@eslint/eslintrc`
   (was hoisting-only).
+- **Stage 6:** `useKeyboardNavigation` → `packages/app/src/hooks/`, rewritten
+  React-19 style: key handler is a `useEffectEvent`, so the `document`
+  subscription is created once (`[]` deps) instead of re-subscribing on every
+  game-state change (old 6-dep `useCallback`). Platform split:
+  `useKeyboardNavigation.native.ts` is a same-signature no-op (no `document` in
+  RN; Phase 6 drops keyboard nav on mobile); shared options interface +
+  `KEYBOARD_SHORTCUTS` live in `useKeyboardNavigation.shared.ts` so the halves
+  can't drift. Exported via the existing non-split `hooks/index.ts`; website
+  file is now a one-line shim. Sourcemap note: mobile bundles no `app/hooks`
+  modules yet (nothing imports them until GameQuestion moves in Stage 7), so
+  the "native half resolved" grep legitimately returns 0 — the leak greps
+  (web half / lucide-react / @effect) are the binding checks this stage.
+  Live-verified beyond the gates: throwaway e2e pressed "2" then Enter on
+  /game — select + advance both work through the rewritten hook.
 - **Pixel-parity lesson (recurs in later stages):** blockified Tamagui
   Text/flex children lose the body 16px/1.5 line-height strut that old inline
   spans/svgs got — pages render ~7px short per converted site. Reproduce the
   old line boxes explicitly (Stage 4: stat label `lineHeight={21} marginTop={3}`
   = 24px strut box; speaker icon wrapper `height={29}` = 22px svg + strut
   descent).
-- **Remaining, least-coupled first:** `useKeyboardNavigation` hook (move or
-  platform-split — sole blocker for GameQuestion) → GameQuestion → ThemeToggle
+- **Remaining, least-coupled first:** GameQuestion → ThemeToggle
   (blocked on `useThemeContext` from the non-moving TamaguiProvider: inject via
   prop or split the provider) → StateSelector (geolocation), DistrictSelector,
   QuestionDetailModal (focus trap/body scroll + `<table>`),
