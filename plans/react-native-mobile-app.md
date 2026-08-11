@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-08-11): 🔄 IN PROGRESS — Stages 1–6 committed, components phase ~half done
+#### Phase 5 — STATUS (updated 2026-08-11): 🔄 IN PROGRESS — Stages 1–7 committed, GameQuestion now shared
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -382,7 +382,7 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   `useState` initializer, NOT `useRef` — the `refs` rule correctly rejects render reads,
   and `isSupported` needs the value during render. Also declared `@eslint/eslintrc`
   (was hoisting-only).
-- **Stage 6:** `useKeyboardNavigation` → `packages/app/src/hooks/`, rewritten
+- **Stage 6 (cb3ee88):** `useKeyboardNavigation` → `packages/app/src/hooks/`, rewritten
   React-19 style: key handler is a `useEffectEvent`, so the `document`
   subscription is created once (`[]` deps) instead of re-subscribing on every
   game-state change (old 6-dep `useCallback`). Platform split:
@@ -396,13 +396,32 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   (web half / lucide-react / @effect) are the binding checks this stage.
   Live-verified beyond the gates: throwaway e2e pressed "2" then Enter on
   /game — select + advance both work through the rewritten hook.
+- **Stage 7 (2b7a2ca):** GameQuestion → `packages/app/src/components/`.
+  Conversions in the move: two inline feedback SVGs → `Check`/`X` from the
+  shared icon module; the DOM-typed `AnswerButton` cast (styled TamaguiText
+  `tag: 'button'` + `ButtonHTMLAttributes`) → `styled(YStack, { tag: 'button' })`
+  with `onPress` (cursor/transition inline style stays web-only behind `isWeb`;
+  `role`/`aria-*`/`data-answer-index` pass through — e2e depends on the data
+  attr); the CSS `currentColor` inheritance (chip border/glyph/answer text
+  follow the button state color) has no RN equivalent → an `answerStateColor`
+  resolver maps state → `useTheme().<key>?.get()` using the same theme keys the
+  old `color` variants used; answer badge/text raw `<div>/<span>` → Tamagui
+  stacks/Text with explicit `lineHeight={21}` (strut lesson — visual gate
+  passed first run, no drift); reset-on-question effect deleted (would violate
+  `set-state-in-effect`) → `key={currentQuestion.id}` at the sole call site
+  `game/page.tsx`; `noOp` `useCallback` → module-level constant (the Stage 6
+  hook reads options via `useEffectEvent`, stability irrelevant). Sourcemap
+  milestone: `app/components` index now pulls GameQuestion into the native
+  bundle, so the hook/icon native halves resolve for the first time
+  (`useKeyboardNavigation.native.ts`, `.shared.ts`, `icons.native.ts` present;
+  web halves absent; forbidden-module greps still 0).
 - **Pixel-parity lesson (recurs in later stages):** blockified Tamagui
   Text/flex children lose the body 16px/1.5 line-height strut that old inline
   spans/svgs got — pages render ~7px short per converted site. Reproduce the
   old line boxes explicitly (Stage 4: stat label `lineHeight={21} marginTop={3}`
   = 24px strut box; speaker icon wrapper `height={29}` = 22px svg + strut
   descent).
-- **Remaining, least-coupled first:** GameQuestion → ThemeToggle
+- **Remaining, least-coupled first:** ThemeToggle
   (blocked on `useThemeContext` from the non-moving TamaguiProvider: inject via
   prop or split the provider) → StateSelector (geolocation), DistrictSelector,
   QuestionDetailModal (focus trap/body scroll + `<table>`),
