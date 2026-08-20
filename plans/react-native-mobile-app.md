@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-08-11): 🔄 IN PROGRESS — Stages 1–8 committed, theme context now shared
+#### Phase 5 — STATUS (updated 2026-08-20): 🔄 IN PROGRESS — Stages 1–9 committed, selectors now shared
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -436,14 +436,35 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   ran at `--workers=1` this session — zombie accumulation (291, unreapable,
   parented to PID 1) left too little pids.max headroom for `--workers=2`
   chromium; e2e 3/3 + visual 20/20 ×2 all green at workers=1.
+- **Stage 9 (b684353):** StateSelector + DistrictSelector →
+  `packages/app/src/components/` (non-split — one file serves both platforms).
+  DistrictSelector went further than the planned useEffectEvent swap: the load
+  effect was synchronous state derivation and tripped `set-state-in-effect`,
+  so `districts`/`error` are now a `useMemo` over `getDistrictsForState` (the
+  Stage-13 derivation pattern applied early), the unreachable one-frame
+  loading UI was deleted, and only the parent-reconcile effect remains,
+  calling a `useEffectEvent`-wrapped `onDistrictChange`. StateSelector:
+  `isMountedRef` ceremony dropped (React 18+ tolerates post-unmount setState);
+  the unabortable `navigator.permissions.query` effect got a `cancelled`
+  cleanup guard; geolocation checks centralized in `hasGeolocation()` (RN has
+  no `navigator.geolocation` → degrades to the plain dropdown). SVG
+  conversions per Stage 4/7 precedent: map pin → `MapPin` (added to both icon
+  halves), spinner arcs → `LoadingSpinner`; neither icon appears in the
+  visual baselines (the detect button hides once the permission query
+  resolves "prompt"), so those swaps are gate-green but not pixel-verified.
+  Infra: `website/jest.config.ts` now maps `civics2json` →
+  `packages/civics2json/src/types.ts` — its exports map is ESM-only (same
+  problem as `app`), and `StatesByAbbreviation` is the first VALUE import of
+  it to reach website jest through the `app/components` barrel (type-only
+  imports were elided, which is why Stages 3–8 never hit this). Gates all
+  green; e2e + visual ran at `--workers=2` (fresh container, 27 pids).
 - **Pixel-parity lesson (recurs in later stages):** blockified Tamagui
   Text/flex children lose the body 16px/1.5 line-height strut that old inline
   spans/svgs got — pages render ~7px short per converted site. Reproduce the
   old line boxes explicitly (Stage 4: stat label `lineHeight={21} marginTop={3}`
   = 24px strut box; speaker icon wrapper `height={29}` = 22px svg + strut
   descent).
-- **Remaining, least-coupled first:** StateSelector (geolocation), DistrictSelector,
-  QuestionDetailModal (focus trap/body scroll + `<table>`),
+- **Remaining, least-coupled first:** QuestionDetailModal (focus trap/body scroll + `<table>`),
   QuestionStatisticsTable (`<table>` + injected `<style>`), ErrorBoundary
   (`window.location`) → then the 5 shared screens. Keep web-only:
   OfflineIndicator, InstallPrompt, ServiceWorkerRegistration.
