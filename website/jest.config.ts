@@ -24,6 +24,9 @@ const config: Config = {
     // transforms it (its exports map is ESM-only, which jest-resolve can't consume).
     '^app$': '<rootDir>/../packages/app/src/index.ts',
     '^app/(.*)$': '<rootDir>/../packages/app/src/$1',
+    // Same ESM-only-exports problem: civics2json value imports (StateSelector's
+    // StatesByAbbreviation) reach jest-resolve once app components use them.
+    '^civics2json$': '<rootDir>/../packages/civics2json/src/types.ts',
     '^questionnaire$': '<rootDir>/test/mocks/questionnaire.ts',
     '^questionnaire/data$': '<rootDir>/test/mocks/questionnaire-data.ts',
     '^slash$': '<rootDir>/test/mocks/slash.js',

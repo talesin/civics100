@@ -18,6 +18,7 @@ export {
   CheckCircle,
   FileText,
   Keyboard,
+  MapPin,
   Menu,
   Moon,
   Settings,
