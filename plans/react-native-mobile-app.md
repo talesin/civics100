@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-08-20): 🔄 IN PROGRESS — Stages 1–9 committed, selectors now shared
+#### Phase 5 — STATUS (updated 2026-09-07): 🔄 IN PROGRESS — Stages 1–10 committed, last non-screen components shared
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -458,16 +458,37 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   it to reach website jest through the `app/components` barrel (type-only
   imports were elided, which is why Stages 3–8 never hit this). Gates all
   green; e2e + visual ran at `--workers=2` (fresh container, 27 pids).
+- **Stage 10 (5739f19):** QuestionDetailModal + QuestionStatisticsTable →
+  `packages/app/src/components/` as **platform splits**. Web halves moved
+  verbatim (raw `<table>`, injected `<style>`, focus trap, body scroll lock —
+  Phase-4 carry-forward #6); the one React 19 change is the modal's
+  focus-trap effect reaching `onClose` through a `useEffectEvent`, so parent
+  re-renders no longer tear the trap down and re-steal focus. Props
+  interfaces + the pure accuracy/probability/truncate helpers live in
+  `.shared.ts` modules (Stage 6 precedent); `.native.tsx` halves are the
+  agreed Phase 5 stubs (plain Tamagui modal / question+accuracy list — real
+  native UX in Phase 6). Website files are one-line shims; the sole consumer
+  `statistics/page.tsx` is untouched. Gates all green at `--workers=2`
+  (visual 20/20 ×2, no strut adjustments — nothing was blockified). Sourcemap
+  (`sources` array): both `.native.tsx` halves + `QuestionStatisticsTable
+  .shared.ts` resolved, web halves absent, forbidden greps 0;
+  `QuestionDetailModal.shared.ts` is legitimately absent — it exports only a
+  type, so the import elides (same nuance as Stage 6). Manual check note: the
+  Next 16 dev server blocks its client bundle for non-localhost origins
+  (`allowedDevOrigins`), so from the OrbStack container IP every page spins —
+  serve the production build (`next start`, `distDir: 'dist'`) for host-side
+  manual checks instead of editing next.config.
 - **Pixel-parity lesson (recurs in later stages):** blockified Tamagui
   Text/flex children lose the body 16px/1.5 line-height strut that old inline
   spans/svgs got — pages render ~7px short per converted site. Reproduce the
   old line boxes explicitly (Stage 4: stat label `lineHeight={21} marginTop={3}`
   = 24px strut box; speaker icon wrapper `height={29}` = 22px svg + strut
   descent).
-- **Remaining, least-coupled first:** QuestionDetailModal (focus trap/body scroll + `<table>`),
-  QuestionStatisticsTable (`<table>` + injected `<style>`), ErrorBoundary
-  (`window.location`) → then the 5 shared screens. Keep web-only:
-  OfflineIndicator, InstallPrompt, ServiceWorkerRegistration.
+- **Remaining, least-coupled first:** ErrorBoundary (`window.location` →
+  `onNavigateHome` callback, fallback markup → Tamagui) → then the 5 shared
+  screens (Results, Statistics, Home, Settings, Game) → mobile route
+  wrappers. Keep web-only: OfflineIndicator, InstallPrompt,
+  ServiceWorkerRegistration, Layout.
 - NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
   fixture type errors) — not a gate; `next build`'s TS pass and jest are the
   real checks.
