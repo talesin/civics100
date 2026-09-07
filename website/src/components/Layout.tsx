@@ -6,6 +6,12 @@ import { YStack, XStack, Text } from '@/components/tamagui'
 import ThemeToggle from './ThemeToggle'
 import { ErrorBoundary } from './ErrorBoundary'
 
+// Hard navigation on purpose: a full document load discards whatever client
+// state caused the throw, which a router.push would carry across.
+const navigateHomeHard = (): void => {
+  window.location.href = '/'
+}
+
 interface LayoutProps {
   readonly children: React.ReactNode
   readonly title?: string
@@ -251,7 +257,7 @@ export default function Layout({
 
       <Main id="main-content" role="main">
         <Container>
-          <ErrorBoundary>
+          <ErrorBoundary onNavigateHome={navigateHomeHard}>
             {children}
           </ErrorBoundary>
         </Container>
