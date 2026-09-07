@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-09-07): 🔄 IN PROGRESS — Stages 1–10 committed, last non-screen components shared
+#### Phase 5 — STATUS (updated 2026-09-07): 🔄 IN PROGRESS — Stages 1–11 committed, all components shared; screens next
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -478,16 +478,35 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   (`allowedDevOrigins`), so from the OrbStack container IP every page spins —
   serve the production build (`next start`, `distDir: 'dist'`) for host-side
   manual checks instead of editing next.config.
+- **Stage 11 (ac00e03):** ErrorBoundary → `packages/app/src/components/`
+  (non-split; stays a class). `window.location.href = '/'` → optional
+  `onNavigateHome` prop; the boundary resets its own error state before
+  calling it (soft route change on native lands on a rendering tree), Layout
+  passes a hard navigation on web (unchanged behaviour), Go Home hides when
+  the prop is absent. Fallback markup → Tamagui: warning SVG →
+  `AlertTriangle`; raw `.btn-primary` button → styled TamaguiText port
+  (`$primary`/`$primaryHover` are exactly the primary-600/700 hexes) with
+  GoHomeButton's geometry; raw `<pre>` → Text keeping the pre tag on web;
+  `50vh` web-only via `isWeb` spread. The wider button pair overflowed a
+  phone-width row and wrapped mid-label on the first attempt →
+  `numberOfLines: 1` on the buttons + `flexWrap` on the action row. **Parity
+  method for UI outside the baselines:** render old (`git show HEAD:…` into a
+  `temp_` component) and new on a throwaway `temp_` page that throws after
+  mount (throwing during render breaks prerender), screenshot both with
+  `seedPage` light+dark, desktop+mobile, pixel-diff with pngjs — page height
+  identical, only the icon glyph + Try Again geometry differ. `process.env`
+  in packages/app must use bracket access (`noPropertyAccessFromIndexSignature`);
+  Turbopack still inlines it (no `process.env` left in client chunks).
 - **Pixel-parity lesson (recurs in later stages):** blockified Tamagui
   Text/flex children lose the body 16px/1.5 line-height strut that old inline
   spans/svgs got — pages render ~7px short per converted site. Reproduce the
   old line boxes explicitly (Stage 4: stat label `lineHeight={21} marginTop={3}`
   = 24px strut box; speaker icon wrapper `height={29}` = 22px svg + strut
   descent).
-- **Remaining, least-coupled first:** ErrorBoundary (`window.location` →
-  `onNavigateHome` callback, fallback markup → Tamagui) → then the 5 shared
-  screens (Results, Statistics, Home, Settings, Game) → mobile route
-  wrappers. Keep web-only: OfflineIndicator, InstallPrompt,
+- **Remaining:** the 5 shared screens, least-coupled first (Results,
+  Statistics, Home, Settings, Game; new `packages/app/src/screens/` +
+  `./screens` exports subpath; web routes become thin
+  `<Layout><Screen/></Layout>` wrappers) → mobile route wrappers. Keep web-only: OfflineIndicator, InstallPrompt,
   ServiceWorkerRegistration, Layout.
 - NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
   fixture type errors) — not a gate; `next build`'s TS pass and jest are the
