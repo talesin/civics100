@@ -11,7 +11,7 @@ Quick reference guide for coding standards in this project. Each section links t
 | Effect-TS           | [effect-ts-guide.md](./effect-ts-guide.md)         | Services, layers, error handling     |
 | Functional patterns | [functional-patterns.md](./functional-patterns.md) | ROP, composition, immutability       |
 | Type design         | [type-design.md](./type-design.md)                 | Discriminated unions, branded types  |
-| React               | [react-guide.md](./react-guide.md)                 | Components, hooks, Tamagui           |
+| React               | [react-guide.md](./react-guide.md)                 | Components, hooks, Tamagui, cross-platform (`packages/app`) |
 | Testing             | [testing-guide.md](./testing-guide.md)             | Effect testing, mock layers          |
 | OpenAI API          | [openai-guide.md](./openai-guide.md)               | Chat, structured outputs, errors     |
 
@@ -29,6 +29,8 @@ Quick reference guide for coding standards in this project. Each section links t
 | Avoid primitive obsession | Branded/tagged types                | [type-design.md#branded-types](./type-design.md#branded-types)                       |
 | Chain operations          | `Effect.gen` with `yield*`          | [effect-ts-guide.md#composition](./effect-ts-guide.md#composition)                   |
 | Test Effect code          | Mock layers + `Effect.runPromise`   | [testing-guide.md](./testing-guide.md)                                               |
+| Add a shared UI component | `packages/app` + platform split     | [react-guide.md#cross-platform-components-packagesapp](./react-guide.md#cross-platform-components-packagesapp) |
+| Style a component         | Tamagui theme keys, no CSS vars     | [react-guide.md#tamagui-styling](./react-guide.md#tamagui-styling)                   |
 | Fetch HTTP data           | `HttpClient` with currying          | [effect-ts-guide.md#http-requests](./effect-ts-guide.md#http-requests)               |
 | Call OpenAI API           | `Effect.tryPromise` + tagged errors | [openai-guide.md#chat-completions](./openai-guide.md#chat-completions)               |
 | Handle rate limits        | RateLimiter with backoff            | [openai-guide.md#rate-limiting](./openai-guide.md#rate-limiting)                     |
