@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-09-07): 🔄 IN PROGRESS — Stages 1–11 committed, all components shared; screens next
+#### Phase 5 — STATUS (updated 2026-09-12): 🔄 IN PROGRESS — Stages 1–12 committed; ResultsScreen shared, four screens + mobile routes next
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -503,11 +503,41 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   old line boxes explicitly (Stage 4: stat label `lineHeight={21} marginTop={3}`
   = 24px strut box; speaker icon wrapper `height={29}` = 22px svg + strut
   descent).
-- **Remaining:** the 5 shared screens, least-coupled first (Results,
-  Statistics, Home, Settings, Game; new `packages/app/src/screens/` +
-  `./screens` exports subpath; web routes become thin
-  `<Layout><Screen/></Layout>` wrappers) → mobile route wrappers. Keep web-only: OfflineIndicator, InstallPrompt,
-  ServiceWorkerRegistration, Layout.
+- **Stage 12:** ResultsScreen → new `packages/app/src/screens/` + `./screens`
+  exports subpath (non-split `index.ts`); `results/page.tsx` is the first thin
+  `'use client'` wrapper: `useRouter()` + `<Layout title><ResultsScreen
+  onNavigateToGame onNavigateToStatistics/></Layout>` (router.push replaces
+  the old `window.location.href` hard navigations; the Layout title no longer
+  flips to "Loading Results..." during the fetch — it is web chrome the screen
+  cannot reach). All raw DOM → Tamagui stacks/Text; the score ring is a new
+  **platform-split `ScoreRing`** component (web: the SVG arc verbatim; native:
+  solid pass/fail ring stub until react-native-svg lands in Phase 6; props in
+  `.shared.ts`, exported from the components barrel so the native half is in
+  the bundle now). `confirm()` → new platform-split **`confirmDialog`**
+  (`src/confirmDialog.ts` = `window.confirm`, `.native.ts` = two-button
+  `Alert.alert`); `react-native` becomes an optional peer + devDep of
+  packages/app (lock entry hand-edited — no network for `npm install`).
+  `.focus-ring` (only active under prefers-contrast: high) → the clear
+  button's `focusVisibleStyle`. Header halves get `flexShrink={1}` so the
+  button pair wraps at phone width as before (Tamagui stacks default to
+  shrink 0). **Two pixel-parity lessons, both Chrome LayoutUnit rounding:**
+  (a) the old unitless `line-height: 1.1`/`1.6` lay out as
+  `floor(px × 64) / 64` (48.39px at 44px, 22.39px at 14px) whereas an explicit
+  48.4/22.4 rounds UP one LayoutUnit — the desktop page grew 1px (visual
+  20/20 failed 2) and the empty-state paragraph's third line shifted 1px at
+  phone width; spell out the floored values. (b) Flex-centring the ring label
+  puts it at the same computed offset as the old `translate(-50%, -50%)` but
+  rasterises differently (~110 px diff on two of three rings, over the
+  100-pixel budget) — keep the absolute + transform centring on web. Empty
+  state (no baseline) verified by old-vs-new screenshot diff: 0 differing
+  pixels light/dark × desktop/mobile. Sourcemaps: `ScoreRing.native.tsx`
+  resolved, web half absent, forbidden greps 0 (incl. framer-motion);
+  `ResultsScreen`/`confirmDialog` are legitimately absent until Stage 17
+  imports the screen — a throwaway `temp_` mobile route confirmed the screen
+  and `confirmDialog.native.ts` bundle under Metro.
+- **Remaining:** Statistics, Home, Settings, Game screens (same wrapper
+  shape) → mobile route wrappers. Keep web-only: OfflineIndicator,
+  InstallPrompt, ServiceWorkerRegistration, Layout.
 - NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
   fixture type errors) — not a gate; `next build`'s TS pass and jest are the
   real checks.
