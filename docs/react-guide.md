@@ -422,16 +422,19 @@ packages/app/src/
   tamagui.config.ts        # tokens + light/dark themes
   fonts.ts / .native.ts    # $serif font (platform split)
   animations.ts / .native.ts
+  confirmDialog.ts / .native.ts  # window.confirm / Alert.alert (platform split)
   components/
     index.ts               # barrel (exports subpath app/components)
     icons.ts / .native.ts
     tamagui/               # Button, Card, EditorialInput, LoadingSpinner, Text
     <Component>.tsx        # + .native.tsx / .shared.ts when split
   hooks/                   # useKeyboardNavigation (split), useTextToSpeech, ...
+  screens/                 # ResultsScreen (exports subpath app/screens); nav via callback props
   services/                # Effect services; backends/adapters platform-split
   types/
 website/src/
-  app/<route>/page.tsx     # Next routes (screens move to packages/app/src/screens/)
+  app/<route>/page.tsx     # Next routes: results is a <Layout><Screen/></Layout> wrapper,
+                           # the other four still move to packages/app/src/screens/
   components/              # web-only: Layout, TamaguiProvider, InstallPrompt,
                            # OfflineIndicator, ServiceWorkerRegistration; rest are shims
   hooks/                   # shims + web-only useInstallPrompt, useOnlineStatus

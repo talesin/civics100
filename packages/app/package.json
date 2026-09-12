@@ -41,6 +41,11 @@
       "types": "./src/hooks/index.ts",
       "import": "./src/hooks/index.ts",
       "default": "./src/hooks/index.ts"
+    },
+    "./screens": {
+      "types": "./src/screens/index.ts",
+      "import": "./src/screens/index.ts",
+      "default": "./src/screens/index.ts"
     }
   },
   "scripts": {
@@ -61,6 +66,7 @@
     "lucide-react": "*",
     "questionnaire": "*",
     "react": "*",
+    "react-native": "*",
     "tamagui": "1.144.4"
   },
   "peerDependenciesMeta": {
@@ -71,6 +77,9 @@
       "optional": true
     },
     "lucide-react": {
+      "optional": true
+    },
+    "react-native": {
       "optional": true
     }
   },
@@ -94,6 +103,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "prettier": "^3.8.1",
     "react": "^19.2.4",
+    "react-native": "0.85.3",
     "tamagui": "1.144.4",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1"

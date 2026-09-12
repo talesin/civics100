@@ -28,7 +28,7 @@ plus the practice-test apps built on it (Next.js website and an Expo mobile app 
 - **questionnaire** (`packages/questionnaire`): Quiz game engine (sessions, pairing, scoring)
 - **app** (`packages/app`): Shared cross-platform UI - Tamagui config, components, hooks, Effect services, types.
   Source-shipped (no build step); exports subpaths `app`, `app/components`, `app/components/tamagui`,
-  `app/hooks`, `app/services`, `app/types`, `app/tamagui.config`
+  `app/hooks`, `app/screens`, `app/services`, `app/types`, `app/tamagui.config`
 - **website** (`website`): Next.js 16 App Router site; route pages + thin shims over `app`
 - **mobile** (`apps/mobile`): Expo 56 / expo-router app mounting the same `app` package (in progress)
 
@@ -124,8 +124,9 @@ consumed by both the website and the mobile app. The native port is tracked in
 has moved and the per-stage gate suite). Current state: every website component
 except the web-only `Layout`, `TamaguiProvider`, `InstallPrompt`,
 `OfflineIndicator`, `ServiceWorkerRegistration` is a one-line shim over
-`app/components`; the five route pages are still full implementations and move
-to `packages/app/src/screens/` next.
+`app/components`; `results/page.tsx` is a thin `<Layout><ResultsScreen/></Layout>`
+wrapper over `app/screens`, and the other four route pages are still full
+implementations that move to `packages/app/src/screens/` next.
 
 ### Rules for shared code
 
