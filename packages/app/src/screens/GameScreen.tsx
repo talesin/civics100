@@ -644,8 +644,10 @@ export default function GameScreen({
           showRestart={true}
         />
 
-        {/* Keyboard Help */}
-        {showKeyboardHelp ? (
+        {/* Keyboard Help — web only: useKeyboardNavigation is a no-op on
+            native (Phase 6 drops keyboard nav on mobile), so the shortcuts
+            overlay and its toggle would document keys that do nothing. */}
+        {isWeb && showKeyboardHelp ? (
           <KeyboardHelpOverlay
             {...(isWeb
               ? { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 } }
@@ -675,23 +677,20 @@ export default function GameScreen({
           </KeyboardHelpOverlay>
         ) : null}
 
-        {/* Keyboard Help Toggle */}
-        <KeyboardHelpToggle
-          onPress={() => setKeyboardHelpOverride(true)}
-          {...(isWeb
-            ? {
-                title: 'Show keyboard shortcuts',
-                style: {
-                  position: 'fixed',
-                  bottom: 16,
-                  right: 16,
-                  boxShadow: theme.shadowMd?.get() as string
-                }
-              }
-            : { position: 'absolute', bottom: 16, right: 16 })}
-        >
-          <Keyboard size={20} strokeWidth={1.5} color={theme.color?.get() as string} />
-        </KeyboardHelpToggle>
+        {isWeb ? (
+          <KeyboardHelpToggle
+            onPress={() => setKeyboardHelpOverride(true)}
+            title="Show keyboard shortcuts"
+            style={{
+              position: 'fixed',
+              bottom: 16,
+              right: 16,
+              boxShadow: theme.shadowMd?.get() as string
+            }}
+          >
+            <Keyboard size={20} strokeWidth={1.5} color={theme.color?.get() as string} />
+          </KeyboardHelpToggle>
+        ) : null}
       </YStack>
     </Frame>
   )
