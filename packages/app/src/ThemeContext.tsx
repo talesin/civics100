@@ -1,8 +1,9 @@
 /**
  * Shared theme context, split out of the website's TamaguiProvider in Phase 5
  * Stage 8. The context is PROVIDED per platform: on web the TamaguiProvider's
- * ThemeContextBridge supplies the value (backed by @tamagui/next-theme); the
- * native provider arrives in Phase 6. Providers should use the React 19
+ * ThemeContextBridge supplies the value (backed by @tamagui/next-theme); on
+ * native apps/mobile's AppThemeProvider does (in-memory, seeded from the OS
+ * appearance — persistence is Phase 6). Providers should use the React 19
  * `<ThemeContext value={...}>` form.
  */
 import { createContext, use } from 'react'

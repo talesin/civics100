@@ -1,130 +1,19 @@
-/**
- * Phase-1 placeholder screen — proves the shared data/engine path on a real device.
- *
- * It mirrors the Phase-0 spike probes, now as an expo-router screen:
- *   1. `questionnaire/data` (the subpath export, lowest effect-"." risk) — proves the
- *      JSON is bundled into Hermes (no Node fs). Renders count + Q1.
- *   2. A guarded `Effect.runPromise(loadQuestions(...))` from the `questionnaire` ROOT
- *      export — this is what exercises effect's "." graph on-device (Phase-0 finding #4).
- *      Wrapped in try/catch so a resolution/runtime failure renders a red row, not a
- *      white screen — that red row IS the on-device evidence to read off.
- *   3. One `animation="bouncy"` enter animation, exercising the native moti/reanimated-4
- *      driver wired via animations.native.ts (now living in packages/app).
- *   4. `SharedBadge` from packages/app — the Phase-2 exit criterion: a shared Tamagui
- *      component rendering on native from the same source the website compiles.
- *
- * Phase 5 replaces this with the real shared screens from packages/app.
- */
-import { SharedBadge } from 'app'
-// Phase-5 Stage-1 probe: pulls the platform-split icon module into the native
-// graph — Metro must resolve icons.native.ts (@tamagui/lucide-icons), keeping
-// lucide-react out of the bundle. Verified by sourcemap grep at export time.
-import { CheckCircle } from 'app/components'
-import { useEffect, useState } from 'react'
-import { Effect } from 'effect'
-import { rawCivicsQuestions, TOTAL_QUESTION_COUNT } from 'questionnaire/data'
-import { civicsQuestionsWithDistractors, loadQuestions } from 'questionnaire'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Text, XStack, YStack } from 'tamagui'
+import { useRouter } from 'expo-router'
+import { HomeScreen } from 'app/screens'
+import { ScreenFrame } from '@/components/ScreenFrame'
 
-type Probe = { label: string; ok: boolean; detail: string }
-
-export default function Index() {
-  const insets = useSafeAreaInsets()
-  const [probes, setProbes] = useState<Probe[]>([])
-
-  useEffect(() => {
-    const results: Probe[] = []
-
-    // Probe 1 — data bundled into Hermes via the `questionnaire/data` subpath (no fs)
-    try {
-      const first = rawCivicsQuestions[0]
-      results.push({
-        label: 'questionnaire/data import',
-        ok: TOTAL_QUESTION_COUNT > 0 && !!first,
-        detail: `${TOTAL_QUESTION_COUNT} questions, Q1: "${first?.question ?? '??'}"`,
-      })
-    } catch (e) {
-      results.push({ label: 'questionnaire/data import', ok: false, detail: String(e) })
-    }
-
-    // Probe 2 — run the Effect engine (exercises effect's "." graph on Hermes)
-    Effect.runPromise(
-      loadQuestions({
-        questions: civicsQuestionsWithDistractors,
-        // StateAbbreviation is a branded string; any valid 2-letter code works.
-        userState: 'CA' as never,
-        questionNumbers: [1],
-      })
-    )
-      .then((qs) => {
-        setProbes([
-          ...results,
-          {
-            label: 'loadQuestions Effect',
-            ok: qs.length > 0,
-            detail: `engine produced ${qs.length} question(s); options: ${
-              qs[0]?.answers.length ?? 0
-            }`,
-          },
-        ])
-      })
-      .catch((e) => {
-        setProbes([
-          ...results,
-          { label: 'loadQuestions Effect', ok: false, detail: String(e) },
-        ])
-      })
-  }, [])
+// Thin route wrapper: the screen lives in packages/app and receives navigation
+// as callbacks (same shape as website/src/app/page.tsx).
+export default function Home() {
+  const router = useRouter()
 
   return (
-    <YStack
-      flex={1}
-      backgroundColor="$background"
-      paddingTop={insets.top + 24}
-      paddingHorizontal="$6"
-      gap="$4"
-    >
-      {/* Native-driver bouncy animation wrapping the shared packages/app component */}
-      <YStack
-        animation="bouncy"
-        enterStyle={{ opacity: 0, scale: 0.9, y: -10 }}
-        opacity={1}
-        scale={1}
-        y={0}
-      >
-        <SharedBadge
-          label="Civics Test — apps/mobile"
-          detail="Phase 2: shared packages/app config + component"
-        />
-      </YStack>
-
-      {/* Probe results */}
-      <YStack gap="$3">
-        {probes.length === 0 ? (
-          <Text color="$color">Running probes…</Text>
-        ) : (
-          probes.map((p) => (
-            <XStack key={p.label} gap="$2" alignItems="flex-start">
-              {p.ok ? (
-                <CheckCircle size={16} color="$success" />
-              ) : (
-                <Text color="$error" fontWeight="700">
-                  ✗
-                </Text>
-              )}
-              <YStack flex={1}>
-                <Text color="$color" fontWeight="600">
-                  {p.label}
-                </Text>
-                <Text color="$placeholderColor" fontSize={12}>
-                  {p.detail}
-                </Text>
-              </YStack>
-            </XStack>
-          ))
-        )}
-      </YStack>
-    </YStack>
+    <ScreenFrame title="US Civics Test">
+      <HomeScreen
+        onNavigateToGame={() => router.push('/game')}
+        onNavigateToSettings={() => router.push('/settings')}
+        onNavigateToResults={() => router.push('/results')}
+      />
+    </ScreenFrame>
   )
 }
