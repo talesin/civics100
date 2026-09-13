@@ -800,6 +800,72 @@ deferred to `plans/react19-modernization.md` (post-migration).
 - **Add `expo-system-ui`**: set the root-view background color to eliminate the Android navigation-transition color flash ([Ch 15 § UI Components](/references/expo/15-sdk-ui-components.md)).
 - **Exit:** all 5 screens fully functional on iOS sim + Android emulator with persistence, TTS, sounds, and haptic answer feedback.
 
+#### Phase 6 — STATUS (updated 2026-09-13): 🔄 IN PROGRESS — Stages 6.1–6.3 done in-container; 6.4+ blocked on host-side `expo install`
+
+Same staged-commit discipline as Phase 5 (one commit per stage, user confirms, full
+gate suite before each). The sandbox has no network and no simulator, so the phase is
+split into what the container can prove (bundle + jest + web parity) and what needs
+the host (package installs, font/audio assets, device boot).
+
+- **Stage 6.1 — theme persistence (no new packages):** `LocalStorageService` gained
+  `saveThemePreference` / `getThemePreference` (`ThemePreferenceSchema =
+  Literal('light','dark')`, key `civics100_theme_preference`; `null` = no explicit
+  choice, follow the OS; `clearAllData` clears it like every other key) + the
+  `TestLocalStorageServiceLayer` entries + a contract case that now runs in BOTH
+  runners (website jsdom 52, mobile jest-expo/AsyncStorage 16). `ThemePreference`
+  type lives in `app/types`. `AppThemeProvider` seeds from `useColorScheme()`, adopts
+  the saved value in a mount effect, and writes through `AppRuntime` on every
+  `setTheme`/`toggleTheme` (SettingsScreen checkbox + header ThemeToggle). Web is
+  untouched: `@tamagui/next-theme` keeps its own `theme` localStorage key.
+- **Stage 6.2 — tab navigation:** `app/(tabs)/_layout.tsx` (expo-router JS `Tabs`,
+  vendored bottom-tabs) hosts index/results/statistics/settings with icons from the
+  shared icon module (`Home` added to BOTH halves; Trophy/BarChart2/Settings existed);
+  tab bar + headers coloured from the editorial theme keys (paper/rule, accent active,
+  muted inactive). `game.tsx` stays a root-stack route pushed above the tabs (no tab
+  bar while playing, stack back button); root `_layout.tsx` hides the stack header
+  over `(tabs)` since the tab navigator draws its own. Shared header chrome moved
+  into `components/headerOptions.ts` (`useHeaderOptions()`: paper/ink, no shadow,
+  ThemeToggle on the right) and is spread into both navigators — both option types
+  accept the shape. `ScreenFrame` is unchanged: expo-router's `Stack.Screen` IS the
+  generic `Screen`, so it sets the title on whichever navigator is nearest (tab
+  headers included). `tabBarIcon`'s `color` is a `ColorValue`; the icon props take
+  `string`, so the layout casts. Hrefs (`/game`, `/results`, …) are unchanged by the
+  group. Sourcemap check extended: `(tabs)` files + `headerOptions.ts` +
+  `react-navigation/bottom-tabs` + `lucide-icons/dist/esm/icons/Home.mjs` present,
+  the old root `index.tsx`/`results.tsx` paths absent.
+- **Stage 6.3 — native GameScreen cleanup ("drop useKeyboardNavigation on
+  mobile"):** the hook was already a `.native.ts` no-op; the keyboard-shortcuts
+  overlay and its fixed toggle button are now `isWeb`-gated in `GameScreen.tsx`
+  (they documented keys that do nothing on a phone). Web markup identical — visual
+  20/20 ×2 unchanged. Nothing else to drop.
+- **Gates (all three stages, final tree):** packages/app `tsc` + `eslint`; mobile
+  `tsc` + jest 16; `expo export` ios + android `--source-maps` mapcheck OK; root
+  `npm test` ×2; `npm run build -w website`; e2e 3/3; visual 20/20 ×2.
+- **BLOCKED in-container → host actions before Stage 6.4** (run on the host, in
+  `apps/mobile`, then relaunch the sandbox):
+  1. `npx expo install expo-speech expo-audio expo-haptics expo-system-ui expo-font`
+     (`expo-font` is only hoisted transitively today; it must be a declared dep).
+  2. Font files: the web serif is `Newsreader` via `next/font/google` (downloaded at
+     build time, nothing in the repo). Drop the TTF/OTF statics (Newsreader
+     400/500 + italic if used) under `apps/mobile/assets/fonts/` for expo-font.
+  3. App icon / splash: only the PWA PNGs exist (`website/public/icons`, 512px max;
+     iOS needs 1024×1024). Provide `assets/icon.png` + `assets/splash-icon.png` or
+     accept generating them from the 512 in Stage 6.5.
+- **Stage 6.4 (after installs):** `TtsService/adapter.native.ts` over `expo-speech`
+  (`Speech.getAvailableVoicesAsync` → `TtsVoice`, `Speech.speak` with
+  `onDone`/`onError` resumed into `Effect.async`, interruption → `Speech.stop`);
+  `SoundService/adapter.native.ts` over `expo-audio` playing bundled WAVs — native has
+  no oscillator synth, so the four tone sequences (C5-E5-G5 etc., exact
+  frequencies/durations/gains from `adapter.ts`) get rendered once to
+  `packages/app/assets/sounds/*.wav` by a checked-in node script (no deps) and
+  `require()`d as Metro assets. Haptics: `expo-haptics` in `GameQuestion`'s answer
+  handler behind `isWeb` (success/error notification feedback), no-op when
+  unsupported. `expo-system-ui` root background = `$editorialPaper` per theme in
+  `AppThemeProvider`. Then `expo-font` + `fonts.native.ts` swap Georgia → Newsreader.
+- **Stage 6.5 (host, device):** `app.config.ts` icon/splash/`userInterfaceStyle`
+  already automatic; first `expo run:ios` / `run:android` boot = the Phase 5 exit's
+  deferred `/game` parity check + this phase's exit.
+
 ### Phase 7 — Build, CI, release
 - **EAS Build** (`eas.json`) dev/preview/production profiles with a dev-client (reanimated/async-storage/expo-audio aren't in Expo Go) — [Ch 16 § eas.json](/references/expo/16-eas-build.md#eas-json). Minimal skeleton:
   ```json
