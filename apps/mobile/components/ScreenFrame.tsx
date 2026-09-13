@@ -4,15 +4,17 @@ import { ScrollView } from 'tamagui'
 import { ErrorBoundary } from 'app/components'
 
 export interface ScreenFrameProps {
-  /** Stack header title — the native stand-in for the web Layout's title. */
+  /** Header title — the native stand-in for the web Layout's title. */
   readonly title: string
   readonly children: React.ReactNode
 }
 
 /**
  * Per-route chrome, the native counterpart of website's Layout: sets the
- * stack header title, scrolls the page body with the web Main's padding, and
- * wraps the screen in the shared ErrorBoundary. Its props match GameScreen's
+ * header title on the nearest navigator (`Stack.Screen` is expo-router's
+ * generic Screen — it serves the tab headers too), scrolls the page body
+ * with the web Main's padding, and wraps the screen in the shared
+ * ErrorBoundary. Its props match GameScreen's
  * `GameFrameProps`, so the game route passes it as `Frame` and the header
  * tracks the game state the same way the web header does.
  */

@@ -17,6 +17,7 @@ export {
   Check,
   CheckCircle,
   FileText,
+  Home,
   Keyboard,
   MapPin,
   Menu,
