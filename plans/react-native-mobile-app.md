@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-09-12): 🔄 IN PROGRESS — Stages 1–13 committed; Results + Statistics screens shared, three screens + mobile routes next
+#### Phase 5 — STATUS (updated 2026-09-13): 🔄 IN PROGRESS — Stages 1–14 committed; Home + Results + Statistics screens shared, Settings + Game + mobile routes next
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -566,8 +566,46 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   web halves absent, forbidden greps 0. Gate note: root `npm test` failed in
   two workspaces when run concurrently with two `expo export`s (CPU
   starvation) and passed cleanly alone — don't overlap them.
-- **Remaining:** Home, Settings, Game screens (same wrapper shape) → mobile
-  route wrappers. Keep web-only: OfflineIndicator, InstallPrompt,
+- **Stage 14:** HomeScreen → `packages/app/src/screens/`; `page.tsx` is a
+  `useRouter()` + `<Layout><HomeScreen onNavigateToGame/Settings/Results/>
+  </Layout>` wrapper (the screen picks game vs settings from
+  `hasSavedSettings`). **framer-motion is gone from the page:** the `fadeUp`
+  variant (opacity 0→1, y 8→0, 280ms ease-out, delay i×50ms) is a `FadeUp`
+  styled YStack with `enterStyle` on new driver keys `fadeUp` +
+  `fadeUp50…fadeUp250` (both drivers; the css driver has no per-instance
+  delay, so each stagger step is its own key — moti carries `delay`).
+  **Finding fixed in the move: `animations.ts` (css driver) was passing moti
+  object configs, which the css driver interpolates into `transition: all
+  [object Object]` — every Tamagui transition on web had been silently
+  instant since Phase 2.** The keys are now CSS strings (`'150ms ease'` …,
+  `bouncy` an overshoot cubic-bezier); SpeakerButton's pulse and SharedBadge
+  now genuinely animate on web. A throwaway spec confirmed the hero carries a
+  real `0.28s ease-out` transition, ends at opacity 1 with Tamagui's enter
+  classes cleared, and logs no hydration errors (SSR renders the enter
+  state on both server and client, so no #418). New platform split
+  **`ExternalLink`** (web: `<a target=_blank rel=noopener>`; native:
+  `Linking.openURL`) in the components barrel. Grids: the two-card
+  `minmax(min(100%,380px),1fr)` grid → `flexBasis 380 + grow/shrink` (exact —
+  two cards never exceed two columns); the About `minmax(180px,1fr)` grid →
+  `flexBasis 0 + grow` (exact equal thirds) with `$xs` 50% / `$xxs` 100%,
+  which keeps the grid's half-width third cell in the 2-column range (verified
+  at 500px) at the cost of ≤ 23px of breakpoint drift. Sizes: h1
+  `clamp(2.5rem,6vw,4rem)` → 64/`$xs` 40 (lineHeight 70.39/44), lede
+  `clamp(1rem,2vw,1.125rem)` → 18/`$sm` 16 (29.69/26.39), card body 23.09.
+  Kept the old h3's marginBottom inside the centred icon row (it's what sets
+  that row's geometry). Parity: visual 20/20 ×2; old-vs-new at 1280/500/390
+  light+dark = 0 differing pixels; at 700 the page is 24px taller solely from
+  the title's between-breakpoint approximation (64px where 6vw gave 42px).
+  Sourcemaps: `animations.native.ts` + `ExternalLink.native.tsx` resolved,
+  `@tamagui/animations-css` / web halves / framer-motion absent; throwaway
+  route bundled HomeScreen under Metro. **Housekeeping for the maintainer:**
+  `framer-motion` is still declared in `website/package.json` (unused now) —
+  `npm uninstall framer-motion -w website` on the host (lock edit needs
+  network). Gate note: with ~190 unreapable zombies, an `expo export` started
+  alongside e2e + another export died at pids.current 475/512 — run the heavy
+  gates one at a time once zombies pass ~150.
+- **Remaining:** Settings, Game screens (same wrapper shape) → mobile route
+  wrappers. Keep web-only: OfflineIndicator, InstallPrompt,
   ServiceWorkerRegistration, Layout.
 - NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
   fixture type errors) — not a gate; `next build`'s TS pass and jest are the
