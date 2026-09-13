@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-09-13): 🔄 IN PROGRESS — Stages 1–14 committed; Home + Results + Statistics screens shared, Settings + Game + mobile routes next
+#### Phase 5 — STATUS (updated 2026-09-13): 🔄 IN PROGRESS — Stages 1–15 committed; Home + Results + Statistics + Settings screens shared, Game + mobile routes next
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -604,9 +604,38 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   network). Gate note: with ~190 unreapable zombies, an `expo export` started
   alongside e2e + another export died at pids.current 475/512 — run the heavy
   gates one at a time once zombies pass ~150.
-- **Remaining:** Settings, Game screens (same wrapper shape) → mobile route
-  wrappers. Keep web-only: OfflineIndicator, InstallPrompt,
-  ServiceWorkerRegistration, Layout.
+- **Stage 15:** SettingsScreen → `packages/app/src/screens/`; `settings/page.tsx`
+  is a `useRouter()` + `<Layout title><SettingsScreen onNavigateToGame/></Layout>`
+  wrapper. The settings page was the last consumer of `.card.card-elevated` and
+  `.btn-secondary`, so those became styled Tamagui ports: the card is a YStack
+  on new theme keys `neutral50/200/300/400` (the exact `--color-neutral-*`
+  light/dark pairs; `neutral100` already existed) with `shadowMd` applied
+  through a web-only `style` (`game/page.tsx` precedent); `.btn-primary` maps
+  to the `$bluePrimary`/`$blueDark` TOKENS, not `$primary` — the CSS class
+  stayed the same blue in dark mode whereas `$primary` flips. New
+  platform-split **`CheckboxField`** (web: the raw `<input type=checkbox>` +
+  `<label htmlFor>` verbatim, because the functional e2e drives
+  `page.check('#practice-specific')`; native: tamagui `Checkbox` + `Label`).
+  `ExternalLink` gained an `inline` variant (14px/400/underlined) for the
+  GovTrack link; on web it sets `whiteSpace: 'normal'` — Tamagui Text's
+  default `pre-wrap` underlined the preserved trailing space of a wrapped
+  line (5px diff at 500/390, gone after the fix). The voice preview goes
+  through `TtsService.speakText` (platform adapters) instead of
+  `window.speechSynthesis`; `parseQuestionNumbers` is module-level.
+  Parity: visual 20/20 ×2; old-vs-new at 1280/500/390 light+dark, default
+  AND practice-expanded state = 0 differing pixels; 700px is +6px solely from
+  the title approximation (h1 42→48px). Sourcemaps: `CheckboxField.native` +
+  `ExternalLink.native` resolved, web halves absent, forbidden greps 0
+  (incl. `@tamagui/animations-css`); throwaway route bundled SettingsScreen
+  under Metro. Housekeeping in the same stage: root `.gitignore` now ignores
+  `**/temp_*` (CLAUDE.md updated — ignored is not exempt, Playwright and
+  expo-router still pick them up). Gate note: the first attempt at the gates
+  hit the PID wall (327 zombies, `next build` workers SIGABRT, visual
+  readiness timeouts even at workers=1); everything above ran green after a
+  relaunch, one heavy suite at a time.
+- **Remaining:** Stage 16 Game screen (same wrapper shape) → Stage 17 mobile
+  route wrappers. Keep web-only: OfflineIndicator,
+  InstallPrompt, ServiceWorkerRegistration, Layout.
 - NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
   fixture type errors) — not a gate; `next build`'s TS pass and jest are the
   real checks.
