@@ -124,9 +124,9 @@ consumed by both the website and the mobile app. The native port is tracked in
 has moved and the per-stage gate suite). Current state: every website component
 except the web-only `Layout`, `TamaguiProvider`, `InstallPrompt`,
 `OfflineIndicator`, `ServiceWorkerRegistration` is a one-line shim over
-`app/components`; the results and statistics routes are thin
-`<Layout><XScreen/></Layout>` wrappers over `app/screens`, and the other three
-route pages are still full implementations that move to
+`app/components`; the home, results and statistics routes are thin
+`<Layout><XScreen/></Layout>` wrappers over `app/screens`, and the settings and
+game pages are still full implementations that move to
 `packages/app/src/screens/` next.
 
 ### Rules for shared code

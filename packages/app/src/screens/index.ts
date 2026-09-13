@@ -4,3 +4,5 @@
 export { default as ResultsScreen } from './ResultsScreen'
 export type { ResultsScreenProps } from './ResultsScreen'
 export { default as StatisticsScreen } from './StatisticsScreen'
+export { default as HomeScreen } from './HomeScreen'
+export type { HomeScreenProps } from './HomeScreen'

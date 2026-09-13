@@ -5,6 +5,7 @@
 // IMPORTANT: this platform split only works through the package-internal relative
 // `./animations` import — Metro does not apply .native substitution to exports-map
 // targets, so never add an `./animations` subpath to package.json "exports".
+// Keys must match animations.ts exactly (fadeUp* = the home page's staggered entrance).
 import { createAnimations } from '@tamagui/animations-moti'
 
 export const animations = createAnimations({
@@ -13,5 +14,11 @@ export const animations = createAnimations({
   slow: { type: 'timing', duration: 300 },
   lazy: { type: 'timing', duration: 500 },
   pulse: { type: 'timing', duration: 750 },
-  bouncy: { type: 'spring', damping: 10, mass: 0.9, stiffness: 100 }
+  bouncy: { type: 'spring', damping: 10, mass: 0.9, stiffness: 100 },
+  fadeUp: { type: 'timing', duration: 280 },
+  fadeUp50: { type: 'timing', duration: 280, delay: 50 },
+  fadeUp100: { type: 'timing', duration: 280, delay: 100 },
+  fadeUp150: { type: 'timing', duration: 280, delay: 150 },
+  fadeUp200: { type: 'timing', duration: 280, delay: 200 },
+  fadeUp250: { type: 'timing', duration: 280, delay: 250 }
 })

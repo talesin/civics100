@@ -428,12 +428,12 @@ packages/app/src/
     tamagui/               # Button, Card, EditorialInput, LoadingSpinner, Text
     <Component>.tsx        # + .native.tsx / .shared.ts when split
   hooks/                   # useKeyboardNavigation (split), useTextToSpeech, ...
-  screens/                 # ResultsScreen, StatisticsScreen (+ editorial.ts typography); nav via callback props
+  screens/                 # Home/Results/StatisticsScreen (+ editorial.ts typography); nav via callback props
   services/                # Effect services; backends/adapters platform-split
   types/
 website/src/
-  app/<route>/page.tsx     # Next routes: results/statistics are <Layout><Screen/></Layout>
-                           # wrappers, the other three still move to packages/app/src/screens/
+  app/<route>/page.tsx     # Next routes: home/results/statistics are <Layout><Screen/></Layout>
+                           # wrappers; settings and game still move to packages/app/src/screens/
   components/              # web-only: Layout, TamaguiProvider, InstallPrompt,
                            # OfflineIndicator, ServiceWorkerRegistration; rest are shims
   hooks/                   # shims + web-only useInstallPrompt, useOnlineStatus

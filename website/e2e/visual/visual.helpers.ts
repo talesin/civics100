@@ -108,11 +108,11 @@ export async function seedPage(page: Page, theme: ThemeName): Promise<void> {
 }
 
 /**
- * Wait until the page is visually at rest: fonts loaded and the JS-driven
- * entrance animations (framer-motion on the home page) finished. CSS
- * animations are handled by toHaveScreenshot({ animations: 'disabled' });
- * the fixed wait covers framer-motion's ~0.9s staggered fade which Playwright
- * cannot always fast-forward.
+ * Wait until the page is visually at rest: fonts loaded and the entrance
+ * transitions finished. CSS transitions/animations are also handled by
+ * toHaveScreenshot({ animations: 'disabled' }); the fixed wait comfortably
+ * covers the home page's Tamagui fade-up (280ms + a 250ms stagger, formerly
+ * framer-motion's ~0.9s), which Playwright cannot always fast-forward.
  */
 export async function settle(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready)
