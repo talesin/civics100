@@ -13,16 +13,31 @@ const LinkFrame = styled(TamaguiText, {
 
   hoverStyle: {
     textDecorationLine: 'underline'
-  }
+  },
+
+  variants: {
+    inline: {
+      true: {
+        fontSize: 14,
+        fontWeight: '400',
+        textDecorationLine: 'underline',
+        // Tamagui Text defaults to pre-wrap, which underlines the preserved
+        // trailing space when the link wraps mid-sentence; the old <a> collapsed it.
+        whiteSpace: 'normal'
+      }
+    }
+  } as const
 })
 
 const Anchor = LinkFrame as unknown as React.ComponentType<
-  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'color'>
+  Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'color'> & {
+    readonly inline?: boolean | undefined
+  }
 >
 
-export default function ExternalLink({ href, children }: ExternalLinkProps) {
+export default function ExternalLink({ href, children, inline }: ExternalLinkProps) {
   return (
-    <Anchor href={href} target="_blank" rel="noopener noreferrer">
+    <Anchor href={href} target="_blank" rel="noopener noreferrer" inline={inline}>
       {children}
     </Anchor>
   )

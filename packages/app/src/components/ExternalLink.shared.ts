@@ -5,4 +5,6 @@
 export interface ExternalLinkProps {
   readonly href: string
   readonly children: string
+  /** Sits inside body text: 14px, regular weight, always underlined. */
+  readonly inline?: boolean
 }

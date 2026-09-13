@@ -203,7 +203,11 @@ const lightTheme = {
   themePrimary: tokens.color.bluePrimary,
   themePurple: tokens.color.purple6,
   themeCardBg: tokens.color.white,
+  neutral50: tokens.color.gray1,
   neutral100: tokens.color.gray2,
+  neutral200: tokens.color.gray3,
+  neutral300: tokens.color.gray4,
+  neutral400: tokens.color.gray5,
   shadowMd: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
 }
 
@@ -253,7 +257,11 @@ const darkTheme = {
   themePrimary: tokens.color.blue5,
   themePurple: tokens.color.purple4,
   themeCardBg: tokens.color.cardBgDark,
+  neutral50: tokens.color.gray10,
   neutral100: tokens.color.gray9,
+  neutral200: tokens.color.gray8,
+  neutral300: tokens.color.gray7,
+  neutral400: tokens.color.gray6,
   shadowMd: '0 4px 6px -1px rgb(0 0 0 / 0.2), 0 2px 4px -2px rgb(0 0 0 / 0.2)'
 }
 

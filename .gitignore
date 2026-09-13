@@ -8,3 +8,7 @@ node_modules
 
 # Phase 0 throwaway React Native spike (not committed)
 spikes/
+# Throwaway files per CLAUDE.md's temp_ convention (parity captures, scratch
+# specs, temp mobile routes/export dirs). Ignored, not exempt: Playwright and
+# expo-router still pick them up at runtime, so delete them after use.
+**/temp_*

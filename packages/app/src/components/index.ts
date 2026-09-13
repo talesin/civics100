@@ -1,6 +1,7 @@
 export { SharedBadge } from './SharedBadge'
 export type { SharedBadgeProps } from './SharedBadge'
 export * from './icons'
+export { default as CheckboxField } from './CheckboxField'
 export { default as DistrictSelector } from './DistrictSelector'
 export { ErrorBoundary } from './ErrorBoundary'
 export { default as ExternalLink } from './ExternalLink'

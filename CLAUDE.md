@@ -110,7 +110,7 @@ npx tsx src/index.ts governors fetch [--force]
 
 ## Essential Rules
 
-- **Temporary files**: Prefix with `temp_`, delete after use
+- **Temporary files**: Prefix with `temp_` (git-ignored via `**/temp_*`), delete after use — tools like Playwright and expo-router still pick them up
 - **Plans**: Save to `plans/` directory in markdown
 - **Never overwrite**: `.envrc` file
 - **Linting**: Do not auto-fix; let maintainer address
@@ -124,10 +124,9 @@ consumed by both the website and the mobile app. The native port is tracked in
 has moved and the per-stage gate suite). Current state: every website component
 except the web-only `Layout`, `TamaguiProvider`, `InstallPrompt`,
 `OfflineIndicator`, `ServiceWorkerRegistration` is a one-line shim over
-`app/components`; the home, results and statistics routes are thin
-`<Layout><XScreen/></Layout>` wrappers over `app/screens`, and the settings and
-game pages are still full implementations that move to
-`packages/app/src/screens/` next.
+`app/components`; the home, results, statistics and settings routes are thin
+`<Layout><XScreen/></Layout>` wrappers over `app/screens`, and the game page is
+the last full implementation still to move to `packages/app/src/screens/`.
 
 ### Rules for shared code
 
@@ -159,7 +158,7 @@ game pages are still full implementations that move to
 
 - Cards: `card`, `card-elevated`, `card-interactive`
 - Buttons: `btn-primary`, `btn-secondary`, `btn-success`, `btn-error`
-  (only `game/page.tsx` and `settings/page.tsx` still use these)
+  (only `game/page.tsx` still uses these)
 - Utilities: `focus-ring`, `text-gradient`
 - Responsive: `hidden`, `md:flex`, `md:hidden`
 
