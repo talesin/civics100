@@ -8,6 +8,7 @@ import StatsSummary from '../components/StatsSummary'
 import { confirmDialog } from '../confirmDialog'
 import { LocalStorageService } from '../services/LocalStorageService'
 import type { GameResult, GameStats } from '../types'
+import { Eyebrow, PageTitle, Rule, SectionTitle } from './editorial'
 
 export interface ResultsScreenProps {
   /** "Take New Test" / "Take Your First Test". */
@@ -66,51 +67,6 @@ const ResultBadge = styled(Text, {
       }
     }
   } as const
-})
-
-const Eyebrow = styled(Text, {
-  tag: 'p',
-  fontSize: 11,
-  fontWeight: '600',
-  letterSpacing: 1.32, // 0.12em at 11px
-  textTransform: 'uppercase',
-  color: '$editorialAccent',
-  marginBottom: 10
-})
-
-// clamp(2rem, 5vw, 2.75rem) resolves to 44px at the desktop baseline and 32px
-// under $xs; letterSpacing -0.02em is px per size. The old unitless
-// line-height 1.1 laid out as 48.39px / 35.19px (Chrome floors the computed
-// value to 1/64px), whereas explicit 48.4px rounds up to 48.41 and pushed the
-// desktop page 1px taller — so the floored values are spelled out.
-const PageTitle = styled(Text, {
-  tag: 'h1',
-  fontFamily: '$serif',
-  fontSize: 44,
-  lineHeight: 48.39,
-  fontWeight: '500',
-  color: '$editorialInk',
-  letterSpacing: -0.88,
-
-  $xs: {
-    fontSize: 32,
-    lineHeight: 35.19,
-    letterSpacing: -0.64
-  }
-})
-
-const SectionTitle = styled(Text, {
-  tag: 'h3',
-  fontFamily: '$serif',
-  fontSize: 22,
-  fontWeight: '500',
-  color: '$editorialInk',
-  letterSpacing: -0.22 // -0.01em at 22px
-})
-
-const Rule = styled(YStack, {
-  borderTopWidth: 1,
-  borderTopColor: '$editorialRule'
 })
 
 // Text-based single element so the label inherits its colour (EditorialButton

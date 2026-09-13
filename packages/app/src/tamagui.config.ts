@@ -285,7 +285,11 @@ const config = createTamagui({
     gtXs: { minWidth: 641 },
     gtSm: { minWidth: 769 },
     gtMd: { minWidth: 1025 },
-    gtLg: { minWidth: 1281 }
+    gtLg: { minWidth: 1281 },
+    // Appended LAST on purpose: later media keys take precedence, and this one
+    // must beat $sm. It is the statistics summary strip's single-column range
+    // (the old 480px CSS breakpoint).
+    xxs: { maxWidth: 479 }
   },
   animations
 })

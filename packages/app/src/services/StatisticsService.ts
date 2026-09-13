@@ -127,9 +127,11 @@ const calculateQuestionStatistics = (
 }
 
 /**
- * Filter questions based on their status
+ * Filter questions based on their status. Exported (pure, synchronous) so the
+ * statistics screen can derive its filtered list in render via useMemo; the
+ * service method below wraps the same function for Effect callers.
  */
-const filterQuestions = (
+export const filterQuestions = (
   statistics: ReadonlyArray<QuestionStatistics>,
   filter: QuestionFilter,
   pairedAnswers: PairedAnswers
@@ -158,9 +160,10 @@ const filterQuestions = (
 }
 
 /**
- * Sort questions by a specific field
+ * Sort questions by a specific field. Exported for the same reason as
+ * filterQuestions.
  */
-const sortQuestions = (
+export const sortQuestions = (
   statistics: ReadonlyArray<QuestionStatistics>,
   sortField: QuestionSortField,
   ascending: boolean = true

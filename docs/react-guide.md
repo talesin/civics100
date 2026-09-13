@@ -306,7 +306,6 @@ state-based render is native-only (`ThemeToggle.native.tsx`).
 | `btn-primary`, `btn-secondary`              | Button variants                          |
 | `btn-success`, `btn-error`                  | Status buttons                           |
 | `focus-ring`                                | Focus state styling                      |
-| `stats-strip`, `stats-strip-cell`           | Statistics grid (480/768px breakpoints)  |
 | `hidden`, `md:flex`, `md:hidden`            | Responsive utilities                     |
 
 `.btn-editorial*`, `.input-editorial`, `.badge*`, `.answer-btn*`,
@@ -429,12 +428,12 @@ packages/app/src/
     tamagui/               # Button, Card, EditorialInput, LoadingSpinner, Text
     <Component>.tsx        # + .native.tsx / .shared.ts when split
   hooks/                   # useKeyboardNavigation (split), useTextToSpeech, ...
-  screens/                 # ResultsScreen (exports subpath app/screens); nav via callback props
+  screens/                 # ResultsScreen, StatisticsScreen (+ editorial.ts typography); nav via callback props
   services/                # Effect services; backends/adapters platform-split
   types/
 website/src/
-  app/<route>/page.tsx     # Next routes: results is a <Layout><Screen/></Layout> wrapper,
-                           # the other four still move to packages/app/src/screens/
+  app/<route>/page.tsx     # Next routes: results/statistics are <Layout><Screen/></Layout>
+                           # wrappers, the other three still move to packages/app/src/screens/
   components/              # web-only: Layout, TamaguiProvider, InstallPrompt,
                            # OfflineIndicator, ServiceWorkerRegistration; rest are shims
   hooks/                   # shims + web-only useInstallPrompt, useOnlineStatus

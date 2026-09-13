@@ -124,9 +124,10 @@ consumed by both the website and the mobile app. The native port is tracked in
 has moved and the per-stage gate suite). Current state: every website component
 except the web-only `Layout`, `TamaguiProvider`, `InstallPrompt`,
 `OfflineIndicator`, `ServiceWorkerRegistration` is a one-line shim over
-`app/components`; `results/page.tsx` is a thin `<Layout><ResultsScreen/></Layout>`
-wrapper over `app/screens`, and the other four route pages are still full
-implementations that move to `packages/app/src/screens/` next.
+`app/components`; the results and statistics routes are thin
+`<Layout><XScreen/></Layout>` wrappers over `app/screens`, and the other three
+route pages are still full implementations that move to
+`packages/app/src/screens/` next.
 
 ### Rules for shared code
 
@@ -159,7 +160,7 @@ implementations that move to `packages/app/src/screens/` next.
 - Cards: `card`, `card-elevated`, `card-interactive`
 - Buttons: `btn-primary`, `btn-secondary`, `btn-success`, `btn-error`
   (only `game/page.tsx` and `settings/page.tsx` still use these)
-- Utilities: `focus-ring`, `text-gradient`, `stats-strip`
+- Utilities: `focus-ring`, `text-gradient`
 - Responsive: `hidden`, `md:flex`, `md:hidden`
 
 ### Notes

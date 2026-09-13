@@ -3,3 +3,4 @@
 // mobile routes (Stage 17) supply expo-router calls.
 export { default as ResultsScreen } from './ResultsScreen'
 export type { ResultsScreenProps } from './ResultsScreen'
+export { default as StatisticsScreen } from './StatisticsScreen'
