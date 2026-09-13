@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-09-13): 🔄 IN PROGRESS — Stages 1–15 committed; Home + Results + Statistics + Settings screens shared, Game + mobile routes next
+#### Phase 5 — STATUS (updated 2026-09-13): 🔄 IN PROGRESS — Stages 1–16 committed; all five screens shared (Home/Results/Statistics/Settings/Game), Stage 17 mobile route wrappers next
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -604,7 +604,7 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   network). Gate note: with ~190 unreapable zombies, an `expo export` started
   alongside e2e + another export died at pids.current 475/512 — run the heavy
   gates one at a time once zombies pass ~150.
-- **Stage 15:** SettingsScreen → `packages/app/src/screens/`; `settings/page.tsx`
+- **Stage 15 (929baba):** SettingsScreen → `packages/app/src/screens/`; `settings/page.tsx`
   is a `useRouter()` + `<Layout title><SettingsScreen onNavigateToGame/></Layout>`
   wrapper. The settings page was the last consumer of `.card.card-elevated` and
   `.btn-secondary`, so those became styled Tamagui ports: the card is a YStack
@@ -633,8 +633,59 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   hit the PID wall (327 zombies, `next build` workers SIGABRT, visual
   readiness timeouts even at workers=1); everything above ran green after a
   relaunch, one heavy suite at a time.
-- **Remaining:** Stage 16 Game screen (same wrapper shape) → Stage 17 mobile
-  route wrappers. Keep web-only: OfflineIndicator,
+- **Stage 16 (f3779d7):** GameScreen → `packages/app/src/screens/` (the ~580-line
+  state machine, moved as-is + the three agreed cleanups, no reducer).
+  `game/page.tsx` is a `useRouter()` wrapper — but the Layout title is
+  state-driven here ("Loading Game...", "Question 3/20 (#45)", "Test
+  Complete", "Game Error") and the functional e2e reads the counter from the
+  header, so instead of a fixed title the screen takes an optional
+  **`Frame`** component prop (`{ title, children }`) and renders every state
+  inside it; the web wrapper passes `Layout` itself, native (Stage 17) can
+  map it onto the stack header. Cleanups: (1) the three mirrored refs
+  (`sessionRef`/`currentQuestionIndexRef`/`questionsRef`) + timeout ref →
+  the 300 ms delay is an effect keyed on `gameState === 'transitioning'`
+  whose timer calls an `advanceAfterTransition` `useEffectEvent` (latest
+  session/index/questions, cleanup clears the timer on state change and
+  unmount); `handleNext` just sets the state. (2) `mountedRef` ceremony
+  dropped. (3) the settings→`settingsLoaded`→`initializeGame` effect chain
+  collapsed: one mount effect loads settings and yields straight into a
+  module-level `newGame(settings)` Effect (session + questions), which
+  Restart reuses with the settings in state. The `displaySession!`
+  assertion + its eslint-disable went away by narrowing on the memo instead.
+  **Keyboard-help first-visit flag** (direct `localStorage`, the backlog
+  item): the old mount effect was a `set-state-in-effect` violation and a
+  lazy `useState` read would hydration-mismatch (server has no storage), so
+  it is a `useSyncExternalStore` read (server snapshot "seen", client
+  re-renders after hydration — no #418) guarded by `isWeb`, plus an override
+  state for the toggle/dismiss. Deviation: the flag is written when the
+  help is DISMISSED ("Got it!") rather than when it is shown. Dead UI carried
+  over: the early-win banner (`correctAnswers ≥ winThreshold && !completed`)
+  is unreachable because the engine already tags the session `EarlyWin` at
+  that point and the page auto-completes — ported verbatim, not verifiable
+  by parity. Styling: the raw `.btn-primary/-success/-secondary` buttons →
+  `GameButton` (TamaguiText, 8×16/6px, `$bluePrimary`/`$blueDark`,
+  `success` variant `$green6`/`$green7`) and `KeyboardHelpToggle` (YStack
+  button, 46 px circle, fixed + shadowMd web-only); `.focus-ring` →
+  `focusVisibleStyle`; the flex `<h3>` icon headings → `IconHeading`
+  (XStack tag h3) + Text; the `transition: all 0.3s` question wrapper →
+  `animation="slow"` (300 ms ease — verified `0.3s` computed, opacity 0.75
+  after answering); the `monospace` shortcut chips → new **`$mono` font**
+  in both `fonts.ts` halves (`monospace` / iOS `Courier`) since Tamagui's
+  `fontFamily` type only takes tokens. **Orphaned CSS deleted:** `.btn-*`,
+  `.card*`, `.focus-ring` (design-tokens.css) and their high-contrast /
+  forced-colors rules (globals.css) had no consumer left in website/src;
+  CLAUDE.md + react-guide updated (no route page carries a
+  `var(--font-family-serif)` literal any more). Parity: visual 20/20 ×2;
+  old-vs-new at 1280/700/390 light+dark for playing, answered, help overlay
+  (toggle), first-visit overlay and the zero-question error state = 0
+  differing pixels in all 30 captures (no title approximation on this
+  page). Sourcemaps: `fonts.native.ts` resolved, web half absent, forbidden
+  greps 0; throwaway route bundled GameScreen under Metro with
+  `useKeyboardNavigation.native.ts` resolved. Gates ran on a fresh sandbox,
+  one heavy suite at a time (pids 28 → 202 over Stages 15+16).
+- **Remaining:** Stage 17 mobile route wrappers (`apps/mobile/app/*` →
+  `<XScreen/>` with expo-router callbacks; GameScreen's `Frame` → stack
+  header title). Keep web-only: OfflineIndicator,
   InstallPrompt, ServiceWorkerRegistration, Layout.
 - NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
   fixture type errors) — not a gate; `next build`'s TS pass and jest are the
