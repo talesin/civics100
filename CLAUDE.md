@@ -125,8 +125,8 @@ has moved and the per-stage gate suite). Current state: every website component
 except the web-only `Layout`, `TamaguiProvider`, `InstallPrompt`,
 `OfflineIndicator`, `ServiceWorkerRegistration` is a one-line shim over
 `app/components`; the home, results, statistics and settings routes are thin
-`<Layout><XScreen/></Layout>` wrappers over `app/screens`, and the game page is
-the last full implementation still to move to `packages/app/src/screens/`.
+`<Layout><XScreen/></Layout>` wrappers over `app/screens` (the game route
+passes `Layout` as the screen's `Frame` so the header title tracks game state).
 
 ### Rules for shared code
 
@@ -156,19 +156,15 @@ the last full implementation still to move to `packages/app/src/screens/`.
 
 ### Remaining CSS Classes (web-only, route pages only)
 
-- Cards: `card`, `card-elevated`, `card-interactive`
-- Buttons: `btn-primary`, `btn-secondary`, `btn-success`, `btn-error`
-  (only `game/page.tsx` still uses these)
-- Utilities: `focus-ring`, `text-gradient`
+- Utilities: `text-gradient`
 - Responsive: `hidden`, `md:flex`, `md:hidden`
 
 ### Notes
 
 - Tailwind CSS removed - do not add Tailwind classes
-- Do not add new `var(--...)` references in components. Remaining sanctioned
-  sites: the `var(--font-family-serif)` literals in the four unmoved route
-  pages (they become `fontFamily: '$serif'` when each screen moves) and the
-  web-only InstallPrompt/OfflineIndicator
+- Do not add new `var(--...)` references in components. The only sanctioned
+  sites are the web-only InstallPrompt/OfflineIndicator (shared code uses
+  `fontFamily: '$serif'` / `'$mono'` via the platform-split `fonts.ts`)
 - Test both light and dark themes when modifying styles
 - Visual regression: `npm run test:visual -w website` (20 committed baselines;
   never `--update-snapshots` outside the sandbox container). UI that no

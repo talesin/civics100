@@ -178,28 +178,13 @@ html.t_dark .progress-bar {
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  .card {
-    border: 2px solid;
-  }
-
   button {
     border: 2px solid;
-  }
-
-  .focus-ring:focus-visible {
-    outline: 3px solid;
-    outline-offset: 3px;
   }
 }
 
 /* Forced colors mode (Windows High Contrast) */
 @media (forced-colors: active) {
-  .btn-primary,
-  .btn-success,
-  .btn-error {
-    border: 2px solid;
-  }
-
   .progress-bar {
     border: 1px solid;
   }

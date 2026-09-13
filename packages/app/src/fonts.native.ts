@@ -5,6 +5,7 @@
  * degradation — Phase 6 loads Newsreader via expo-font and replaces this
  * family on both platforms.
  */
+import { Platform } from 'react-native'
 import { createFont } from 'tamagui'
 
 export const serifFont = createFont({
@@ -27,6 +28,28 @@ export const serifFont = createFont({
   weight: {
     1: '400',
     5: '500',
+    true: '400'
+  },
+  letterSpacing: {
+    1: 0,
+    true: 0
+  }
+})
+
+// iOS has no generic 'monospace' family; Courier is its built-in monospace.
+export const monoFont = createFont({
+  family: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  size: {
+    1: 11,
+    2: 12,
+    3: 13,
+    4: 14,
+    5: 15,
+    6: 16,
+    true: 14
+  },
+  weight: {
+    1: '400',
     true: '400'
   },
   letterSpacing: {

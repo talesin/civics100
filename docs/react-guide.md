@@ -300,17 +300,16 @@ state-based render is native-only (`ThemeToggle.native.tsx`).
 
 ### Remaining CSS classes (web-only)
 
-| Class                                       | Purpose                                  |
-| ------------------------------------------- | ---------------------------------------- |
-| `card`, `card-elevated`, `card-interactive` | Card styling                             |
-| `btn-primary`, `btn-secondary`              | Button variants                          |
-| `btn-success`, `btn-error`                  | Status buttons                           |
-| `focus-ring`                                | Focus state styling                      |
-| `hidden`, `md:flex`, `md:hidden`            | Responsive utilities                     |
+| Class                            | Purpose              |
+| -------------------------------- | -------------------- |
+| `hidden`, `md:flex`, `md:hidden` | Responsive utilities |
 
 `.btn-editorial*`, `.input-editorial`, `.badge*`, `.answer-btn*`,
 `.accuracy-*/.prob-*`, `.spinner` and `.animate-*` were replaced by Tamagui
-components in Phase 4 — do not reintroduce them.
+components in Phase 4; `.card*`, `.btn-primary/-secondary/-success/-error`
+and `.focus-ring` followed in Phase 5 (styled `TamaguiText`/`YStack` buttons
+with `focusVisibleStyle`, see `SettingsScreen`/`GameScreen`) — do not
+reintroduce them.
 
 ### Tamagui Components
 
@@ -326,10 +325,10 @@ is a re-export shim):
 
 - **Tailwind CSS has been removed** - do not add Tailwind classes
 - **Do not add new `var(--...)` references in components** — use theme keys.
-  Shared code uses `fontFamily: '$serif'` (platform-split `fonts.ts` /
-  `fonts.native.ts`); the only remaining `var(--font-family-serif)` literals
-  are in the four unmoved route pages and go away as each screen moves. The
-  web-only `InstallPrompt`/`OfflineIndicator` keep their CSS vars.
+  Shared code uses `fontFamily: '$serif'` / `'$mono'` (platform-split
+  `fonts.ts` / `fonts.native.ts`); no route page carries a
+  `var(--font-family-serif)` literal any more. The web-only
+  `InstallPrompt`/`OfflineIndicator` keep their CSS vars.
 - Always test both light and dark themes when modifying styles
 
 ---
@@ -428,12 +427,12 @@ packages/app/src/
     tamagui/               # Button, Card, EditorialInput, LoadingSpinner, Text
     <Component>.tsx        # + .native.tsx / .shared.ts when split
   hooks/                   # useKeyboardNavigation (split), useTextToSpeech, ...
-  screens/                 # Home/Results/Statistics/SettingsScreen (+ editorial.ts); nav via callback props
+  screens/                 # Home/Results/Statistics/Settings/GameScreen (+ editorial.ts); nav via callback props
   services/                # Effect services; backends/adapters platform-split
   types/
 website/src/
-  app/<route>/page.tsx     # Next routes: all but game are <Layout><Screen/></Layout> wrappers;
-                           # game still moves to packages/app/src/screens/
+  app/<route>/page.tsx     # Next routes: thin <Layout><Screen/></Layout> wrappers
+                           # (game passes Layout as GameScreen's Frame prop)
   components/              # web-only: Layout, TamaguiProvider, InstallPrompt,
                            # OfflineIndicator, ServiceWorkerRegistration; rest are shims
   hooks/                   # shims + web-only useInstallPrompt, useOnlineStatus

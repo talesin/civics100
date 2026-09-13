@@ -3,7 +3,7 @@
 // (animations.ts = css on web, animations.native.ts = moti on iOS/Android).
 import { createTamagui, createTokens } from 'tamagui'
 import { animations } from './animations'
-import { serifFont } from './fonts'
+import { monoFont, serifFont } from './fonts'
 
 // Map Tailwind design tokens to Tamagui tokens
 const tokens = createTokens({
@@ -277,7 +277,8 @@ const config = createTamagui({
   // driver is platform-split via ./fonts (web = var(--font-family-serif),
   // native = platform serif until Phase 6 loads Newsreader).
   fonts: {
-    serif: serifFont
+    serif: serifFont,
+    mono: monoFont
   },
   tokens,
   themes: {

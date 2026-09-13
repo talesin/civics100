@@ -10,6 +10,9 @@
  *
  * Native half (fonts.native.ts) substitutes a platform serif until Phase 6
  * loads Newsreader via expo-font.
+ *
+ * `mono` backs the keyboard-shortcut chips on the game screen: the generic
+ * CSS `monospace` family the old inline style used, verbatim.
  */
 import { createFont } from 'tamagui'
 
@@ -35,6 +38,27 @@ export const serifFont = createFont({
   weight: {
     1: '400',
     5: '500',
+    true: '400'
+  },
+  letterSpacing: {
+    1: 0,
+    true: 0
+  }
+})
+
+export const monoFont = createFont({
+  family: 'monospace',
+  size: {
+    1: 11,
+    2: 12,
+    3: 13,
+    4: 14,
+    5: 15,
+    6: 16,
+    true: 14
+  },
+  weight: {
+    1: '400',
     true: '400'
   },
   letterSpacing: {
