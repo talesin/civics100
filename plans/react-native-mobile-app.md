@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-09-13): 🔄 IN PROGRESS — Stages 1–16 committed; all five screens shared (Home/Results/Statistics/Settings/Game), Stage 17 mobile route wrappers next
+#### Phase 5 — STATUS (updated 2026-09-13): ✅ DONE in-container — Stages 1–17 landed; all five screens shared and mounted by both the website routes and the expo-router routes (on-device behaviour check deferred to the Phase 6 boot)
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -683,9 +683,54 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   greps 0; throwaway route bundled GameScreen under Metro with
   `useKeyboardNavigation.native.ts` resolved. Gates ran on a fresh sandbox,
   one heavy suite at a time (pids 28 → 202 over Stages 15+16).
-- **Remaining:** Stage 17 mobile route wrappers (`apps/mobile/app/*` →
-  `<XScreen/>` with expo-router callbacks; GameScreen's `Frame` → stack
-  header title). Keep web-only: OfflineIndicator,
+- **Stage 17:** mobile route wrappers. `apps/mobile/app/{index,game,results,
+  statistics,settings}.tsx` mirror the website route pages one-for-one
+  (`useRouter()` from expo-router, `router.push` for every navigation
+  callback); the Phase-1 probe screen is gone. Two mobile-only components in
+  `apps/mobile/components/` (outside `app/`, so not routes): **`ScreenFrame`**
+  is the native stand-in for the web Layout — `<Stack.Screen options={{ title
+  }}>` + a Tamagui `ScrollView` on `$editorialPaper` carrying the web Main's
+  32/24 padding plus the bottom safe-area inset + the shared `ErrorBoundary`
+  (Go Home = `router.dismissTo('/')`). Its props ARE `GameFrameProps`, so the
+  game route passes it as `Frame` and the stack header title tracks the game
+  state exactly as the web header does. **`AppThemeProvider`** provides the
+  shared `ThemeContext` on native (SettingsScreen's dark-mode checkbox calls
+  `useThemeContext`, which throws unprovided): in-memory state seeded from
+  `useColorScheme()`, and Tamagui's provider follows it through
+  `defaultTheme` (its ThemeProvider forwards the prop as the root `<Theme
+  name>`); persisting the choice is Phase 6. `_layout.tsx` turns the stack
+  header ON (was `headerShown: false`), colours it from `useTheme()`
+  (`editorialPaper`/`editorialInk`), mounts `ThemeToggle` (the `.native`
+  half, first real consumer) as `headerRight`, and ties the status-bar style
+  to the theme. Gates: mobile `tsc`; `expo export` ios + android
+  `--source-maps` with the `sources` check extended to ALL five screens +
+  `screens/editorial.ts` + every `.native` half (confirmDialog, ScoreRing,
+  ThemeToggle, CheckboxField, ExternalLink, QuestionDetailModal,
+  QuestionStatisticsTable, useKeyboardNavigation, icons, fonts, animations,
+  backend) + the six route/component files present, every web half absent,
+  forbidden greps 0 (lucide-react, @effect/platform-node, @effect/cli,
+  framer-motion, @tamagui/animations-css, and now `next/`). Website gates ran
+  unchanged and green (root `npm test` ×2, `npm run build -w website`, e2e
+  3/3, visual 20/20 ×2) — the only packages/app change is the ThemeContext
+  doc comment. **Dropped:** a jest-expo import smoke over the route modules.
+  The screens pull `tamagui.config` → `animations.native.ts` →
+  `@tamagui/animations-moti` → moti → reanimated → `react-native-worklets`,
+  whose native-module init throws under jest; the official
+  `react-native-reanimated/mock` imports worklets itself, and worklets'
+  `jest/resolver.js` fix would replace the `@react-native/jest-preset`
+  resolver the preset relies on. The engine packages (`questionnaire`,
+  `civics2json`, `distractions`) also need `moduleNameMapper` entries to
+  their built `dist` (ESM-only exports maps, value imports now reach
+  jest-resolve). Both are Phase 7 CI work; `tsc` + the two Metro bundles are
+  the mobile gate. Notes: `expo export` does not generate typed routes
+  (`.expo/types`) in-container, so `router.push('/game')` type-checks as a
+  plain string; `dismissTo` pops to the home route when it is in the stack
+  and replaces otherwise. Nav polish (push-on-push stack growth from
+  Results → Play Again, tabs) is Phase 6 as planned.
+- **Phase 5 exit:** every website route renders the shared screen ✓; mobile
+  mounts the same screens ✓ (bundle-verified); `/game` identical on both —
+  in-container the same GameScreen module is in both bundles, the on-device
+  run is the Phase 6 boot. Kept web-only as decided: OfflineIndicator,
   InstallPrompt, ServiceWorkerRegistration, Layout.
 - NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
   fixture type errors) — not a gate; `next build`'s TS pass and jest are the
