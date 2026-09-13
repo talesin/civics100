@@ -343,7 +343,7 @@ TextInput/picker equivalents.
 - Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
 - **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
 
-#### Phase 5 — STATUS (updated 2026-09-12): 🔄 IN PROGRESS — Stages 1–12 committed; ResultsScreen shared, four screens + mobile routes next
+#### Phase 5 — STATUS (updated 2026-09-12): 🔄 IN PROGRESS — Stages 1–13 committed; Results + Statistics screens shared, three screens + mobile routes next
 
 Running as small staged commits on `native`, one commit per stage, user confirms
 each commit. Per-stage gate suite (all must be green before a stage commits):
@@ -535,9 +535,40 @@ grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
   `ResultsScreen`/`confirmDialog` are legitimately absent until Stage 17
   imports the screen — a throwaway `temp_` mobile route confirmed the screen
   and `confirmDialog.native.ts` bundle under Metro.
-- **Remaining:** Statistics, Home, Settings, Game screens (same wrapper
-  shape) → mobile route wrappers. Keep web-only: OfflineIndicator,
-  InstallPrompt, ServiceWorkerRegistration, Layout.
+- **Stage 13:** StatisticsScreen → `packages/app/src/screens/`;
+  `statistics/page.tsx` is a `<Layout title><StatisticsScreen/></Layout>`
+  wrapper (no nav callbacks needed). The planned React 19 fix landed:
+  `filteredStatistics` state + effect (double render per keystroke) → a
+  `useMemo` over the service's pure `filterQuestions`/`sortQuestions`, which
+  are now exported from `StatisticsService.ts` (the Effect service methods
+  still wrap them). The `.stats-strip` CSS grid (globals.css, deleted) → a
+  flex-wrap `SummaryStrip` whose cells set `flexBasis` + rule edges per
+  column count through media props; a new **`xxs: { maxWidth: 479 }` media
+  key appended LAST** in tamagui.config supplies the old 480px breakpoint
+  (later keys take precedence — it must beat `$sm`; the mobile baseline
+  confirmed it does). `$sm` (≤768) stands in for the 768px min-width
+  breakpoint (1px wider) and for `clamp(2rem, 4vw, 2.5rem)` → 40/32px.
+  Strut lesson again: the helper caption was an inline span in a 24px body
+  line box → `lineHeight={22} marginTop={2}` (its `marginTop: 6` was inert
+  on an inline element and is dropped). The scroll box keeps
+  `overflowY: auto` via a web-only `style` (the Tamagui `overflow` prop maps
+  to `scroll`, whose permanent gutter would shift the table). Shared
+  editorial typography (Eyebrow/PageTitle/SectionTitle/Rule) moved out of
+  ResultsScreen into `screens/editorial.ts`. **Deviation:** the filter
+  `<select>`/search `<input>` stay the shared `EditorialSelect`/`EditorialInput`
+  (not a per-screen native split) — StateSelector/DistrictSelector already
+  use them the same way, so the one native fix is a Phase 6 split of
+  `tamagui/EditorialInput.tsx` itself. Parity: visual 20/20 ×2; old-vs-new
+  diff at 1280/600/390 = 0 differing pixels light+dark; at 700 the page is
+  10px taller solely because the title is 44px where `5vw` gave 35px (the
+  accepted between-breakpoint approximation, identical on Results). Metro:
+  throwaway route bundled StatisticsScreen + both table/modal native halves,
+  web halves absent, forbidden greps 0. Gate note: root `npm test` failed in
+  two workspaces when run concurrently with two `expo export`s (CPU
+  starvation) and passed cleanly alone — don't overlap them.
+- **Remaining:** Home, Settings, Game screens (same wrapper shape) → mobile
+  route wrappers. Keep web-only: OfflineIndicator, InstallPrompt,
+  ServiceWorkerRegistration, Layout.
 - NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
   fixture type errors) — not a gate; `next build`'s TS pass and jest are the
   real checks.
