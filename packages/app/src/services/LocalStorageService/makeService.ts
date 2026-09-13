@@ -5,7 +5,8 @@ import {
   WebsiteGameSettings,
   DEFAULT_GAME_SETTINGS,
   TtsSettings,
-  DEFAULT_TTS_SETTINGS
+  DEFAULT_TTS_SETTINGS,
+  ThemePreference
 } from '../../types'
 import type { StorageBackend } from './backend'
 import {
@@ -13,6 +14,7 @@ import {
   PairedAnswersSchema,
   STORAGE_KEYS,
   STORAGE_VERSION,
+  ThemePreferenceSchema,
   TtsSettingsSchema,
   WebsiteGameSettingsSchema,
   safeJsonParse,
@@ -171,6 +173,30 @@ export const makeLocalStorage = (backend: StorageBackend) => {
     })
   }
 
+  const saveThemePreference = (theme: ThemePreference): Effect.Effect<void, never, never> => {
+    return Effect.gen(function* () {
+      if (!(yield* backend.isAvailable())) return
+
+      yield* migrateStorageIfNeeded()
+
+      yield* backend.setItem(STORAGE_KEYS.THEME_PREFERENCE, theme)
+    })
+  }
+
+  // null = no explicit choice yet (the caller follows the system appearance).
+  const getThemePreference = (): Effect.Effect<ThemePreference | null, never, never> => {
+    return Effect.gen(function* () {
+      if (!(yield* backend.isAvailable())) return null
+
+      yield* migrateStorageIfNeeded()
+
+      const raw = yield* backend.getItem(STORAGE_KEYS.THEME_PREFERENCE)
+
+      const decoded = Schema.decodeUnknownOption(ThemePreferenceSchema)(raw)
+      return Option.getOrNull(decoded)
+    })
+  }
+
   const clearAllData = (): Effect.Effect<void, never, never> => {
     return Effect.gen(function* () {
       if (!(yield* backend.isAvailable())) return
@@ -282,6 +308,8 @@ export const makeLocalStorage = (backend: StorageBackend) => {
     hasSavedSettings,
     saveTtsSettings,
     getTtsSettings,
+    saveThemePreference,
+    getThemePreference,
     savePairedAnswers,
     getPairedAnswers,
     clearAllData,

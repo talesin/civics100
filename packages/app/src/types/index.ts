@@ -35,6 +35,13 @@ export const DEFAULT_GAME_SETTINGS: WebsiteGameSettings = {
 }
 
 // TTS (text-to-speech) settings — stored separately from GameSettings
+/**
+ * Persisted colour-scheme choice. Web persists the theme through
+ * @tamagui/next-theme's own localStorage key, so only the native provider
+ * reads and writes this through LocalStorageService.
+ */
+export type ThemePreference = 'light' | 'dark'
+
 export interface TtsSettings {
   // Platform voice identifier (web: SpeechSynthesisVoice.voiceURI; native: expo-speech
   // voice identifier). null = auto-select (null for JSON round-trip compatibility).

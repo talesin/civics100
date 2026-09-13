@@ -295,6 +295,22 @@ export const describeStorageContract = ({ label, layer, reset }: StorageContract
       )
     })
 
+    it('round-trips the theme preference (null until chosen)', async () => {
+      await run(
+        Effect.gen(function* () {
+          const storageService = yield* LocalStorageService
+
+          expect(yield* storageService.getThemePreference()).toBeNull()
+
+          yield* storageService.saveThemePreference('dark')
+          expect(yield* storageService.getThemePreference()).toBe('dark')
+
+          yield* storageService.saveThemePreference('light')
+          expect(yield* storageService.getThemePreference()).toBe('light')
+        })
+      )
+    })
+
     it('clears all data', async () => {
       await run(
         Effect.gen(function* () {

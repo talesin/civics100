@@ -21,6 +21,8 @@ export const TestLocalStorageServiceLayer = (fn?: {
   hasSavedSettings?: LocalStorageService['hasSavedSettings']
   saveTtsSettings?: LocalStorageService['saveTtsSettings']
   getTtsSettings?: LocalStorageService['getTtsSettings']
+  saveThemePreference?: LocalStorageService['saveThemePreference']
+  getThemePreference?: LocalStorageService['getThemePreference']
   savePairedAnswers?: LocalStorageService['savePairedAnswers']
   getPairedAnswers?: LocalStorageService['getPairedAnswers']
   clearAllData?: LocalStorageService['clearAllData']
@@ -39,6 +41,8 @@ export const TestLocalStorageServiceLayer = (fn?: {
       hasSavedSettings: fn?.hasSavedSettings ?? (() => Effect.succeed(false)),
       saveTtsSettings: fn?.saveTtsSettings ?? (() => Effect.succeed(void 0)),
       getTtsSettings: fn?.getTtsSettings ?? (() => Effect.succeed(DEFAULT_TTS_SETTINGS)),
+      saveThemePreference: fn?.saveThemePreference ?? (() => Effect.succeed(void 0)),
+      getThemePreference: fn?.getThemePreference ?? (() => Effect.succeed(null)),
       savePairedAnswers: fn?.savePairedAnswers ?? (() => Effect.succeed(void 0)),
       getPairedAnswers: fn?.getPairedAnswers ?? (() => Effect.succeed({})),
       clearAllData: fn?.clearAllData ?? (() => Effect.succeed(void 0)),

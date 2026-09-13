@@ -88,6 +88,8 @@ export const TtsSettingsSchema = Schema.Struct({
   rate: Schema.Number.pipe(Schema.clamp(0.5, 2.0))
 })
 
+export const ThemePreferenceSchema = Schema.Literal('light', 'dark')
+
 export const WebsiteGameSettingsSchema = Schema.Struct({
   maxQuestions: Schema.Number,
   winThreshold: Schema.Number,
@@ -113,6 +115,7 @@ export const STORAGE_KEYS = {
   GAME_SETTINGS: 'civics100_game_settings',
   PAIRED_ANSWERS: 'civics100_paired_answers',
   TTS_SETTINGS: 'civics100_tts_settings',
+  THEME_PREFERENCE: 'civics100_theme_preference',
   VERSION: 'civics100_storage_version'
 } as const
 
