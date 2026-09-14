@@ -63,6 +63,9 @@
     "@tamagui/lucide-icons": "1.144.4",
     "civics2json": "*",
     "effect": "^3.19.19",
+    "expo-audio": "*",
+    "expo-haptics": "*",
+    "expo-speech": "*",
     "lucide-react": "*",
     "questionnaire": "*",
     "react": "*",
@@ -74,6 +77,15 @@
       "optional": true
     },
     "@tamagui/lucide-icons": {
+      "optional": true
+    },
+    "expo-audio": {
+      "optional": true
+    },
+    "expo-haptics": {
+      "optional": true
+    },
+    "expo-speech": {
       "optional": true
     },
     "lucide-react": {
@@ -106,6 +118,9 @@
     "react-native": "0.85.3",
     "tamagui": "1.144.4",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.56.1"
+    "typescript-eslint": "^8.56.1",
+    "expo-audio": "56.0.13",
+    "expo-haptics": "56.0.3",
+    "expo-speech": "56.0.3"
   }
 }

@@ -27,6 +27,8 @@ export default [
       '**/node_modules',
       '**/package.lock.json',
       '**/dist',
+      // Node-only asset renderer (see assets/sounds), not part of the TS project
+      'scripts/**',
       '**/build',
       'eslint.config.mjs',
       '**/coverage'

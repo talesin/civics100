@@ -122,7 +122,7 @@ export default function StatsSummary({ stats }: StatsSummaryProps) {
             borderRightColor="$editorialRule"
           >
             <Text
-              fontFamily="$serif"
+              fontFamily="$serifDisplay"
               fontSize={48}
               fontWeight="400"
               lineHeight={48}

@@ -8,6 +8,7 @@ import {
 } from '../types'
 import { LocalStorageService } from '../services'
 import { useGameSounds, useKeyboardNavigation, useTextToSpeech } from '../hooks'
+import { hapticAnswerFeedback } from '../haptics'
 import { Card, XStack, YStack, Text } from './tamagui'
 import { isWeb, styled, useTheme } from 'tamagui'
 import SpeakerButton from './SpeakerButton'
@@ -297,12 +298,13 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
       question.expectedAnswers
     )
 
-    // Play sound feedback
+    // Sound + haptic feedback (haptics are a no-op on web)
     if (isCorrect) {
       playCorrect()
     } else {
       playIncorrect()
     }
+    hapticAnswerFeedback(isCorrect)
 
     const answer: QuestionAnswer = {
       questionId: question.id,

@@ -22,7 +22,7 @@ export const Eyebrow = styled(Text, {
 // line-height 1.1 → 48.39 / 35.19 (see the module comment).
 export const PageTitle = styled(Text, {
   tag: 'h1',
-  fontFamily: '$serif',
+  fontFamily: '$serifDisplay',
   fontSize: 44,
   lineHeight: 48.39,
   fontWeight: '500',

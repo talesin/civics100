@@ -79,7 +79,7 @@ const SummaryLabel = styled(Text, {
 // (exact for widths ≤ 800 and ≥ 1000; the vw ramp between is approximated).
 const SummaryValue = styled(Text, {
   tag: 'span',
-  fontFamily: '$serif',
+  fontFamily: '$serifDisplay',
   fontSize: 40,
   lineHeight: 40,
   fontWeight: '500',

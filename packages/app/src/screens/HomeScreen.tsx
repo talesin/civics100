@@ -92,7 +92,7 @@ const FadeUp = styled(YStack, {
 // line-height 1.1 floors to 70.39 / 44 (see editorial.ts).
 const HeroTitle = styled(Text, {
   tag: 'h1',
-  fontFamily: '$serif',
+  fontFamily: '$serifDisplay',
   fontSize: 64,
   lineHeight: 70.39,
   fontWeight: '500',

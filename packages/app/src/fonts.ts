@@ -8,8 +8,11 @@
  * verbatim into its generated CSS, so `fontFamily="$serif"` is value-identical
  * with the old inline `var(--font-family-serif)` styles.
  *
- * Native half (fonts.native.ts) substitutes a platform serif until Phase 6
- * loads Newsreader via expo-font.
+ * Native half (fonts.native.ts) ships Newsreader static cuts via expo-font.
+ * `serifDisplay` exists for its benefit: native needs a separate 36pt
+ * optical-size cut for large titles, whereas the web variable font selects
+ * the optical size from the font-size itself — so here it is the SAME chain
+ * as `serif`, and `$serifDisplay` renders identically to `$serif` on web.
  *
  * `mono` backs the keyboard-shortcut chips on the game screen: the generic
  * CSS `monospace` family the old inline style used, verbatim.
@@ -45,6 +48,8 @@ export const serifFont = createFont({
     true: 0
   }
 })
+
+export const serifDisplayFont = serifFont
 
 export const monoFont = createFont({
   family: 'monospace',
