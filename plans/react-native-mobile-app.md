@@ -800,7 +800,7 @@ deferred to `plans/react19-modernization.md` (post-migration).
 - **Add `expo-system-ui`**: set the root-view background color to eliminate the Android navigation-transition color flash ([Ch 15 § UI Components](/references/expo/15-sdk-ui-components.md)).
 - **Exit:** all 5 screens fully functional on iOS sim + Android emulator with persistence, TTS, sounds, and haptic answer feedback.
 
-#### Phase 6 — STATUS (updated 2026-09-13): 🔄 IN PROGRESS — Stages 6.1–6.3 done in-container; 6.4+ blocked on host-side `expo install`
+#### Phase 6 — STATUS (updated 2026-09-14): 🔄 IN PROGRESS — Stages 6.1–6.4 done in-container (native TTS/sounds/haptics/fonts/system-UI wired, bundle-verified); 6.5 = first device boot on the host
 
 Same staged-commit discipline as Phase 5 (one commit per stage, user confirms, full
 gate suite before each). The sandbox has no network and no simulator, so the phase is
@@ -841,30 +841,65 @@ the host (package installs, font/audio assets, device boot).
 - **Gates (all three stages, final tree):** packages/app `tsc` + `eslint`; mobile
   `tsc` + jest 16; `expo export` ios + android `--source-maps` mapcheck OK; root
   `npm test` ×2; `npm run build -w website`; e2e 3/3; visual 20/20 ×2.
-- **BLOCKED in-container → host actions before Stage 6.4** (run on the host, in
-  `apps/mobile`, then relaunch the sandbox):
-  1. `npx expo install expo-speech expo-audio expo-haptics expo-system-ui expo-font`
-     (`expo-font` is only hoisted transitively today; it must be a declared dep).
-  2. Font files: the web serif is `Newsreader` via `next/font/google` (downloaded at
-     build time, nothing in the repo). Drop the TTF/OTF statics (Newsreader
-     400/500 + italic if used) under `apps/mobile/assets/fonts/` for expo-font.
-  3. App icon / splash: only the PWA PNGs exist (`website/public/icons`, 512px max;
-     iOS needs 1024×1024). Provide `assets/icon.png` + `assets/splash-icon.png` or
-     accept generating them from the 512 in Stage 6.5.
-- **Stage 6.4 (after installs):** `TtsService/adapter.native.ts` over `expo-speech`
-  (`Speech.getAvailableVoicesAsync` → `TtsVoice`, `Speech.speak` with
-  `onDone`/`onError` resumed into `Effect.async`, interruption → `Speech.stop`);
-  `SoundService/adapter.native.ts` over `expo-audio` playing bundled WAVs — native has
-  no oscillator synth, so the four tone sequences (C5-E5-G5 etc., exact
-  frequencies/durations/gains from `adapter.ts`) get rendered once to
-  `packages/app/assets/sounds/*.wav` by a checked-in node script (no deps) and
-  `require()`d as Metro assets. Haptics: `expo-haptics` in `GameQuestion`'s answer
-  handler behind `isWeb` (success/error notification feedback), no-op when
-  unsupported. `expo-system-ui` root background = `$editorialPaper` per theme in
-  `AppThemeProvider`. Then `expo-font` + `fonts.native.ts` swap Georgia → Newsreader.
-- **Stage 6.5 (host, device):** `app.config.ts` icon/splash/`userInterfaceStyle`
-  already automatic; first `expo run:ios` / `run:android` boot = the Phase 5 exit's
-  deferred `/game` parity check + this phase's exit.
+- **Host prerequisites (done 2026-09-13/14):** the user ran `npx expo install` — at the
+  REPO ROOT by mistake (deps landed in the root `package.json` + a stray root
+  `app.json` carrying the expo-audio/expo-font plugins). Fixed in-container without
+  network since the packages were already hoisted: deps moved into
+  `apps/mobile/package.json` (+ the lock's `apps/mobile` entry, root entry reverted),
+  `app.json` deleted, plugins carried into `app.config.ts`. Fonts arrived in
+  `apps/mobile/assets/` and were moved to `assets/fonts/` (8 Newsreader statics:
+  14pt Regular/Medium/SemiBold + italics, 36pt Regular/Medium, + OFL.txt).
+  Versions: expo-speech 56.0.3, expo-audio 56.0.13, expo-haptics 56.0.3,
+  expo-system-ui 56.0.5, expo-font 56.0.7.
+- **Stage 6.4 — native features:** all five fill-ins landed; packages/app declares
+  `expo-speech`/`expo-audio`/`expo-haptics` as optional peers + devDeps (lock
+  `packages/app` entry hand-edited, Stage-12 precedent).
+  (a) **TTS** `TtsService/adapter.native.ts` over expo-speech: `isSupported`
+  true, `getAvailableVoicesAsync` → `TtsVoice` (identifier as voiceURI, so the
+  saved TtsSettings shape is unchanged), `speak` resumed into `Effect.async` via
+  `onDone`/`onStopped`/`onError`, interruption → `Speech.stop()`; no voice chosen
+  → `language: 'en-US'`; `onVoicesChanged` never fires (static list).
+  (b) **Sounds** `SoundService/adapter.native.ts` over expo-audio: one lazily
+  created `AudioPlayer` per sound, `seekTo(0)` then `play()`; the four WAVs are
+  rendered by the checked-in `packages/app/scripts/render-sounds.mjs` (44.1 kHz
+  mono 16-bit, exact tone tables from `adapter.ts`, 0.1→0.01 exponential gain)
+  into `packages/app/assets/sounds/` and imported as Metro assets (new
+  `src/assets.d.ts` declares `*.wav`); both exports list the 4 WAVs in the
+  asset manifest. iOS silent switch respected (no `playsInSilentMode`).
+  (c) **Haptics** new platform split `src/haptics.ts` (web no-op) /
+  `haptics.native.ts` (`Haptics.notificationAsync` Success/Error), called from
+  `GameQuestion.submitAnswer` beside the sound feedback.
+  (d) **System UI** root `_layout.tsx` `SystemUI.setBackgroundColorAsync(paper)`
+  in an effect keyed on the theme's `editorialPaper`.
+  (e) **Fonts** expo-font config plugin embeds the 8 statics (`app.config.ts`);
+  `fonts.native.ts` maps weights via Tamagui `face` (iOS PostScript names
+  `Newsreader14pt-*` / Android file stems `Newsreader_14pt-*`, chosen by
+  `Platform.OS`; 700 → SemiBold, the heaviest cut shipped). New **`$serifDisplay`**
+  font: native = the 36pt cut (Regular/Medium, no italics), web = the very same
+  `var(--font-family-serif)` chain (the variable font picks optical size from
+  font-size), so the four sites switched to it — `PageTitle`, Home `HeroTitle`,
+  Statistics `SummaryValue`, StatsSummary's 48px value — are pixel-identical on
+  web (visual 20/20 ×2). `tamagui.config` registers `serifDisplay`.
+  Also: placeholder **app icon** — `website/public/icons/icon-512.png` bilinear-
+  upscaled to 1024² and alpha-flattened onto white by a pngjs script (sharp has
+  no arm64 binary in the sandbox), wired as `icon` in `app.config.ts`; replace
+  before store submission. `expo-audio` plugin set `microphonePermission: false`
+  (playback only). packages/app eslint ignores `scripts/**`.
+  Gates: packages/app tsc + eslint; mobile tsc; `expo config` loads; `expo
+  export` ios + android mapcheck OK (adapters' native halves + haptics.native +
+  the four expo modules present, web halves absent) + 4 WAVs in the manifest;
+  root `npm test` ×2; website build; e2e 3/3; visual 20/20 ×2.
+- **Still host-only:** `npx expo install expo-splash-screen` + a transparent
+  1024² `assets/splash-icon.png` (the plugin owns splash config on SDK 56 —
+  nothing to configure until it is installed); real icon art.
+- **Stage 6.5 (host, device):** first `expo run:ios` / `run:android` boot = the
+  Phase 5 exit's deferred `/game` parity check + this phase's exit. Things only a
+  device can confirm, in order: fonts resolve by the face names above (a wrong
+  name silently falls back to the system serif — check the header title), tab
+  headers show ScreenFrame titles, dark toggle persists across relaunch,
+  answer tap → haptic + WAV, the settings voice preview speaks, expo-audio's
+  `play()` right after `createAudioPlayer` starts once loaded (else add an
+  `isLoaded` wait in the adapter).
 
 ### Phase 7 — Build, CI, release
 - **EAS Build** (`eas.json`) dev/preview/production profiles with a dev-client (reanimated/async-storage/expo-audio aren't in Expo Go) — [Ch 16 § eas.json](/references/expo/16-eas-build.md#eas-json). Minimal skeleton:
