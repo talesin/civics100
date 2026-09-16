@@ -1,41 +1,17 @@
 import { Effect } from 'effect'
+import { TtsPlaybackError } from './adapter.shared'
+import type { SpeechAdapter } from './adapter.shared'
+
+// Types + the error class live in adapter.shared.ts (shared by both halves);
+// re-exported here so index.ts keeps one import site.
+export { TtsPlaybackError } from './adapter.shared'
+export type { SpeakOptions, SpeechAdapter, TtsVoice } from './adapter.shared'
 
 /**
- * Platform-neutral voice descriptor (web: SpeechSynthesisVoice fields; native:
- * expo-speech voice identifier fields).
+ * WEB (and default) SpeechAdapter over `speechSynthesis`. adapter.native.ts
+ * is substituted by Metro via the package-internal relative import in
+ * service.ts — never expose this file through an exports-map subpath.
  */
-export interface TtsVoice {
-  readonly voiceURI: string
-  readonly name: string
-  readonly lang: string
-}
-
-export interface SpeakOptions {
-  readonly voiceURI: string | null
-  readonly rate: number
-}
-
-export class TtsPlaybackError {
-  readonly _tag = 'TtsPlaybackError'
-}
-
-/**
- * The platform-varying speech surface. Segment sequencing and pause pacing are
- * UI policy and stay in the useTextToSpeech hook; the adapter owns the speech
- * primitives only.
- *
- * This file is the WEB (and default) implementation over `speechSynthesis`.
- * adapter.native.ts is substituted by Metro via the package-internal relative
- * import in service.ts — never expose this file through an exports-map subpath.
- */
-export interface SpeechAdapter {
-  readonly isSupported: () => boolean
-  readonly getVoices: () => Effect.Effect<readonly TtsVoice[]>
-  readonly onVoicesChanged: (listener: () => void) => () => void
-  readonly speakText: (text: string, options: SpeakOptions) => Effect.Effect<void, TtsPlaybackError>
-  readonly cancel: () => void
-}
-
 const isSupported = (): boolean => typeof window !== 'undefined' && 'speechSynthesis' in window
 
 // Voice resolution: exact voiceURI match if provided, otherwise en-US, otherwise

@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 import * as Speech from 'expo-speech'
-import { TtsPlaybackError, type SpeechAdapter } from './adapter'
+import { TtsPlaybackError, type SpeechAdapter } from './adapter.shared'
 
 /**
  * Native SpeechAdapter (Phase 6) over expo-speech. Voice identifiers stand in
@@ -8,7 +8,9 @@ import { TtsPlaybackError, type SpeechAdapter } from './adapter'
  * voice is chosen the platform picks its en-US default. The native voice list
  * is fixed for the process, so onVoicesChanged never fires. Fiber interruption
  * stops speech mid-utterance, as on web. Resolved by Metro in place of
- * adapter.ts via the package-internal relative import in service.ts.
+ * adapter.ts via the package-internal relative import in service.ts; shared
+ * types + the error class come from adapter.shared.ts (importing them from
+ * './adapter' here would resolve to this file itself under Metro).
  */
 export const platformAdapter: SpeechAdapter = {
   isSupported: () => true,
