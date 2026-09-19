@@ -1,0 +1,88 @@
+# The deferred /game parity check: a first run routes Start through Settings,
+# every answer runs the feedback path (haptic + WAV) without crashing, the
+# stack header tracks the question counter, the game completes (last
+# question, early win via Finish Now, or early fail), the result lands in the
+# Results archive, and "Clear all data" empties it again. Answers are
+# targeted by their letter badge, A first and then B/C while the multi-select
+# "Select N more" hint is up; answering A-first throughout keeps the run
+# short by hitting the early-fail threshold on most question sets. Long
+# questions push the feedback and controls below the fold, hence the scrolls;
+# the "Question #" eyebrow is scrolled into view before every badge tap so
+# the badge cannot sit under the translucent iOS header (a tap there hits the
+# back button).
+appId: com.civics100.app
+name: Play a game to completion, then clear the results
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'US Civics Test'
+- tapOn: 'Start'
+- assertVisible: 'Game Settings'
+- scrollUntilVisible:
+    element:
+      text: 'Start Game'
+    direction: DOWN
+- tapOn: 'Start Game'
+- assertVisible: 'Question 1/.*'
+- repeat:
+    while:
+      notVisible: 'Test Complete'
+    commands:
+      - scrollUntilVisible:
+          element:
+            text: 'Question #.*'
+          direction: UP
+      - tapOn: 'A'
+      - scrollUntilVisible:
+          element:
+            text: 'Correct! Well done!|Incorrect|Select .* more|Test Complete'
+          direction: DOWN
+      - runFlow:
+          when:
+            visible: 'Select .* more'
+          commands:
+            - scrollUntilVisible:
+                element:
+                  text: 'Question #.*'
+                direction: UP
+            - tapOn: 'B'
+            - scrollUntilVisible:
+                element:
+                  text: 'Correct! Well done!|Incorrect|Select .* more|Test Complete'
+                direction: DOWN
+      - runFlow:
+          when:
+            visible: 'Select .* more'
+          commands:
+            - scrollUntilVisible:
+                element:
+                  text: 'Question #.*'
+                direction: UP
+            - tapOn: 'C'
+            - scrollUntilVisible:
+                element:
+                  text: 'Correct! Well done!|Incorrect|Test Complete'
+                direction: DOWN
+      - assertVisible: 'Correct! Well done!|Incorrect|Test Complete'
+      - runFlow:
+          when:
+            notVisible: 'Test Complete'
+          commands:
+            - scrollUntilVisible:
+                element:
+                  text: 'Finish Now|Next Question|Finish'
+                direction: DOWN
+            - tapOn: 'Finish Now|Next Question|Finish'
+- scrollUntilVisible:
+    element:
+      text: 'View History'
+    direction: DOWN
+- tapOn: 'View History'
+- assertVisible: 'Archive · 1 Test'
+- scrollUntilVisible:
+    element:
+      text: 'Clear all data'
+    direction: DOWN
+- tapOn: 'Clear all data'
+- tapOn: 'OK'
+- assertVisible: 'No Test Results Yet'

@@ -1,0 +1,16 @@
+# The Settings voice preview drives expo-speech; the run confirms the screen
+# survives (no ErrorBoundary fallback, no crash). Whether audio comes out is
+# confirmed by ear on the host.
+appId: com.civics100.app
+name: Voice preview speaks without an error state
+---
+- launchApp
+- tapOn: 'Settings, tab, .*'
+- assertVisible: 'Game Settings'
+- scrollUntilVisible:
+    element:
+      text: 'Preview voice'
+    direction: DOWN
+- tapOn: 'Preview voice'
+- assertNotVisible: 'Something went wrong'
+- assertVisible: 'Preview voice'

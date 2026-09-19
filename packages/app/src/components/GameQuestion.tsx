@@ -439,14 +439,21 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
         })}
       </YStack>
 
-      {/* Keyboard Hint */}
-      {hasAnswered === false && disabled === false ? (
+      {/* Keyboard Hint (web); native has no keyboard and keeps only the multi-select count */}
+      {hasAnswered === false && disabled === false && (isWeb || isMultipleChoice === true) ? (
         <KeyboardHintBox>
           <KeyboardHintText>
-            Use keyboard: 1-4 or A-D to {isMultipleChoice === true ? 'toggle' : 'select'} answers
-            {isMultipleChoice === true
-              ? ` (need ${expectedCount - selectedAnswers.length} more)`
-              : ''}
+            {isWeb ? (
+              <>
+                Use keyboard: 1-4 or A-D to {isMultipleChoice === true ? 'toggle' : 'select'}{' '}
+                answers
+                {isMultipleChoice === true
+                  ? ` (need ${expectedCount - selectedAnswers.length} more)`
+                  : ''}
+              </>
+            ) : (
+              `Select ${expectedCount - selectedAnswers.length} more`
+            )}
           </KeyboardHintText>
         </KeyboardHintBox>
       ) : null}
@@ -467,7 +474,8 @@ export default function GameQuestion({ question, onAnswer, disabled = false }: G
                 <FeedbackIconCircle variant="error" marginTop={2}>
                   <X size={16} color="white" strokeWidth={2} />
                 </FeedbackIconCircle>
-                <YStack>
+                {/* flexShrink is the CSS default but 0 on native, where the detail would overflow the box */}
+                <YStack flexShrink={1}>
                   <FeedbackText variant="error">Incorrect</FeedbackText>
                   <FeedbackDetail>
                     {isMultipleChoice

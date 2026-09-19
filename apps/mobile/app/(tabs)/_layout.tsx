@@ -5,7 +5,9 @@ import { useHeaderOptions } from '@/components/headerOptions'
 
 // Bottom tabs replace the web header's Home / Results / Statistics / Settings
 // links (Phase 6). The game is a root-stack route pushed above the tabs so
-// the tab bar stays out of the way while playing.
+// the tab bar stays out of the way while playing. Each route's ScreenFrame
+// owns `title` (the header), so the tab labels are set with `tabBarLabel`,
+// which `title` would otherwise feed.
 export default function TabLayout() {
   const theme = useTheme()
   const { contentStyle: _unused, ...headerOptions } = useHeaderOptions()
@@ -27,21 +29,21 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          tabBarLabel: 'Home',
           tabBarIcon: ({ color, size }) => <Home size={size} color={color as string} strokeWidth={1.5} />
         }}
       />
       <Tabs.Screen
         name="results"
         options={{
-          title: 'Results',
+          tabBarLabel: 'Results',
           tabBarIcon: ({ color, size }) => <Trophy size={size} color={color as string} strokeWidth={1.5} />
         }}
       />
       <Tabs.Screen
         name="statistics"
         options={{
-          title: 'Statistics',
+          tabBarLabel: 'Statistics',
           tabBarIcon: ({ color, size }) => (
             <BarChart2 size={size} color={color as string} strokeWidth={1.5} />
           )
@@ -50,7 +52,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
+          tabBarLabel: 'Settings',
           tabBarIcon: ({ color, size }) => <Settings size={size} color={color as string} strokeWidth={1.5} />
         }}
       />

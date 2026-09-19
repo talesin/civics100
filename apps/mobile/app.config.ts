@@ -20,7 +20,7 @@ const config: AppExpoConfig = {
   userInterfaceStyle: 'automatic',
   // Placeholder: the 512px PWA icon upscaled to the 1024px square iOS requires
   // (flattened onto white — icons may not carry alpha). Replace with real art
-  // before store submission; the splash needs expo-splash-screen (host install).
+  // before store submission, together with the splash icons below.
   icon: './assets/icon.png',
   // New Architecture + Hermes are the locked Phase-0 matrix defaults.
   newArchEnabled: true,
@@ -34,12 +34,35 @@ const config: AppExpoConfig = {
   },
   // Config plugins (Phase 6): expo-audio's plugin owns the microphone permission
   // strings — the app only plays bundled sounds, so the permission is turned off;
-  // expo-font's plugin embeds the Newsreader statics natively. react-native-svg, async-storage, expo-speech, expo-haptics and
-  // expo-system-ui autolink with no plugin. New-arch is enabled via `newArchEnabled`
-  // above, so expo-build-properties stays deferred (native build tuning).
+  // expo-font's plugin embeds the Newsreader statics natively; expo-splash-screen's
+  // plugin owns the launch screen (SDK 56 has no top-level `splash` key).
+  // react-native-svg, async-storage, expo-speech, expo-haptics and expo-system-ui
+  // autolink with no plugin. New-arch is enabled via `newArchEnabled` above, so
+  // expo-build-properties stays deferred (native build tuning). The local
+  // plugins/withPodsDeploymentTarget.js patches the generated Podfile so pod
+  // resource bundles meet Xcode 26+'s 15.0 deployment-target floor.
   plugins: [
     'expo-router',
+    './plugins/withPodsDeploymentTarget.js',
     ['expo-audio', { microphonePermission: false }],
+    [
+      'expo-splash-screen',
+      {
+        // The "100" glyph lifted from the app icon (scripts/render-splash-icon.mjs)
+        // over the editorial paper colours from packages/app/src/tamagui.config.ts —
+        // ink on paper, and the dark theme's ink on dark paper. app/_layout.tsx holds
+        // the splash until the saved theme preference is adopted, so the app's first
+        // frame already matches whichever variant the OS showed.
+        image: './assets/splash-icon.png',
+        imageWidth: 200,
+        resizeMode: 'contain',
+        backgroundColor: '#ffffff',
+        dark: {
+          image: './assets/splash-icon-dark.png',
+          backgroundColor: '#0f172a'
+        }
+      }
+    ],
     [
       'expo-font',
       {

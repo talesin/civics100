@@ -800,7 +800,7 @@ deferred to `plans/react19-modernization.md` (post-migration).
 - **Add `expo-system-ui`**: set the root-view background color to eliminate the Android navigation-transition color flash ([Ch 15 § UI Components](/references/expo/15-sdk-ui-components.md)).
 - **Exit:** all 5 screens fully functional on iOS sim + Android emulator with persistence, TTS, sounds, and haptic answer feedback.
 
-#### Phase 6 — STATUS (updated 2026-09-14): 🔄 IN PROGRESS — Stages 6.1–6.4 done in-container (native TTS/sounds/haptics/fonts/system-UI wired, bundle-verified); 6.5 = first device boot on the host
+#### Phase 6 — STATUS (updated 2026-09-19): 🔄 IN PROGRESS — Stages 6.1–6.5 done; the iOS boot on the host (Xcode 27) passed the whole device checklist and closed the Phase 5 exit's deferred `/game` check, with the Maestro flows in `apps/mobile/.maestro/` as the device gate; left: Android boot, real icon/splash art, splash judged on an EAS preview build
 
 Same staged-commit discipline as Phase 5 (one commit per stage, user confirms, full
 gate suite before each). The sandbox has no network and no simulator, so the phase is
@@ -889,17 +889,174 @@ the host (package installs, font/audio assets, device boot).
   export` ios + android mapcheck OK (adapters' native halves + haptics.native +
   the four expo modules present, web halves absent) + 4 WAVs in the manifest;
   root `npm test` ×2; website build; e2e 3/3; visual 20/20 ×2.
-- **Still host-only:** `npx expo install expo-splash-screen` + a transparent
-  1024² `assets/splash-icon.png` (the plugin owns splash config on SDK 56 —
-  nothing to configure until it is installed); real icon art.
-- **Stage 6.5 (host, device):** first `expo run:ios` / `run:android` boot = the
-  Phase 5 exit's deferred `/game` parity check + this phase's exit. Things only a
-  device can confirm, in order: fonts resolve by the face names above (a wrong
-  name silently falls back to the system serif — check the header title), tab
-  headers show ScreenFrame titles, dark toggle persists across relaunch,
-  answer tap → haptic + WAV, the settings voice preview speaks, expo-audio's
-  `play()` right after `createAudioPlayer` starts once loaded (else add an
-  `isLoaded` wait in the adapter).
+- **TTS self-import fix (d6ea326, 2026-09-16):** `TtsService/adapter.native.ts`
+  imported the `TtsPlaybackError` class (a value) from `'./adapter'`, which
+  Metro's platform resolution maps back to the `.native` file itself — a require
+  cycle, class undefined at call time. The types + error class moved to a
+  non-split `adapter.shared.ts` that both halves import; `adapter.ts` re-exports
+  them so `index.ts` is unchanged. The SoundService/LocalStorageService native
+  halves only `import type` from their siblings (erased), so they were fine.
+  Rule for future splits: a `.native.ts` half must never import a VALUE from its
+  own web sibling — put shared values in a `.shared.ts`.
+- **Splash screen (2026-09-16; the last host-only prerequisite, unblocked by the
+  host's `npx expo install expo-splash-screen` → 56.0.15, 3e5c568):** plugin entry
+  in `app.config.ts` — `image` + `dark.image`, `imageWidth: 200`, `contain`,
+  backgrounds = editorial paper (`#ffffff` / `#0f172a`). The icons are the "100"
+  glyph lifted out of the placeholder app icon as an alpha mask (the PWA icon is
+  opaque, so a transparent splash could not be cut from it directly): checked-in
+  `apps/mobile/scripts/render-splash-icon.mjs` (pngjs; min-channel ramp 96→240 as
+  coverage, bilinear 512→1024) tints it `editorialInk` for `splash-icon.png` and
+  `editorialInkDark` for `splash-icon-dark.png`. Runtime: root `_layout.tsx`
+  calls `SplashScreen.preventAutoHideAsync()` at module scope and `hideAsync()`
+  from a RootStack mount effect; `AppThemeProvider` now renders `null` until the
+  saved theme preference resolves (adopted, absent OR failed — a storage error
+  never traps the splash), so the first committed frame already wears the
+  persisted theme and the OS-chosen splash variant hands off without a flash.
+  Gates: mobile `tsc` + jest 16; `expo config --type prebuild` applies the plugin
+  (pluginHistory 56.0.15); `expo export` ios + android `--source-maps`:
+  `SplashScreen.native.js` + `_layout.tsx` + `ThemeProvider.tsx` +
+  `adapter.shared.ts`/`adapter.native.ts` present, the web halves absent, 4 WAVs
+  in both manifests; packages/app `tsc` + eslint; root `npm test`; website build
+  (52 jest). One cold-start `expo export` printed "Error loading tamagui.config.ts
+  … running tamagui without custom config" ×7 (one per worker); a rerun with
+  `DEBUG=tamagui` and a further plain rerun were clean and the `.tamagui` cache
+  was untouched — transient, but watch for it.
+- **Root scripts for the host loop (2026-09-17):** `npm run prebuild:mobile` (`expo
+  prebuild --clean` — required after any config-plugin change, the splash included),
+  `npm run ios` / `npm run android` / `npm run dev:mobile` (each ends in `--` so
+  `npm run ios -- --configuration Release` reaches expo), `npm run splash:mobile`
+  (re-render the glyph PNGs). Pulled forward from Phase 7's root-scripts item.
+- **Xcode 27 pods floor (2026-09-17):** the first host `npm run ios` died at
+  "Planning build": `RNSVG-RNSVGFilters` (12.4) and `RNCAsyncStorage_resources`
+  (13.4) sit below Xcode 26+'s 15.0 deployment-target floor. RN's
+  `react_native_post_install` lifts each pod's MAIN target to
+  `Helpers::Constants.min_ios_version_supported` (15.1) but CocoaPods gives
+  resource-bundle targets the podspec's own minimum. New local config plugin
+  `apps/mobile/plugins/withPodsDeploymentTarget.js` (`withPodfile`, referenced by
+  path in `app.config.ts`) appends a post-install sweep over ALL
+  `installer.pods_project.targets` lifting only those under the same RN
+  constant — the app's `platform :ios` (template default 16.4) stays
+  authoritative and no version is hardcoded. Idempotent via a marker comment;
+  verified in-container by applying it to the host-generated `ios/Podfile` text
+  and via `expo config --type prebuild`. This is NOT a request to target iOS 27:
+  Xcode 27 already builds against the iOS 27 SDK, and the deployment target is
+  the oldest iOS the app will install on. `npm run prebuild:mobile` must rerun
+  for it to land (pod install happens there).
+- **Xcode 27 Swift toolchain vs expo-modules-jsi 56.0.10 (2026-09-17):** with the
+  pods floor fixed, `npm run ios` next died in the `[CP-User] Build ExpoModulesJSI
+  xcframework` script phase "with no further output" — the phase runs a nested
+  `xcodebuild -quiet` under `env -i`, so the CLI shows nothing. The real error is
+  in the nested build's activity log
+  (`node_modules/expo-modules-jsi/apple/.DerivedData/Logs/Build/*.xcactivitylog`,
+  gunzip it): `JavaScriptRuntime.swift:219: a C function pointer can only be
+  formed from a reference to a 'func' or a literal closure` — Swift 6.3 rejects
+  the `set == nil ? nil : setter` ternary feeding a C callback pointer (the
+  simulator slice HAD built on 09-14 under the previous toolchain; the cache key
+  includes `swiftc --version`, so the upgrade forced a rebuild). Fix: branch
+  into two `HostObjectCallbacks(...)` calls, applied in node_modules and captured
+  as `patches/expo-modules-jsi+56.0.10.patch` (patch-package format), applied by
+  the root `postinstall` since Stage 6.5; drop the patch once an expo-modules-jsi
+  release carries the fix (`npm view expo-modules-jsi versions`).
+- **Still host-only:** real icon + splash art before store submission.
+- **Stage 6.5 — first iOS boot (host, 2026-09-19; Xcode 27.0, iPhone 17 Pro on
+  iOS 26.5, `npm run ios -- --device "iPhone 17 Pro"`):** the build cleared both
+  earlier blockers ("Planning build" with the pods floor, the `[CP-User] Build
+  ExpoModulesJSI xcframework` phase under the patched Swift), installed and
+  connected to Metro. The Debug build is not a dev-client (expo-dev-client is
+  not installed), so `xcrun simctl launch` reconnects to Metro with no launcher
+  UI in between. The checklist, in order:
+  1. **Fonts** — hero, card titles, `Start`, stat values all render in
+     Newsreader; iOS substitutes the system *sans* for an unknown PostScript
+     name, so any serif proves the faces resolved. The header title was the
+     system font because `useHeaderOptions` set no `headerTitleStyle`; it now
+     takes the `$serif` 500 face from the font config (`(config.fonts.serif as
+     GenericFont).face?.[500]?.normal` — tsc types the config through the web
+     half of the split, which has no `face`) at 17px, matching the web
+     `TitleText`. Native-stack's `headerTitleStyle` takes only
+     fontFamily/fontSize/fontWeight/color, so no letterSpacing.
+  2. **Tab headers** show the ScreenFrame titles (flow 01). Two navigator
+     fixes surfaced: `ScreenFrame`'s `title` also fed the tab *labels* (`title`
+     is the label fallback — the home tab read "US Civics Test"), so
+     `(tabs)/_layout.tsx` sets `tabBarLabel` instead; and the game's back
+     button read "(tabs)", the group's route name, so the root stack gives the
+     `(tabs)` screen `title: 'Home'`.
+  3. **Theme** — flow 02: header toggle → Settings checkbox checked →
+     `stopApp`/`launchApp` → still checked. Terminal half: after `clearState`
+     the app follows the OS (`simctl ui appearance dark` → home luma 46.9, the
+     same as the toggled dark; `light` → 222.9). A launch with a saved dark
+     preference under a light OS, recorded with `simctl io recordVideo` and
+     measured per frame with ffmpeg `signalstats`: light splash (OS-chosen,
+     luma ≈229, with Metro's "Downloading…" banner) → dark paper (≈35) → dark
+     home (≈45); no light content frame. The dark paper frame keeps the status
+     bar's dark text for ~0.5 s before `expo-status-bar` flips it — cosmetic.
+  4. **Game** — flow 03 plays a whole game: Start → (unconfigured) Settings →
+     Start Game → `Question 1/20 (#n)` header → answers by letter badge (A,
+     then B/C while the multi-select count is up) → feedback → Next
+     Question/Finish/Finish Now → Test Complete → View History → `Archive · 1
+     Test` → Clear all data (native Alert, OK) → `No Test Results Yet`. No
+     crash from haptics (the simulator has no engine). Sound, instrumented
+     once and reverted: `seekTo(0)` resolves after the clip loads (~130 ms,
+     `isLoaded` true) and `play()` then runs `currentTime` to the full 0.6 s —
+     no `isLoaded` wait needed (item 6). WAV/TTS audibility is the user's ear.
+  5. **Preview voice** — flow 04: no ErrorBoundary fallback, no Metro error.
+
+  **Crash found and fixed (shared code):** Settings and Statistics threw `View
+  config getter callback for component 'option' must be a function` —
+  `EditorialSelect`/`EditorialInput` are `tag="select"`/`"input"` Tamagui Text
+  and every caller renders DOM `<option>` children; the ErrorBoundary caught it
+  and both tabs showed "Something went wrong". New
+  `components/tamagui/EditorialInput.native.tsx` (resolved through the barrel's
+  relative `./EditorialInput` import — not an exports-map split):
+  `EditorialSelect` reads the `<option>` children into value/label pairs
+  (nested arrays and mixed text children flattened as the DOM would), shows
+  the current label in a field styled like the web input and opens a modal
+  bottom sheet of options (Modal + backdrop Pressable + ScrollView, selected
+  row in accent with a Check); `EditorialInput` wraps Tamagui `Input`. Both
+  hand `onChange` an object carrying `target.value` — the only part the
+  callers read — and forward `id` as `testID` (Maestro's `id:` selector). The
+  web half is untouched. Two more native-only fixes in `GameQuestion`, web
+  markup identical: the keyboard hint is `isWeb`-only (native keeps
+  `Select N more` for multi-select), and the incorrect-feedback text column
+  has `flexShrink={1}` (the CSS default; RN's 0 let it overflow the box).
+
+  **Host test loop (Xcode 27):** Simulator.app is gone; DeviceHub
+  (`/Applications/Xcode.app/Contents/Applications/DeviceHub.app`) is what
+  `expo run:ios` opens, and it can't be told which simulator to focus — pick it
+  in the sidebar; `xcrun simctl` works regardless (`io <udid> screenshot`,
+  `ui <udid> appearance`, `terminate`/`launch`, `io <udid> recordVideo`). Expo
+  resolves `--device "iPhone 17 Pro"` to the newest runtime's device (iOS 26.5,
+  `4428CCB0-…`), not the iOS 26.2 one. Maestro CLI 2.10 (`curl -fsSL
+  https://get.maestro.mobile.dev | bash`, `~/.maestro/bin`) drives it:
+  `MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device <udid> test
+  apps/mobile/.maestro/` (4 flows, ≈5 min; 03 loops a whole game). Not Maestro
+  Studio (its screen stream is broken on Xcode 27) and not idb. Selector rules
+  learned: text matching is a full-match regex against text OR accessibility
+  label, so tabs are `'Results, tab, .*'` (react-navigation's label); the
+  Tamagui checkbox reads `'checkbox, checked'` beside its label (`leftOf`);
+  off-screen elements need `scrollUntilVisible`; and a badge scrolled under
+  the translucent iOS 26 header gets the back button instead, so the game flow
+  anchors every tap on the `Question #n` eyebrow. Metro's terminal is the JS
+  error channel (LogBox); `expo start` must be restarted for a NEW
+  `.native.tsx` sibling to resolve (fast refresh keeps the old resolution).
+  patch-package wired: root `npm i -D patch-package` + `"postinstall":
+  "patch-package"`; `npx patch-package` → `expo-modules-jsi@56.0.10 ✔`; the
+  lock diff was additive only.
+
+  **Native polish seen, not fixed (follow-up parity items):** StateSelector's
+  "Selected: {state} Capital: {capital}" line and its helper text render at
+  mismatched sizes on native (web-only font-size inheritance); the status-bar
+  text on the dark paper frame above.
+
+  **Gates:** Maestro 4/4; mobile tsc + jest 16; packages/app eslint + tsc;
+  root `npm test`; `npm run build -w website` (52 jest). Visual 20/20 was NOT
+  run — the baselines are container-captured and the host renders fonts
+  differently; the web branches of the two `GameQuestion` edits are
+  byte-identical, so run visual ×2 in the sandbox next.
+
+- **Remaining for Phase 6:** Android boot on `Medium_Phone_API_35` (same
+  flows: `npm run android`, `maestro --device emulator-5554 test
+  apps/mobile/.maestro/`), real icon + splash art, splash judged on an EAS
+  preview build (Phase 7).
 
 ### Phase 7 — Build, CI, release
 - **EAS Build** (`eas.json`) dev/preview/production profiles with a dev-client (reanimated/async-storage/expo-audio aren't in Expo Go) — [Ch 16 § eas.json](/references/expo/16-eas-build.md#eas-json). Minimal skeleton:
@@ -915,7 +1072,7 @@ the host (package installs, font/audio assets, device boot).
   ```
   Signing/credentials are managed by EAS ([Ch 16 § Credentials](/references/expo/16-eas-build.md#credentials), [Ch 17 § App Signing](/references/expo/17-eas-submit-and-distribution.md#app-signing)). On EAS the monorepo installs from the root lockfile and resolves hoisted packages itself — the local `watchFolders`/`nodeModulesPaths` remapping is dev-only.
 - **EAS Update (optional for v1):** setup is ~2 commands — `expo install expo-updates` then `eas update:configure` (writes `runtimeVersion`/channels) — so OTA hotfixes *can* land in v1 rather than waiting on a fast-follow retrofit ([Ch 18 § Publishing](/references/expo/18-eas-update.md#publishing)). Maintainer's call; see Fast-follow.
-- Root scripts `dev:mobile`/`ios`/`android` (`dev`→website unchanged). Extend root `clean` to cover mobile artifacts. CI: `tsc --build`, `npm run test --workspaces`, EAS preview smoke build ([Ch 16 § CI](/references/expo/16-eas-build.md#ci); EAS Workflows is the native option — [Ch 19 § EAS Workflows](/references/expo/19-eas-workflows-hosting-insights.md#eas-workflows)).
+- Root scripts `dev:mobile`/`ios`/`android` (`dev`→website unchanged) — **landed early in Phase 6** (see its STATUS: `ios`/`android`/`dev:mobile`/`prebuild:mobile`/`splash:mobile`). Extend root `clean` to cover mobile artifacts. CI: `tsc --build`, `npm run test --workspaces`, EAS preview smoke build ([Ch 16 § CI](/references/expo/16-eas-build.md#ci); EAS Workflows is the native option — [Ch 19 § EAS Workflows](/references/expo/19-eas-workflows-hosting-insights.md#eas-workflows)).
 - **Exit:** green CI; EAS preview build installs on a device.
 
 ## Key Files
@@ -937,7 +1094,7 @@ the host (package installs, font/audio assets, device boot).
 - **React 19 alignment:** mobile pins SDK's React; `packages/app` treats `react` as peer dep — two separately-bundled copies is fine. New Architecture context: [Ch 11 § New Architecture](/references/expo/11-common-guides.md#new-architecture).
 
 ## Verification
-- **Three-target dev loop:** web `npm run dev` + Playwright; iOS `npx expo run:ios`; Android `npx expo run:android` (dev-client, not Expo Go — [Ch 09 § Creating a Dev Build](/references/expo/09-development-builds-and-debugging.md#creating-a-dev-build)).
+- **Three-target dev loop:** web `npm run dev` + Playwright; iOS `npm run ios` (Xcode 27 DeviceHub + `xcrun simctl`) and Android `npm run android`, both driven by the Maestro flows in `apps/mobile/.maestro/` (see the Phase 6 STATUS for the loop); native builds, not Expo Go — [Ch 09 § Creating a Dev Build](/references/expo/09-development-builds-and-debugging.md#creating-a-dev-build).
 - **Shared contract tests:** one suite (save/read `GameResult`, settings, paired answers) run against both web and native layers; native via `jest-expo` + AsyncStorage mock. Existing `npm run test --workspaces` aggregates.
 - **Visual regression:** capture website screenshots of all 5 routes before Phase 4; diff after each component move.
 - **CI smoke:** `tsc --build`, workspace Jest, EAS preview build ([Ch 16 § Running a Build](/references/expo/16-eas-build.md#running-a-build) / [Ch 17 § Internal Distribution](/references/expo/17-eas-submit-and-distribution.md#internal-distribution)).

@@ -84,6 +84,8 @@ npm run test:visual -w website                      # 20 visual baselines (sandb
 ```bash
 npm test -w mobile                                  # tsc --noEmit + jest-expo
 npx expo export --platform ios --source-maps        # Bundle check (run in apps/mobile; android likewise)
+npm run ios -- --device "iPhone 17 Pro"             # Host: build + boot (Xcode 27 opens DeviceHub, not Simulator.app)
+MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device <udid> test apps/mobile/.maestro/   # Device flows (host, ~5 min)
 ```
 
 ### civics2json

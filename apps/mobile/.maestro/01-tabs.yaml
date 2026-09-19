@@ -1,0 +1,14 @@
+# Each tab draws its ScreenFrame title in the tab navigator's header.
+appId: com.civics100.app
+name: Tabs show their ScreenFrame titles
+---
+- launchApp
+- assertVisible: 'US Civics Test'
+- tapOn: 'Results, tab, .*'
+- assertVisible: 'Test Results'
+- tapOn: 'Statistics, tab, .*'
+- assertVisible: 'Question Statistics'
+- tapOn: 'Settings, tab, .*'
+- assertVisible: 'Game Settings'
+- tapOn: 'Home, tab, .*'
+- assertVisible: 'US Civics Test'

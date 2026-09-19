@@ -20,18 +20,31 @@ const saveThemePreference = (theme: ThemeName) =>
  * (AsyncStorage) once it loads; every explicit change — SettingsScreen's
  * dark-mode checkbox, the header ThemeToggle — is written back. Tamagui's
  * provider follows `defaultTheme` reactively.
+ *
+ * Renders nothing until the load settles (adopted, absent or failed) so the
+ * first committed frame already wears the saved theme; the root layout keeps
+ * the native splash up for exactly that long.
  */
 export function AppThemeProvider({ children }: { readonly children: React.ReactNode }) {
   const systemScheme = useColorScheme()
   const [theme, setThemeState] = useState<ThemeName>(systemScheme === 'dark' ? 'dark' : 'light')
+  const [ready, setReady] = useState(false)
 
   // Adopt the saved preference (external data → state is the sanctioned
-  // effect shape). No preference saved = keep following the system.
+  // effect shape). No preference saved = keep following the system. A storage
+  // failure still marks the provider ready — never trap the user on the splash.
   useEffect(() => {
     let cancelled = false
-    void AppRuntime.runPromise(loadThemePreference).then((saved) => {
-      if (!cancelled && saved !== null) setThemeState(saved)
-    })
+    void AppRuntime.runPromise(loadThemePreference).then(
+      (saved) => {
+        if (cancelled) return
+        if (saved !== null) setThemeState(saved)
+        setReady(true)
+      },
+      () => {
+        if (!cancelled) setReady(true)
+      }
+    )
     return () => {
       cancelled = true
     }
@@ -50,6 +63,8 @@ export function AppThemeProvider({ children }: { readonly children: React.ReactN
     }),
     [theme, setTheme]
   )
+
+  if (!ready) return null
 
   return (
     <TamaguiProvider config={config} defaultTheme={theme}>

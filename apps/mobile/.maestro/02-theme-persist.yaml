@@ -1,0 +1,36 @@
+# Dark mode chosen with the header toggle survives a cold relaunch. Clearing
+# state first stands in for "Clear all data" (which only renders once results
+# exist; 03-game exercises it): with no saved preference the app follows the
+# OS, so the precondition is a simulator in light appearance (the default;
+# `xcrun simctl ui <udid> appearance light`). The OS-dark half of the check
+# is driven from the terminal (see the plan's Stage 6.5 STATUS). The Tamagui
+# checkbox reports its state as the text "checkbox, checked|unchecked".
+appId: com.civics100.app
+name: Dark toggle persists across relaunch
+---
+- launchApp:
+    clearState: true
+- assertVisible: 'US Civics Test'
+- tapOn: 'Settings, tab, .*'
+- scrollUntilVisible:
+    element:
+      text: 'Enable dark mode'
+    direction: DOWN
+- assertVisible:
+    text: 'checkbox, unchecked'
+    leftOf: 'Enable dark mode'
+- tapOn: 'Toggle theme'
+- assertVisible:
+    text: 'checkbox, checked'
+    leftOf: 'Enable dark mode'
+- stopApp
+- launchApp
+- assertVisible: 'US Civics Test'
+- tapOn: 'Settings, tab, .*'
+- scrollUntilVisible:
+    element:
+      text: 'Enable dark mode'
+    direction: DOWN
+- assertVisible:
+    text: 'checkbox, checked'
+    leftOf: 'Enable dark mode'
