@@ -9,13 +9,15 @@
 # questions push the feedback and controls below the fold, hence the scrolls;
 # the "Question #" eyebrow is scrolled into view before every badge tap so
 # the badge cannot sit under the translucent iOS header (a tap there hits the
-# back button).
+# back button). The post-launch wait is explained in 01-tabs.
 appId: com.civics100.app
 name: Play a game to completion, then clear the results
 ---
 - launchApp:
     clearState: true
-- assertVisible: 'US Civics Test'
+- extendedWaitUntil:
+    visible: 'Start'
+    timeout: 60000
 - tapOn: 'Start'
 - assertVisible: 'Game Settings'
 - scrollUntilVisible:

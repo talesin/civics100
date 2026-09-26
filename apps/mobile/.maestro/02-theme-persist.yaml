@@ -1,36 +1,79 @@
 # Dark mode chosen with the header toggle survives a cold relaunch. Clearing
 # state first stands in for "Clear all data" (which only renders once results
 # exist; 03-game exercises it): with no saved preference the app follows the
-# OS, so the precondition is a simulator in light appearance (the default;
-# `xcrun simctl ui <udid> appearance light`). The OS-dark half of the check
-# is driven from the terminal (see the plan's Stage 6.5 STATUS). The Tamagui
-# checkbox reports its state as the text "checkbox, checked|unchecked".
+# OS, so the precondition is a device in light appearance (iOS simulator:
+# `xcrun simctl ui <udid> appearance light`; Android: `adb shell cmd uimode
+# night no`). The OS-dark half of the check is driven from the terminal (see
+# the plan's Stage 6.5 / 6.6 STATUS). The checkbox state is read per
+# platform: iOS voices the Tamagui checkbox as the text
+# "checkbox, checked|unchecked"; Android exposes the accessibility node's
+# checked flag, matched through the `dark-mode` testID. The post-launch waits are
+# explained in 01-tabs.
 appId: com.civics100.app
 name: Dark toggle persists across relaunch
 ---
 - launchApp:
     clearState: true
-- assertVisible: 'US Civics Test'
-- tapOn: 'Settings, tab, .*'
+- extendedWaitUntil:
+    visible: 'Start'
+    timeout: 60000
+- tapOn:
+    id: tab-settings
 - scrollUntilVisible:
     element:
       text: 'Enable dark mode'
     direction: DOWN
-- assertVisible:
-    text: 'checkbox, unchecked'
-    leftOf: 'Enable dark mode'
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          text: 'checkbox, unchecked'
+          leftOf: 'Enable dark mode'
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: dark-mode
+          checked: false
 - tapOn: 'Toggle theme'
-- assertVisible:
-    text: 'checkbox, checked'
-    leftOf: 'Enable dark mode'
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          text: 'checkbox, checked'
+          leftOf: 'Enable dark mode'
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: dark-mode
+          checked: true
 - stopApp
 - launchApp
-- assertVisible: 'US Civics Test'
-- tapOn: 'Settings, tab, .*'
+- extendedWaitUntil:
+    visible: 'Start'
+    timeout: 60000
+- tapOn:
+    id: tab-settings
 - scrollUntilVisible:
     element:
       text: 'Enable dark mode'
     direction: DOWN
-- assertVisible:
-    text: 'checkbox, checked'
-    leftOf: 'Enable dark mode'
+- runFlow:
+    when:
+      platform: iOS
+    commands:
+      - assertVisible:
+          text: 'checkbox, checked'
+          leftOf: 'Enable dark mode'
+- runFlow:
+    when:
+      platform: Android
+    commands:
+      - assertVisible:
+          id: dark-mode
+          checked: true

@@ -7,6 +7,7 @@ export default function CheckboxField({ id, checked, onCheckedChange, label }: C
     <XStack alignItems="center" gap={10}>
       <Checkbox
         id={id}
+        testID={id}
         checked={checked}
         onCheckedChange={(next) => onCheckedChange(next === true)}
         borderColor="$editorialRule"

@@ -800,7 +800,7 @@ deferred to `plans/react19-modernization.md` (post-migration).
 - **Add `expo-system-ui`**: set the root-view background color to eliminate the Android navigation-transition color flash ([Ch 15 § UI Components](/references/expo/15-sdk-ui-components.md)).
 - **Exit:** all 5 screens fully functional on iOS sim + Android emulator with persistence, TTS, sounds, and haptic answer feedback.
 
-#### Phase 6 — STATUS (updated 2026-09-19): 🔄 IN PROGRESS — Stages 6.1–6.5 done; the iOS boot on the host (Xcode 27) passed the whole device checklist and closed the Phase 5 exit's deferred `/game` check, with the Maestro flows in `apps/mobile/.maestro/` as the device gate; left: Android boot, real icon/splash art, splash judged on an EAS preview build
+#### Phase 6 — STATUS (updated 2026-09-25): 🔄 IN PROGRESS — Stages 6.1–6.6 done; both host boots (iOS on Xcode 27, Android on the API 35 emulator) passed the device checklist, and the Maestro flows in `apps/mobile/.maestro/` are the device gate on both platforms; left: real icon/splash art, splash judged on an EAS preview build
 
 Same staged-commit discipline as Phase 5 (one commit per stage, user confirms, full
 gate suite before each). The sandbox has no network and no simulator, so the phase is
@@ -1053,10 +1053,112 @@ the host (package installs, font/audio assets, device boot).
   differently; the web branches of the two `GameQuestion` edits are
   byte-identical, so run visual ×2 in the sandbox next.
 
-- **Remaining for Phase 6:** Android boot on `Medium_Phone_API_35` (same
-  flows: `npm run android`, `maestro --device emulator-5554 test
-  apps/mobile/.maestro/`), real icon + splash art, splash judged on an EAS
-  preview build (Phase 7).
+- **Stage 6.6 — first Android boot (host, 2026-09-25; Android Studio's JBR
+  21.0.5, SDK emulator 35.4.9, AVD `Medium_Phone_API_35` = API 35 `google_apis`
+  arm64-v8a, `npm run android`):** the `android/` project generated on
+  2026-09-16 built first time in 3m48s once Gradle had fetched the RN 0.85 pins
+  itself (Gradle 9.3.1, AGP 8.12, platform 36, build-tools 36, NDK 27.1, CMake
+  3.22 — the one-entry `licenses/android-sdk-license` covered them all); Expo
+  compiled arm64-v8a only, installed the debug APK and connected it to Metro.
+  The checklist, in order:
+  1. **Fonts** — Newsreader on the hero, card titles, `Start`, stat values and
+     every header title (the `Newsreader_14pt-*` file stems resolve on Android
+     with no PostScript-name step).
+  2. **Tab headers** show the ScreenFrame titles; labels Home / Results /
+     Statistics / Settings (flow 01).
+  3. **Theme** — flow 02 end to end. Terminal half: after `pm clear` the app
+     follows `cmd uimode night yes|no` (home luma 36.6 dark / 240.5 light); the
+     header toggle under a light OS gives the same 36.6. A cold launch with the
+     saved dark preference under a light OS, recorded with `adb shell
+     screenrecord` and measured per frame with ffmpeg `signalstats`: light
+     splash (OS-chosen, ≈217) cross-fades straight into the dark home (≈35) —
+     zero frames above luma 120 after the splash.
+  4. **Game** — flow 03 (Start → unconfigured Settings → Start Game → answers
+     by badge → feedback → Test Complete → View History → `Archive · 1 Test` →
+     Clear all data via the Android Alert → `No Test Results Yet`). Haptics do
+     not crash (the emulator has no vibrator); the WAVs are the user's ear.
+  5. **Preview voice** — flow 04. The plain `google_apis` image ships Google
+     TTS: logcat shows the app binding `com.google.android.tts`, a synthesis
+     request for `en-US` dispatched to the embedded `en-us-x-iog-seanet` voice
+     and AudioTrack delivering ≈92k frames — speech is produced, not merely
+     survived.
+  6. **Android-only** — the `/game` stack route is edge-to-edge (paper runs
+     under the gesture area; back arrow + `Question 1/20 (#n)` title in
+     Newsreader); hardware back pops to the tabs with the Settings scroll
+     position kept; status-bar icons flip to light with the theme; the system
+     draws the gesture handle light over the dark paper, so no
+     `expo-navigation-bar` (3-button mode not tried); a dark-OS/dark-app
+     recording of launch → Start → Settings → Start Game → back has no frame
+     above luma 120 — no transition flash. Splash on API 35: the `100` glyph
+     on white.
+
+  **Nothing broke in shared code.** What broke was the flows and the emulator:
+  - expo-router's tab bar builds the `"<label>, tab, N of M"` accessibility
+    label only on iOS, so the flows target tabs by `tabBarButtonTestID`
+    (`tab-home` … `tab-settings` in `(tabs)/_layout.tsx`, forwarded as
+    `testID`). `CheckboxField.native` forwards `id` as `testID`, so Android
+    asserts `{ id: dark-mode, checked: true|false }` (the accessibility node's
+    checked flag) while iOS keeps the `checkbox, checked|unchecked` text, split
+    with `runFlow: when: platform:`.
+  - The AVD ships with **one CPU core and 2 GB** (`hw.cpu.ncore=1`,
+    `hw.ramSize=2048` in `~/.android/avd/Medium_Phone.avd/config.ini`). The
+    debug build's Metro bundle load took 15–80 s (137 MB free, 700 MB swapped,
+    and Maestro's UiAutomator hierarchy dumps compete for the one core), past
+    Maestro's 17 s element default, and the home body's two AsyncStorage reads
+    pushed `Start` later still — two flows failed on timing alone.
+    `emulator -avd Medium_Phone_API_35 -memory 4096 -cores 4` (session flags;
+    the AVD is untouched) brings cold launches to 6.5 s, and every `launchApp`
+    in the flows is now followed by `extendedWaitUntil` on the home `Start`
+    button (60 s).
+  - Dev-only splash artefact: when the bundle download is slow enough for
+    React Native to show its "Loading from Metro" PopupWindow, Android counts
+    that popup as the activity's first drawn window and hands the splash over,
+    while expo-splash-screen still blocks the content view's first draw — a
+    black screen until JS calls `hideAsync`. With the bundle arriving in a few
+    seconds the popup never shows and the splash holds until the themed first
+    frame (logcat: `remove starting view` 0.45 s after `Displayed`). A release
+    build has no popup.
+
+  **Host test loop (Android):** `JAVA_HOME` → Android Studio's JBR 21 (AGP
+  8.12 is validated up to that JDK; Corretto 26 is the only JDK on PATH),
+  `ANDROID_HOME=~/Library/Android/sdk`, and `platform-tools` / `emulator` /
+  `~/.maestro/bin` ahead on PATH (Homebrew's adb 37 otherwise shadows the SDK's
+  35 and restarts the server mid-run). `adb kill-server && adb start-server` on
+  the SDK binary, boot with the flags above plus `-no-snapshot-load`,
+  `adb wait-for-device` + `getprop sys.boot_completed`, `adb shell cmd uimode
+  night no` as the light precondition, then `npm run android` (backgrounded to
+  a log; Metro's terminal is the JS error channel). Maestro:
+  `maestro --device emulator-5554 test apps/mobile/.maestro/` (4 flows ≈7 min).
+  Terminal probes: `adb exec-out screencap -p`, `adb shell screenrecord
+  --time-limit N`, ffmpeg `signalstats` for luma, `adb shell pm clear` for
+  clearState, `input keyevent KEYCODE_BACK`, `logcat -s ActivityTaskManager:I`
+  for `Displayed … +Ns`. Selector rules learned: `id:` matches `testID` on both
+  platforms; `checked:` reads the Android accessibility node; the 17 s element
+  default is only extended by `extendedWaitUntil`; `runFlow: when: platform:`
+  is the per-platform split. iOS re-run: Expo CLI now files `--device "iPhone
+  17 Pro"` as a physical device ("No code signing certificates" — its
+  `isSimulatorDevice` wants a `deviceType` starting
+  `com.apple.CoreSimulator.SimDeviceType.`, and it warns about devicectl's
+  JSON version), so boot the simulator with `xcrun simctl boot <udid>` and run
+  `npm run ios -- --no-bundler` against the Metro the Android run left up.
+
+  **Native polish seen, not fixed:** the Stage 6.5 StateSelector item
+  reproduces on Android and has a root cause — the shared `Text` sets
+  `fontSize: '$3'`, so the nested `<Text>` runs inside `InfoText` (`$5`) render
+  at 13 px beside 15 px on native, where RN does not inherit a size from a
+  parent that sets one explicitly; the fix is `fontSize="$5"` on those three
+  nested Texts, but StateSelector renders on the web too, so it waits for a
+  session with the container visual suite.
+
+  **Gates:** Maestro 4/4 on `emulator-5554` and 4/4 on the iOS 26.5 simulator;
+  mobile tsc + jest 16; packages/app tsc + eslint; `expo export` android + ios
+  with `(tabs)/_layout.tsx` and `CheckboxField.native.tsx` in both maps; root
+  `npm test`; `npm run build -w website` (52 jest). Visual 20/20 not run
+  (container-only; no web half touched).
+
+- **Remaining for Phase 6:** real icon + splash art, splash judged on an EAS
+  preview build (Phase 7). Consider raising the AVD itself to 4 cores / 4 GB so
+  the emulator flags become unnecessary.
 
 ### Phase 7 — Build, CI, release
 - **EAS Build** (`eas.json`) dev/preview/production profiles with a dev-client (reanimated/async-storage/expo-audio aren't in Expo Go) — [Ch 16 § eas.json](/references/expo/16-eas-build.md#eas-json). Minimal skeleton:

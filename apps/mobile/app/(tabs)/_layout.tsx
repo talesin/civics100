@@ -30,6 +30,7 @@ export default function TabLayout() {
         name="index"
         options={{
           tabBarLabel: 'Home',
+          tabBarButtonTestID: 'tab-home',
           tabBarIcon: ({ color, size }) => <Home size={size} color={color as string} strokeWidth={1.5} />
         }}
       />
@@ -37,6 +38,7 @@ export default function TabLayout() {
         name="results"
         options={{
           tabBarLabel: 'Results',
+          tabBarButtonTestID: 'tab-results',
           tabBarIcon: ({ color, size }) => <Trophy size={size} color={color as string} strokeWidth={1.5} />
         }}
       />
@@ -44,6 +46,7 @@ export default function TabLayout() {
         name="statistics"
         options={{
           tabBarLabel: 'Statistics',
+          tabBarButtonTestID: 'tab-statistics',
           tabBarIcon: ({ color, size }) => (
             <BarChart2 size={size} color={color as string} strokeWidth={1.5} />
           )
@@ -53,6 +56,7 @@ export default function TabLayout() {
         name="settings"
         options={{
           tabBarLabel: 'Settings',
+          tabBarButtonTestID: 'tab-settings',
           tabBarIcon: ({ color, size }) => <Settings size={size} color={color as string} strokeWidth={1.5} />
         }}
       />
