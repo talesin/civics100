@@ -1,0 +1,72 @@
+name: CI
+on:
+  push:
+    branches: [main, native]
+  pull_request:
+    branches: [main, native]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  EXPO_NO_TELEMETRY: '1'
+  NEXT_TELEMETRY_DISABLED: '1'
+jobs:
+  lint:
+    # Its own job so a red lint never hides the result of the bundle, test and build
+    # steps. Root lint is red until packages/civics2json and packages/distractions are
+    # cleaned up by the maintainer (31 pre-existing errors; see the Phase 7 STATUS).
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:packages
+      - run: npm run lint
+  checks:
+    name: Bundle, test, website build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # Root postinstall runs patch-package, which fails loudly once a patch no longer applies.
+      - run: npm ci
+      - run: npm run build:packages
+      # Fails fast on the device bundle before the test runners. Typed routes (.expo/types) are
+      # written only by `expo start`/`run`, so mobile tsc checks hrefs loosely here.
+      - run: npm run bundlecheck -w mobile
+      - run: npm test
+      - name: Website production build
+        working-directory: website
+        run: NODE_ENV=production npx next build
+  e2e:
+    name: Website e2e (chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run build:packages
+      - run: npx playwright install --with-deps chromium
+        working-directory: website
+      - run: npm run test:e2e -w website -- --project=chromium
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-results
+          path: website/test-results
+          retention-days: 7

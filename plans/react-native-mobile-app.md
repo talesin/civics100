@@ -1177,7 +1177,7 @@ the host (package installs, font/audio assets, device boot).
 - Root scripts `dev:mobile`/`ios`/`android` (`dev`→website unchanged) — **landed early in Phase 6** (see its STATUS: `ios`/`android`/`dev:mobile`/`prebuild:mobile`/`splash:mobile`). Extend root `clean` to cover mobile artifacts. CI: `tsc --build`, `npm run test --workspaces`, EAS preview smoke build ([Ch 16 § CI](/references/expo/16-eas-build.md#ci); EAS Workflows is the native option — [Ch 19 § EAS Workflows](/references/expo/19-eas-workflows-hosting-insights.md#eas-workflows)).
 - **Exit:** green CI; EAS preview build installs on a device.
 
-#### Phase 7 — STATUS (updated 2026-09-26): 🔄 IN PROGRESS — Stage 7.1 done (script hygiene, sourcemap check, Node pin)
+#### Phase 7 — STATUS (updated 2026-09-26): 🔄 IN PROGRESS — Stages 7.1–7.2 done (scripts + sourcemap check, GitHub Actions gate); the first CI run waits on the push of `native`
 
 Same staged-commit discipline as Phases 5–6 (one commit per stage, gate suite green
 first, this block updated in the same commit). Decisions fixed before the first stage:
@@ -1242,6 +1242,21 @@ through a new `apps/mobile` `clean` script. Node is pinned to the host's `24.4.0
   needed `npx playwright install chromium` first — it had never run e2e). Root
   `npm run lint`: mobile no longer errors; civics2json + distractions red as above.
   Visual 20/20 not run (container-only, no web source changes).
+- **Stage 7.2 — GitHub Actions gate (`.github/workflows/ci.yml`):** push and PR on
+  `main` and `native`, `contents: read`, per-ref concurrency with cancel-in-progress,
+  `setup-node` from `.nvmrc` with the npm cache, Expo/Next telemetry off (`CI=true`
+  from Actions already makes Expo CLI non-interactive). Three jobs rather than two:
+  `lint` stands alone so the pre-existing civics2json/distractions errors cannot mask
+  the other results; `checks` runs `npm ci` (root postinstall is patch-package, so a
+  patch that no longer applies fails right here) → `build:packages` →
+  `bundlecheck -w mobile` (fail-fast on the device bundle) → `npm test` →
+  `next build` called directly, since the website `build` script would repeat lint +
+  jest; `e2e` installs chromium with its system deps and runs the functional suite
+  under the config's `CI` branch (one worker, one retry, github reporter), uploading
+  `website/test-results` on failure. The visual suite stays out (container font
+  stack). Rehearsed on the host by running the same commands in the same order (the
+  7.1 gate chain, e2e 3/3 after `playwright install chromium`); the workflow itself
+  first runs when `native` is pushed, which is the maintainer's call.
 
 ## Key Files
 - `package.json` — add `apps/*` to `workspaces`; root scripts.
