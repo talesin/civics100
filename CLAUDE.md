@@ -4,31 +4,28 @@ Guidance for Claude Code when working in this repository.
 
 ## Quick Reference
 
-| Task               | Guide                                                                              |
-| ------------------ | ---------------------------------------------------------------------------------- |
-| Coding standards   | [docs/index.md](./docs/index.md)                                                   |
-| Effect-TS patterns | [docs/effect-ts-guide.md](./docs/effect-ts-guide.md)                               |
-| Error handling     | [docs/effect-ts-guide.md#error-handling](./docs/effect-ts-guide.md#error-handling) |
-| Type design        | [docs/type-design.md](./docs/type-design.md)                                       |
-| Testing            | [docs/testing-guide.md](./docs/testing-guide.md)                                   |
-| React/Tamagui      | [docs/react-guide.md](./docs/react-guide.md)                                       |
-| OpenAI integration | [docs/openai-guide.md](./docs/openai-guide.md)                                     |
+| Task               | Guide                                                                         |
+| ------------------ | ----------------------------------------------------------------------------- |
+| Coding standards   | [docs/index.md][docsindexmd]                                                  |
+| Effect-TS patterns | [docs/effect-ts-guide.md][docseffect-ts-guidemd]                              |
+| Error handling     | [docs/effect-ts-guide.md#error-handling][docseffect-ts-guidemderror-handling] |
+| Type design        | [docs/type-design.md][docstype-designmd]                                      |
+| Testing            | [docs/testing-guide.md][docstesting-guidemd]                                  |
+| React/Tamagui      | [docs/react-guide.md][docsreact-guidemd]                                      |
+| OpenAI integration | [docs/openai-guide.md][docsopenai-guidemd]                                    |
 
 External references are available in the path in the `$REFERENCES` environment variable.
 
 ## Project Overview
 
-Monorepo for parsing and processing U.S. Citizenship and Immigration Services (USCIS) Civics Test data,
-plus the practice-test apps built on it (Next.js website and an Expo mobile app that share one UI package).
+Monorepo for parsing and processing U.S. Citizenship and Immigration Services (USCIS) Civics Test data, plus the practice-test apps built on it (Next.js website and an Expo mobile app that share one UI package).
 
 **Workspaces:**
 
 - **civics2json** (`packages/civics2json`): Core tool - downloads and converts USCIS Civics Test data to JSON
 - **distractions** (`packages/distractions`): Generates incorrect answer choices
 - **questionnaire** (`packages/questionnaire`): Quiz game engine (sessions, pairing, scoring)
-- **app** (`packages/app`): Shared cross-platform UI - Tamagui config, components, hooks, Effect services, types.
-  Source-shipped (no build step); exports subpaths `app`, `app/components`, `app/components/tamagui`,
-  `app/hooks`, `app/screens`, `app/services`, `app/types`, `app/tamagui.config`
+- **app** (`packages/app`): Shared cross-platform UI - Tamagui config, components, hooks, Effect services, types. Source-shipped (no build step); exports subpaths `app`, `app/components`, `app/components/tamagui`, `app/hooks`, `app/screens`, `app/services`, `app/types`, `app/tamagui.config`
 - **website** (`website`): Next.js 16 App Router site; route pages + thin shims over `app`
 - **mobile** (`apps/mobile`): Expo 56 / expo-router app mounting the same `app` package (in progress)
 
@@ -73,7 +70,7 @@ npm run lint                # ESLint across all workspaces (packages/app enforce
 ### website
 
 ```bash
-npm run dev -w website      # Next dev server (localhost:3000)
+npm run dev -w website      # Next dev server (localhost:3000); LAN access needs the host in `allowedDevOrigins` (next.config.ts)
 npm run build -w website    # lint + jest + production build (its TS pass is the website typecheck)
 npm run test:e2e -w website -- --project=chromium   # Functional e2e (chromium only in the sandbox)
 npm run test:visual -w website                      # 20 visual baselines (sandbox container only)
@@ -116,45 +113,20 @@ npx tsx src/index.ts governors fetch [--force]
 - **Plans**: Save to `plans/` directory in markdown
 - **Never overwrite**: `.envrc` file
 - **Linting**: Do not auto-fix; let maintainer address
-- **Coding standards**: See [docs/index.md](./docs/index.md)
+- **Coding standards**: See [docs/index.md][docsindexmd]
 
 ## Shared UI (`packages/app`) and Website Styling
 
-All reusable components, hooks, and services live in `packages/app` and are
-consumed by both the website and the mobile app. The native port is tracked in
-`plans/react-native-mobile-app.md` (see its "Phase 5 — STATUS" block for what
-has moved and the per-stage gate suite). Current state: every website component
-except the web-only `Layout`, `TamaguiProvider`, `InstallPrompt`,
-`OfflineIndicator`, `ServiceWorkerRegistration` is a one-line shim over
-`app/components`; the home, results, statistics and settings routes are thin
-`<Layout><XScreen/></Layout>` wrappers over `app/screens` (the game route
-passes `Layout` as the screen's `Frame` so the header title tracks game state).
+All reusable components, hooks, and services live in `packages/app` and are consumed by both the website and the mobile app. The native port is tracked in `plans/react-native-mobile-app.md` (see its "Phase 5 — STATUS" block for what has moved and the per-stage gate suite). Current state: every website component except the web-only `Layout`, `TamaguiProvider`, `InstallPrompt`, `OfflineIndicator`, `ServiceWorkerRegistration` is a one-line shim over `app/components`; the home, results, statistics and settings routes are thin `<Layout><XScreen/></Layout>` wrappers over `app/screens` (the game route passes `Layout` as the screen's `Frame` so the header title tracks game state).
 
 ### Rules for shared code
 
-- **New components/hooks go in `packages/app`**, not `website/src`. Website
-  files at the old `@/components/X` paths are shims
-  (`export { X as default } from 'app/components'`); keep them so route pages
-  don't churn.
-- **No web-only globals in shared code** (`window`, `document`, `next/*`,
-  `localStorage`, CSS units like `vh`). Either platform-split the file
-  (`X.tsx` web / `X.native.tsx` native / `X.shared.ts` for the shared props
-  and pure helpers) or guard with `isWeb` from `tamagui`. Never expose a split
-  through the package.json `exports` map - Metro only resolves `.native`
-  inside relative imports.
-- **Icons** come from `app/components` (the `icons.ts` / `icons.native.ts`
-  pair). Never import `lucide-react` in shared code; add new icons to BOTH
-  halves.
-- **Navigation is a callback prop** (`onNavigateHome`, `onBack`, ...). No
-  router imports in `packages/app`.
-- **`react-hooks` lint is fully on in `packages/app`** (including
-  `set-state-in-effect`): derive state with `useMemo`, reset with `key=`,
-  read latest props in effects with `useEffectEvent`.
-- Colors come from Tamagui theme keys (`packages/app/src/tamagui.config.ts`),
-  not CSS variables. Use `styled()` components with `$editorial*`/`$theme*`
-  keys, or `useTheme().<key>?.get()` for raw DOM elements, SVGs, and props.
-  See [docs/react-guide.md](./docs/react-guide.md) for patterns and the key
-  list.
+- **New components/hooks go in `packages/app`**, not `website/src`. Website files at the old `@/components/X` paths are shims (`export { X as default } from 'app/components'`); keep them so route pages don't churn.
+- **No web-only globals in shared code** (`window`, `document`, `next/*`, `localStorage`, CSS units like `vh`). Either platform-split the file (`X.tsx` web / `X.native.tsx` native / `X.shared.ts` for the shared props and pure helpers) or guard with `isWeb` from `tamagui`. Never expose a split through the package.json `exports` map - Metro only resolves `.native` inside relative imports.
+- **Icons** come from `app/components` (the `icons.ts` / `icons.native.ts` pair). Never import `lucide-react` in shared code; add new icons to BOTH halves.
+- **Navigation is a callback prop** (`onNavigateHome`, `onBack`, ...). No router imports in `packages/app`.
+- **`react-hooks` lint is fully on in `packages/app`** (including `set-state-in-effect`): derive state with `useMemo`, reset with `key=`, read latest props in effects with `useEffectEvent`.
+- Colors come from Tamagui theme keys (`packages/app/src/tamagui.config.ts`), not CSS variables. Use `styled()` components with `$editorial*` /`$theme*` keys, or `useTheme().<key>?.get()` for raw DOM elements, SVGs, and props. See [docs/react-guide.md][docsreact-guidemd] for patterns and the key list.
 
 ### Remaining CSS Classes (web-only, route pages only)
 
@@ -164,11 +136,14 @@ passes `Layout` as the screen's `Frame` so the header title tracks game state).
 ### Notes
 
 - Tailwind CSS removed - do not add Tailwind classes
-- Do not add new `var(--...)` references in components. The only sanctioned
-  sites are the web-only InstallPrompt/OfflineIndicator (shared code uses
-  `fontFamily: '$serif'` / `'$mono'` via the platform-split `fonts.ts`)
+- Do not add new `var(--...)` references in components. The only sanctioned sites are the web-only InstallPrompt/OfflineIndicator (shared code uses `fontFamily: '$serif'` / `'$mono'` via the platform-split `fonts.ts`)
 - Test both light and dark themes when modifying styles
-- Visual regression: `npm run test:visual -w website` (20 committed baselines;
-  never `--update-snapshots` outside the sandbox container). UI that no
-  baseline covers (e.g. the ErrorBoundary fallback) gets a throwaway `temp_`
-  page + old-vs-new pixel diff instead - see the plan STATUS block
+- Visual regression: `npm run test:visual -w website` (20 committed baselines; never `--update-snapshots` outside the sandbox container). UI that no baseline covers (e.g. the ErrorBoundary fallback) gets a throwaway `temp_` page + old-vs-new pixel diff instead - see the plan STATUS block
+
+[docsindexmd]: ./docs/index.md
+[docseffect-ts-guidemd]: ./docs/effect-ts-guide.md
+[docseffect-ts-guidemderror-handling]: ./docs/effect-ts-guide.md#error-handling
+[docstype-designmd]: ./docs/type-design.md
+[docstesting-guidemd]: ./docs/testing-guide.md
+[docsreact-guidemd]: ./docs/react-guide.md
+[docsopenai-guidemd]: ./docs/openai-guide.md
