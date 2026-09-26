@@ -1177,6 +1177,72 @@ the host (package installs, font/audio assets, device boot).
 - Root scripts `dev:mobile`/`ios`/`android` (`dev`→website unchanged) — **landed early in Phase 6** (see its STATUS: `ios`/`android`/`dev:mobile`/`prebuild:mobile`/`splash:mobile`). Extend root `clean` to cover mobile artifacts. CI: `tsc --build`, `npm run test --workspaces`, EAS preview smoke build ([Ch 16 § CI](/references/expo/16-eas-build.md#ci); EAS Workflows is the native option — [Ch 19 § EAS Workflows](/references/expo/19-eas-workflows-hosting-insights.md#eas-workflows)).
 - **Exit:** green CI; EAS preview build installs on a device.
 
+#### Phase 7 — STATUS (updated 2026-09-26): 🔄 IN PROGRESS — Stage 7.1 done (script hygiene, sourcemap check, Node pin)
+
+Same staged-commit discipline as Phases 5–6 (one commit per stage, gate suite green
+first, this block updated in the same commit). Decisions fixed before the first stage:
+`expo-dev-client` goes in (7.3) and the Maestro flows adapt to its launcher screen; there
+is no paid Apple Developer account, so the iOS `preview` profile is a simulator build and
+the "installs on a device" exit is the Android APK on the emulator/a phone plus the
+simulator `.app` (store submission stays fast-follow; a `production` profile is defined,
+not exercised); EAS Update is deferred (retrofit notes at the end of this block); CI is
+GitHub Actions — a gate workflow on push/PR plus a `workflow_dispatch`-only EAS build
+workflow that protects the ~30 builds/month free quota; root `clean` reaches mobile
+through a new `apps/mobile` `clean` script. Node is pinned to the host's `24.4.0`
+(`.nvmrc`, later `eas.json`), the npm major that wrote the lockfile.
+
+- **Stage 7.1 — script hygiene, sourcemap check, Node pin:** two findings shaped the
+  scripts. (1) `packages/{civics2json,distractions,questionnaire}/dist/` are gitignored
+  and every consumer (website, mobile, both jest runners) resolves them through the
+  packages' `exports` maps, so a fresh checkout — CI, the EAS builder — has nothing to
+  bundle until they are built: root `build:packages` builds the three in dependency
+  order, and `apps/mobile`'s `eas-build-post-install` hook
+  (`npm --prefix ../.. run build:packages`) runs it after EAS's install / prebuild /
+  pod install and before Gradle or Xcode bundle the JS. The builder installs
+  devDependencies (tsc, tsup) at the root as long as no profile sets
+  `NODE_ENV=production`; if EAS turns out to read hooks from the root `package.json`
+  rather than the project dir, the hook moves there. (2) Root `npm run lint` errored
+  on `apps/mobile` (no `lint` script); `--if-present` on `lint`/`lint:fix` fixes
+  that, and the run then surfaces **31 pre-existing ESLint errors** the mobile error had
+  been masking: `packages/civics2json` 4 (`no-non-null-assertion` in
+  `test/parseQuestions.2025.test.ts`) and `packages/distractions` 27
+  (`scripts/test-openai-integration.ts` outside the tsconfig project; `require-yield`
+  + two prettier hits in `src/generators/EnhancedStaticGenerator.ts`;
+  `no-non-null-assertion` in `test/generators/QualityMetrics.test.ts`;
+  `no-require-imports` / `no-var-requires` / `no-explicit-any` in
+  `test/integration/cli-integration.test.ts`). Those files were last touched in
+  January and CLAUDE.md reserves lint fixes for the maintainer, so root lint stays red
+  and CI (7.2) runs it as its own job so it cannot hide the other results.
+  `apps/mobile` gains `clean` (`ios/`, `android/`, `.expo/`, `dist/`, `.tamagui/`,
+  `node_modules/`, tsbuildinfo — so root `clean` now completes) and `bundlecheck`
+  (`expo export` ios + android with source maps, then `scripts/check-sourcemaps.mjs`).
+  The checker replaces the ad-hoc Phase 5/6 sourcemap greps: it walks
+  `packages/app/src` for `*.native.ts(x)` (16 today) and, per platform, asserts each
+  is in the map's `sources`, its `X.ts`/`X.tsx` sibling is not, no source path is
+  under `node_modules/lucide-react`, `@effect/platform-node` or `@effect/cli`
+  (`@tamagui/lucide-icons` is the legitimate native icon set), and each
+  `packages/app/assets/sounds/*.wav` is registered in `metadata.json`. Expo names
+  exported assets `assets/<md5 of contents>` (there is no `assetmap.json` without
+  `--dump-assetmap`), so the WAVs are matched by hashing the source files; map
+  `sources` are rooted at the monorepo root with a leading slash
+  (`/packages/app/src/haptics.native.ts`). A native half that is legitimately absent
+  goes in the script's explicit allowlist, never a looser rule. `expo export` does
+  not write `.expo/types/router.d.ts` (only the dev server behind `expo start` /
+  `run:*` does, via its type generator) and mobile `tsc` passes without it on the
+  loose `Href`, so CI's `bundlecheck`-before-`npm test` order is fail-fast only;
+  route hrefs are checked strictly on a tree where the dev server has run. `npm i` after the clean
+  also recorded `hasInstallScript` for the root in the lockfile (the root
+  `postinstall` runs patch-package); committed so the tree stays clean.
+
+  **Gates:** `npm run clean -w mobile && npm i` restores the tree (patch-package
+  reapplies; lockfile diff is the one line above); `npm run build:packages`;
+  `npm run bundlecheck -w mobile` (ios 2588 / android 2675 sources, 16/16 native halves,
+  0 leaked, 0 forbidden, 4/4 WAVs); packages/app tsc + eslint; mobile tsc + jest 16;
+  root `npm test` ×2; `npm run build -w website` (52 jest); e2e chromium 3/3 (the host
+  needed `npx playwright install chromium` first — it had never run e2e). Root
+  `npm run lint`: mobile no longer errors; civics2json + distractions red as above.
+  Visual 20/20 not run (container-only, no web source changes).
+
 ## Key Files
 - `package.json` — add `apps/*` to `workspaces`; root scripts.
 - `website/tamagui.config.ts` — move to `packages/app`; split animation driver.

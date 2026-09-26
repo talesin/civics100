@@ -63,6 +63,7 @@ Monorepo for parsing and processing U.S. Citizenship and Immigration Services (U
 ### Root Level
 
 ```bash
+npm run build:packages      # Build civics2json, distractions, questionnaire dist/ (gitignored; every consumer resolves them) — first on a fresh checkout
 npm test                    # Run tests across all workspaces
 npm run lint                # ESLint across all workspaces (packages/app enforces react-hooks incl. set-state-in-effect)
 ```
@@ -79,8 +80,9 @@ npm run test:visual -w website                      # 20 visual baselines (sandb
 ### apps/mobile
 
 ```bash
-npm test -w mobile                                  # tsc --noEmit + jest-expo
-npx expo export --platform ios --source-maps        # Bundle check (run in apps/mobile; android likewise)
+npm test -w mobile                                  # tsc --noEmit + jest-expo (route hrefs are checked strictly only once expo start/run has written .expo/types)
+npm run bundlecheck -w mobile                       # expo export ios + android with source maps, then scripts/check-sourcemaps.mjs (native halves in, web halves out, no lucide-react/@effect/platform-node/@effect/cli, 4 WAVs)
+npm run clean -w mobile                             # Drop ios/ android/ .expo/ dist/ .tamagui/ node_modules/ (then npm i + npm run prebuild:mobile)
 npm run ios -- --device "iPhone 17 Pro"             # Host: build + boot (Xcode 27 opens DeviceHub, not Simulator.app)
 #   If Expo files the simulator as a physical device ("No code signing certificates"): `xcrun simctl boot <udid>`, then `npm run ios -- --no-bundler`
 MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device <udid> test apps/mobile/.maestro/   # Simulator flows (host, ~5 min)

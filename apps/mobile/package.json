@@ -8,9 +8,12 @@
     "ios": "expo run:ios",
     "android": "expo run:android",
     "export": "expo export",
+    "bundlecheck": "rm -rf dist && expo export --platform ios --platform android --source-maps && node scripts/check-sourcemaps.mjs",
+    "clean": "rm -rf ios/ android/ .expo/ dist/ .tamagui/ node_modules/ *.tsbuildinfo",
     "typecheck": "tsc --noEmit",
     "test": "tsc --noEmit && jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "eas-build-post-install": "npm --prefix ../.. run build:packages"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.2.0",
