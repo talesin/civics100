@@ -1,17 +1,15 @@
 # Each tab draws its ScreenFrame title in the tab navigator's header. Tabs
 # are targeted by their `tabBarButtonTestID` (the label-based "X, tab, N of M"
 # accessibility phrase is iOS-only in expo-router's tab bar). Every launch in
-# these flows is followed by `extendedWaitUntil` on the home `Start` button:
-# the debug build loads its bundle from Metro and then reads storage before
-# the home body renders, which outruns Maestro's 17 s default on an
-# under-provisioned Android emulator (see the plan's Stage 6.6 STATUS).
+# these flows is followed by `runFlow: subflows/open-app.yaml`, which opens
+# the dev-client build's launcher on Metro through its deep link and waits up
+# to 60 s for the home `Start` button (the header there explains why; a
+# release build skips the link with `-e METRO_URL=none`).
 appId: com.civics100.app
 name: Tabs show their ScreenFrame titles
 ---
 - launchApp
-- extendedWaitUntil:
-    visible: 'Start'
-    timeout: 60000
+- runFlow: subflows/open-app.yaml
 - tapOn:
     id: tab-results
 - assertVisible: 'Test Results'

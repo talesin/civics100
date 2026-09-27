@@ -1,0 +1,39 @@
+# A dev-client build cold-starts on its launcher screen unless it has a
+# project to resume, so every launchApp in the top-level flows is followed by
+# this subflow: if the launcher is showing, it loads the JS from Metro
+# through the dev-client deep link; either way it then waits for the home
+# screen. After clearState the launcher always shows; after a plain relaunch
+# the launcher resumes the last loaded project by itself (both platforms
+# default DEV_CLIENT_TRY_TO_LAUNCH_LAST_BUNDLE to true), so the link is
+# skipped. The launcher must be on screen before the link is sent: on
+# Android a VIEW intent that lands while MainActivity is still starting is
+# dropped. The home wait is long because the debug build downloads its bundle
+# and then reads storage before the home body renders, which outruns
+# Maestro's 17 s default by a wide margin on the memory-tight Android
+# emulator (40-60 s with the dev client resident; see the plan's Stage 6.6
+# and 7.3 STATUS). The dev menu itself is kept out of the way by
+# plugins/withDevMenuQuietLaunch.js; disableOnboarding=1 is the documented
+# CI hint for the same thing. Release/EAS builds have no launcher and boot
+# straight into the app: run with `-e METRO_URL=none` to skip the link. The
+# default is computed in JS rather than declared under `env`, because a value
+# declared in a flow file wins over the CLI's `-e`. Maestro only treats the
+# top-level files of the directory it is given as tests, so this file never
+# runs alone.
+appId: com.civics100.app
+---
+- runFlow:
+    when:
+      true: "${typeof METRO_URL === 'undefined' || METRO_URL !== 'none'}"
+    commands:
+      - extendedWaitUntil:
+          visible: 'Development Build|Start'
+          timeout: 60000
+      - runFlow:
+          when:
+            visible: 'Development Build'
+          commands:
+            # Quoted: the ternary's " : " would otherwise read as a YAML mapping.
+            - openLink: "exp+civics100://expo-development-client/?url=${encodeURIComponent(typeof METRO_URL === 'undefined' ? 'http://localhost:8081' : METRO_URL)}&disableOnboarding=1"
+- extendedWaitUntil:
+    visible: 'Start'
+    timeout: 120000

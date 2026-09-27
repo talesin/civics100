@@ -86,11 +86,13 @@ npm run clean -w mobile                             # Drop ios/ android/ .expo/ 
 npm run ios -- --device "iPhone 17 Pro"             # Host: build + boot (Xcode 27 opens DeviceHub, not Simulator.app)
 #   If Expo files the simulator as a physical device ("No code signing certificates"): `xcrun simctl boot <udid>`, then `npm run ios -- --no-bundler`
 MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device <udid> test apps/mobile/.maestro/   # Simulator flows (host, ~5 min)
+#   The build is a dev client: it cold-starts on its launcher, and .maestro/subflows/open-app.yaml opens Metro through the
+#   exp+civics100://expo-development-client/ link (default -e METRO_URL=http://localhost:8081; a release/EAS build: -e METRO_URL=none)
 # Android (host): AGP 8.12 needs Android Studio's JBR 21, the SDK's adb must beat Homebrew's, Maestro lives in ~/.maestro/bin
 export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 export ANDROID_HOME="$HOME/Library/Android/sdk"
 export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$HOME/.maestro/bin:$PATH"
-emulator -avd Medium_Phone_API_35 -memory 4096 -cores 4 &   # The AVD's own 1 core / 2 GB makes debug launches outrun Maestro
+emulator -avd Medium_Phone_API_35 -memory 8192 -cores 6 &   # The AVD's own 1 core / 2 GB makes debug launches outrun Maestro; the dev client needs the extra headroom
 npm run android                                     # Host: Gradle build + install on emulator-5554, starts Metro
 MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device emulator-5554 test apps/mobile/.maestro/   # Emulator flows (host, ~7 min)
 ```

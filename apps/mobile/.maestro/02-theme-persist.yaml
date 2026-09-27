@@ -7,16 +7,14 @@
 # the plan's Stage 6.5 / 6.6 STATUS). The checkbox state is read per
 # platform: iOS voices the Tamagui checkbox as the text
 # "checkbox, checked|unchecked"; Android exposes the accessibility node's
-# checked flag, matched through the `dark-mode` testID. The post-launch waits are
-# explained in 01-tabs.
+# checked flag, matched through the `dark-mode` testID. The post-launch
+# subflow is explained in 01-tabs.
 appId: com.civics100.app
 name: Dark toggle persists across relaunch
 ---
 - launchApp:
     clearState: true
-- extendedWaitUntil:
-    visible: 'Start'
-    timeout: 60000
+- runFlow: subflows/open-app.yaml
 - tapOn:
     id: tab-settings
 - scrollUntilVisible:
@@ -54,9 +52,7 @@ name: Dark toggle persists across relaunch
           checked: true
 - stopApp
 - launchApp
-- extendedWaitUntil:
-    visible: 'Start'
-    timeout: 60000
+- runFlow: subflows/open-app.yaml
 - tapOn:
     id: tab-settings
 - scrollUntilVisible:

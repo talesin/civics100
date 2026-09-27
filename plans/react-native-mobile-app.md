@@ -1164,7 +1164,7 @@ the host (package installs, font/audio assets, device boot).
 - **EAS Build** (`eas.json`) dev/preview/production profiles with a dev-client (reanimated/async-storage/expo-audio aren't in Expo Go) — [Ch 16 § eas.json](/references/expo/16-eas-build.md#eas-json). Minimal skeleton:
   ```json
   {
-    "cli": { "version": ">= 12.0.0" },
+    "cli": { "version": ">= 24.8.0", "appVersionSource": "remote" },
     "build": {
       "development": { "developmentClient": true, "distribution": "internal", "ios": { "simulator": true } },
       "preview": { "distribution": "internal" },
@@ -1177,7 +1177,7 @@ the host (package installs, font/audio assets, device boot).
 - Root scripts `dev:mobile`/`ios`/`android` (`dev`→website unchanged) — **landed early in Phase 6** (see its STATUS: `ios`/`android`/`dev:mobile`/`prebuild:mobile`/`splash:mobile`). Extend root `clean` to cover mobile artifacts. CI: `tsc --build`, `npm run test --workspaces`, EAS preview smoke build ([Ch 16 § CI](/references/expo/16-eas-build.md#ci); EAS Workflows is the native option — [Ch 19 § EAS Workflows](/references/expo/19-eas-workflows-hosting-insights.md#eas-workflows)).
 - **Exit:** green CI; EAS preview build installs on a device.
 
-#### Phase 7 — STATUS (updated 2026-09-26): 🔄 IN PROGRESS — Stages 7.1–7.2 done (scripts + sourcemap check, GitHub Actions gate); the first CI run waits on the push of `native`
+#### Phase 7 — STATUS (updated 2026-09-26): 🔄 IN PROGRESS — Stages 7.1–7.3 done (scripts + sourcemap check, GitHub Actions gate, expo-dev-client with Maestro 4/4 on both devices); the first CI run waits on the push of `native`
 
 Same staged-commit discipline as Phases 5–6 (one commit per stage, gate suite green
 first, this block updated in the same commit). Decisions fixed before the first stage:
@@ -1257,6 +1257,63 @@ through a new `apps/mobile` `clean` script. Node is pinned to the host's `24.4.0
   stack). Rehearsed on the host by running the same commands in the same order (the
   7.1 gate chain, e2e 3/3 after `playwright install chromium`); the workflow itself
   first runs when `native` is pushed, which is the maintainer's call.
+- **Stage 7.3 — expo-dev-client + Maestro (host):** `expo-dev-client` 56.0.27 installed
+  inside `apps/mobile` (lockfile additive except `@expo/schema-utils` 56.0.1 → 56.0.2,
+  which its launcher pins); prebuild registers `exp+civics100` as a second URL scheme
+  on both platforms and both rebuilds went first time. A dev-client build cold-starts
+  on its launcher, so every `launchApp` in the four flows is now followed by
+  `runFlow: subflows/open-app.yaml` (Maestro runs only the top-level files of the
+  directory it is given, so `subflows/` is never a test). Five findings shaped that
+  subflow, each first seen as a red flow:
+  1. **Env precedence.** A value under a flow file's `env:` beats the CLI's `-e`
+     (probed: top-level `env: X: default` + `-e X=override` still reads `default`;
+     a subflow with no `env` inherits the CLI value). So the subflow declares no
+     `env` and computes the default in JS
+     (`typeof METRO_URL === 'undefined' ? 'http://localhost:8081' : METRO_URL`), which
+     is what lets `-e METRO_URL=none` (release/EAS builds, no launcher) switch the
+     link off. The ternary's ` : ` has to be YAML-quoted.
+  2. **Link timing on Android.** A VIEW intent that lands while `MainActivity` is
+     still starting is dropped and the app stays on the launcher; the same link fired
+     by hand once the launcher had settled loaded fine. The subflow waits for the
+     launcher's `Development Build` text before `openLink`.
+  3. **The launcher resumes the last project by itself** on a plain relaunch
+     (`DEV_CLIENT_TRY_TO_LAUNCH_LAST_BUNDLE` defaults to true on both platforms), so
+     the launcher never appears and the wait is `Development Build|Start` with the
+     link sent only `when: visible: Development Build`.
+  4. **The dev menu opens over the first load** after clearState. expo-dev-menu shows
+     itself at launch while `showsAtLaunch` (default true, from the
+     `EXDevMenuShowsAtLaunch` Info.plist key / manifest meta-data, reset by
+     `pm clear` and clearState) or its onboarding is pending; the link's
+     `disableOnboarding=1` only clears the onboarding flag, and it is read from the
+     outer link on Android but from the inner manifest URL on iOS
+     (`EXDevLauncherURLHelper.disableOnboardingPopupIfNeeded(expoUrl)`), so one
+     platform showed the "This is the developer menu" sheet and the other the tools
+     sheet. The menu's floating gear button (`EXDevMenuShowFloatingActionButton`,
+     default true) then sat on the header's ThemeToggle, so 02's `Toggle theme` tap
+     opened the menu instead. New `plugins/withDevMenuQuietLaunch.js` sets
+     `EXDevMenuShowsAtLaunch=false`, `EXDevMenuIsOnboardingFinished=true` and
+     `EXDevMenuShowFloatingActionButton=false` in Info.plist and the manifest; the
+     menu stays reachable by shake, ⌃d on the simulator and ⌘m on the emulator.
+  5. **Emulator memory.** With the dev client resident the debug app sits at ~925 MB
+     RSS; on the 4 GB AVD (369 MB free, swapping) Metro-served loads took 40–60 s
+     (Metro itself answers the Android bundle in 80 ms) and `scrollUntilVisible`
+     timed out on slow hierarchy dumps before reaching the Settings screen's
+     `Start Game` row. `emulator … -memory 8192 -cores 6` fixed both (CLAUDE.md
+     updated); the subflow's home wait is 120 s.
+  Also learned: the first Android run overlapped an iOS run and a 13-minute host
+  stall (both Maestro JVMs paused at the same timestamps), after which the iOS
+  XCTest driver answered 500 to every request until the simulator was rebooted —
+  device runs are one at a time, and a wedged driver means `simctl shutdown` +
+  `boot`. The Maestro note in CLAUDE.md covers the subflow and `-e METRO_URL`.
+
+  **Gates:** Maestro 4/4 on the iOS 26.5 simulator (5m 42s, and again on the final
+  subflow: 5m 11s) and 4/4 on `emulator-5554` (10m 13s);
+  `npm run bundlecheck -w mobile` (unchanged: 16/16 native halves, 0
+  leaked, 0 forbidden, 4/4 WAVs; no `expo-dev-client`/`-launcher`/`-menu` source in
+  either map — the dev client is native-only in a release export); packages/app tsc + eslint;
+  mobile tsc + jest 16; root `npm test` ×2; `npm run build -w website` (52 jest);
+  e2e chromium 3/3; root lint as in 7.1. Visual 20/20 not run (container-only, no
+  web source changes).
 
 ## Key Files
 - `package.json` — add `apps/*` to `workspaces`; root scripts.

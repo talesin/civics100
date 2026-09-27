@@ -40,10 +40,14 @@ const config: AppExpoConfig = {
   // autolink with no plugin. New-arch is enabled via `newArchEnabled` above, so
   // expo-build-properties stays deferred (native build tuning). The local
   // plugins/withPodsDeploymentTarget.js patches the generated Podfile so pod
-  // resource bundles meet Xcode 26+'s 15.0 deployment-target floor.
+  // resource bundles meet Xcode 26+'s 15.0 deployment-target floor;
+  // plugins/withDevMenuQuietLaunch.js keeps the dev menu from auto-opening
+  // after a data reset and hides its floating button (the Maestro flows clear
+  // state and tap the header toggle the button would otherwise cover).
   plugins: [
     'expo-router',
     './plugins/withPodsDeploymentTarget.js',
+    './plugins/withDevMenuQuietLaunch.js',
     ['expo-audio', { microphonePermission: false }],
     [
       'expo-splash-screen',

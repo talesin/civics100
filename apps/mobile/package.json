@@ -27,6 +27,7 @@
     "expo": "~56.0.12",
     "expo-audio": "~56.0.13",
     "expo-constants": "~56.0.18",
+    "expo-dev-client": "~56.0.27",
     "expo-font": "~56.0.7",
     "expo-haptics": "~56.0.3",
     "expo-linking": "~56.0.14",
