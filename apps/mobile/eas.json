@@ -1,0 +1,35 @@
+{
+  "cli": {
+    "version": ">= 24.8.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "production": {
+      "node": "24.4.0",
+      "autoIncrement": true
+    },
+    "preview": {
+      "extends": "production",
+      "autoIncrement": false,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      }
+    },
+    "development": {
+      "extends": "production",
+      "autoIncrement": false,
+      "developmentClient": true,
+      "distribution": "internal",
+      "android": {
+        "withoutCredentials": true
+      },
+      "ios": {
+        "simulator": true
+      }
+    }
+  }
+}

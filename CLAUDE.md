@@ -94,7 +94,13 @@ export ANDROID_HOME="$HOME/Library/Android/sdk"
 export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$HOME/.maestro/bin:$PATH"
 emulator -avd Medium_Phone_API_35 -memory 8192 -cores 6 &   # The AVD's own 1 core / 2 GB makes debug launches outrun Maestro; the dev client needs the extra headroom
 npm run android                                     # Host: Gradle build + install on emulator-5554, starts Metro
-MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device emulator-5554 test apps/mobile/.maestro/   # Emulator flows (host, ~7 min)
+MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device emulator-5554 test apps/mobile/.maestro/   # Emulator flows (host, ~10 min)
+# EAS (host, after `eas login`; profiles in apps/mobile/eas.json — preview = Android APK + iOS simulator build, no Apple Developer account)
+eas build -p android --profile preview               # Run in apps/mobile; first Android build interactively to generate the keystore
+eas build -p ios --profile preview                   # Simulator build, no credentials
+eas build:run -p android --profile preview --latest  # Install the latest preview APK on the emulator (adb uninstall com.civics100.app first: debug vs release signatures)
+eas build:run -p ios --profile preview --latest      # Install the latest simulator .app on the booted simulator
+gh workflow run eas-build.yml -f platform=android -f profile=preview   # Queue a build from CI (needs the EXPO_TOKEN repository secret)
 ```
 
 ### civics2json

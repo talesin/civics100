@@ -1,0 +1,48 @@
+name: EAS build
+# Dispatch-only: the free EAS tier allows roughly 30 builds a month and queues for
+# tens of minutes, so nothing here runs on push. `production` is not offered until
+# iOS store credentials exist. Inputs reach the shell through env, never through
+# expression interpolation, so a crafted input cannot inject into the command.
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        type: choice
+        options: [all, android, ios]
+        default: all
+      profile:
+        type: choice
+        options: [preview, development]
+        default: preview
+permissions:
+  contents: read
+concurrency:
+  group: eas-build
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Require EXPO_TOKEN
+        env:
+          TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: test -n "$TOKEN" || { echo "Set the EXPO_TOKEN repository secret"; exit 1; }
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: 24.8.0
+          packager: npm
+          token: ${{ secrets.EXPO_TOKEN }}
+      # eas-cli evaluates app.config.ts through the installed expo package.
+      - run: npm ci
+      - name: Queue build
+        working-directory: apps/mobile
+        env:
+          PLATFORM: ${{ inputs.platform }}
+          PROFILE: ${{ inputs.profile }}
+        run: eas build --platform "$PLATFORM" --profile "$PROFILE" --non-interactive --no-wait --message "CI ${GITHUB_SHA::7}"

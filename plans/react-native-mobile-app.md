@@ -800,7 +800,7 @@ deferred to `plans/react19-modernization.md` (post-migration).
 - **Add `expo-system-ui`**: set the root-view background color to eliminate the Android navigation-transition color flash ([Ch 15 § UI Components](/references/expo/15-sdk-ui-components.md)).
 - **Exit:** all 5 screens fully functional on iOS sim + Android emulator with persistence, TTS, sounds, and haptic answer feedback.
 
-#### Phase 6 — STATUS (updated 2026-09-25): 🔄 IN PROGRESS — Stages 6.1–6.6 done; both host boots (iOS on Xcode 27, Android on the API 35 emulator) passed the device checklist, and the Maestro flows in `apps/mobile/.maestro/` are the device gate on both platforms; left: real icon/splash art, splash judged on an EAS preview build
+#### Phase 6 — STATUS (updated 2026-09-26): 🔄 IN PROGRESS — Stages 6.1–6.6 done; both host boots (iOS on Xcode 27, Android on the API 35 emulator) passed the device checklist, and the Maestro flows in `apps/mobile/.maestro/` are the device gate on both platforms; left: real icon/splash art, splash judged on an EAS preview build (Phase 7 Stage 7.5)
 
 Same staged-commit discipline as Phase 5 (one commit per stage, user confirms, full
 gate suite before each). The sandbox has no network and no simulator, so the phase is
@@ -1156,9 +1156,11 @@ the host (package installs, font/audio assets, device boot).
   `npm test`; `npm run build -w website` (52 jest). Visual 20/20 not run
   (container-only; no web half touched).
 
-- **Remaining for Phase 6:** real icon + splash art, splash judged on an EAS
-  preview build (Phase 7). Consider raising the AVD itself to 4 cores / 4 GB so
-  the emulator flags become unnecessary.
+- **Remaining for Phase 6:** real icon + splash art; splash judged on an EAS
+  preview build (the Phase 7 Stage 7.5 runbook, step 6); the StateSelector
+  nested-Text fix and its visual ×2 (a sandbox session). Consider raising the AVD
+  itself to the session flags (now `-memory 8192 -cores 6`, see Stage 7.3) so they
+  become unnecessary.
 
 ### Phase 7 — Build, CI, release
 - **EAS Build** (`eas.json`) dev/preview/production profiles with a dev-client (reanimated/async-storage/expo-audio aren't in Expo Go) — [Ch 16 § eas.json](/references/expo/16-eas-build.md#eas-json). Minimal skeleton:
@@ -1177,7 +1179,7 @@ the host (package installs, font/audio assets, device boot).
 - Root scripts `dev:mobile`/`ios`/`android` (`dev`→website unchanged) — **landed early in Phase 6** (see its STATUS: `ios`/`android`/`dev:mobile`/`prebuild:mobile`/`splash:mobile`). Extend root `clean` to cover mobile artifacts. CI: `tsc --build`, `npm run test --workspaces`, EAS preview smoke build ([Ch 16 § CI](/references/expo/16-eas-build.md#ci); EAS Workflows is the native option — [Ch 19 § EAS Workflows](/references/expo/19-eas-workflows-hosting-insights.md#eas-workflows)).
 - **Exit:** green CI; EAS preview build installs on a device.
 
-#### Phase 7 — STATUS (updated 2026-09-26): 🔄 IN PROGRESS — Stages 7.1–7.3 done (scripts + sourcemap check, GitHub Actions gate, expo-dev-client with Maestro 4/4 on both devices); the first CI run waits on the push of `native`
+#### Phase 7 — STATUS (updated 2026-09-26): 🔄 IN PROGRESS — Stages 7.1–7.4 done (scripts + sourcemap check, GitHub Actions gate, expo-dev-client with Maestro 4/4 on both devices, EAS config + dispatch-only build workflow); left: the 7.5 host runbook (needs an Expo login), the first CI run (needs the push of `native`)
 
 Same staged-commit discipline as Phases 5–6 (one commit per stage, gate suite green
 first, this block updated in the same commit). Decisions fixed before the first stage:
@@ -1314,6 +1316,66 @@ through a new `apps/mobile` `clean` script. Node is pinned to the host's `24.4.0
   mobile tsc + jest 16; root `npm test` ×2; `npm run build -w website` (52 jest);
   e2e chromium 3/3; root lint as in 7.1. Visual 20/20 not run (container-only, no
   web source changes).
+- **Stage 7.4 — EAS config (committable before any account exists):**
+  `apps/mobile/eas.json` pins `cli.version >= 24.8.0` (the current release) with
+  `appVersionSource: remote`, and three profiles: `production` (`node: 24.4.0`,
+  `autoIncrement`), `preview` extending it (internal distribution, Android
+  `buildType: apk`, iOS `simulator: true` — there is no paid Apple Developer
+  account, so the "installs on a device" exit is the APK on the emulator/a phone plus
+  the simulator `.app`), and `development` (`developmentClient`, Android
+  `withoutCredentials`, iOS simulator). No `env`, no `ios.image` pin (the
+  expo-modules-jsi Swift patch is applied by the root `postinstall` during EAS's
+  install and compiles on older toolchains; `withPodsDeploymentTarget.js` only lifts
+  pods below RN's floor), no `.easignore` (it would replace `.gitignore`, which
+  already excludes `node_modules`, the native dirs, `.next`, `spikes/`). The Phase 7
+  skeleton above carries the same `cli` block. `.github/workflows/eas-build.yml` is
+  `workflow_dispatch`-only (platform all/android/ios × profile preview/development;
+  `production` is not offered until iOS store credentials exist) to protect the
+  ~30 builds/month free tier: it fails fast without the `EXPO_TOKEN` secret, pins
+  `expo/expo-github-action@v8` to eas-cli 24.8.0, runs `npm ci` because eas-cli
+  evaluates `app.config.ts` through the installed `expo`, passes the inputs through
+  `env` (no expression injection) and queues with `--no-wait`. On the builder, the
+  `apps/mobile` `eas-build-post-install` hook from 7.1 builds the three package
+  `dist/` trees before Gradle/Xcode bundle the JS. Gates: `eas.json` parses;
+  `npx expo config --type public` still evaluates; the workflow YAML parses; the 7.3
+  gate chain ran with both files in the tree.
+
+  **Stage 7.5 — host runbook (not yet run; needs the maintainer's Expo login):**
+  1. `npm i -g eas-cli@24.8.0` (or `npx eas-cli@24.8.0 …`), `eas login`, `eas whoami`.
+  2. In `apps/mobile`: `eas init`. It cannot write a TS config, so it prints the
+     projectId; add `owner: '<eas whoami>'` and `extra: { eas: { projectId: '<uuid>' } }`
+     to `app.config.ts` (neither is a secret) and check
+     `npx expo config --type public | grep -A3 eas`.
+  3. `eas build -p android --profile preview` **interactively** the first time, so it
+     can generate the keystore (`--non-interactive` refuses to). Optional first:
+     `eas build:inspect -p android -e preview -s archive -o /tmp/temp_eas-archive` to
+     see that the upload carries no `dist/` (the hook has to build it).
+  4. `eas build -p ios --profile preview` (simulator build, no credentials).
+  5. Install: `adb uninstall com.civics100.app` first (the debug and release
+     signatures differ), then `eas build:run -p android --profile preview --latest`;
+     a phone installs from the expo.dev build page. iOS: boot the simulator, then
+     `eas build:run -p ios --profile preview --latest`.
+  6. **Closes the Phase 6 leftover:** judge the splash on both release builds, light
+     and dark (`xcrun simctl ui <udid> appearance dark`, `adb shell cmd uimode night
+     yes`) — a release build has no Metro popup, so the dev-only hand-off artefact
+     from Stage 6.6 should be gone. Optional: `maestro --device <id> -e
+     METRO_URL=none test apps/mobile/.maestro/` against each.
+  7. A personal access token from expo.dev/settings/access-tokens (robot users need
+     an organization) → `gh secret set EXPO_TOKEN`; then `gh workflow run
+     eas-build.yml -f platform=android -f profile=preview` and confirm the build
+     appears on expo.dev and finishes — that run proves the post-install hook builds
+     `dist/` on the builder. If it fails with "Unable to resolve questionnaire/data",
+     EAS read hooks from the root: move `eas-build-post-install` to the root
+     `package.json`.
+  8. Commit `app.config.ts` (and any `eas.json` drift `eas` wrote) with this block
+     updated.
+
+  **EAS Update retrofit (fast-follow, [Ch 18 § Setup](/references/expo/18-eas-update.md)):**
+  `npx expo install expo-updates` inside `apps/mobile` (native → new builds), then
+  by hand in `app.config.ts`: `runtimeVersion: { policy: 'appVersion' }` and
+  `updates: { url: 'https://u.expo.dev/<projectId>' }`; `channel` on the `preview`
+  and `production` profiles in `eas.json`; optionally an `eas update --auto`
+  workflow. Deferred from v1 by decision.
 
 ## Key Files
 - `package.json` — add `apps/*` to `workspaces`; root scripts.
