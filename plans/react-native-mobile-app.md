@@ -1439,7 +1439,15 @@ through a new `apps/mobile` `clean` script. Node is pinned to the host's `24.4.0
 
   **Gates:** root `npm run lint` exits 0; root `npm test` (civics2json 73,
   distractions 122 with `OPENAI_API_KEY` unset, questionnaire 44, mobile 16,
-  website 52); distractions and civics2json `tsc --noEmit` clean.
+  website 52); distractions and civics2json `tsc --noEmit` clean. Visual 20/20 ×2 in
+  the sandbox container on `b48fc19` (24.4 s, 22.8 s), the first run since Phase 5:
+  the Phase 6–7 changes in `packages/app` leave all five website routes unchanged.
+  Sandbox notes: the worktree's `node_modules` are per-OS, so `npm ci` runs in the
+  container before the suite and again on the host afterwards; the container's
+  chromium is build 1217 where Playwright 1.59.1 looks for 1228, bridged by two
+  symlinks in `~/.cache/ms-playwright` that a relaunch drops; the suite ran as
+  `npx playwright test --config playwright.visual.config.ts --workers=2` from
+  `website/`, and the default worker count was not tried.
 
   **EAS Update retrofit (fast-follow, [Ch 18 § Setup](/references/expo/18-eas-update.md)):**
   `npx expo install expo-updates` inside `apps/mobile` (native → new builds), then
