@@ -14,6 +14,8 @@ type AppExpoConfig = ExpoConfig & {
 const config: AppExpoConfig = {
   name: 'Civics Test',
   slug: 'civics100',
+  owner: 'jhbc',
+  extra: { eas: { projectId: 'd757c7be-0238-4c8a-98f8-f175e7c45381' } },
   scheme: 'civics100',
   version: '0.1.0',
   orientation: 'portrait',

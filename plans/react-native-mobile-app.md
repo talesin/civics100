@@ -800,7 +800,7 @@ deferred to `plans/react19-modernization.md` (post-migration).
 - **Add `expo-system-ui`**: set the root-view background color to eliminate the Android navigation-transition color flash ([Ch 15 § UI Components](/references/expo/15-sdk-ui-components.md)).
 - **Exit:** all 5 screens fully functional on iOS sim + Android emulator with persistence, TTS, sounds, and haptic answer feedback.
 
-#### Phase 6 — STATUS (updated 2026-09-26): 🔄 IN PROGRESS — Stages 6.1–6.6 done; both host boots (iOS on Xcode 27, Android on the API 35 emulator) passed the device checklist, and the Maestro flows in `apps/mobile/.maestro/` are the device gate on both platforms; left: real icon/splash art, splash judged on an EAS preview build (Phase 7 Stage 7.6)
+#### Phase 6 — STATUS (updated 2026-11-16): 🔄 IN PROGRESS — Stages 6.1–6.6 done; both host boots (iOS on Xcode 27, Android on the API 35 emulator) passed the device checklist, the Maestro flows in `apps/mobile/.maestro/` are the device gate on both platforms, and the splash hand-off is clean on both EAS preview builds (Phase 7 Stage 7.6); left: real icon/splash art, the StateSelector nested-Text fix
 
 Same staged-commit discipline as Phase 5 (one commit per stage, user confirms, full
 gate suite before each). The sandbox has no network and no simulator, so the phase is
@@ -1156,9 +1156,10 @@ the host (package installs, font/audio assets, device boot).
   `npm test`; `npm run build -w website` (52 jest). Visual 20/20 not run
   (container-only; no web half touched).
 
-- **Remaining for Phase 6:** real icon + splash art; splash judged on an EAS
-  preview build (the Phase 7 Stage 7.6 runbook, step 7); the StateSelector
-  nested-Text fix and its visual ×2 (a sandbox session). Consider raising the AVD
+- **Remaining for Phase 6:** real icon + splash art; the StateSelector
+  nested-Text fix and its visual ×2 (a sandbox session). The splash was judged on
+  the EAS preview builds in Phase 7 Stage 7.6: no black or bright hand-off frame
+  on either platform, light or dark. Consider raising the AVD
   itself to the session flags (now `-memory 8192 -cores 6`, see Stage 7.3) so they
   become unnecessary.
 
@@ -1179,7 +1180,7 @@ the host (package installs, font/audio assets, device boot).
 - Root scripts `dev:mobile`/`ios`/`android` (`dev`→website unchanged) — **landed early in Phase 6** (see its STATUS: `ios`/`android`/`dev:mobile`/`prebuild:mobile`/`splash:mobile`). Extend root `clean` to cover mobile artifacts. CI: `tsc --build`, `npm run test --workspaces`, EAS preview smoke build ([Ch 16 § CI](/references/expo/16-eas-build.md#ci); EAS Workflows is the native option — [Ch 19 § EAS Workflows](/references/expo/19-eas-workflows-hosting-insights.md#eas-workflows)).
 - **Exit:** green CI; EAS preview build installs on a device.
 
-#### Phase 7 — STATUS (updated 2026-10-05): 🔄 IN PROGRESS — Stages 7.1–7.5 done (scripts + sourcemap check, GitHub Actions gate, expo-dev-client with Maestro 4/4 on both devices, EAS config + dispatch-only build workflow, first CI run triaged and fixed); left: the 7.6 host runbook (needs an Expo login)
+#### Phase 7 — STATUS (updated 2026-11-16): ✅ DONE on `native` — Stages 7.1–7.6 landed (scripts + sourcemap check, GitHub Actions gate, expo-dev-client, EAS config + dispatch-only build workflow, CI green apart from the reserved lint job, both EAS preview builds installed with Maestro 4/4 on each); left: the first CI-dispatched EAS build, which GitHub only allows once `eas-build.yml` is on `main`
 
 Same staged-commit discipline as Phases 5–6 (one commit per stage, gate suite green
 first, this block updated in the same commit). Decisions fixed before the first stage:
@@ -1332,7 +1333,7 @@ through a new `apps/mobile` `clean` script. Node is pinned to the host's `24.4.0
   `workflow_dispatch`-only (platform all/android/ios × profile preview/development;
   `production` is not offered until iOS store credentials exist) to protect the
   ~30 builds/month free tier: it fails fast without the `EXPO_TOKEN` secret, pins
-  `expo/expo-github-action@v8` to eas-cli 24.8.0, runs `npm ci` because eas-cli
+  `expo/expo-github-action@v8` to eas-cli 24.11.0 (the CLI the host builds ran on), runs `npm ci` because eas-cli
   evaluates `app.config.ts` through the installed `expo`, passes the inputs through
   `env` (no expression injection) and queues with `--no-wait`. On the builder, the
   `apps/mobile` `eas-build-post-install` hook from 7.1 builds the three package
@@ -1370,52 +1371,57 @@ through a new `apps/mobile` `clean` script. Node is pinned to the host's `24.4.0
   `npm test`; root lint unchanged at 31. The CI run on this commit is the proof of the
   stage: `Bundle, test, website build` must go green (bundlecheck → test → `next build`,
   the first time CI reaches the website build) with e2e green and lint red as
-  documented; its id is recorded with Stage 7.6.
+  documented — `gh run 37410751936` on `903dd99` did exactly that.
 
-  **Stage 7.6 — host runbook (not yet run; needs the maintainer's Expo login):** run
-  from this worktree, `eas` commands inside `apps/mobile`. Budget: at most three builds
-  against the ~30/month free tier.
-  1. `npm i -g eas-cli@24.11.0` (the current release; 7.4 pinned the workflow to 24.8.0,
-     bumped in step 9), `eas login`, `eas whoami`.
-  2. `eas init --non-interactive --force` (interactive `eas init` if it insists on a
-     prompt). It cannot write a TS config, so it prints the projectId; add
-     `owner: '<eas whoami>'` and `extra: { eas: { projectId: '<uuid>' } }` to
-     `app.config.ts` (neither is a secret) and check
-     `npx expo config --type public | grep -A3 eas`.
-  3. `eas build:inspect -p android -e preview -s archive -o /tmp/temp_eas-archive`:
-     confirms the upload works from a **git worktree** (EAS tars the project via git; a
-     worktree's `.git` is a pointer file) and carries no `dist/` (the hook has to build
-     it). Delete the temp dir afterwards. If the archive is broken or empty, run the
-     remaining `eas` steps from the main checkout on `native`.
-  4. `eas build -p android --profile preview` **interactively** the first time, so it can
-     generate the keystore (`--non-interactive` refuses to); `eas build:list --platform
-     android --limit 1` follows it.
-  5. `eas build -p ios --profile preview --non-interactive` (simulator build, no
-     credentials).
-  6. Install: `adb uninstall com.civics100.app` first (the debug and release signatures
-     differ), then `eas build:run -p android --profile preview --latest` on the emulator
-     booted with the CLAUDE.md flags; a phone installs from the expo.dev build page. iOS:
-     `xcrun simctl boot <udid>`, then `eas build:run -p ios --profile preview --latest`.
-  7. **Closes the Phase 6 leftover:** judge the splash on both release builds, light and
-     dark (`xcrun simctl ui <udid> appearance dark`, `adb shell cmd uimode night yes`)
-     with the Stage 6.6 probes (screenrecord + ffmpeg `signalstats` luma) — a release
-     build has no Metro popup, so the dev-only black hand-off frame from Stage 6.6 should
-     be gone. Then `maestro --device <id> -e METRO_URL=none test apps/mobile/.maestro/`
-     against each build (the subflow's `METRO_URL=none` path has not yet run against a
-     real release build).
-  8. A personal access token from expo.dev → Access tokens (robot users need an
-     organization) → `gh secret set EXPO_TOKEN`, run by the maintainer so the token stays
-     out of any transcript.
-  9. Bump `.github/workflows/eas-build.yml` `eas-version` to `24.11.0` so CI runs the
-     same CLI as the host (`eas.json` keeps `>= 24.8.0`); then `gh workflow run
-     eas-build.yml -f platform=android -f profile=preview`, `gh run watch`, and confirm
-     the build appears on expo.dev and finishes — that run proves the post-install hook
-     builds `dist/` on the builder. If it fails with "Unable to resolve
-     questionnaire/data", EAS read hooks from the root: move `eas-build-post-install` to
-     the root `package.json` and rerun.
-  10. Commit `app.config.ts`, the workflow bump and any `eas.json` drift `eas` wrote, with
-     this block updated, the Phase 7 header flipped to ✅ DONE and the Phase 6 header's
-     splash leftover resolved (real icon/splash art stays the remaining Phase 6 item).
+- **Stage 7.6 — EAS project, preview builds, release-build device gate (host,
+  2026-11-16, eas-cli 24.11.0):** the project is `@jhbc/civics100`
+  (`d757c7be-0238-4c8a-98f8-f175e7c45381`). `eas init` cannot write a TS config, so
+  `owner` and `extra.eas.projectId` are set by hand in `app.config.ts` (neither is
+  a secret). What the stage established:
+  1. **Login without a TTY.** `eas login` needs interactive prompts; from a
+     non-interactive shell use `eas login --device --non-interactive` (browser
+     approval of a device code).
+  2. **A git worktree uploads fine.** `eas build:inspect -p android -e preview -s
+     archive -o <dir>` from this worktree produced the tracked tree plus
+     uncommitted edits, with no `node_modules` and no `.envrc`; the gitignored
+     dirs (`packages/*/dist`, `apps/mobile/{ios,android,dist}`, `spikes/`) arrive
+     as empty folders, so the builder has to produce `dist/` itself.
+  3. **The post-install hook works from `apps/mobile`.** Both builds bundled the
+     JS, so EAS reads `eas-build-post-install` from the project dir and
+     `build:packages` runs before Gradle/Xcode: iOS simulator build
+     `3b793fe4-daf8-42f7-8953-019327ec071c` (≈8 min, no credentials) and Android
+     APK `bbd1a278-a678-4ad6-bf7a-50f7e179e92c` (the first Android build has to be
+     interactive so EAS can generate the keystore, which it keeps server-side).
+     The iOS build warns that `ios.infoPlist.ITSAppUsesNonExemptEncryption` is
+     unset — an App Store Connect matter, to settle with store submission.
+  4. **Install.** iOS: `xcrun simctl boot <udid>`, then `eas build:run -p ios --id
+     <build>`. Android: the build's own "install on an emulator" prompt boots the
+     AVD without the CLAUDE.md flags and fails with
+     `INSTALL_FAILED_UPDATE_INCOMPATIBLE` while the debug-signed dev build is
+     present; boot the emulator with the flags, `adb uninstall com.civics100.app`,
+     then `adb install` the downloaded APK (or `eas build:run`).
+  5. **Splash on release builds (closes the Phase 6 leftover).** Cold launches
+     recorded (`simctl io recordVideo` / `adb shell screenrecord`) and measured
+     per frame with ffmpeg `signalstats`. iOS 26.5: light splash ≈229 → home ≈220,
+     dark splash ≈38 → home ≈46. Android API 35: light ≈232 → ≈222, dark ≈38 →
+     ≈47 (the dark splash variant shows under a dark OS). No frame crosses to the
+     other side of luma 120 on either platform, so the dev-only black hand-off
+     frame from Stage 6.6 does not exist in a release build. Not recorded
+     separately: a saved dark preference under a light OS (flow 02 covers the
+     preference surviving a relaunch).
+  6. **Maestro against release builds.** `-e METRO_URL=none` skips the dev-client
+     link as designed: 4/4 on the iOS simulator (5m 13s) and 4/4 on
+     `emulator-5554` (4m 44s, less than half the dev-client run).
+  7. **CI wiring.** `EXPO_TOKEN` is a repository secret (a personal access token
+     from expo.dev/settings/access-tokens), and `eas-build.yml` pins eas-cli
+     24.11.0 to match the host. GitHub dispatches a `workflow_dispatch` workflow
+     only when its file is on the default branch, and `eas-build.yml` is on
+     `native` alone (`gh workflow view eas-build.yml`: "not found on the default
+     branch"). So the first `gh workflow run eas-build.yml -f platform=android -f
+     profile=preview` waits for the merge to `main`; it proves the token and the
+     workflow, the hook being proven by the two builds above.
+
+  Three builds were budgeted against the free tier; two were spent.
 
   **EAS Update retrofit (fast-follow, [Ch 18 § Setup](/references/expo/18-eas-update.md)):**
   `npx expo install expo-updates` inside `apps/mobile` (native → new builds), then

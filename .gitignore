@@ -12,3 +12,6 @@ spikes/
 # specs, temp mobile routes/export dirs). Ignored, not exempt: Playwright and
 # expo-router still pick them up at runtime, so delete them after use.
 **/temp_*
+
+# Watchman leaves a cookie behind when a Metro or jest watch is killed mid-query.
+.watchman-cookie-*

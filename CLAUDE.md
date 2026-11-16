@@ -100,7 +100,7 @@ eas build -p android --profile preview               # Run in apps/mobile; first
 eas build -p ios --profile preview                   # Simulator build, no credentials
 eas build:run -p android --profile preview --latest  # Install the latest preview APK on the emulator (adb uninstall com.civics100.app first: debug vs release signatures)
 eas build:run -p ios --profile preview --latest      # Install the latest simulator .app on the booted simulator
-gh workflow run eas-build.yml -f platform=android -f profile=preview   # Queue a build from CI (needs the EXPO_TOKEN repository secret)
+gh workflow run eas-build.yml -f platform=android -f profile=preview   # Queue a build from CI (GitHub dispatches it only once eas-build.yml is on main)
 ```
 
 ### civics2json
