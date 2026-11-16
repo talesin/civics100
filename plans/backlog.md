@@ -2,6 +2,10 @@
 
 Low priority items from completed plans. These are nice-to-have improvements that don't affect functionality.
 
+## Post-migration
+
+React 19 modernization work deferred from the native port (GameScreen reducer conversion, React Compiler enablement, useSyncExternalStore conversions, website `set-state-in-effect` re-enable) is planned in [react19-modernization.md](./react19-modernization.md).
+
 ## Theme Consolidation
 
 | Item | Description | Scope |

@@ -195,6 +195,7 @@ Every external data source has corresponding Effect schema:
 
 ```bash
 # After code changes
+npm run build:packages   # civics2json, distractions, questionnaire dist/ (gitignored) — first on a fresh checkout
 npm run lint        # ESLint across all workspaces
 npm test           # Full test suite
 npm run build      # Build all packages

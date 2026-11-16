@@ -1,0 +1,1484 @@
+# React Native (Expo) Mobile App — Phased Plan
+
+## Context
+
+The repo (`civics100`) is an npm-workspace monorepo whose user-facing app is `website` — a Next.js 16 + React 19 + **Tamagui** practice-test app for the USCIS civics exam. We want to ship the same app on **iOS and Android** as a native app.
+
+This is far more tractable than a typical web→native port because the groundwork is already laid:
+
+- **All game logic is platform-agnostic.** `civics2json` (data), `distractions` (distractor answers), and `questionnaire` (Effect-TS game engine: `GameService`, session state machine, scoring) are pure TS packages the UI merely consumes.
+- **The UI already uses Tamagui** (`website/tamagui.config.ts`), which compiles to React Native primitives natively and HTML on web. Tokens, light/dark themes, and media queries already exist.
+- **Services are already Effect `Layer`s.** `LocalStorageService` isolates every `localStorage` call behind helpers and already ships a swappable `TestLocalStorageServiceLayer` — proving per-platform layer swapping is trivial. `ServiceProvider.ts` is the single injection seam.
+
+The web coupling that must be abstracted is the boundary layer only: Next routing, `localStorage`, `speechSynthesis`/Web-Audio, service worker/PWA, `next/font`, `lucide-react`, `framer-motion`, and — the largest item — a design system currently expressed as raw CSS variables (`var(--editorial-*)`) in inline styles across 12 files (158 occurrences; concentrated in `app/page.tsx`, `settings/page.tsx`, `StatsSummary.tsx`, `results/page.tsx`, `Layout.tsx`).
+
+**Decisions made (by the user):** (1) Extract a shared `packages/app` consumed by both web and mobile — Tamagui's `apps/* + packages/app` pattern. (2) **Full parity** — all 5 screens. (3) **Expo** (managed + dev builds) with **expo-router**. (4) **Minimize website changes** — the website re-points imports to the shared package and keeps working; no rewrite.
+
+Intended outcome: one shared UI/logic package, an Expo app that builds to iOS/Android at full feature parity, and a website that looks and behaves identically while now sourcing its UI from `packages/app`.
+
+> Validated against the reference docs (mounted at `/references` in this environment — `tamagui`, `react-and-react-native`, `effect`, `playwright`, and the new **`expo` SDK 56 guide set**) and the live `/workspace` source. The monorepo pattern, dual-toolchain shared config, `.web/.native` driver split, expo-router, AsyncStorage, dev-build requirement, EAS, and reanimated-plugin-last rule are all confirmed; the numbers, the `@tamagui/metro-plugin` step, the icon peer dep, the v1↔v2 animation-package naming, the SDK target, and the Hermes proof obligation below reflect that validation pass.
+
+### Expo Reference Guides
+
+Authoritative source for every Expo claim below is the SDK 56 guide set at
+`/references/expo/` ([index](/references/expo/index.md)). Most-cited chapters:
+core model & CNG (Ch 01), getting started (Ch 02), app config + metro/babel (Ch 03),
+config plugins (Ch 04), expo-router (Ch 06–08), dev builds (Ch 09), UI/assets (Ch 10),
+monorepos/new-arch/deep-linking (Ch 11), SDK packages (Ch 12–15), EAS (Ch 16–19).
+Inline citations below use the form `[Ch NN § Title](/references/expo/NN-file.md#anchor)`.
+
+## Target Architecture
+
+```
+.                              # repo root
+  package.json                 # workspaces: ["packages/*", "apps/*", "website"]
+  packages/
+    civics2json/ distractions/ questionnaire/   # unchanged
+    app/                                          # NEW: shared UI + logic
+      src/
+        tamagui.config.ts
+        animations.web.ts  animations.native.ts  # platform-split driver
+        components/   # platform-neutral Tamagui components (ported from website)
+        screens/      # Home, Game, Results, Settings, Statistics
+        services/     # tags + schemas + web/native layers + makeAppServiceLayer
+        hooks/        # platform-neutral hooks only
+  apps/
+    mobile/                                        # NEW: Expo app
+      app/            # expo-router routes = thin wrappers over screens
+      metro.config.js  babel.config.js  app.config.ts  eas.json
+  website/                                         # MINIMAL changes
+    next.config.ts    # transpilePackages += "app"
+    src/app/*         # routes become thin wrappers over packages/app screens
+    src/components/   # KEEP web-only: OfflineIndicator, InstallPrompt, ServiceWorkerRegistration
+```
+
+**Platform-abstraction pattern:** one Effect tag per capability, two `Layer`s, composed per app via a `makeAppServiceLayer(platformLayers)` factory in `packages/app` (generalizing the current `AppServiceLayer`):
+
+| Capability | Web layer | Native layer |
+| --- | --- | --- |
+| `LocalStorageService` (tag + Schemas shared) | `localStorage` | `@react-native-async-storage/async-storage` ([Ch 14](/references/expo/14-sdk-data-auth-background.md#async-storage)) |
+| `TtsService` | `speechSynthesis` | `expo-speech` ([Ch 13](/references/expo/13-sdk-device-sensors-system.md#speech)) |
+| `SoundService` | Web Audio | `expo-audio` ([Ch 12](/references/expo/12-sdk-camera-media-graphics.md#audio) — current API; `expo-av` superseded) |
+| `NavigationService` | `next/navigation` / `next/link` | `expo-router` ([Ch 06](/references/expo/06-expo-router-basics.md#navigation)) |
+
+Screens stay router-agnostic by receiving navigation via `NavigationService`/callback props — neither router leaks into `packages/app`.
+
+## Library Choices
+
+- **Target the latest stable Expo SDK.** ✅ LOCKED in Phase 0 (2026-06-29): **Expo SDK 56.0.12 → React Native 0.85.3, React 19.2.3**, New Architecture on, Hermes default. (The earlier "≥54 floor / not RN 0.79" guidance is superseded by this locked matrix — full list in `spikes/mobile/GO-NO-GO.md` §4.) Note RN 0.85 ships **reanimated 4**, which requires a separate `react-native-worklets` dep and moves its babel plugin to `react-native-worklets/plugin`. Pin mobile React to the SDK's required version; `packages/app` declares `react` as a permissive **peerDependency** (not a hard dep) so web and native bundle their own copy. (SDK/workflow model: [Ch 01 § Workflows](/references/expo/01-overview-and-core-concepts.md#workflows); New Architecture: [Ch 11 § New Architecture](/references/expo/11-common-guides.md#new-architecture); reanimated 4 / worklets: [Ch 15 § Reanimated](/references/expo/15-sdk-ui-components.md#reanimated).)
+- **Pin `tamagui` / `@tamagui/*` to the exact website version (`1.144.x`)** across `packages/app`, `website`, `apps/mobile` to avoid "two Tamagui instances" runtime errors. Include `@tamagui/metro-plugin` in this pinned set (see Phase 1).
+- **Animations:** `@tamagui/animations-css` (web) / `@tamagui/animations-moti` + `react-native-reanimated` + `moti` (native), behind the `animations.web.ts`/`animations.native.ts` split. Note: the package is `@tamagui/animations-moti` on the pinned **v1.144** line; it was renamed `@tamagui/animations-motion` in Tamagui **v2** — rename only if/when the Tamagui upgrade happens. `@tamagui/animations-reanimated` is the non-Moti native fallback if Moti proves troublesome.
+- **Icons:** `@tamagui/lucide-icons` (cross-platform, themed) replacing `lucide-react`. Requires the `react-native-svg` peer on native (`react-native-svg @tamagui/lucide-icons`) — [Ch 12 § SVG](/references/expo/12-sdk-camera-media-graphics.md#svg).
+- **Animation in components:** `moti` replacing `framer-motion`.
+- **Storage:** `@react-native-async-storage/async-storage` for v1 (async API maps onto existing Effect helpers; MMKV is a fast-follow only if profiling demands it). Confirmed appropriate for non-sensitive app state in [Ch 14 § AsyncStorage](/references/expo/14-sdk-data-auth-background.md#async-storage); the `expo-sqlite`/`kv-store` drop-in is the documented migration path if profiling demands it ([Ch 14 § SQLite](/references/expo/14-sdk-data-auth-background.md#sqlite)).
+- **Fonts:** `expo-font` replacing `next/font` — [Ch 10 § Fonts](/references/expo/10-ui-and-assets.md#fonts).
+- **TTS (mobile):** `expo-speech` — [Ch 13 § Speech](/references/expo/13-sdk-device-sensors-system.md#speech). Confirms the voice-enumeration caveat: `getAvailableVoicesAsync()` returns a platform- and language-pack-dependent list, so ship default voice + rate first (full picker is fast-follow).
+- **Sound (mobile):** `expo-audio` — [Ch 12 § Audio](/references/expo/12-sdk-camera-media-graphics.md#audio). This is the current SDK 56 audio API (the older `expo-av` is superseded), which resolves the plan's only open library question.
+
+## Phased Implementation
+
+### Phase 0 — De-risk spikes (no committed app code)
+- **Spike A (Metro + Effect on Hermes):** throwaway Expo app imports from `questionnaire/data` and runs a **non-trivial Effect — including a Schema decode — on a Hermes device/sim**, not just at bundle time. The Effect references document only `@effect/platform-{node,bun,browser}` and say nothing about React Native/Hermes, so "Effect core is Node-free → runs on Hermes" is a reasonable but *undocumented* assumption that must be proven on-device. Also confirm Metro does **not** pull in `@effect/platform-node` / `@effect/cli` (Node-only deps in `packages/questionnaire/package.json`). The website already runs `questionnaire` in-browser, so a Node-free path exists — confirm it's Metro-resolvable; if `.` is contaminated, plan a `questionnaire` export-map refinement.
+- **Spike B (Tamagui dual toolchain):** confirm one `tamagui.config.ts` compiles under both `@tamagui/next-plugin` and the Tamagui babel plugin (+ `@tamagui/metro-plugin`) with the driver split.
+- Lock the exact Expo SDK ↔ RN ↔ React version matrix (target the latest stable SDK; do not assume 53/RN-0.79).
+- **Exit:** written go/no-go on `questionnaire` RN-safety, proven by an Effect+Schema run executing on Hermes, plus pinned versions.
+
+#### Phase 0 — STATUS (updated 2026-06-29): ⚠️ CONDITIONAL GO — in-container work complete, one device-only gate remains
+
+Executed in a Linux **aarch64** container (no Xcode/Android SDK/simulators). Full results
++ carry-forward findings in `spikes/mobile/GO-NO-GO.md`. Summary:
+
+- ✅ **Matrix locked (0a):** Expo **SDK 56.0.12**, RN **0.85.3**, React **19.2.3**,
+  reanimated **4.3.1** + worklets **0.8.3** (new), moti 0.30, async-storage 2.2.0,
+  svg 15.15.4, expo-router 56.2.11, speech/audio/font 56.x, tamagui pinned 1.144.4.
+- ✅ **Spike A bundle contamination (0b):** `metro build` produces a 4.65 MB bundle with
+  **0** hits for `@effect/platform-node` / `@effect/cli` / Node built-ins; real data +
+  276 Schema symbols present. The Node-only deps are isolated to
+  `questionnaire/dist/src/cli/index.js` (off the `.`/`./data` graph). RN-safe.
+- ⚠️ **Spike A Hermes exec (0c):** the exact Effect+Schema+`loadQuestions` graph runs
+  correctly under Node/V8 (`spikes/mobile/headless-probe.mjs` → decode Q#1, TOTAL 128,
+  3 paired/4 options). Genuine on-**Hermes** execution is deferred to the device gate
+  (no aarch64-Linux Hermes VM exists here); residual risk LOW.
+- ✅ **Spike B Tamagui (0d/0e):** split `tamagui.config.ts` compiles **native** under
+  Metro (`@tamagui/babel-plugin` + metro-plugin), single `tamagui@1.144.4` instance, and
+  the **website still builds** (all 5 routes).
+- ⏸ **REMAINING GATE (0f) — DEVICE ONLY:** on iOS sim + Android emulator confirm Tamagui
+  primitives render, the moti/reanimated-4 native animation plays, and the three Spike-A
+  probes go green on real Hermes. Run `npx expo run:ios` / `run:android` from the spike on
+  a Mac. This is the only thing blocking full Phase-0 sign-off.
+
+**Phase-1 carry-forward (critical, details in GO-NO-GO.md):** (1) reanimated 4 ⇒ babel
+plugin is `react-native-worklets/plugin` + a `react-native-worklets` dep. (2) Tamagui's
+`react-dom@19.2.7` peer floor ⇒ install with `--legacy-peer-deps`. (3) Metro
+`unstable_enablePackageExports = true` is REQUIRED (questionnaire → `civics2json/Questions`
+subpath). (4) **`expo export` fails to resolve effect's `.` export while `metro build`
+succeeds** — Phase 1 must retest `expo export` on the in-workspace app and add a
+`resolveRequest` shim for `effect` if it still fails (most likely friction point).
+
+### Phase 1 — Scaffold `apps/mobile`
+- Add `apps/*` to root `workspaces` (`package.json`, currently `["packages/*","website"]`). Create `apps/mobile`.
+- `metro.config.js`: wrap the config with `@tamagui/metro-plugin`'s `withTamagui(config, { components: ['tamagui'], config: './tamagui.config.ts' })` (the documented Tamagui↔Metro integration, paired with the babel plugin), then layer the monorepo resolver settings on top: `watchFolders` → repo root, `resolver.nodeModulesPaths` → app + root (npm hoists), `resolver.unstable_enablePackageExports = true` (honor ESM `exports`). Monorepo Metro setup: [Ch 11 § Monorepos](/references/expo/11-common-guides.md#monorepos), [Ch 03 § Metro Config](/references/expo/03-app-configuration.md#metro-config).
+- `babel.config.js`: `babel-preset-expo` + Tamagui plugin + the worklets/reanimated plugins **last** ([Ch 03 § Babel Config](/references/expo/03-app-configuration.md#babel-config)). **Correction (reanimated 4):** the plugin is now `react-native-worklets/plugin` (it must be the last entry), with `react-native-reanimated/plugin` no longer used standalone — per the Phase-0 carry-forward and [Ch 15 § Reanimated](/references/expo/15-sdk-ui-components.md#reanimated).
+- `app.config.ts` (TypeScript dynamic config — [Ch 03 § Static Config](/references/expo/03-app-configuration.md#static-config)) with the required fields set up front: `name`, `slug`, `scheme`, `version`, `ios.bundleIdentifier`, `android.package`, `newArchEnabled: true`, and `experiments.typedRoutes: true`. Note `slug` / `bundleIdentifier` / `package` are effectively immutable after store submission, so fix them now. (`scheme` enables native deep links and `typedRoutes` gives type-safe `<Link href>` — [Ch 07 § Typed Routes](/references/expo/07-expo-router-advanced.md#typed-routes), [Ch 07 § Deep Linking](/references/expo/07-expo-router-advanced.md#deep-linking).)
+- `plugins` array ([Ch 03 § Plugins](/references/expo/03-app-configuration.md#plugins), [Ch 04 § Using Plugins](/references/expo/04-config-plugins.md#using-plugins)): `expo-router`, `expo-build-properties` (new-arch), `react-native-svg`, and the reanimated/worklets plugin **last**. AsyncStorage needs no config plugin (autolinked).
+- `tsconfig.json` extending root composite, expo-router ([Ch 06 § Installation](/references/expo/06-expo-router-basics.md#installation)) with one placeholder screen reading `questionnaire` data.
+- **Expect the first run to be slow:** `expo run:ios|android` auto-runs prebuild (CNG, ~2–5 min on first invocation) to generate `ios/`+`android/`; later runs skip it unless native config changes ([Ch 01 § CNG](/references/expo/01-overview-and-core-concepts.md#cng), [Ch 09 § Creating a Dev Build](/references/expo/09-development-builds-and-debugging.md#creating-a-dev-build)). This is a **dev-client** build, not Expo Go ([Ch 09 § Dev Build vs Expo Go](/references/expo/09-development-builds-and-debugging.md#dev-build-vs-expo-go)).
+- **Exit:** `expo run:ios` and `run:android` boot and render data; **`npx expo export` succeeds locally** (it exercises the same resolution path EAS uses — if effect's `.` export still fails, add the `resolveRequest` shim now, before EAS, per the Phase-0 carry-forward and [Ch 16 § eas.json](/references/expo/16-eas-build.md#eas-json)); website still builds untouched.
+
+#### Phase 1 — STATUS (updated 2026-06-30): ✅ DONE except the device boot (deferred, no simulator here)
+
+Executed in the Linux container (network available; no Xcode/Android SDK). `apps/mobile`
+is a real workspace member and every in-container gate is green:
+
+- ✅ **Workspace wiring:** root `workspaces` → `["packages/*","apps/*","website"]`; root
+  `tsconfig.json` references `./apps/mobile`. App identity fixed: `slug` **civics100**,
+  `ios.bundleIdentifier`/`android.package` **com.civics100.app**.
+- ✅ **Config files** (lifted from the spike, de-shimmed): `package.json` (locked SDK-56
+  matrix), `app.config.ts` (TS dynamic; `newArchEnabled`/`jsEngine` widened locally since
+  they're absent from the SDK-56 `ExpoConfig` type), `babel.config.js`
+  (`react-native-worklets/plugin` last), `metro.config.js` (`withTamagui` +
+  `watchFolders`/`nodeModulesPaths` + `unstable_enablePackageExports`; **`extraNodeModules`
+  shim dropped** — hoisting replaces it; a commented `resolveRequest` effect-shim is parked
+  but **unused**), `tamagui.config.ts`. **Plugins kept minimal** (`expo-router` only;
+  svg/async-storage autolink). **`react-native-svg` removed from the `plugins` array** — it
+  has no config plugin and autolinks.
+- ✅ **Animations split corrected for `tsc`:** TypeScript can't resolve RN platform
+  extensions, so the web/default driver is `animations.ts` (css) with `animations.native.ts`
+  (moti) as the native override — `animations.web.ts` renamed to `animations.ts`. Native
+  Metro still picks `.native.ts` (verified: identical bundle hash before/after).
+- ✅ **expo-router placeholder:** `app/_layout.tsx` (TamaguiProvider + SafeAreaProvider +
+  Stack), `app/index.tsx` reads `questionnaire/data` and runs a guarded
+  `Effect.runPromise(loadQuestions(...))` probe + a `bouncy` enter animation.
+- ✅ **Resolution gate — the predicted #4 friction DID NOT bite.** `npx expo export`
+  succeeds for **both ios and android** (2372 modules, ~8 MB Hermes bytecode). Inside the
+  workspace effect's `.` export resolves cleanly — **no `resolveRequest` shim needed.**
+  Bundle is **CLEAN** (0 `@effect/platform-node`/`@effect/cli` hits) with real data present
+  (positive control: "supreme law of the land" found in the `.hbc`). `tsc --noEmit` green;
+  `npm ls tamagui` = single `1.144.4`.
+- ⚠️ **Install side-effects of the required `--legacy-peer-deps` (carry-forward #2):** a
+  plain `npm install` now ERESOLVE-fails (confirmed: `@tamagui/animations-css@1.144.4` →
+  `react-dom@19.2.7` peers `react@^19.2.7` vs mobile's `react@19.2.3`). Fixed repo-wide with
+  a root **`.npmrc` (`legacy-peer-deps=true`)** so `npm install` works again. That flag
+  skips npm's auto-peer install, which dropped `@testing-library/dom` (RTL 16 peer) and
+  broke 2 website tests — fixed by declaring **`@testing-library/dom@^10.4.1`** explicitly in
+  `website/devDependencies` (RTL 16 wants it direct anyway). **Website re-verified green:**
+  lint + 49 Jest tests + `next build` (all 5 routes, Turbopack). These two files
+  (`.npmrc`, `website/package.json` devDep) are the only changes beyond the planned set.
+- ⏸ **REMAINING (1E) — DEVICE ONLY:** `npx expo run:ios` / `run:android` to boot the
+  dev-client and read the placeholder + animation + probes off a real Hermes device. Needs a
+  Mac/simulator. This also closes Phase-0's open **0f** gate. Everything it depends on is green.
+
+### Phase 2 — `packages/app` + shared Tamagui config
+- Create `packages/app` (ESM, `dist/` build matching siblings, version `*`).
+- **Move** `website/tamagui.config.ts` → `packages/app/src/tamagui.config.ts`; extract the animation driver to `animations.web.ts`/`animations.native.ts` (config imports `./animations`, resolved per platform). The `createTokens({color, space, size, radius, zIndex})` block (incl. editorial palette) is neutral and moves wholesale.
+- Re-point `website` and `next.config.ts` `transpilePackages` (already lists Tamagui packages — add `app`) at the shared config.
+- **Exit:** website renders byte-identical (visual diff on 5 screens); a `packages/app` Tamagui component renders in `apps/mobile`.
+
+#### Phase 2 — STATUS (updated 2026-07-26): ✅ DONE — all in-container gates green
+
+- ✅ **`packages/app` created — SOURCE distribution** (user-approved deviation from the
+  "dist/ build matching siblings" wording above): `exports` point at `src/*.ts`, no build
+  step. Rationale: a tsup bundle would inline `./animations` and destroy the `.native.ts`
+  platform split, and stale-dist would hurt the Phases-4/5 dev loop; source-shipping is
+  the standard Tamagui monorepo pattern this plan's architecture cites. Next compiles it
+  via `transpilePackages`, Metro natively. Layout: `src/tamagui.config.ts` (canonical,
+  imports `./animations`), `src/animations.ts` (css) + `src/animations.native.ts` (moti)
+  lifted verbatim from apps/mobile, `src/components/SharedBadge.tsx` + barrel `index.ts`.
+  Peers: `react "*"`, tamagui/animations-css/animations-moti pinned exact **1.144.4**
+  (same pins duplicated as devDeps so `tsc --noEmit`/lint are self-sufficient).
+- ✅ **Website re-pointed (4 files + 1 delete):** `TamaguiProvider.tsx` imports
+  `app/tamagui.config`; `transpilePackages += 'app'`; `"app": "*"` dep; Jest
+  `moduleNameMapper` routes `^app(/.*)?$` at the package source (its exports map is
+  ESM-only, which jest-resolve can't consume); `website/tamagui.config.ts` deleted.
+- ✅ **apps/mobile re-pointed:** the 216-line Phase-1 config copy replaced by a thin local
+  re-export of `app/tamagui.config` (kept local because metro/babel hardcode
+  `config: './tamagui.config.ts'` and the Tamagui static compiler loads it in Node —
+  upstream Tamagui convention); `animations{,.native}.ts` deleted (moved);
+  `index.tsx` mounts `SharedBadge` inside the existing `bouncy` wrapper.
+- ✅ **Byte-identical gate:** `getCSS()` diff before/after = **empty** (6097 bytes).
+  Rendered DOM of all 5 routes identical after normalizing build-varying artifacts
+  (flight-payload module IDs, CSS-module class hashes — expected noise when the module
+  graph changes). Website lint + 49 Jest tests + `next build` (5 routes) green.
+- ✅ **Native gate:** mobile `tsc --noEmit` green; `expo export` both platforms green —
+  the Tamagui compiler resolved the config **through the bare `app` re-export** (predicted
+  risk #1 didn't bite; no relative-path fallback needed). Sourcemap `sources` proof:
+  `packages/app/src/animations.native.ts` + SharedBadge.tsx bundled; css driver +
+  `@tamagui/animations-css` **absent**; 0 `@effect/platform-node`/`@effect/cli` modules;
+  positive control ("supreme law of the land") present in both `.hbc`.
+- ✅ **Root `npm test` fixed** (was broken since Phase 1: npm errors on workspaces missing
+  a `test` script): apps/mobile gained `"test": "tsc --noEmit"`; packages/app `test` =
+  typecheck (Phase 3 replaces it with the real contract suite). All 6 workspaces green.
+- **Carry-forwards:** (1) **Never add an `./animations` subpath to `packages/app`
+  "exports"** — Metro doesn't apply `.native` substitution to exports-map targets; the
+  platform split only works via package-internal relative imports. With
+  `unstable_enablePackageExports` on, every new public subpath must be added to the
+  exports map explicitly (matters for Phases 3–5). (2) SharedBadge's on-device render
+  rides on the still-open 0f/1E device gate. (3) Root `build`/`build:vercel` intentionally
+  exclude `app` (nothing to build — source-shipped).
+
+### Phase 3 — Platform abstraction (Effect service swap)
+- Move neutral services into `packages/app/src/services`: `SessionService`, `QuestionDataService`, `StatisticsService`, `DistrictDataService` (all already wrap `questionnaire`/JSON).
+- For coupled services keep one tag, two layers:
+  - `LocalStorageService`: tag + Schemas → `packages/app`; web keeps current `localStorage` Default (`.web.ts`); add `.native.ts` over AsyncStorage (mechanical re-impl of the 13 already-isolated methods; Schema logic shared verbatim) — [Ch 14 § AsyncStorage](/references/expo/14-sdk-data-auth-background.md#async-storage).
+  - New `TtsService` / `SoundService` tags: web layers lift logic from `useTextToSpeech`/`useGameSounds`; native layers wrap `expo-speech` ([Ch 13](/references/expo/13-sdk-device-sensors-system.md#speech)) / `expo-audio` ([Ch 12](/references/expo/12-sdk-camera-media-graphics.md#audio)).
+  - `NavigationService`: thin tag/callbacks, implemented per app — no router in shared package. **Optional refinement (maintainer's call):** the guides show expo-router *is itself* the routing abstraction ([Ch 06 § Navigation](/references/expo/06-expo-router-basics.md#navigation)) and web uses Next.js regardless, so a full Effect-tag may be more indirection than the two-router split needs. A lighter alternative: keep screens router-neutral by passing nav **callbacks** (`onNext`, `onNavigate`) and let the thin route wrappers in `apps/mobile/app/*` and `website/src/app/*` import `expo-router` / `next/navigation` directly. Either way, no router leaks into `packages/app`.
+- Generalize `ServiceProvider.ts`'s `AppServiceLayer` into `makeAppServiceLayer(platformLayers)` + move `runWithServices*` to `packages/app`.
+- **Exit:** a shared save→read `GameResult` Effect passes against both web (jsdom) and native (`jest-expo` + AsyncStorage mock) layers; existing website Jest tests using `TestLocalStorageServiceLayer` still pass. (`jest-expo` is chosen over the references' default Vitest deliberately — it keeps parity with the existing Jest suites already aggregated by `npm run test --workspaces` and lets the native layer reuse `TestLocalStorageServiceLayer` verbatim.)
+
+#### Phase 3 — STATUS (updated 2026-07-26): ✅ DONE — all in-container gates green
+
+Decisions (user-confirmed): **NavigationService deferred to Phase 5** as nav-callback props
+(no Effect tag — `useRouter()` is a React hook and can't live in a long-lived Layer);
+**native TTS/Sound ship as honest stubs** (`isSupported: false` / no-op) — Phase 6 fills in
+expo-speech/expo-audio in the same `adapter.native.ts` files; no new expo libs installed.
+
+- ✅ **Premise correction:** the exit criterion's "existing tests using
+  `TestLocalStorageServiceLayer`" was a false premise — that export was dead (nothing
+  imported it). The real behavioral gate used instead: the existing `.Default`-based
+  `LocalStorageService.test.ts` passing **unchanged** against the restructured service
+  (it did). The `Test*ServiceLayer`s moved with their services and remain available.
+- ✅ **Services moved** to `packages/app/src/services` behind new exports subpaths
+  `app/services`, `app/types`, `app/hooks` (each targets a non-split `index.ts`, per the
+  Phase-2 carry-forward). Website keeps one-line re-export shims at every old path
+  (`src/services/*`, `src/types/index.ts`, 3 hooks = 42 lines total) — **zero consumer
+  files changed**.
+- ✅ **LocalStorageService restructured** better than the planned "mechanical re-impl of
+  13 methods": a 4-method `StorageBackend` port (get/set/remove/isAvailable) with the 13
+  methods written once (`makeService.ts`); only the backend splits into `backend.ts`
+  (localStorage) / `backend.native.ts` (AsyncStorage, `Effect.tryPromise`). API change:
+  `checkStorageAvailable` is now `() => Effect<boolean>` (verified zero consumers; sync is
+  unimplementable over AsyncStorage).
+- ✅ **TtsService/SoundService extracted**: web adapters lift speechSynthesis/AudioContext
+  out of the hooks; `useTextToSpeech` keeps React state while the segment chain (400ms
+  pauses) runs in a forked fiber — **fiber interruption replaced the cancelledRef/timeout
+  machinery**. Hooks live in `app/hooks`; AudioContext is now an app-wide singleton via
+  the runtime (previously per-component).
+- ✅ **`makeAppServiceLayer(platformLayers?)` + `AppRuntime` (ManagedRuntime)** in
+  `ServiceLayer.ts`; `runWithServices*` keep exact signatures but run through the memoizing
+  runtime. `ServiceProvider.ts` is a shim. Tag-collision hazard (questionnaire's internal
+  `'QuestionDataService'`) documented in the barrel.
+- ✅ **Contract suite (exit criterion)**: parameterized `describeStorageContract` factory
+  (13 cases incl. TTS round-trip + availability) in `app/services/testing/`, run by the
+  website jsdom suite AND a new **jest-expo ~56.0.5** harness in `apps/mobile` whose haste
+  platform resolution picks `backend.native.ts` — same mechanism as Metro. Extras: an
+  AsyncStorage write-through probe, a `.native.ts` resolution canary, and a verified
+  negative control (hiding `backend.native.ts` fails 8 tests). Mobile `test` =
+  `tsc --noEmit && jest`.
+- ✅ **All gates green**: root `npm test` = 6 workspaces (mobile 15, website 51);
+  website lint/build (5 routes); `expo export` ios+android clean bundles (0
+  platform-node/cli hits, data positive-control present); Playwright chromium e2e 3/3 —
+  the full-game e2e exercised the AppRuntime path end-to-end.
+- **Unplanned fixes:** (1) `npm install` pruned a stray `@effect/cluster`, exposing that
+  `@effect/platform-node`'s peers were never lockfile-satisfied under `legacy-peer-deps`
+  (latent since Phase 1) — declared `@effect/{cluster,rpc,sql,workflow,experimental}`
+  explicitly in `civics2json` devDeps. (2) Website Jest needed a `^questionnaire/data$`
+  mock mapping (barrel now pulls `DistrictDataService`). (3) The e2e assertion
+  `text=Game Complete!` was stale — app has always rendered "Test Complete"; assertion
+  now checks `text=Final Score`. (4) `apps/mobile/tsconfig.json` gained `app`/`app/*`
+  paths (test-only deep imports; Metro unaffected).
+- **Phase 5/6 carry-forwards:** contract factory imports questionnaire **type-only**
+  (keep it that way — the native runner has no questionnaire mock); jest-expo's
+  `transformIgnorePatterns` must be re-copied from the preset if jest-expo is upgraded;
+  native adapters' `.native.ts` files are the exact Phase-6 fill-in points; device gates
+  0f/1E still open (no simulator in-container).
+
+### Phase 4 — Port design system to Tamagui tokens (the long pole)
+- Map every `var(--editorial-*)` usage to the matching `$editorial*` Tamagui token (the values already exist as tokens — this is a mapping, not a redesign).
+- Drive `light`/`dark` via Tamagui themes, replacing the `html.t_dark` switch on both platforms.
+- Convert the 12 files using `var(--...)` from raw `<div style>` to `<YStack/XStack/Text>` + `$token` props, starting with `Layout.tsx` and the `tamagui/` wrappers. Replace `.animate-*`/framer-motion with `moti`/Tamagui animations.
+- Trim `globals.css`/`design-tokens.css` to genuinely web-only resets.
+- **Exit:** zero `var(--editorial-*)` in components destined for `packages/app`; Playwright visual diffs of all 5 web routes within tolerance (baseline captured **before** this phase — the guardrail for decision #4).
+
+#### Phase 4 — STATUS (updated 2026-08-09): ✅ DONE — all gates green, execution details in `plans/phase4-design-system-port.md`
+
+Ten stages, one commit each (`39c58e7`..Stage 10). Visual harness: 20 committed
+baselines (5 routes × light/dark × desktop/mobile), suite run twice per stage,
+`phase4-baseline` tag; baselines are valid ONLY in the sandbox container's font
+stack. Key outcomes:
+
+- **Tamagui theme CSS was dead on the website** until `themeClassNameOnRoot:
+  true` (Stage 2) — v1.144 emitted `:root .t_light` descendant selectors that
+  never matched the class ON `<html>`. Activation changed game/settings
+  renders (previously-dead keys); those 8 baselines re-captured with user
+  approval.
+- Theme keys: 6 `editorial*` + exact-parity `theme*` keys (`themeError(+Bg/
+  Text)`, `themeSuccess(+Bg/Text)`, `themeWarning(+Bg/Text)`, `themePrimary`,
+  `themePurple`, `themeCardBg`, `neutral100`, `shadowMd`) in BOTH themes.
+  Pre-existing `error`/`success`/`warning`/`primary` keys have different
+  values and remain untouched.
+- New shared-bound primitives (website-local until Phase 5):
+  `EditorialButton` (+ghost), `EditorialInput`/`EditorialSelect` (DOM-typed
+  recasts), `LoadingSpinner` (ring variant, durationMs), `AnswerButton`
+  variants in GameQuestion. Editorial buttons are Text-based single elements
+  (tag=button) so ghost-hover text color inherits.
+- Deleted CSS: `.btn-editorial*`, `.input-editorial`, `.badge*`,
+  `.answer-btn*`, `.accuracy-*/.prob-*`, `.spinner`, `.animate-*` + 6
+  keyframes. Kept: `.stats-strip` (statistics page consumer; its 480/768px
+  grid breakpoints have no Tamagui media equivalent — re-pointed at the
+  Tamagui-generated `--editorialRule` variable), `@keyframes spin`,
+  `.theme-icon-*`, `.btn-primary/secondary/success`, `card*`, all
+  `--editorial-*`/`--theme-*` definitions (InstallPrompt/OfflineIndicator).
+- `animations` gained a `lazy` (500ms timing) key in BOTH driver files
+  (css + moti) for the former `.animate-fade-in`.
+- Exit gate green: zero `var(--` in shared-bound tsx (grep-verified; only
+  InstallPrompt/OfflineIndicator/serif sites remain), root `npm test`,
+  website lint + `next build`, functional e2e 3/3, visual 20/20 ×2, mobile
+  `tsc` + `expo export` ios+android.
+
+**Phase 5 carry-forwards:** (1) `createFont` obligation — 17 tagged
+`// PHASE5: $fontFamily` sites keep literal `var(--font-family-serif)`;
+(2) SpeakerButton `.speaker-pulse` keyframes → moti loop; (3) LoadingSpinner's
+CSS `spin` animation → Tamagui `Spinner`/moti; (4) ThemeToggle dual-icon CSS
+hack needs a state-based render on native; (5) icon `color=` props already
+theme-resolved — ready for `@tamagui/lucide-icons` swap; (6) table-based
+components (QuestionStatisticsTable, QuestionDetailModal history) keep native
+`<table>`/hover `<style>` injection on web — native needs a list rebuild;
+(7) StatsSummary/stats-strip grids are CSS grid — native needs flex rebuilds;
+(8) `EditorialInput`/`EditorialSelect` are DOM-typed — native swaps to
+TextInput/picker equivalents.
+
+### Phase 5 — Move components + screens into `packages/app`
+- Least-coupled first: `tamagui/*` wrappers, `StatsSummary`, `GameResults`, `QuestionStatisticsTable`, `StateSelector`, `DistrictSelector`, `GameQuestion`, `GameControls`, `PoliticianVerificationBox`, `QuestionDetailModal`, `SpeakerButton`, `ThemeToggle`, `ErrorBoundary`. Swap icons to `@tamagui/lucide-icons`; route `Layout` nav through `NavigationService`.
+- **Keep web-only in `website`:** `OfflineIndicator`, `InstallPrompt`, `ServiceWorkerRegistration`.
+- Build 5 shared screen components in `packages/app/src/screens` (the ~580-line `/game` state machine → shared `GameScreen` taking nav callbacks — its size makes the shared extraction the highest-effort step of this phase). Web routes and `apps/mobile/app/*` become thin wrappers.
+- **Exit:** every website route renders the shared screen; mobile mounts the same screens; `/game` behaves identically on both.
+
+#### Phase 5 — STATUS (updated 2026-09-13): ✅ DONE in-container — Stages 1–17 landed; all five screens shared and mounted by both the website routes and the expo-router routes (on-device behaviour check deferred to the Phase 6 boot)
+
+Running as small staged commits on `native`, one commit per stage, user confirms
+each commit. Per-stage gate suite (all must be green before a stage commits):
+root `npm test` ×2 · website `eslint .` + `NODE_ENV=production next build` ·
+functional e2e chromium-only (`--project=chromium --workers=2`) · visual 20/20 ×2
+(`--workers=2`; baselines valid only in the sandbox container) · `tsc --noEmit`
+in packages/app + apps/mobile · `expo export` ios+android `--source-maps`, then
+grep sourcemaps (`.native.ts` halves resolved, web halves absent, 0 lucide-react
+/ @effect/platform-node / @effect/cli modules).
+
+- **Stage 1 (997bbbf):** platform-split icon module — `components/icons.ts`
+  (lucide-react, web) / `icons.native.ts` (@tamagui/lucide-icons per-icon
+  subpaths; never expose the split via package.json "exports" — Metro doesn't
+  apply `.native` substitution there).
+- **Stage 2 (82c3ffb):** platform-split serif font — `fonts.ts` (web: literal
+  `var(--font-family-serif)` chain) / `fonts.native.ts` (Georgia until Phase 6
+  expo-font); `fonts: { serif }` in tamagui.config, no defaultFont on purpose.
+- **Stage 3 (09c90aa):** moved `tamagui/*` wrappers + GameControls,
+  PoliticianVerificationBox, GameResults. New exports subpath
+  `./components/tamagui`; website files become one-line shims
+  (`export { X as default } from 'app/components'`).
+- **Stage 4 (a872c9c):** moved+converted SpeakerButton (SVGs → Volume1/Volume2
+  icons, `.speaker-pulse` keyframes → new `pulse` animation-driver key +
+  opacity ping-pong, no moti dep) and StatsSummary (CSS grid → flex-wrap
+  `flexBasis 20% / $xs 50%`, clamp() → `fontSize 48 / $xs 32`, last two
+  component `var(--font-family-serif)` sites → `$serif`).
+- **Stage 5 (6312ded):** react-hooks lint for packages/app (the react-dev "NEW STAGE"
+  below) — `eslint-plugin-react-hooks ^7.1.1` direct devDep + `configs.flat.recommended`
+  (16 rules incl. `set-state-in-effect`; website keeps it off). Root `npm run lint` now
+  enforces it. Fixes: StatsSummary rAF count-up starts from a `displayRef` (suppression
+  removed) + a pre-existing prettier error; SpeakerButton's 750ms clock moved into a
+  mount-scoped `PulsingIcon` (no setState in any effect body). Two documented deviations:
+  (a) "drive the pulse purely via the animation key" is UNIMPLEMENTABLE — the v1.144 css
+  driver emits only transitions, never keyframe loops, so a JS clock must remain (now
+  encapsulated + lint-clean, identical visuals); (b) useTextToSpeech uses a lazy
+  `useState` initializer, NOT `useRef` — the `refs` rule correctly rejects render reads,
+  and `isSupported` needs the value during render. Also declared `@eslint/eslintrc`
+  (was hoisting-only).
+- **Stage 6 (cb3ee88):** `useKeyboardNavigation` → `packages/app/src/hooks/`, rewritten
+  React-19 style: key handler is a `useEffectEvent`, so the `document`
+  subscription is created once (`[]` deps) instead of re-subscribing on every
+  game-state change (old 6-dep `useCallback`). Platform split:
+  `useKeyboardNavigation.native.ts` is a same-signature no-op (no `document` in
+  RN; Phase 6 drops keyboard nav on mobile); shared options interface +
+  `KEYBOARD_SHORTCUTS` live in `useKeyboardNavigation.shared.ts` so the halves
+  can't drift. Exported via the existing non-split `hooks/index.ts`; website
+  file is now a one-line shim. Sourcemap note: mobile bundles no `app/hooks`
+  modules yet (nothing imports them until GameQuestion moves in Stage 7), so
+  the "native half resolved" grep legitimately returns 0 — the leak greps
+  (web half / lucide-react / @effect) are the binding checks this stage.
+  Live-verified beyond the gates: throwaway e2e pressed "2" then Enter on
+  /game — select + advance both work through the rewritten hook.
+- **Stage 7 (2b7a2ca):** GameQuestion → `packages/app/src/components/`.
+  Conversions in the move: two inline feedback SVGs → `Check`/`X` from the
+  shared icon module; the DOM-typed `AnswerButton` cast (styled TamaguiText
+  `tag: 'button'` + `ButtonHTMLAttributes`) → `styled(YStack, { tag: 'button' })`
+  with `onPress` (cursor/transition inline style stays web-only behind `isWeb`;
+  `role`/`aria-*`/`data-answer-index` pass through — e2e depends on the data
+  attr); the CSS `currentColor` inheritance (chip border/glyph/answer text
+  follow the button state color) has no RN equivalent → an `answerStateColor`
+  resolver maps state → `useTheme().<key>?.get()` using the same theme keys the
+  old `color` variants used; answer badge/text raw `<div>/<span>` → Tamagui
+  stacks/Text with explicit `lineHeight={21}` (strut lesson — visual gate
+  passed first run, no drift); reset-on-question effect deleted (would violate
+  `set-state-in-effect`) → `key={currentQuestion.id}` at the sole call site
+  `game/page.tsx`; `noOp` `useCallback` → module-level constant (the Stage 6
+  hook reads options via `useEffectEvent`, stability irrelevant). Sourcemap
+  milestone: `app/components` index now pulls GameQuestion into the native
+  bundle, so the hook/icon native halves resolve for the first time
+  (`useKeyboardNavigation.native.ts`, `.shared.ts`, `icons.native.ts` present;
+  web halves absent; forbidden-module greps still 0).
+- **Stage 8:** theme context split + ThemeToggle → `packages/app`. New
+  `src/ThemeContext.tsx` (React 19 idioms: `use(ThemeContext)`, providers use
+  the `<ThemeContext value>` form; exported from the root `app` entry — no new
+  exports subpath). Website `TamaguiProvider` keeps PROVIDING it (the DOM-sync
+  `ThemeContextBridge` stays website-side where `set-state-in-effect` is off)
+  and re-exports `useThemeContext` so `settings/page.tsx` and the tests are
+  untouched. ThemeToggle is a **platform split**, not the planned state-based
+  single render: the state-based web version hydration-mismatches (server
+  renders the light icon, client resolves dark → React #418, and the recovery
+  re-render wipes next-theme's `t_dark` class from `<html>` because React owns
+  `<html>` in the app router — every dark visual snapshot rendered LIGHT,
+  ~97% pixel diff). So `ThemeToggle.tsx` (web) keeps the dual-icon
+  `.theme-icon-*` CSS hack verbatim (globals.css block retained) and
+  `ThemeToggle.native.tsx` renders state-based off the shared context (no SSR
+  on native). This was the plan's pre-approved fallback. Sourcemap: 
+  `ThemeContext.tsx` + `ThemeToggle.native.tsx` in the native bundle, web half
+  absent, forbidden-module greps 0 (checked against the `sources` array —
+  `sourcesContent` comment hits are false positives). Gate note: heavy suites
+  ran at `--workers=1` this session — zombie accumulation (291, unreapable,
+  parented to PID 1) left too little pids.max headroom for `--workers=2`
+  chromium; e2e 3/3 + visual 20/20 ×2 all green at workers=1.
+- **Stage 9 (b684353):** StateSelector + DistrictSelector →
+  `packages/app/src/components/` (non-split — one file serves both platforms).
+  DistrictSelector went further than the planned useEffectEvent swap: the load
+  effect was synchronous state derivation and tripped `set-state-in-effect`,
+  so `districts`/`error` are now a `useMemo` over `getDistrictsForState` (the
+  Stage-13 derivation pattern applied early), the unreachable one-frame
+  loading UI was deleted, and only the parent-reconcile effect remains,
+  calling a `useEffectEvent`-wrapped `onDistrictChange`. StateSelector:
+  `isMountedRef` ceremony dropped (React 18+ tolerates post-unmount setState);
+  the unabortable `navigator.permissions.query` effect got a `cancelled`
+  cleanup guard; geolocation checks centralized in `hasGeolocation()` (RN has
+  no `navigator.geolocation` → degrades to the plain dropdown). SVG
+  conversions per Stage 4/7 precedent: map pin → `MapPin` (added to both icon
+  halves), spinner arcs → `LoadingSpinner`; neither icon appears in the
+  visual baselines (the detect button hides once the permission query
+  resolves "prompt"), so those swaps are gate-green but not pixel-verified.
+  Infra: `website/jest.config.ts` now maps `civics2json` →
+  `packages/civics2json/src/types.ts` — its exports map is ESM-only (same
+  problem as `app`), and `StatesByAbbreviation` is the first VALUE import of
+  it to reach website jest through the `app/components` barrel (type-only
+  imports were elided, which is why Stages 3–8 never hit this). Gates all
+  green; e2e + visual ran at `--workers=2` (fresh container, 27 pids).
+- **Stage 10 (5739f19):** QuestionDetailModal + QuestionStatisticsTable →
+  `packages/app/src/components/` as **platform splits**. Web halves moved
+  verbatim (raw `<table>`, injected `<style>`, focus trap, body scroll lock —
+  Phase-4 carry-forward #6); the one React 19 change is the modal's
+  focus-trap effect reaching `onClose` through a `useEffectEvent`, so parent
+  re-renders no longer tear the trap down and re-steal focus. Props
+  interfaces + the pure accuracy/probability/truncate helpers live in
+  `.shared.ts` modules (Stage 6 precedent); `.native.tsx` halves are the
+  agreed Phase 5 stubs (plain Tamagui modal / question+accuracy list — real
+  native UX in Phase 6). Website files are one-line shims; the sole consumer
+  `statistics/page.tsx` is untouched. Gates all green at `--workers=2`
+  (visual 20/20 ×2, no strut adjustments — nothing was blockified). Sourcemap
+  (`sources` array): both `.native.tsx` halves + `QuestionStatisticsTable
+  .shared.ts` resolved, web halves absent, forbidden greps 0;
+  `QuestionDetailModal.shared.ts` is legitimately absent — it exports only a
+  type, so the import elides (same nuance as Stage 6). Manual check note: the
+  Next 16 dev server blocks its client bundle for non-localhost origins
+  (`allowedDevOrigins`), so from the OrbStack container IP every page spins —
+  serve the production build (`next start`, `distDir: 'dist'`) for host-side
+  manual checks instead of editing next.config.
+- **Stage 11 (ac00e03):** ErrorBoundary → `packages/app/src/components/`
+  (non-split; stays a class). `window.location.href = '/'` → optional
+  `onNavigateHome` prop; the boundary resets its own error state before
+  calling it (soft route change on native lands on a rendering tree), Layout
+  passes a hard navigation on web (unchanged behaviour), Go Home hides when
+  the prop is absent. Fallback markup → Tamagui: warning SVG →
+  `AlertTriangle`; raw `.btn-primary` button → styled TamaguiText port
+  (`$primary`/`$primaryHover` are exactly the primary-600/700 hexes) with
+  GoHomeButton's geometry; raw `<pre>` → Text keeping the pre tag on web;
+  `50vh` web-only via `isWeb` spread. The wider button pair overflowed a
+  phone-width row and wrapped mid-label on the first attempt →
+  `numberOfLines: 1` on the buttons + `flexWrap` on the action row. **Parity
+  method for UI outside the baselines:** render old (`git show HEAD:…` into a
+  `temp_` component) and new on a throwaway `temp_` page that throws after
+  mount (throwing during render breaks prerender), screenshot both with
+  `seedPage` light+dark, desktop+mobile, pixel-diff with pngjs — page height
+  identical, only the icon glyph + Try Again geometry differ. `process.env`
+  in packages/app must use bracket access (`noPropertyAccessFromIndexSignature`);
+  Turbopack still inlines it (no `process.env` left in client chunks).
+- **Pixel-parity lesson (recurs in later stages):** blockified Tamagui
+  Text/flex children lose the body 16px/1.5 line-height strut that old inline
+  spans/svgs got — pages render ~7px short per converted site. Reproduce the
+  old line boxes explicitly (Stage 4: stat label `lineHeight={21} marginTop={3}`
+  = 24px strut box; speaker icon wrapper `height={29}` = 22px svg + strut
+  descent).
+- **Stage 12:** ResultsScreen → new `packages/app/src/screens/` + `./screens`
+  exports subpath (non-split `index.ts`); `results/page.tsx` is the first thin
+  `'use client'` wrapper: `useRouter()` + `<Layout title><ResultsScreen
+  onNavigateToGame onNavigateToStatistics/></Layout>` (router.push replaces
+  the old `window.location.href` hard navigations; the Layout title no longer
+  flips to "Loading Results..." during the fetch — it is web chrome the screen
+  cannot reach). All raw DOM → Tamagui stacks/Text; the score ring is a new
+  **platform-split `ScoreRing`** component (web: the SVG arc verbatim; native:
+  solid pass/fail ring stub until react-native-svg lands in Phase 6; props in
+  `.shared.ts`, exported from the components barrel so the native half is in
+  the bundle now). `confirm()` → new platform-split **`confirmDialog`**
+  (`src/confirmDialog.ts` = `window.confirm`, `.native.ts` = two-button
+  `Alert.alert`); `react-native` becomes an optional peer + devDep of
+  packages/app (lock entry hand-edited — no network for `npm install`).
+  `.focus-ring` (only active under prefers-contrast: high) → the clear
+  button's `focusVisibleStyle`. Header halves get `flexShrink={1}` so the
+  button pair wraps at phone width as before (Tamagui stacks default to
+  shrink 0). **Two pixel-parity lessons, both Chrome LayoutUnit rounding:**
+  (a) the old unitless `line-height: 1.1`/`1.6` lay out as
+  `floor(px × 64) / 64` (48.39px at 44px, 22.39px at 14px) whereas an explicit
+  48.4/22.4 rounds UP one LayoutUnit — the desktop page grew 1px (visual
+  20/20 failed 2) and the empty-state paragraph's third line shifted 1px at
+  phone width; spell out the floored values. (b) Flex-centring the ring label
+  puts it at the same computed offset as the old `translate(-50%, -50%)` but
+  rasterises differently (~110 px diff on two of three rings, over the
+  100-pixel budget) — keep the absolute + transform centring on web. Empty
+  state (no baseline) verified by old-vs-new screenshot diff: 0 differing
+  pixels light/dark × desktop/mobile. Sourcemaps: `ScoreRing.native.tsx`
+  resolved, web half absent, forbidden greps 0 (incl. framer-motion);
+  `ResultsScreen`/`confirmDialog` are legitimately absent until Stage 17
+  imports the screen — a throwaway `temp_` mobile route confirmed the screen
+  and `confirmDialog.native.ts` bundle under Metro.
+- **Stage 13:** StatisticsScreen → `packages/app/src/screens/`;
+  `statistics/page.tsx` is a `<Layout title><StatisticsScreen/></Layout>`
+  wrapper (no nav callbacks needed). The planned React 19 fix landed:
+  `filteredStatistics` state + effect (double render per keystroke) → a
+  `useMemo` over the service's pure `filterQuestions`/`sortQuestions`, which
+  are now exported from `StatisticsService.ts` (the Effect service methods
+  still wrap them). The `.stats-strip` CSS grid (globals.css, deleted) → a
+  flex-wrap `SummaryStrip` whose cells set `flexBasis` + rule edges per
+  column count through media props; a new **`xxs: { maxWidth: 479 }` media
+  key appended LAST** in tamagui.config supplies the old 480px breakpoint
+  (later keys take precedence — it must beat `$sm`; the mobile baseline
+  confirmed it does). `$sm` (≤768) stands in for the 768px min-width
+  breakpoint (1px wider) and for `clamp(2rem, 4vw, 2.5rem)` → 40/32px.
+  Strut lesson again: the helper caption was an inline span in a 24px body
+  line box → `lineHeight={22} marginTop={2}` (its `marginTop: 6` was inert
+  on an inline element and is dropped). The scroll box keeps
+  `overflowY: auto` via a web-only `style` (the Tamagui `overflow` prop maps
+  to `scroll`, whose permanent gutter would shift the table). Shared
+  editorial typography (Eyebrow/PageTitle/SectionTitle/Rule) moved out of
+  ResultsScreen into `screens/editorial.ts`. **Deviation:** the filter
+  `<select>`/search `<input>` stay the shared `EditorialSelect`/`EditorialInput`
+  (not a per-screen native split) — StateSelector/DistrictSelector already
+  use them the same way, so the one native fix is a Phase 6 split of
+  `tamagui/EditorialInput.tsx` itself. Parity: visual 20/20 ×2; old-vs-new
+  diff at 1280/600/390 = 0 differing pixels light+dark; at 700 the page is
+  10px taller solely because the title is 44px where `5vw` gave 35px (the
+  accepted between-breakpoint approximation, identical on Results). Metro:
+  throwaway route bundled StatisticsScreen + both table/modal native halves,
+  web halves absent, forbidden greps 0. Gate note: root `npm test` failed in
+  two workspaces when run concurrently with two `expo export`s (CPU
+  starvation) and passed cleanly alone — don't overlap them.
+- **Stage 14:** HomeScreen → `packages/app/src/screens/`; `page.tsx` is a
+  `useRouter()` + `<Layout><HomeScreen onNavigateToGame/Settings/Results/>
+  </Layout>` wrapper (the screen picks game vs settings from
+  `hasSavedSettings`). **framer-motion is gone from the page:** the `fadeUp`
+  variant (opacity 0→1, y 8→0, 280ms ease-out, delay i×50ms) is a `FadeUp`
+  styled YStack with `enterStyle` on new driver keys `fadeUp` +
+  `fadeUp50…fadeUp250` (both drivers; the css driver has no per-instance
+  delay, so each stagger step is its own key — moti carries `delay`).
+  **Finding fixed in the move: `animations.ts` (css driver) was passing moti
+  object configs, which the css driver interpolates into `transition: all
+  [object Object]` — every Tamagui transition on web had been silently
+  instant since Phase 2.** The keys are now CSS strings (`'150ms ease'` …,
+  `bouncy` an overshoot cubic-bezier); SpeakerButton's pulse and SharedBadge
+  now genuinely animate on web. A throwaway spec confirmed the hero carries a
+  real `0.28s ease-out` transition, ends at opacity 1 with Tamagui's enter
+  classes cleared, and logs no hydration errors (SSR renders the enter
+  state on both server and client, so no #418). New platform split
+  **`ExternalLink`** (web: `<a target=_blank rel=noopener>`; native:
+  `Linking.openURL`) in the components barrel. Grids: the two-card
+  `minmax(min(100%,380px),1fr)` grid → `flexBasis 380 + grow/shrink` (exact —
+  two cards never exceed two columns); the About `minmax(180px,1fr)` grid →
+  `flexBasis 0 + grow` (exact equal thirds) with `$xs` 50% / `$xxs` 100%,
+  which keeps the grid's half-width third cell in the 2-column range (verified
+  at 500px) at the cost of ≤ 23px of breakpoint drift. Sizes: h1
+  `clamp(2.5rem,6vw,4rem)` → 64/`$xs` 40 (lineHeight 70.39/44), lede
+  `clamp(1rem,2vw,1.125rem)` → 18/`$sm` 16 (29.69/26.39), card body 23.09.
+  Kept the old h3's marginBottom inside the centred icon row (it's what sets
+  that row's geometry). Parity: visual 20/20 ×2; old-vs-new at 1280/500/390
+  light+dark = 0 differing pixels; at 700 the page is 24px taller solely from
+  the title's between-breakpoint approximation (64px where 6vw gave 42px).
+  Sourcemaps: `animations.native.ts` + `ExternalLink.native.tsx` resolved,
+  `@tamagui/animations-css` / web halves / framer-motion absent; throwaway
+  route bundled HomeScreen under Metro. **Housekeeping for the maintainer:**
+  `framer-motion` is still declared in `website/package.json` (unused now) —
+  `npm uninstall framer-motion -w website` on the host (lock edit needs
+  network). Gate note: with ~190 unreapable zombies, an `expo export` started
+  alongside e2e + another export died at pids.current 475/512 — run the heavy
+  gates one at a time once zombies pass ~150.
+- **Stage 15 (929baba):** SettingsScreen → `packages/app/src/screens/`; `settings/page.tsx`
+  is a `useRouter()` + `<Layout title><SettingsScreen onNavigateToGame/></Layout>`
+  wrapper. The settings page was the last consumer of `.card.card-elevated` and
+  `.btn-secondary`, so those became styled Tamagui ports: the card is a YStack
+  on new theme keys `neutral50/200/300/400` (the exact `--color-neutral-*`
+  light/dark pairs; `neutral100` already existed) with `shadowMd` applied
+  through a web-only `style` (`game/page.tsx` precedent); `.btn-primary` maps
+  to the `$bluePrimary`/`$blueDark` TOKENS, not `$primary` — the CSS class
+  stayed the same blue in dark mode whereas `$primary` flips. New
+  platform-split **`CheckboxField`** (web: the raw `<input type=checkbox>` +
+  `<label htmlFor>` verbatim, because the functional e2e drives
+  `page.check('#practice-specific')`; native: tamagui `Checkbox` + `Label`).
+  `ExternalLink` gained an `inline` variant (14px/400/underlined) for the
+  GovTrack link; on web it sets `whiteSpace: 'normal'` — Tamagui Text's
+  default `pre-wrap` underlined the preserved trailing space of a wrapped
+  line (5px diff at 500/390, gone after the fix). The voice preview goes
+  through `TtsService.speakText` (platform adapters) instead of
+  `window.speechSynthesis`; `parseQuestionNumbers` is module-level.
+  Parity: visual 20/20 ×2; old-vs-new at 1280/500/390 light+dark, default
+  AND practice-expanded state = 0 differing pixels; 700px is +6px solely from
+  the title approximation (h1 42→48px). Sourcemaps: `CheckboxField.native` +
+  `ExternalLink.native` resolved, web halves absent, forbidden greps 0
+  (incl. `@tamagui/animations-css`); throwaway route bundled SettingsScreen
+  under Metro. Housekeeping in the same stage: root `.gitignore` now ignores
+  `**/temp_*` (CLAUDE.md updated — ignored is not exempt, Playwright and
+  expo-router still pick them up). Gate note: the first attempt at the gates
+  hit the PID wall (327 zombies, `next build` workers SIGABRT, visual
+  readiness timeouts even at workers=1); everything above ran green after a
+  relaunch, one heavy suite at a time.
+- **Stage 16 (f3779d7):** GameScreen → `packages/app/src/screens/` (the ~580-line
+  state machine, moved as-is + the three agreed cleanups, no reducer).
+  `game/page.tsx` is a `useRouter()` wrapper — but the Layout title is
+  state-driven here ("Loading Game...", "Question 3/20 (#45)", "Test
+  Complete", "Game Error") and the functional e2e reads the counter from the
+  header, so instead of a fixed title the screen takes an optional
+  **`Frame`** component prop (`{ title, children }`) and renders every state
+  inside it; the web wrapper passes `Layout` itself, native (Stage 17) can
+  map it onto the stack header. Cleanups: (1) the three mirrored refs
+  (`sessionRef`/`currentQuestionIndexRef`/`questionsRef`) + timeout ref →
+  the 300 ms delay is an effect keyed on `gameState === 'transitioning'`
+  whose timer calls an `advanceAfterTransition` `useEffectEvent` (latest
+  session/index/questions, cleanup clears the timer on state change and
+  unmount); `handleNext` just sets the state. (2) `mountedRef` ceremony
+  dropped. (3) the settings→`settingsLoaded`→`initializeGame` effect chain
+  collapsed: one mount effect loads settings and yields straight into a
+  module-level `newGame(settings)` Effect (session + questions), which
+  Restart reuses with the settings in state. The `displaySession!`
+  assertion + its eslint-disable went away by narrowing on the memo instead.
+  **Keyboard-help first-visit flag** (direct `localStorage`, the backlog
+  item): the old mount effect was a `set-state-in-effect` violation and a
+  lazy `useState` read would hydration-mismatch (server has no storage), so
+  it is a `useSyncExternalStore` read (server snapshot "seen", client
+  re-renders after hydration — no #418) guarded by `isWeb`, plus an override
+  state for the toggle/dismiss. Deviation: the flag is written when the
+  help is DISMISSED ("Got it!") rather than when it is shown. Dead UI carried
+  over: the early-win banner (`correctAnswers ≥ winThreshold && !completed`)
+  is unreachable because the engine already tags the session `EarlyWin` at
+  that point and the page auto-completes — ported verbatim, not verifiable
+  by parity. Styling: the raw `.btn-primary/-success/-secondary` buttons →
+  `GameButton` (TamaguiText, 8×16/6px, `$bluePrimary`/`$blueDark`,
+  `success` variant `$green6`/`$green7`) and `KeyboardHelpToggle` (YStack
+  button, 46 px circle, fixed + shadowMd web-only); `.focus-ring` →
+  `focusVisibleStyle`; the flex `<h3>` icon headings → `IconHeading`
+  (XStack tag h3) + Text; the `transition: all 0.3s` question wrapper →
+  `animation="slow"` (300 ms ease — verified `0.3s` computed, opacity 0.75
+  after answering); the `monospace` shortcut chips → new **`$mono` font**
+  in both `fonts.ts` halves (`monospace` / iOS `Courier`) since Tamagui's
+  `fontFamily` type only takes tokens. **Orphaned CSS deleted:** `.btn-*`,
+  `.card*`, `.focus-ring` (design-tokens.css) and their high-contrast /
+  forced-colors rules (globals.css) had no consumer left in website/src;
+  CLAUDE.md + react-guide updated (no route page carries a
+  `var(--font-family-serif)` literal any more). Parity: visual 20/20 ×2;
+  old-vs-new at 1280/700/390 light+dark for playing, answered, help overlay
+  (toggle), first-visit overlay and the zero-question error state = 0
+  differing pixels in all 30 captures (no title approximation on this
+  page). Sourcemaps: `fonts.native.ts` resolved, web half absent, forbidden
+  greps 0; throwaway route bundled GameScreen under Metro with
+  `useKeyboardNavigation.native.ts` resolved. Gates ran on a fresh sandbox,
+  one heavy suite at a time (pids 28 → 202 over Stages 15+16).
+- **Stage 17:** mobile route wrappers. `apps/mobile/app/{index,game,results,
+  statistics,settings}.tsx` mirror the website route pages one-for-one
+  (`useRouter()` from expo-router, `router.push` for every navigation
+  callback); the Phase-1 probe screen is gone. Two mobile-only components in
+  `apps/mobile/components/` (outside `app/`, so not routes): **`ScreenFrame`**
+  is the native stand-in for the web Layout — `<Stack.Screen options={{ title
+  }}>` + a Tamagui `ScrollView` on `$editorialPaper` carrying the web Main's
+  32/24 padding plus the bottom safe-area inset + the shared `ErrorBoundary`
+  (Go Home = `router.dismissTo('/')`). Its props ARE `GameFrameProps`, so the
+  game route passes it as `Frame` and the stack header title tracks the game
+  state exactly as the web header does. **`AppThemeProvider`** provides the
+  shared `ThemeContext` on native (SettingsScreen's dark-mode checkbox calls
+  `useThemeContext`, which throws unprovided): in-memory state seeded from
+  `useColorScheme()`, and Tamagui's provider follows it through
+  `defaultTheme` (its ThemeProvider forwards the prop as the root `<Theme
+  name>`); persisting the choice is Phase 6. `_layout.tsx` turns the stack
+  header ON (was `headerShown: false`), colours it from `useTheme()`
+  (`editorialPaper`/`editorialInk`), mounts `ThemeToggle` (the `.native`
+  half, first real consumer) as `headerRight`, and ties the status-bar style
+  to the theme. Gates: mobile `tsc`; `expo export` ios + android
+  `--source-maps` with the `sources` check extended to ALL five screens +
+  `screens/editorial.ts` + every `.native` half (confirmDialog, ScoreRing,
+  ThemeToggle, CheckboxField, ExternalLink, QuestionDetailModal,
+  QuestionStatisticsTable, useKeyboardNavigation, icons, fonts, animations,
+  backend) + the six route/component files present, every web half absent,
+  forbidden greps 0 (lucide-react, @effect/platform-node, @effect/cli,
+  framer-motion, @tamagui/animations-css, and now `next/`). Website gates ran
+  unchanged and green (root `npm test` ×2, `npm run build -w website`, e2e
+  3/3, visual 20/20 ×2) — the only packages/app change is the ThemeContext
+  doc comment. **Dropped:** a jest-expo import smoke over the route modules.
+  The screens pull `tamagui.config` → `animations.native.ts` →
+  `@tamagui/animations-moti` → moti → reanimated → `react-native-worklets`,
+  whose native-module init throws under jest; the official
+  `react-native-reanimated/mock` imports worklets itself, and worklets'
+  `jest/resolver.js` fix would replace the `@react-native/jest-preset`
+  resolver the preset relies on. The engine packages (`questionnaire`,
+  `civics2json`, `distractions`) also need `moduleNameMapper` entries to
+  their built `dist` (ESM-only exports maps, value imports now reach
+  jest-resolve). Both are Phase 7 CI work; `tsc` + the two Metro bundles are
+  the mobile gate. Notes: `expo export` does not generate typed routes
+  (`.expo/types`) in-container, so `router.push('/game')` type-checks as a
+  plain string; `dismissTo` pops to the home route when it is in the stack
+  and replaces otherwise. Nav polish (push-on-push stack growth from
+  Results → Play Again, tabs) is Phase 6 as planned.
+- **Phase 5 exit:** every website route renders the shared screen ✓; mobile
+  mounts the same screens ✓ (bundle-verified); `/game` identical on both —
+  in-container the same GameScreen module is in both bundles, the on-device
+  run is the Phase 6 boot. Kept web-only as decided: OfflineIndicator,
+  InstallPrompt, ServiceWorkerRegistration, Layout.
+- NOTE: website-wide `npx tsc --noEmit` fails in `website/test/*` (pre-existing
+  fixture type errors) — not a gate; `next build`'s TS pass and jest are the
+  real checks.
+
+#### Phase 5 — React 19 guidance (added 2026-08-10, validated against `/references/react-dev`)
+
+Review of the new react.dev reference guide against the implemented code found
+nothing significant to change (zero `forwardRef` in the repo; ErrorBoundary is
+already the canonical sanctioned class shape; existing manual memoization stays
+per compiler guidance). Verified: `useEffectEvent` is a **stable export** in
+both installed Reacts (web 19.2.5, mobile 19.2.3) — safe in shared code. The
+small items below fold into the remaining stages; the larger opportunities
+(reducer conversion, React Compiler, useSyncExternalStore) are deliberately
+deferred to `plans/react19-modernization.md` (post-migration).
+
+- **✅ DONE as Stage 5 (6312ded) — packages/app hooks linting** (see STATUS
+  above for the two deviations). `packages/app/eslint.config.mjs` has NO react-hooks plugin —
+  everything moved so far is unlinted for hooks rules. Declare
+  `eslint-plugin-react-hooks` (^7.1.1, matching the hoisted copy) as a direct
+  devDep of `packages/app` and add its flat `recommended` config (full 17-rule
+  set, incl. `set-state-in-effect` — website keeps that rule off; the shared
+  package starts clean). Fix the violations in already-moved files:
+  `StatsSummary.tsx` (remove the repo's only `exhaustive-deps` suppression at
+  line 29; rework the rAF count-up to track the current value in an effect
+  local, not a stale state read), `SpeakerButton.tsx` (drop the 750 ms
+  `setInterval`-toggled `dim` state; drive the pulse purely via the Stage-4
+  `pulse` animation key), `useTextToSpeech.ts` (`useMemo`-as-lazy-init for the
+  TtsService handle → `useRef` lazy-init pattern). Standard per-stage gate
+  suite.
+- **Mechanical React 19 idioms to apply as each remaining component moves**
+  (not as separate rewrites — same stage as the move, covered by parity gates):
+  - `useKeyboardNavigation`: rewrite as a subscribe-once effect (`[]` deps)
+    with the key handler as a `useEffectEvent` — currently re-subscribes
+    `document.addEventListener` every render (6-dep `useCallback` + callers
+    passing inline arrows). Platform split for `document` still required.
+  - `DistrictSelector`: replace the hand-rolled latest-ref
+    (`onDistrictChangeRef`, lines 66–69) with `useEffectEvent`.
+  - `QuestionDetailModal`: wrap `onClose` in `useEffectEvent` so the
+    focus-trap/body-scroll effect (dep `[onClose]`) stops tearing down whenever
+    the parent re-renders.
+  - `GameQuestion`: reset-on-question effect (lines 315–319) →
+    `key={question.id}` at call sites (canonical fix); keep the effect with a
+    comment only if parity gates object.
+  - ThemeToggle/provider-split stage: the new shared theme context uses the
+    React 19 `<ThemeContext value={...}>` form (`.Provider` at
+    `TamaguiProvider.tsx:61` is the legacy form).
+  - Statistics screen extraction: `filteredStatistics` state+effect
+    (`statistics/page.tsx:40-104`) → `useMemo`/plain derivation (textbook
+    derived-state-in-effect; double-renders per keystroke today).
+  - `StateSelector`: drop `isMountedRef` ceremony; add a cancellation guard to
+    the unabortable `navigator.permissions.query` effect (lines 177–192).
+  - **GameScreen extraction (user decision: move as-is + these cleanups only,
+    NO reducer conversion now):** replace the three mirrored refs
+    (`sessionRef`/`currentQuestionIndexRef`/`questionsRef`, lines 120–128) with
+    one `useEffectEvent` feeding the `setTimeout` body; drop `mountedRef`
+    ceremony; collapse the settings→init effect chain (lines 213–235) by
+    initializing from the settings-load completion path. Direct `localStorage`
+    keyboard-help reads stay (existing backlog item).
+  - `ErrorBoundary`: keep it a class (react.dev's one sanctioned class use;
+    shape already canonical) — only the planned nav-callback prop replaces
+    `window.location.href`.
+
+### Phase 6 — Native features & polish
+- Wire native layers (AsyncStorage / `expo-speech` / `expo-audio`); `apps/mobile/app/_layout.tsx` tab/stack nav replacing the web header ([Ch 07 § Tabs](/references/expo/07-expo-router-advanced.md#tabs-navigator) / [§ Stack](/references/expo/07-expo-router-advanced.md#stack-navigator)); `expo-font` ([Ch 10 § Fonts](/references/expo/10-ui-and-assets.md#fonts)), safe-area ([Ch 10 § Safe Areas](/references/expo/10-ui-and-assets.md#safe-areas)), status/system bars ([Ch 10 § System Bars](/references/expo/10-ui-and-assets.md#system-bars)), splash/icon ([Ch 10 § Icon & Splash](/references/expo/10-ui-and-assets.md#icon-splash)), light/dark themes ([Ch 10 § Color Themes](/references/expo/10-ui-and-assets.md#color-themes)). Drop `useKeyboardNavigation` on mobile.
+- **Add `expo-haptics`** (promoted from fast-follow — zero config, no plugin): tactile feedback on answer select/submit is an outsized polish win for a quiz, with graceful no-op when unsupported ([Ch 13 § Haptics](/references/expo/13-sdk-device-sensors-system.md#haptics)).
+- **Add `expo-system-ui`**: set the root-view background color to eliminate the Android navigation-transition color flash ([Ch 15 § UI Components](/references/expo/15-sdk-ui-components.md)).
+- **Exit:** all 5 screens fully functional on iOS sim + Android emulator with persistence, TTS, sounds, and haptic answer feedback.
+
+#### Phase 6 — STATUS (updated 2026-11-16): 🔄 IN PROGRESS — Stages 6.1–6.6 done; both host boots (iOS on Xcode 27, Android on the API 35 emulator) passed the device checklist, the Maestro flows in `apps/mobile/.maestro/` are the device gate on both platforms, and the splash hand-off is clean on both EAS preview builds (Phase 7 Stage 7.6); left: real icon/splash art, the StateSelector nested-Text fix
+
+Same staged-commit discipline as Phase 5 (one commit per stage, user confirms, full
+gate suite before each). The sandbox has no network and no simulator, so the phase is
+split into what the container can prove (bundle + jest + web parity) and what needs
+the host (package installs, font/audio assets, device boot).
+
+- **Stage 6.1 — theme persistence (no new packages):** `LocalStorageService` gained
+  `saveThemePreference` / `getThemePreference` (`ThemePreferenceSchema =
+  Literal('light','dark')`, key `civics100_theme_preference`; `null` = no explicit
+  choice, follow the OS; `clearAllData` clears it like every other key) + the
+  `TestLocalStorageServiceLayer` entries + a contract case that now runs in BOTH
+  runners (website jsdom 52, mobile jest-expo/AsyncStorage 16). `ThemePreference`
+  type lives in `app/types`. `AppThemeProvider` seeds from `useColorScheme()`, adopts
+  the saved value in a mount effect, and writes through `AppRuntime` on every
+  `setTheme`/`toggleTheme` (SettingsScreen checkbox + header ThemeToggle). Web is
+  untouched: `@tamagui/next-theme` keeps its own `theme` localStorage key.
+- **Stage 6.2 — tab navigation:** `app/(tabs)/_layout.tsx` (expo-router JS `Tabs`,
+  vendored bottom-tabs) hosts index/results/statistics/settings with icons from the
+  shared icon module (`Home` added to BOTH halves; Trophy/BarChart2/Settings existed);
+  tab bar + headers coloured from the editorial theme keys (paper/rule, accent active,
+  muted inactive). `game.tsx` stays a root-stack route pushed above the tabs (no tab
+  bar while playing, stack back button); root `_layout.tsx` hides the stack header
+  over `(tabs)` since the tab navigator draws its own. Shared header chrome moved
+  into `components/headerOptions.ts` (`useHeaderOptions()`: paper/ink, no shadow,
+  ThemeToggle on the right) and is spread into both navigators — both option types
+  accept the shape. `ScreenFrame` is unchanged: expo-router's `Stack.Screen` IS the
+  generic `Screen`, so it sets the title on whichever navigator is nearest (tab
+  headers included). `tabBarIcon`'s `color` is a `ColorValue`; the icon props take
+  `string`, so the layout casts. Hrefs (`/game`, `/results`, …) are unchanged by the
+  group. Sourcemap check extended: `(tabs)` files + `headerOptions.ts` +
+  `react-navigation/bottom-tabs` + `lucide-icons/dist/esm/icons/Home.mjs` present,
+  the old root `index.tsx`/`results.tsx` paths absent.
+- **Stage 6.3 — native GameScreen cleanup ("drop useKeyboardNavigation on
+  mobile"):** the hook was already a `.native.ts` no-op; the keyboard-shortcuts
+  overlay and its fixed toggle button are now `isWeb`-gated in `GameScreen.tsx`
+  (they documented keys that do nothing on a phone). Web markup identical — visual
+  20/20 ×2 unchanged. Nothing else to drop.
+- **Gates (all three stages, final tree):** packages/app `tsc` + `eslint`; mobile
+  `tsc` + jest 16; `expo export` ios + android `--source-maps` mapcheck OK; root
+  `npm test` ×2; `npm run build -w website`; e2e 3/3; visual 20/20 ×2.
+- **Host prerequisites (done 2026-09-13/14):** the user ran `npx expo install` — at the
+  REPO ROOT by mistake (deps landed in the root `package.json` + a stray root
+  `app.json` carrying the expo-audio/expo-font plugins). Fixed in-container without
+  network since the packages were already hoisted: deps moved into
+  `apps/mobile/package.json` (+ the lock's `apps/mobile` entry, root entry reverted),
+  `app.json` deleted, plugins carried into `app.config.ts`. Fonts arrived in
+  `apps/mobile/assets/` and were moved to `assets/fonts/` (8 Newsreader statics:
+  14pt Regular/Medium/SemiBold + italics, 36pt Regular/Medium, + OFL.txt).
+  Versions: expo-speech 56.0.3, expo-audio 56.0.13, expo-haptics 56.0.3,
+  expo-system-ui 56.0.5, expo-font 56.0.7.
+- **Stage 6.4 — native features:** all five fill-ins landed; packages/app declares
+  `expo-speech`/`expo-audio`/`expo-haptics` as optional peers + devDeps (lock
+  `packages/app` entry hand-edited, Stage-12 precedent).
+  (a) **TTS** `TtsService/adapter.native.ts` over expo-speech: `isSupported`
+  true, `getAvailableVoicesAsync` → `TtsVoice` (identifier as voiceURI, so the
+  saved TtsSettings shape is unchanged), `speak` resumed into `Effect.async` via
+  `onDone`/`onStopped`/`onError`, interruption → `Speech.stop()`; no voice chosen
+  → `language: 'en-US'`; `onVoicesChanged` never fires (static list).
+  (b) **Sounds** `SoundService/adapter.native.ts` over expo-audio: one lazily
+  created `AudioPlayer` per sound, `seekTo(0)` then `play()`; the four WAVs are
+  rendered by the checked-in `packages/app/scripts/render-sounds.mjs` (44.1 kHz
+  mono 16-bit, exact tone tables from `adapter.ts`, 0.1→0.01 exponential gain)
+  into `packages/app/assets/sounds/` and imported as Metro assets (new
+  `src/assets.d.ts` declares `*.wav`); both exports list the 4 WAVs in the
+  asset manifest. iOS silent switch respected (no `playsInSilentMode`).
+  (c) **Haptics** new platform split `src/haptics.ts` (web no-op) /
+  `haptics.native.ts` (`Haptics.notificationAsync` Success/Error), called from
+  `GameQuestion.submitAnswer` beside the sound feedback.
+  (d) **System UI** root `_layout.tsx` `SystemUI.setBackgroundColorAsync(paper)`
+  in an effect keyed on the theme's `editorialPaper`.
+  (e) **Fonts** expo-font config plugin embeds the 8 statics (`app.config.ts`);
+  `fonts.native.ts` maps weights via Tamagui `face` (iOS PostScript names
+  `Newsreader14pt-*` / Android file stems `Newsreader_14pt-*`, chosen by
+  `Platform.OS`; 700 → SemiBold, the heaviest cut shipped). New **`$serifDisplay`**
+  font: native = the 36pt cut (Regular/Medium, no italics), web = the very same
+  `var(--font-family-serif)` chain (the variable font picks optical size from
+  font-size), so the four sites switched to it — `PageTitle`, Home `HeroTitle`,
+  Statistics `SummaryValue`, StatsSummary's 48px value — are pixel-identical on
+  web (visual 20/20 ×2). `tamagui.config` registers `serifDisplay`.
+  Also: placeholder **app icon** — `website/public/icons/icon-512.png` bilinear-
+  upscaled to 1024² and alpha-flattened onto white by a pngjs script (sharp has
+  no arm64 binary in the sandbox), wired as `icon` in `app.config.ts`; replace
+  before store submission. `expo-audio` plugin set `microphonePermission: false`
+  (playback only). packages/app eslint ignores `scripts/**`.
+  Gates: packages/app tsc + eslint; mobile tsc; `expo config` loads; `expo
+  export` ios + android mapcheck OK (adapters' native halves + haptics.native +
+  the four expo modules present, web halves absent) + 4 WAVs in the manifest;
+  root `npm test` ×2; website build; e2e 3/3; visual 20/20 ×2.
+- **TTS self-import fix (d6ea326, 2026-09-16):** `TtsService/adapter.native.ts`
+  imported the `TtsPlaybackError` class (a value) from `'./adapter'`, which
+  Metro's platform resolution maps back to the `.native` file itself — a require
+  cycle, class undefined at call time. The types + error class moved to a
+  non-split `adapter.shared.ts` that both halves import; `adapter.ts` re-exports
+  them so `index.ts` is unchanged. The SoundService/LocalStorageService native
+  halves only `import type` from their siblings (erased), so they were fine.
+  Rule for future splits: a `.native.ts` half must never import a VALUE from its
+  own web sibling — put shared values in a `.shared.ts`.
+- **Splash screen (2026-09-16; the last host-only prerequisite, unblocked by the
+  host's `npx expo install expo-splash-screen` → 56.0.15, 3e5c568):** plugin entry
+  in `app.config.ts` — `image` + `dark.image`, `imageWidth: 200`, `contain`,
+  backgrounds = editorial paper (`#ffffff` / `#0f172a`). The icons are the "100"
+  glyph lifted out of the placeholder app icon as an alpha mask (the PWA icon is
+  opaque, so a transparent splash could not be cut from it directly): checked-in
+  `apps/mobile/scripts/render-splash-icon.mjs` (pngjs; min-channel ramp 96→240 as
+  coverage, bilinear 512→1024) tints it `editorialInk` for `splash-icon.png` and
+  `editorialInkDark` for `splash-icon-dark.png`. Runtime: root `_layout.tsx`
+  calls `SplashScreen.preventAutoHideAsync()` at module scope and `hideAsync()`
+  from a RootStack mount effect; `AppThemeProvider` now renders `null` until the
+  saved theme preference resolves (adopted, absent OR failed — a storage error
+  never traps the splash), so the first committed frame already wears the
+  persisted theme and the OS-chosen splash variant hands off without a flash.
+  Gates: mobile `tsc` + jest 16; `expo config --type prebuild` applies the plugin
+  (pluginHistory 56.0.15); `expo export` ios + android `--source-maps`:
+  `SplashScreen.native.js` + `_layout.tsx` + `ThemeProvider.tsx` +
+  `adapter.shared.ts`/`adapter.native.ts` present, the web halves absent, 4 WAVs
+  in both manifests; packages/app `tsc` + eslint; root `npm test`; website build
+  (52 jest). One cold-start `expo export` printed "Error loading tamagui.config.ts
+  … running tamagui without custom config" ×7 (one per worker); a rerun with
+  `DEBUG=tamagui` and a further plain rerun were clean and the `.tamagui` cache
+  was untouched — transient, but watch for it.
+- **Root scripts for the host loop (2026-09-17):** `npm run prebuild:mobile` (`expo
+  prebuild --clean` — required after any config-plugin change, the splash included),
+  `npm run ios` / `npm run android` / `npm run dev:mobile` (each ends in `--` so
+  `npm run ios -- --configuration Release` reaches expo), `npm run splash:mobile`
+  (re-render the glyph PNGs). Pulled forward from Phase 7's root-scripts item.
+- **Xcode 27 pods floor (2026-09-17):** the first host `npm run ios` died at
+  "Planning build": `RNSVG-RNSVGFilters` (12.4) and `RNCAsyncStorage_resources`
+  (13.4) sit below Xcode 26+'s 15.0 deployment-target floor. RN's
+  `react_native_post_install` lifts each pod's MAIN target to
+  `Helpers::Constants.min_ios_version_supported` (15.1) but CocoaPods gives
+  resource-bundle targets the podspec's own minimum. New local config plugin
+  `apps/mobile/plugins/withPodsDeploymentTarget.js` (`withPodfile`, referenced by
+  path in `app.config.ts`) appends a post-install sweep over ALL
+  `installer.pods_project.targets` lifting only those under the same RN
+  constant — the app's `platform :ios` (template default 16.4) stays
+  authoritative and no version is hardcoded. Idempotent via a marker comment;
+  verified in-container by applying it to the host-generated `ios/Podfile` text
+  and via `expo config --type prebuild`. This is NOT a request to target iOS 27:
+  Xcode 27 already builds against the iOS 27 SDK, and the deployment target is
+  the oldest iOS the app will install on. `npm run prebuild:mobile` must rerun
+  for it to land (pod install happens there).
+- **Xcode 27 Swift toolchain vs expo-modules-jsi 56.0.10 (2026-09-17):** with the
+  pods floor fixed, `npm run ios` next died in the `[CP-User] Build ExpoModulesJSI
+  xcframework` script phase "with no further output" — the phase runs a nested
+  `xcodebuild -quiet` under `env -i`, so the CLI shows nothing. The real error is
+  in the nested build's activity log
+  (`node_modules/expo-modules-jsi/apple/.DerivedData/Logs/Build/*.xcactivitylog`,
+  gunzip it): `JavaScriptRuntime.swift:219: a C function pointer can only be
+  formed from a reference to a 'func' or a literal closure` — Swift 6.3 rejects
+  the `set == nil ? nil : setter` ternary feeding a C callback pointer (the
+  simulator slice HAD built on 09-14 under the previous toolchain; the cache key
+  includes `swiftc --version`, so the upgrade forced a rebuild). Fix: branch
+  into two `HostObjectCallbacks(...)` calls, applied in node_modules and captured
+  as `patches/expo-modules-jsi+56.0.10.patch` (patch-package format), applied by
+  the root `postinstall` since Stage 6.5; drop the patch once an expo-modules-jsi
+  release carries the fix (`npm view expo-modules-jsi versions`).
+- **Still host-only:** real icon + splash art before store submission.
+- **Stage 6.5 — first iOS boot (host, 2026-09-19; Xcode 27.0, iPhone 17 Pro on
+  iOS 26.5, `npm run ios -- --device "iPhone 17 Pro"`):** the build cleared both
+  earlier blockers ("Planning build" with the pods floor, the `[CP-User] Build
+  ExpoModulesJSI xcframework` phase under the patched Swift), installed and
+  connected to Metro. The Debug build is not a dev-client (expo-dev-client is
+  not installed), so `xcrun simctl launch` reconnects to Metro with no launcher
+  UI in between. The checklist, in order:
+  1. **Fonts** — hero, card titles, `Start`, stat values all render in
+     Newsreader; iOS substitutes the system *sans* for an unknown PostScript
+     name, so any serif proves the faces resolved. The header title was the
+     system font because `useHeaderOptions` set no `headerTitleStyle`; it now
+     takes the `$serif` 500 face from the font config (`(config.fonts.serif as
+     GenericFont).face?.[500]?.normal` — tsc types the config through the web
+     half of the split, which has no `face`) at 17px, matching the web
+     `TitleText`. Native-stack's `headerTitleStyle` takes only
+     fontFamily/fontSize/fontWeight/color, so no letterSpacing.
+  2. **Tab headers** show the ScreenFrame titles (flow 01). Two navigator
+     fixes surfaced: `ScreenFrame`'s `title` also fed the tab *labels* (`title`
+     is the label fallback — the home tab read "US Civics Test"), so
+     `(tabs)/_layout.tsx` sets `tabBarLabel` instead; and the game's back
+     button read "(tabs)", the group's route name, so the root stack gives the
+     `(tabs)` screen `title: 'Home'`.
+  3. **Theme** — flow 02: header toggle → Settings checkbox checked →
+     `stopApp`/`launchApp` → still checked. Terminal half: after `clearState`
+     the app follows the OS (`simctl ui appearance dark` → home luma 46.9, the
+     same as the toggled dark; `light` → 222.9). A launch with a saved dark
+     preference under a light OS, recorded with `simctl io recordVideo` and
+     measured per frame with ffmpeg `signalstats`: light splash (OS-chosen,
+     luma ≈229, with Metro's "Downloading…" banner) → dark paper (≈35) → dark
+     home (≈45); no light content frame. The dark paper frame keeps the status
+     bar's dark text for ~0.5 s before `expo-status-bar` flips it — cosmetic.
+  4. **Game** — flow 03 plays a whole game: Start → (unconfigured) Settings →
+     Start Game → `Question 1/20 (#n)` header → answers by letter badge (A,
+     then B/C while the multi-select count is up) → feedback → Next
+     Question/Finish/Finish Now → Test Complete → View History → `Archive · 1
+     Test` → Clear all data (native Alert, OK) → `No Test Results Yet`. No
+     crash from haptics (the simulator has no engine). Sound, instrumented
+     once and reverted: `seekTo(0)` resolves after the clip loads (~130 ms,
+     `isLoaded` true) and `play()` then runs `currentTime` to the full 0.6 s —
+     no `isLoaded` wait needed (item 6). WAV/TTS audibility is the user's ear.
+  5. **Preview voice** — flow 04: no ErrorBoundary fallback, no Metro error.
+
+  **Crash found and fixed (shared code):** Settings and Statistics threw `View
+  config getter callback for component 'option' must be a function` —
+  `EditorialSelect`/`EditorialInput` are `tag="select"`/`"input"` Tamagui Text
+  and every caller renders DOM `<option>` children; the ErrorBoundary caught it
+  and both tabs showed "Something went wrong". New
+  `components/tamagui/EditorialInput.native.tsx` (resolved through the barrel's
+  relative `./EditorialInput` import — not an exports-map split):
+  `EditorialSelect` reads the `<option>` children into value/label pairs
+  (nested arrays and mixed text children flattened as the DOM would), shows
+  the current label in a field styled like the web input and opens a modal
+  bottom sheet of options (Modal + backdrop Pressable + ScrollView, selected
+  row in accent with a Check); `EditorialInput` wraps Tamagui `Input`. Both
+  hand `onChange` an object carrying `target.value` — the only part the
+  callers read — and forward `id` as `testID` (Maestro's `id:` selector). The
+  web half is untouched. Two more native-only fixes in `GameQuestion`, web
+  markup identical: the keyboard hint is `isWeb`-only (native keeps
+  `Select N more` for multi-select), and the incorrect-feedback text column
+  has `flexShrink={1}` (the CSS default; RN's 0 let it overflow the box).
+
+  **Host test loop (Xcode 27):** Simulator.app is gone; DeviceHub
+  (`/Applications/Xcode.app/Contents/Applications/DeviceHub.app`) is what
+  `expo run:ios` opens, and it can't be told which simulator to focus — pick it
+  in the sidebar; `xcrun simctl` works regardless (`io <udid> screenshot`,
+  `ui <udid> appearance`, `terminate`/`launch`, `io <udid> recordVideo`). Expo
+  resolves `--device "iPhone 17 Pro"` to the newest runtime's device (iOS 26.5,
+  `4428CCB0-…`), not the iOS 26.2 one. Maestro CLI 2.10 (`curl -fsSL
+  https://get.maestro.mobile.dev | bash`, `~/.maestro/bin`) drives it:
+  `MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device <udid> test
+  apps/mobile/.maestro/` (4 flows, ≈5 min; 03 loops a whole game). Not Maestro
+  Studio (its screen stream is broken on Xcode 27) and not idb. Selector rules
+  learned: text matching is a full-match regex against text OR accessibility
+  label, so tabs are `'Results, tab, .*'` (react-navigation's label); the
+  Tamagui checkbox reads `'checkbox, checked'` beside its label (`leftOf`);
+  off-screen elements need `scrollUntilVisible`; and a badge scrolled under
+  the translucent iOS 26 header gets the back button instead, so the game flow
+  anchors every tap on the `Question #n` eyebrow. Metro's terminal is the JS
+  error channel (LogBox); `expo start` must be restarted for a NEW
+  `.native.tsx` sibling to resolve (fast refresh keeps the old resolution).
+  patch-package wired: root `npm i -D patch-package` + `"postinstall":
+  "patch-package"`; `npx patch-package` → `expo-modules-jsi@56.0.10 ✔`; the
+  lock diff was additive only.
+
+  **Native polish seen, not fixed (follow-up parity items):** StateSelector's
+  "Selected: {state} Capital: {capital}" line and its helper text render at
+  mismatched sizes on native (web-only font-size inheritance); the status-bar
+  text on the dark paper frame above.
+
+  **Gates:** Maestro 4/4; mobile tsc + jest 16; packages/app eslint + tsc;
+  root `npm test`; `npm run build -w website` (52 jest). Visual 20/20 was NOT
+  run — the baselines are container-captured and the host renders fonts
+  differently; the web branches of the two `GameQuestion` edits are
+  byte-identical, so run visual ×2 in the sandbox next.
+
+- **Stage 6.6 — first Android boot (host, 2026-09-25; Android Studio's JBR
+  21.0.5, SDK emulator 35.4.9, AVD `Medium_Phone_API_35` = API 35 `google_apis`
+  arm64-v8a, `npm run android`):** the `android/` project generated on
+  2026-09-16 built first time in 3m48s once Gradle had fetched the RN 0.85 pins
+  itself (Gradle 9.3.1, AGP 8.12, platform 36, build-tools 36, NDK 27.1, CMake
+  3.22 — the one-entry `licenses/android-sdk-license` covered them all); Expo
+  compiled arm64-v8a only, installed the debug APK and connected it to Metro.
+  The checklist, in order:
+  1. **Fonts** — Newsreader on the hero, card titles, `Start`, stat values and
+     every header title (the `Newsreader_14pt-*` file stems resolve on Android
+     with no PostScript-name step).
+  2. **Tab headers** show the ScreenFrame titles; labels Home / Results /
+     Statistics / Settings (flow 01).
+  3. **Theme** — flow 02 end to end. Terminal half: after `pm clear` the app
+     follows `cmd uimode night yes|no` (home luma 36.6 dark / 240.5 light); the
+     header toggle under a light OS gives the same 36.6. A cold launch with the
+     saved dark preference under a light OS, recorded with `adb shell
+     screenrecord` and measured per frame with ffmpeg `signalstats`: light
+     splash (OS-chosen, ≈217) cross-fades straight into the dark home (≈35) —
+     zero frames above luma 120 after the splash.
+  4. **Game** — flow 03 (Start → unconfigured Settings → Start Game → answers
+     by badge → feedback → Test Complete → View History → `Archive · 1 Test` →
+     Clear all data via the Android Alert → `No Test Results Yet`). Haptics do
+     not crash (the emulator has no vibrator); the WAVs are the user's ear.
+  5. **Preview voice** — flow 04. The plain `google_apis` image ships Google
+     TTS: logcat shows the app binding `com.google.android.tts`, a synthesis
+     request for `en-US` dispatched to the embedded `en-us-x-iog-seanet` voice
+     and AudioTrack delivering ≈92k frames — speech is produced, not merely
+     survived.
+  6. **Android-only** — the `/game` stack route is edge-to-edge (paper runs
+     under the gesture area; back arrow + `Question 1/20 (#n)` title in
+     Newsreader); hardware back pops to the tabs with the Settings scroll
+     position kept; status-bar icons flip to light with the theme; the system
+     draws the gesture handle light over the dark paper, so no
+     `expo-navigation-bar` (3-button mode not tried); a dark-OS/dark-app
+     recording of launch → Start → Settings → Start Game → back has no frame
+     above luma 120 — no transition flash. Splash on API 35: the `100` glyph
+     on white.
+
+  **Nothing broke in shared code.** What broke was the flows and the emulator:
+  - expo-router's tab bar builds the `"<label>, tab, N of M"` accessibility
+    label only on iOS, so the flows target tabs by `tabBarButtonTestID`
+    (`tab-home` … `tab-settings` in `(tabs)/_layout.tsx`, forwarded as
+    `testID`). `CheckboxField.native` forwards `id` as `testID`, so Android
+    asserts `{ id: dark-mode, checked: true|false }` (the accessibility node's
+    checked flag) while iOS keeps the `checkbox, checked|unchecked` text, split
+    with `runFlow: when: platform:`.
+  - The AVD ships with **one CPU core and 2 GB** (`hw.cpu.ncore=1`,
+    `hw.ramSize=2048` in `~/.android/avd/Medium_Phone.avd/config.ini`). The
+    debug build's Metro bundle load took 15–80 s (137 MB free, 700 MB swapped,
+    and Maestro's UiAutomator hierarchy dumps compete for the one core), past
+    Maestro's 17 s element default, and the home body's two AsyncStorage reads
+    pushed `Start` later still — two flows failed on timing alone.
+    `emulator -avd Medium_Phone_API_35 -memory 4096 -cores 4` (session flags;
+    the AVD is untouched) brings cold launches to 6.5 s, and every `launchApp`
+    in the flows is now followed by `extendedWaitUntil` on the home `Start`
+    button (60 s).
+  - Dev-only splash artefact: when the bundle download is slow enough for
+    React Native to show its "Loading from Metro" PopupWindow, Android counts
+    that popup as the activity's first drawn window and hands the splash over,
+    while expo-splash-screen still blocks the content view's first draw — a
+    black screen until JS calls `hideAsync`. With the bundle arriving in a few
+    seconds the popup never shows and the splash holds until the themed first
+    frame (logcat: `remove starting view` 0.45 s after `Displayed`). A release
+    build has no popup.
+
+  **Host test loop (Android):** `JAVA_HOME` → Android Studio's JBR 21 (AGP
+  8.12 is validated up to that JDK; Corretto 26 is the only JDK on PATH),
+  `ANDROID_HOME=~/Library/Android/sdk`, and `platform-tools` / `emulator` /
+  `~/.maestro/bin` ahead on PATH (Homebrew's adb 37 otherwise shadows the SDK's
+  35 and restarts the server mid-run). `adb kill-server && adb start-server` on
+  the SDK binary, boot with the flags above plus `-no-snapshot-load`,
+  `adb wait-for-device` + `getprop sys.boot_completed`, `adb shell cmd uimode
+  night no` as the light precondition, then `npm run android` (backgrounded to
+  a log; Metro's terminal is the JS error channel). Maestro:
+  `maestro --device emulator-5554 test apps/mobile/.maestro/` (4 flows ≈7 min).
+  Terminal probes: `adb exec-out screencap -p`, `adb shell screenrecord
+  --time-limit N`, ffmpeg `signalstats` for luma, `adb shell pm clear` for
+  clearState, `input keyevent KEYCODE_BACK`, `logcat -s ActivityTaskManager:I`
+  for `Displayed … +Ns`. Selector rules learned: `id:` matches `testID` on both
+  platforms; `checked:` reads the Android accessibility node; the 17 s element
+  default is only extended by `extendedWaitUntil`; `runFlow: when: platform:`
+  is the per-platform split. iOS re-run: Expo CLI now files `--device "iPhone
+  17 Pro"` as a physical device ("No code signing certificates" — its
+  `isSimulatorDevice` wants a `deviceType` starting
+  `com.apple.CoreSimulator.SimDeviceType.`, and it warns about devicectl's
+  JSON version), so boot the simulator with `xcrun simctl boot <udid>` and run
+  `npm run ios -- --no-bundler` against the Metro the Android run left up.
+
+  **Native polish seen, not fixed:** the Stage 6.5 StateSelector item
+  reproduces on Android and has a root cause — the shared `Text` sets
+  `fontSize: '$3'`, so the nested `<Text>` runs inside `InfoText` (`$5`) render
+  at 13 px beside 15 px on native, where RN does not inherit a size from a
+  parent that sets one explicitly; the fix is `fontSize="$5"` on those three
+  nested Texts, but StateSelector renders on the web too, so it waits for a
+  session with the container visual suite.
+
+  **Gates:** Maestro 4/4 on `emulator-5554` and 4/4 on the iOS 26.5 simulator;
+  mobile tsc + jest 16; packages/app tsc + eslint; `expo export` android + ios
+  with `(tabs)/_layout.tsx` and `CheckboxField.native.tsx` in both maps; root
+  `npm test`; `npm run build -w website` (52 jest). Visual 20/20 not run
+  (container-only; no web half touched).
+
+- **Remaining for Phase 6:** real icon + splash art; the StateSelector
+  nested-Text fix and its visual ×2 (a sandbox session). The splash was judged on
+  the EAS preview builds in Phase 7 Stage 7.6: no black or bright hand-off frame
+  on either platform, light or dark. Consider raising the AVD
+  itself to the session flags (now `-memory 8192 -cores 6`, see Stage 7.3) so they
+  become unnecessary.
+
+### Phase 7 — Build, CI, release
+- **EAS Build** (`eas.json`) dev/preview/production profiles with a dev-client (reanimated/async-storage/expo-audio aren't in Expo Go) — [Ch 16 § eas.json](/references/expo/16-eas-build.md#eas-json). Minimal skeleton:
+  ```json
+  {
+    "cli": { "version": ">= 24.8.0", "appVersionSource": "remote" },
+    "build": {
+      "development": { "developmentClient": true, "distribution": "internal", "ios": { "simulator": true } },
+      "preview": { "distribution": "internal" },
+      "production": {}
+    }
+  }
+  ```
+  Signing/credentials are managed by EAS ([Ch 16 § Credentials](/references/expo/16-eas-build.md#credentials), [Ch 17 § App Signing](/references/expo/17-eas-submit-and-distribution.md#app-signing)). On EAS the monorepo installs from the root lockfile and resolves hoisted packages itself — the local `watchFolders`/`nodeModulesPaths` remapping is dev-only.
+- **EAS Update (optional for v1):** setup is ~2 commands — `expo install expo-updates` then `eas update:configure` (writes `runtimeVersion`/channels) — so OTA hotfixes *can* land in v1 rather than waiting on a fast-follow retrofit ([Ch 18 § Publishing](/references/expo/18-eas-update.md#publishing)). Maintainer's call; see Fast-follow.
+- Root scripts `dev:mobile`/`ios`/`android` (`dev`→website unchanged) — **landed early in Phase 6** (see its STATUS: `ios`/`android`/`dev:mobile`/`prebuild:mobile`/`splash:mobile`). Extend root `clean` to cover mobile artifacts. CI: `tsc --build`, `npm run test --workspaces`, EAS preview smoke build ([Ch 16 § CI](/references/expo/16-eas-build.md#ci); EAS Workflows is the native option — [Ch 19 § EAS Workflows](/references/expo/19-eas-workflows-hosting-insights.md#eas-workflows)).
+- **Exit:** green CI; EAS preview build installs on a device.
+
+#### Phase 7 — STATUS (updated 2026-11-16): ✅ DONE on `native` — Stages 7.1–7.7 landed (scripts + sourcemap check, GitHub Actions gate, expo-dev-client, EAS config + dispatch-only build workflow, both EAS preview builds installed with Maestro 4/4 on each, all three CI jobs green); left: the first CI-dispatched EAS build, which GitHub only allows once `eas-build.yml` is on `main`
+
+Same staged-commit discipline as Phases 5–6 (one commit per stage, gate suite green
+first, this block updated in the same commit). Decisions fixed before the first stage:
+`expo-dev-client` goes in (7.3) and the Maestro flows adapt to its launcher screen; there
+is no paid Apple Developer account, so the iOS `preview` profile is a simulator build and
+the "installs on a device" exit is the Android APK on the emulator/a phone plus the
+simulator `.app` (store submission stays fast-follow; a `production` profile is defined,
+not exercised); EAS Update is deferred (retrofit notes at the end of this block); CI is
+GitHub Actions — a gate workflow on push/PR plus a `workflow_dispatch`-only EAS build
+workflow that protects the ~30 builds/month free quota; root `clean` reaches mobile
+through a new `apps/mobile` `clean` script. Node is pinned to the host's `24.4.0`
+(`.nvmrc`, later `eas.json`), the npm major that wrote the lockfile.
+
+- **Stage 7.1 — script hygiene, sourcemap check, Node pin:** two findings shaped the
+  scripts. (1) `packages/{civics2json,distractions,questionnaire}/dist/` are gitignored
+  and every consumer (website, mobile, both jest runners) resolves them through the
+  packages' `exports` maps, so a fresh checkout — CI, the EAS builder — has nothing to
+  bundle until they are built: root `build:packages` builds the three in dependency
+  order, and `apps/mobile`'s `eas-build-post-install` hook
+  (`npm --prefix ../.. run build:packages`) runs it after EAS's install / prebuild /
+  pod install and before Gradle or Xcode bundle the JS. The builder installs
+  devDependencies (tsc, tsup) at the root as long as no profile sets
+  `NODE_ENV=production`; if EAS turns out to read hooks from the root `package.json`
+  rather than the project dir, the hook moves there. (2) Root `npm run lint` errored
+  on `apps/mobile` (no `lint` script); `--if-present` on `lint`/`lint:fix` fixes
+  that, and the run then surfaces **31 pre-existing ESLint errors** the mobile error had
+  been masking: `packages/civics2json` 4 (`no-non-null-assertion` in
+  `test/parseQuestions.2025.test.ts`) and `packages/distractions` 27
+  (`scripts/test-openai-integration.ts` outside the tsconfig project; `require-yield`
+  + two prettier hits in `src/generators/EnhancedStaticGenerator.ts`;
+  `no-non-null-assertion` in `test/generators/QualityMetrics.test.ts`;
+  `no-require-imports` / `no-var-requires` / `no-explicit-any` in
+  `test/integration/cli-integration.test.ts`). Those files were last touched in
+  January and CLAUDE.md reserves lint fixes for the maintainer, so root lint stays red
+  and CI (7.2) runs it as its own job so it cannot hide the other results.
+  `apps/mobile` gains `clean` (`ios/`, `android/`, `.expo/`, `dist/`, `.tamagui/`,
+  `node_modules/`, tsbuildinfo — so root `clean` now completes) and `bundlecheck`
+  (`expo export` ios + android with source maps, then `scripts/check-sourcemaps.mjs`).
+  The checker replaces the ad-hoc Phase 5/6 sourcemap greps: it walks
+  `packages/app/src` for `*.native.ts(x)` (16 today) and, per platform, asserts each
+  is in the map's `sources`, its `X.ts`/`X.tsx` sibling is not, no source path is
+  under `node_modules/lucide-react`, `@effect/platform-node` or `@effect/cli`
+  (`@tamagui/lucide-icons` is the legitimate native icon set), and each
+  `packages/app/assets/sounds/*.wav` is registered in `metadata.json`. Expo names
+  exported assets `assets/<md5 of contents>` (there is no `assetmap.json` without
+  `--dump-assetmap`), so the WAVs are matched by hashing the source files; map
+  `sources` are rooted at the monorepo root with a leading slash
+  (`/packages/app/src/haptics.native.ts`). A native half that is legitimately absent
+  goes in the script's explicit allowlist, never a looser rule. `expo export` does
+  not write `.expo/types/router.d.ts` (only the dev server behind `expo start` /
+  `run:*` does, via its type generator) and mobile `tsc` passes without it on the
+  loose `Href`, so CI's `bundlecheck`-before-`npm test` order is fail-fast only;
+  route hrefs are checked strictly on a tree where the dev server has run. `npm i` after the clean
+  also recorded `hasInstallScript` for the root in the lockfile (the root
+  `postinstall` runs patch-package); committed so the tree stays clean.
+
+  **Gates:** `npm run clean -w mobile && npm i` restores the tree (patch-package
+  reapplies; lockfile diff is the one line above); `npm run build:packages`;
+  `npm run bundlecheck -w mobile` (ios 2588 / android 2675 sources, 16/16 native halves,
+  0 leaked, 0 forbidden, 4/4 WAVs); packages/app tsc + eslint; mobile tsc + jest 16;
+  root `npm test` ×2; `npm run build -w website` (52 jest); e2e chromium 3/3 (the host
+  needed `npx playwright install chromium` first — it had never run e2e). Root
+  `npm run lint`: mobile no longer errors; civics2json + distractions red as above.
+  Visual 20/20 not run (container-only, no web source changes).
+- **Stage 7.2 — GitHub Actions gate (`.github/workflows/ci.yml`):** push and PR on
+  `main` and `native`, `contents: read`, per-ref concurrency with cancel-in-progress,
+  `setup-node` from `.nvmrc` with the npm cache, Expo/Next telemetry off (`CI=true`
+  from Actions already makes Expo CLI non-interactive). Three jobs rather than two:
+  `lint` stands alone so the pre-existing civics2json/distractions errors cannot mask
+  the other results; `checks` runs `npm ci` (root postinstall is patch-package, so a
+  patch that no longer applies fails right here) → `build:packages` →
+  `bundlecheck -w mobile` (fail-fast on the device bundle) → `npm test` →
+  `next build` called directly, since the website `build` script would repeat lint +
+  jest; `e2e` installs chromium with its system deps and runs the functional suite
+  under the config's `CI` branch (one worker, one retry, github reporter), uploading
+  `website/test-results` on failure. The visual suite stays out (container font
+  stack). Rehearsed on the host by running the same commands in the same order (the
+  7.1 gate chain, e2e 3/3 after `playwright install chromium`); the workflow itself
+  first runs when `native` is pushed, which is the maintainer's call.
+- **Stage 7.3 — expo-dev-client + Maestro (host):** `expo-dev-client` 56.0.27 installed
+  inside `apps/mobile` (lockfile additive except `@expo/schema-utils` 56.0.1 → 56.0.2,
+  which its launcher pins); prebuild registers `exp+civics100` as a second URL scheme
+  on both platforms and both rebuilds went first time. A dev-client build cold-starts
+  on its launcher, so every `launchApp` in the four flows is now followed by
+  `runFlow: subflows/open-app.yaml` (Maestro runs only the top-level files of the
+  directory it is given, so `subflows/` is never a test). Five findings shaped that
+  subflow, each first seen as a red flow:
+  1. **Env precedence.** A value under a flow file's `env:` beats the CLI's `-e`
+     (probed: top-level `env: X: default` + `-e X=override` still reads `default`;
+     a subflow with no `env` inherits the CLI value). So the subflow declares no
+     `env` and computes the default in JS
+     (`typeof METRO_URL === 'undefined' ? 'http://localhost:8081' : METRO_URL`), which
+     is what lets `-e METRO_URL=none` (release/EAS builds, no launcher) switch the
+     link off. The ternary's ` : ` has to be YAML-quoted.
+  2. **Link timing on Android.** A VIEW intent that lands while `MainActivity` is
+     still starting is dropped and the app stays on the launcher; the same link fired
+     by hand once the launcher had settled loaded fine. The subflow waits for the
+     launcher's `Development Build` text before `openLink`.
+  3. **The launcher resumes the last project by itself** on a plain relaunch
+     (`DEV_CLIENT_TRY_TO_LAUNCH_LAST_BUNDLE` defaults to true on both platforms), so
+     the launcher never appears and the wait is `Development Build|Start` with the
+     link sent only `when: visible: Development Build`.
+  4. **The dev menu opens over the first load** after clearState. expo-dev-menu shows
+     itself at launch while `showsAtLaunch` (default true, from the
+     `EXDevMenuShowsAtLaunch` Info.plist key / manifest meta-data, reset by
+     `pm clear` and clearState) or its onboarding is pending; the link's
+     `disableOnboarding=1` only clears the onboarding flag, and it is read from the
+     outer link on Android but from the inner manifest URL on iOS
+     (`EXDevLauncherURLHelper.disableOnboardingPopupIfNeeded(expoUrl)`), so one
+     platform showed the "This is the developer menu" sheet and the other the tools
+     sheet. The menu's floating gear button (`EXDevMenuShowFloatingActionButton`,
+     default true) then sat on the header's ThemeToggle, so 02's `Toggle theme` tap
+     opened the menu instead. New `plugins/withDevMenuQuietLaunch.js` sets
+     `EXDevMenuShowsAtLaunch=false`, `EXDevMenuIsOnboardingFinished=true` and
+     `EXDevMenuShowFloatingActionButton=false` in Info.plist and the manifest; the
+     menu stays reachable by shake, ⌃d on the simulator and ⌘m on the emulator.
+  5. **Emulator memory.** With the dev client resident the debug app sits at ~925 MB
+     RSS; on the 4 GB AVD (369 MB free, swapping) Metro-served loads took 40–60 s
+     (Metro itself answers the Android bundle in 80 ms) and `scrollUntilVisible`
+     timed out on slow hierarchy dumps before reaching the Settings screen's
+     `Start Game` row. `emulator … -memory 8192 -cores 6` fixed both (CLAUDE.md
+     updated); the subflow's home wait is 120 s.
+  Also learned: the first Android run overlapped an iOS run and a 13-minute host
+  stall (both Maestro JVMs paused at the same timestamps), after which the iOS
+  XCTest driver answered 500 to every request until the simulator was rebooted —
+  device runs are one at a time, and a wedged driver means `simctl shutdown` +
+  `boot`. The Maestro note in CLAUDE.md covers the subflow and `-e METRO_URL`.
+
+  **Gates:** Maestro 4/4 on the iOS 26.5 simulator (5m 42s, and again on the final
+  subflow: 5m 11s) and 4/4 on `emulator-5554` (10m 13s);
+  `npm run bundlecheck -w mobile` (unchanged: 16/16 native halves, 0
+  leaked, 0 forbidden, 4/4 WAVs; no `expo-dev-client`/`-launcher`/`-menu` source in
+  either map — the dev client is native-only in a release export); packages/app tsc + eslint;
+  mobile tsc + jest 16; root `npm test` ×2; `npm run build -w website` (52 jest);
+  e2e chromium 3/3; root lint as in 7.1. Visual 20/20 not run (container-only, no
+  web source changes).
+- **Stage 7.4 — EAS config (committable before any account exists):**
+  `apps/mobile/eas.json` pins `cli.version >= 24.8.0` (the current release) with
+  `appVersionSource: remote`, and three profiles: `production` (`node: 24.4.0`,
+  `autoIncrement`), `preview` extending it (internal distribution, Android
+  `buildType: apk`, iOS `simulator: true` — there is no paid Apple Developer
+  account, so the "installs on a device" exit is the APK on the emulator/a phone plus
+  the simulator `.app`), and `development` (`developmentClient`, Android
+  `withoutCredentials`, iOS simulator). No `env`, no `ios.image` pin (the
+  expo-modules-jsi Swift patch is applied by the root `postinstall` during EAS's
+  install and compiles on older toolchains; `withPodsDeploymentTarget.js` only lifts
+  pods below RN's floor), no `.easignore` (it would replace `.gitignore`, which
+  already excludes `node_modules`, the native dirs, `.next`, `spikes/`). The Phase 7
+  skeleton above carries the same `cli` block. `.github/workflows/eas-build.yml` is
+  `workflow_dispatch`-only (platform all/android/ios × profile preview/development;
+  `production` is not offered until iOS store credentials exist) to protect the
+  ~30 builds/month free tier: it fails fast without the `EXPO_TOKEN` secret, pins
+  `expo/expo-github-action@v8` to eas-cli 24.11.0 (the CLI the host builds ran on), runs `npm ci` because eas-cli
+  evaluates `app.config.ts` through the installed `expo`, passes the inputs through
+  `env` (no expression injection) and queues with `--no-wait`. On the builder, the
+  `apps/mobile` `eas-build-post-install` hook from 7.1 builds the three package
+  `dist/` trees before Gradle/Xcode bundle the JS. Gates: `eas.json` parses;
+  `npx expo config --type public` still evaluates; the workflow YAML parses; the 7.3
+  gate chain ran with both files in the tree.
+
+- **Stage 7.5 — first CI run:** the push of 7.4 (`0ad2603`) ran `gh run 37400879718`:
+  Lint red (the 31 maintainer-reserved errors, by design), `Website e2e (chromium)` green
+  3/3, `Bundle, test, website build` red at `npm test`, so the website production build
+  step never ran. The one failure was `packages/distractions`
+  `test/integration/enhanced-generator-integration.test.ts` › "should provide
+  generateEnhanced function": `Missing data at OPENAI_API_KEY`. It passed on the host only
+  because the root `.envrc` exports the key (`env -u OPENAI_API_KEY npx jest <file>`
+  reproduced it, 1/5). Two defects in the one test: it built the five `Test*Layer`s but
+  provided `EnhancedStaticGenerator.Default`, and `Effect.Service` with `dependencies`
+  makes `.Default` the service layer **plus** the real `.Default` of every dependency, so
+  `OpenAIDistractorService.Default` was constructed regardless and read
+  `Config.string('OPENAI_API_KEY')` (`src/config/environment.ts`); and the test layers
+  were provided *inside* the service layer (earlier in the `pipe`), where a layer's own
+  requirements never see them — switching to `DefaultWithoutDependencies` alone surfaced
+  that as `Service not found: QuestionsDataService`. Fix: provide
+  `EnhancedStaticGenerator.DefaultWithoutDependencies` first and the five test layers
+  after it; the test now exercises the mocks it builds and needs no host secret. The same
+  job logged `jest-haste-map: duplicate manual mock found: distractions` from
+  `packages/questionnaire`: its tsconfig `include: ["src","test"]` emits
+  `dist/test/__mocks__/distractions.js` and the jest config only kept `dist/` out of the
+  test paths, so `modulePathIgnorePatterns: ["<rootDir>/dist/"]` keeps haste off it
+  (behaviour-neutral). Not taken: a placeholder `OPENAI_API_KEY` in `ci.yml`, which would
+  have masked the test defect.
+
+  **Gates:** `env -u OPENAI_API_KEY npm test -w distractions` 16/16 suites (122 passed, 6
+  skipped); `npm test -w questionnaire` 5/5, no haste warning; distractions `tsc --noEmit`
+  clean and the test file lints clean (package total unchanged at 27 errors); root
+  `npm test`; root lint unchanged at 31. The CI run on this commit is the proof of the
+  stage: `Bundle, test, website build` must go green (bundlecheck → test → `next build`,
+  the first time CI reaches the website build) with e2e green and lint red as
+  documented — `gh run 37410751936` on `903dd99` did exactly that.
+
+- **Stage 7.6 — EAS project, preview builds, release-build device gate (host,
+  2026-11-16, eas-cli 24.11.0):** the project is `@jhbc/civics100`
+  (`d757c7be-0238-4c8a-98f8-f175e7c45381`). `eas init` cannot write a TS config, so
+  `owner` and `extra.eas.projectId` are set by hand in `app.config.ts` (neither is
+  a secret). What the stage established:
+  1. **Login without a TTY.** `eas login` needs interactive prompts; from a
+     non-interactive shell use `eas login --device --non-interactive` (browser
+     approval of a device code).
+  2. **A git worktree uploads fine.** `eas build:inspect -p android -e preview -s
+     archive -o <dir>` from this worktree produced the tracked tree plus
+     uncommitted edits, with no `node_modules` and no `.envrc`; the gitignored
+     dirs (`packages/*/dist`, `apps/mobile/{ios,android,dist}`, `spikes/`) arrive
+     as empty folders, so the builder has to produce `dist/` itself.
+  3. **The post-install hook works from `apps/mobile`.** Both builds bundled the
+     JS, so EAS reads `eas-build-post-install` from the project dir and
+     `build:packages` runs before Gradle/Xcode: iOS simulator build
+     `3b793fe4-daf8-42f7-8953-019327ec071c` (≈8 min, no credentials) and Android
+     APK `bbd1a278-a678-4ad6-bf7a-50f7e179e92c` (the first Android build has to be
+     interactive so EAS can generate the keystore, which it keeps server-side).
+     The iOS build warns that `ios.infoPlist.ITSAppUsesNonExemptEncryption` is
+     unset — an App Store Connect matter, to settle with store submission.
+  4. **Install.** iOS: `xcrun simctl boot <udid>`, then `eas build:run -p ios --id
+     <build>`. Android: the build's own "install on an emulator" prompt boots the
+     AVD without the CLAUDE.md flags and fails with
+     `INSTALL_FAILED_UPDATE_INCOMPATIBLE` while the debug-signed dev build is
+     present; boot the emulator with the flags, `adb uninstall com.civics100.app`,
+     then `adb install` the downloaded APK (or `eas build:run`).
+  5. **Splash on release builds (closes the Phase 6 leftover).** Cold launches
+     recorded (`simctl io recordVideo` / `adb shell screenrecord`) and measured
+     per frame with ffmpeg `signalstats`. iOS 26.5: light splash ≈229 → home ≈220,
+     dark splash ≈38 → home ≈46. Android API 35: light ≈232 → ≈222, dark ≈38 →
+     ≈47 (the dark splash variant shows under a dark OS). No frame crosses to the
+     other side of luma 120 on either platform, so the dev-only black hand-off
+     frame from Stage 6.6 does not exist in a release build. Not recorded
+     separately: a saved dark preference under a light OS (flow 02 covers the
+     preference surviving a relaunch).
+  6. **Maestro against release builds.** `-e METRO_URL=none` skips the dev-client
+     link as designed: 4/4 on the iOS simulator (5m 13s) and 4/4 on
+     `emulator-5554` (4m 44s, less than half the dev-client run).
+  7. **CI wiring.** `EXPO_TOKEN` is a repository secret (a personal access token
+     from expo.dev/settings/access-tokens), and `eas-build.yml` pins eas-cli
+     24.11.0 to match the host. GitHub dispatches a `workflow_dispatch` workflow
+     only when its file is on the default branch, and `eas-build.yml` is on
+     `native` alone (`gh workflow view eas-build.yml`: "not found on the default
+     branch"). So the first `gh workflow run eas-build.yml -f platform=android -f
+     profile=preview` waits for the merge to `main`; it proves the token and the
+     workflow, the hook being proven by the two builds above.
+
+  Three builds were budgeted against the free tier; two were spent.
+
+- **Stage 7.7 — all three CI jobs green:** two fixes. (1) `ubuntu-latest` moved to
+  Ubuntu 26.04, where Playwright 1.59.1 cannot install chromium's system deps
+  ("does not support chromium on ubuntu26.04-x64"), so the e2e job is pinned to
+  `ubuntu-24.04`; a Playwright upgrade can unpin it, in a session that can also
+  re-check the visual baselines against the new bundled Chromium. (2) The 31
+  ESLint errors from Stage 7.1 are fixed with the maintainer's go-ahead, so the
+  lint job gates like the others: indexed test results use `?.` rather than `!`;
+  `cli-integration.test.ts` imports `validateGenerationOptions` and
+  `createValidatedConfiguration` statically, which types the programs and removes
+  every `any`; `padDistractors` yields nothing and is an `Effect.sync`;
+  `scripts/test-openai-integration.ts` is linted through
+  `projectService.allowDefaultProject` (adding `scripts` to the tsconfig `include`
+  would emit it into `dist/`) and formatted with prettier.
+
+  **Gates:** root `npm run lint` exits 0; root `npm test` (civics2json 73,
+  distractions 122 with `OPENAI_API_KEY` unset, questionnaire 44, mobile 16,
+  website 52); distractions and civics2json `tsc --noEmit` clean. Visual 20/20 ×2 in
+  the sandbox container on `b48fc19` (24.4 s, 22.8 s), the first run since Phase 5:
+  the Phase 6–7 changes in `packages/app` leave all five website routes unchanged.
+  Sandbox notes: the worktree's `node_modules` are per-OS, so `npm ci` runs in the
+  container before the suite and again on the host afterwards; the container's
+  chromium is build 1217 where Playwright 1.59.1 looks for 1228, bridged by two
+  symlinks in `~/.cache/ms-playwright` that a relaunch drops; the suite ran as
+  `npx playwright test --config playwright.visual.config.ts --workers=2` from
+  `website/`, and the default worker count was not tried.
+
+  **EAS Update retrofit (fast-follow, [Ch 18 § Setup](/references/expo/18-eas-update.md)):**
+  `npx expo install expo-updates` inside `apps/mobile` (native → new builds), then
+  by hand in `app.config.ts`: `runtimeVersion: { policy: 'appVersion' }` and
+  `updates: { url: 'https://u.expo.dev/<projectId>' }`; `channel` on the `preview`
+  and `production` profiles in `eas.json`; optionally an `eas update --auto`
+  workflow. Deferred from v1 by decision.
+
+## Key Files
+- `package.json` — add `apps/*` to `workspaces`; root scripts.
+- `website/tamagui.config.ts` — move to `packages/app`; split animation driver.
+- `website/src/services/LocalStorageService.ts` — tag + Schemas move; add AsyncStorage native layer re-implementing the 13 isolated methods (existing `TestLocalStorageServiceLayer` proves the swap).
+- `website/src/services/ServiceProvider.ts` — generalize `AppServiceLayer`/`runWithServices` into `makeAppServiceLayer`.
+- `website/src/components/Layout.tsx` — canonical `var(--editorial-*)` inline-style coupling to convert.
+- `website/next.config.ts` — `transpilePackages += "app"`.
+- `packages/questionnaire/package.json` — `@effect/platform-node` + `@effect/cli` Node-only deps driving the Phase 0 Metro spike.
+
+## Risks & Mitigations
+- **Metro + Node-only Effect deps (highest):** import only `questionnaire/data` + needed exports; refine `questionnaire` export map if `.` is contaminated; Metro `resolveRequest` shim as last resort. Validate in Phase 0.
+- **Two Tamagui instances:** pin exact `1.144.x` everywhere (incl. `@tamagui/metro-plugin`); hoist at root. Monorepo hoisting/dedupe guidance: [Ch 11 § Monorepos](/references/expo/11-common-guides.md#monorepos).
+- **Tamagui Metro integration:** native compilation needs `@tamagui/metro-plugin`'s `withTamagui()` wrapping the Metro config, paired with the babel plugin — don't rely on the babel plugin alone. Validate alongside Spike B.
+- **Animation driver:** `css` is web-only — never share; resolve via `.web/.native` file extensions. Package is `@tamagui/animations-moti` on v1.144 (`@tamagui/animations-motion` only in v2). Native reanimated/worklets setup: [Ch 15 § Reanimated](/references/expo/15-sdk-ui-components.md#reanimated).
+- **CSS-var design system:** mapping not redesign; Playwright visual gate prevents web regressions.
+- **Effect/Schema under Hermes:** Effect core is Node-free so risk is low, but RN/Hermes support is *undocumented* in the Effect refs — prove it on-device in Spike A (Schema decode included), not by assumption; keep `@effect/platform-node` off-device.
+- **React 19 alignment:** mobile pins SDK's React; `packages/app` treats `react` as peer dep — two separately-bundled copies is fine. New Architecture context: [Ch 11 § New Architecture](/references/expo/11-common-guides.md#new-architecture).
+
+## Verification
+- **Three-target dev loop:** web `npm run dev` + Playwright; iOS `npm run ios` (Xcode 27 DeviceHub + `xcrun simctl`) and Android `npm run android`, both driven by the Maestro flows in `apps/mobile/.maestro/` (see the Phase 6 STATUS for the loop); native builds, not Expo Go — [Ch 09 § Creating a Dev Build](/references/expo/09-development-builds-and-debugging.md#creating-a-dev-build).
+- **Shared contract tests:** one suite (save/read `GameResult`, settings, paired answers) run against both web and native layers; native via `jest-expo` + AsyncStorage mock. Existing `npm run test --workspaces` aggregates.
+- **Visual regression:** capture website screenshots of all 5 routes before Phase 4; diff after each component move.
+- **CI smoke:** `tsc --build`, workspace Jest, EAS preview build ([Ch 16 § Running a Build](/references/expo/16-eas-build.md#running-a-build) / [Ch 17 § Internal Distribution](/references/expo/17-eas-submit-and-distribution.md#internal-distribution)).
+
+## Fast-follow (out of v1)
+MMKV migration; `expo-notifications` push ([Ch 14 § Notifications](/references/expo/14-sdk-data-auth-background.md#notifications), [Ch 11 § Push Notifications](/references/expo/11-common-guides.md#push-notifications)); EAS Update/OTA ([Ch 18](/references/expo/18-eas-update.md#publishing) — see the optional Phase-7 sub-step; could land in v1); App Store/Play submission & signing ([Ch 17](/references/expo/17-eas-submit-and-distribution.md#ios-submission)); full TTS voice-picker parity (`expo-speech` enumeration is weaker than Web — ship default voice + rate first; [Ch 13 § Speech](/references/expo/13-sdk-device-sensors-system.md#speech)); deep linking ([Ch 07 § Deep Linking](/references/expo/07-expo-router-advanced.md#deep-linking), [Ch 11 § Deep Linking](/references/expo/11-common-guides.md#deep-linking) — nearly free once a `scheme` is set, since every expo-router file route already maps to a URL); localization ([Ch 11 § Localization](/references/expo/11-common-guides.md#localization)). (Haptics moved into Phase 6.)

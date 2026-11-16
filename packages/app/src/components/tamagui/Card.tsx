@@ -11,7 +11,7 @@ export const Card = styled(Stack, {
   padding: '$4',
 
   hoverStyle: {
-    borderColor: '$borderColorHover',
+    borderColor: '$borderColorHover'
   },
 
   variants: {
@@ -20,10 +20,10 @@ export const Card = styled(Stack, {
         shadowColor: '$color',
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 8,
-      },
-    },
-  },
+        shadowRadius: 8
+      }
+    }
+  }
 } as const)
 
 export type CardProps = GetProps<typeof Card>

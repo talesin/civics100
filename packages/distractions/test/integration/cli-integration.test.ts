@@ -1,6 +1,7 @@
 import { describe, it, expect } from '@jest/globals'
 import { Effect, ConfigProvider, Layer, Either } from 'effect'
-import { DEFAULT_GENERATION_OPTIONS } from '../../src/types/config'
+import { DEFAULT_GENERATION_OPTIONS, validateGenerationOptions } from '../../src/types/config'
+import { createValidatedConfiguration } from '../../src/config'
 
 describe('CLI Integration Tests', () => {
   describe('CLI Options Parsing', () => {
@@ -19,8 +20,6 @@ describe('CLI Integration Tests', () => {
     })
 
     it('should validate targetCount range', () => {
-      const { validateGenerationOptions } = require('../../src/types/config')
-
       // Test min boundary (should clamp to 5)
       const tooLow = validateGenerationOptions({ targetCount: 2 })
       expect(tooLow.targetCount).toBe(5)
@@ -35,8 +34,6 @@ describe('CLI Integration Tests', () => {
     })
 
     it('should validate batchSize range', () => {
-      const { validateGenerationOptions } = require('../../src/types/config')
-
       // Test min boundary
       const tooLow = validateGenerationOptions({ batchSize: 0 })
       expect(tooLow.batchSize).toBe(1)
@@ -53,8 +50,6 @@ describe('CLI Integration Tests', () => {
 
   describe('Configuration Validation at Startup', () => {
     it('should validate configuration with all required env vars', async () => {
-      const { createValidatedConfiguration } = require('../../src/config')
-
       const configProvider = ConfigProvider.fromMap(
         new Map([
           ['OPENAI_API_KEY', 'sk-test-valid-key-12345'],
@@ -82,12 +77,10 @@ describe('CLI Integration Tests', () => {
         expect(config.generation.useOpenAI).toBe(false) // Disabled in test mode
       }).pipe(Effect.provide(Layer.setConfigProvider(configProvider)))
 
-      await Effect.runPromise(program as any)
+      await Effect.runPromise(program)
     })
 
     it('should accept valid API key format', async () => {
-      const { createValidatedConfiguration } = require('../../src/config')
-
       const configProvider = ConfigProvider.fromMap(
         new Map([
           ['OPENAI_API_KEY', 'sk-valid-key-format-12345'],
@@ -99,7 +92,7 @@ describe('CLI Integration Tests', () => {
         return yield* createValidatedConfiguration()
       }).pipe(Effect.provide(Layer.setConfigProvider(configProvider)), Effect.either)
 
-      const result: Either.Either<any, any> = await Effect.runPromise(program as any)
+      const result = await Effect.runPromise(program)
 
       expect(result._tag).toBe('Right')
       if (Either.isRight(result)) {
@@ -108,8 +101,6 @@ describe('CLI Integration Tests', () => {
     })
 
     it('should fail validation with missing API key', async () => {
-      const { createValidatedConfiguration } = require('../../src/config')
-
       const configProvider = ConfigProvider.fromMap(
         new Map([
           ['NODE_ENV', 'test']
@@ -121,7 +112,7 @@ describe('CLI Integration Tests', () => {
         return yield* createValidatedConfiguration()
       }).pipe(Effect.provide(Layer.setConfigProvider(configProvider)), Effect.either)
 
-      const result: Either.Either<any, any> = await Effect.runPromise(program as any)
+      const result = await Effect.runPromise(program)
 
       expect(result._tag).toBe('Left')
       if (Either.isLeft(result)) {
@@ -150,8 +141,6 @@ describe('CLI Integration Tests', () => {
     })
 
     it('should handle custom generation options', () => {
-      const { validateGenerationOptions } = require('../../src/types/config')
-
       const custom = validateGenerationOptions({
         regenAll: true,
         targetCount: 20,

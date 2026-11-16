@@ -9,7 +9,10 @@ A TypeScript monorepo for US Citizenship Test preparation, built with Effect-TS 
 - **civics2json** - Processes official USCIS civics test data
 - **distractions** - Generates incorrect answer choices
 - **questionnaire** - Interactive quiz game engine
-- **website** - Next.js web application for practice tests
+- **app** (`packages/app`) - Shared cross-platform UI: Tamagui theme, components, hooks, Effect services
+- **website** - Next.js web application for practice tests (routes + shims over `app`)
+- **mobile** (`apps/mobile`) - Expo / expo-router app on the same `app` package (in progress; see
+  [plans/react-native-mobile-app.md](./plans/react-native-mobile-app.md))
 
 ## Quick Start
 
@@ -23,6 +26,9 @@ npm run build
 # Run the website
 npm run dev --workspace=website
 # Visit http://localhost:3000
+
+# Mobile (needs a dev client / simulator; in-container verification is tsc + jest + expo export)
+npm test --workspace=mobile
 ```
 
 ## 2025 USCIS Test Requirements
@@ -52,9 +58,10 @@ npm run clean
 
 - TypeScript with strict configuration
 - Effect-TS functional programming
-- Next.js 15 with App Router
+- Next.js 16 with App Router
 - React 19
-- Tamagui (cross-platform UI framework)
+- Tamagui (cross-platform UI framework, shared by web and mobile)
+- Expo 56 + expo-router (mobile)
 - Jest + React Testing Library
 
 ## License

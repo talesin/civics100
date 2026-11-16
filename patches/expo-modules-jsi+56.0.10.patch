@@ -1,0 +1,22 @@
+diff --git a/node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift b/node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift
+index a0e3e24..c3550f3 100644
+--- a/node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift
++++ b/node_modules/expo-modules-jsi/apple/Sources/ExpoModulesJSI/Runtime/JavaScriptRuntime.swift
+@@ -215,8 +215,15 @@ open class JavaScriptRuntime: Equatable, @unchecked Sendable {
+       .toOpaque()
+     // Pass a null setter to C++ when the Swift setter is nil so that JS assignment
+     // raises a `jsi::JSError` directly, without crossing the Swift boundary.
+-    let callbacks = expo.HostObjectCallbacks(
+-      context, getter, set == nil ? nil : setter, propertyNamesGetter, deallocate)
++    // Branch instead of `set == nil ? nil : setter`: Swift 6.3 (Xcode 27) only
++    // forms a C function pointer from a direct `func` reference or a literal
++    // closure, not from a ternary that yields one.
++    let callbacks: expo.HostObjectCallbacks
++    if set == nil {
++      callbacks = expo.HostObjectCallbacks(context, getter, nil, propertyNamesGetter, deallocate)
++    } else {
++      callbacks = expo.HostObjectCallbacks(context, getter, setter, propertyNamesGetter, deallocate)
++    }
+     let hostObject = expo.HostObject.makeObject(pointee, consume callbacks)
+ 
+     return JavaScriptObject(self, hostObject)

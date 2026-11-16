@@ -1,0 +1,18 @@
+# The Settings voice preview drives expo-speech; the run confirms the screen
+# survives (no ErrorBoundary fallback, no crash). Whether audio comes out is
+# confirmed by ear on the host. The post-launch subflow is explained in 01-tabs.
+appId: com.civics100.app
+name: Voice preview speaks without an error state
+---
+- launchApp
+- runFlow: subflows/open-app.yaml
+- tapOn:
+    id: tab-settings
+- assertVisible: 'Game Settings'
+- scrollUntilVisible:
+    element:
+      text: 'Preview voice'
+    direction: DOWN
+- tapOn: 'Preview voice'
+- assertNotVisible: 'Something went wrong'
+- assertVisible: 'Preview voice'

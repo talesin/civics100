@@ -40,7 +40,7 @@ C: Recent American History and Other Important Historical Information
       section: '1800s',
       question: 'When did all men get the right to vote?'
     })
-    expect(result[0]!.answers.choices).toHaveLength(4)
+    expect(result[0]?.answers.choices).toHaveLength(4)
 
     // Verify Q99
     expect(result[1]).toBeDefined()
@@ -49,7 +49,7 @@ C: Recent American History and Other Important Historical Information
       section: '1800s',
       question: "Name one leader of the women's rights movement in the 1800s."
     })
-    expect(result[1]!.answers.choices).toHaveLength(6)
+    expect(result[1]?.answers.choices).toHaveLength(6)
 
     // Verify Q100 (in new section)
     expect(result[2]).toBeDefined()
@@ -58,7 +58,7 @@ C: Recent American History and Other Important Historical Information
       section: 'Recent American History and Other Important Historical Information',
       question: 'Name one war fought by the United States in the 1900s.'
     })
-    expect(result[2]!.answers.choices).toHaveLength(2)
+    expect(result[2]?.answers.choices).toHaveLength(2)
   })
 
   it('should handle bullet-point answers from 2025 format', async () => {
@@ -76,6 +76,6 @@ A: Test Section
 
     expect(result).toHaveLength(1)
     expect(result[0]).toBeDefined()
-    expect(result[0]!.answers.choices).toEqual(['Answer one', 'Answer two'])
+    expect(result[0]?.answers.choices).toEqual(['Answer one', 'Answer two'])
   })
 })

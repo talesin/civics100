@@ -19,10 +19,13 @@
     "test:e2e:ui": "npx playwright test --ui",
     "test:e2e:headed": "npx playwright test --headed",
     "test:e2e:report": "npx playwright show-report",
+    "test:visual": "npx playwright test --config playwright.visual.config.ts",
+    "test:visual:update": "npx playwright test --config playwright.visual.config.ts --update-snapshots",
     "list-todos": "find src/ test/ -iname '*.ts' -exec grep --color -inHE '(TODO|FIXME|HACK)' '{}' \\;"
   },
   "dependencies": {
     "@effect/platform": "^0.94.5",
+    "app": "*",
     "@tamagui/animations-css": "^1.144.4",
     "@tamagui/config": "^1.144.4",
     "@tamagui/next-plugin": "^1.144.4",
@@ -40,6 +43,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^22",

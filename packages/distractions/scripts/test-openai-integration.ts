@@ -53,20 +53,14 @@ const sampleQuestions: Question[] = [
     expectedAnswers: 1,
     answers: {
       _type: 'text',
-      choices: [
-        'speech',
-        'religion',
-        'assembly',
-        'press',
-        'petition the government'
-      ]
+      choices: ['speech', 'religion', 'assembly', 'press', 'petition the government']
     }
   }
 ]
 
 const testOpenAIIntegration = Effect.gen(function* () {
   console.log('\n🧪 OpenAI Integration Test\n')
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
 
   // Get the generator service
   const generator = yield* EnhancedStaticGenerator
@@ -96,9 +90,9 @@ const testOpenAIIntegration = Effect.gen(function* () {
   const endTime = Date.now()
   const duration = ((endTime - startTime) / 1000).toFixed(2)
 
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
   console.log(`\n✅ Generation Complete! (${duration}s)\n`)
-  console.log('=' .repeat(80))
+  console.log('='.repeat(80))
 
   // Display results - filter to only show sample questions
   let totalDistractors = 0
@@ -126,7 +120,9 @@ const testOpenAIIntegration = Effect.gen(function* () {
   console.log(`  - Total distractors for samples: ${totalDistractors}`)
   console.log(`  - Average per sample question: ${(totalDistractors / sampleResults).toFixed(1)}`)
   console.log(`  - Total time: ${duration}s`)
-  console.log(`  - Average time per question: ${(parseFloat(duration) / results.length).toFixed(2)}s`)
+  console.log(
+    `  - Average time per question: ${(parseFloat(duration) / results.length).toFixed(2)}s`
+  )
 
   console.log('\n💡 Next Steps:')
   console.log('  1. Review distractor quality - are they plausible but incorrect?')
@@ -139,7 +135,7 @@ const testOpenAIIntegration = Effect.gen(function* () {
 
 // For testing purposes, we'll run against all questions but only display the sample ones
 // This is simpler than fighting Effect layer composition
-const sampleQuestionNumbers = new Set(sampleQuestions.map(q => q.questionNumber))
+const sampleQuestionNumbers = new Set(sampleQuestions.map((q) => q.questionNumber))
 
 const program = testOpenAIIntegration.pipe(
   Effect.provide(EnhancedStaticGenerator.Default),

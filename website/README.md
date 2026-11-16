@@ -56,7 +56,7 @@ npm run lint         # Check code quality
 
 ## Tech Stack
 
-- **Next.js 15** (App Router, Turbopack)
+- **Next.js 16** (App Router, Turbopack)
 - **React 19**
 - **TypeScript** (strict mode)
 - **Tamagui** - Cross-platform UI framework with compile-time optimization
@@ -68,15 +68,21 @@ npm run lint         # Check code quality
 ```
 website/
 ├── src/
-│   ├── app/           # Next.js App Router pages
-│   ├── components/    # React components (Tamagui-styled)
-│   ├── services/      # Effect-TS services
-│   ├── hooks/         # Custom React hooks
+│   ├── app/           # Next.js App Router pages (route implementations)
+│   ├── components/    # Web-only components (Layout, TamaguiProvider, PWA bits)
+│   │                  # + one-line shims re-exporting shared components from `app`
+│   ├── services/      # One-line shims over `app/services`
+│   ├── hooks/         # Shims over `app/hooks` + web-only hooks
 │   └── types/         # TypeScript definitions
-├── test/              # Jest test files
-├── tamagui.config.ts  # Tamagui theme configuration
+├── test/              # Jest tests (website + the shared components it renders)
+├── e2e/               # Playwright functional + visual suites
 └── package.json
 ```
+
+Shared UI, hooks, Effect services and the Tamagui config live in
+[`packages/app`](../packages/app) and are consumed by both this site and the
+Expo app in `apps/mobile`. Add new components there, not here — see
+[docs/react-guide.md](../docs/react-guide.md#cross-platform-components-packagesapp).
 
 ## How to Play
 

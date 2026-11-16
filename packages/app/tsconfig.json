@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ES2020", "ESNext", "DOM", "DOM.Iterable"],
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "strictBuiltinIteratorReturn": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+
+    // @tamagui/lucide-icons ships per-icon types at types/icons/* but its
+    // exports map omits a "types" condition for the ./icons/* subpaths
+    // (icons.native.ts imports them per-icon to keep Metro from bundling the
+    // whole ~1,760-icon barrel).
+    "paths": {
+      "@tamagui/lucide-icons/icons/*": [
+        "../../node_modules/@tamagui/lucide-icons/types/icons/*"
+      ]
+    }
+  },
+  "include": ["src"]
+}

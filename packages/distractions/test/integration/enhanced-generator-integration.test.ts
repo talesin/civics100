@@ -101,12 +101,12 @@ describe('EnhancedStaticGenerator Integration Tests', () => {
         expect(generator.generateEnhanced).toBeDefined()
         expect(typeof generator.generateEnhanced).toBe('function')
       }).pipe(
+        Effect.provide(EnhancedStaticGenerator.DefaultWithoutDependencies),
         Effect.provide(questionsLayer),
         Effect.provide(fallbackLayer),
         Effect.provide(openaiLayer),
         Effect.provide(qualityLayer),
         Effect.provide(similarityLayer),
-        Effect.provide(EnhancedStaticGenerator.Default),
         Effect.runPromise
       )
     })

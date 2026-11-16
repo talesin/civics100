@@ -23,4 +23,6 @@ export default {
   // Automatically clear mock calls, instances, contexts and results before every test
   clearMocks: true,
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
+  // Keep haste off the emitted dist/test/__mocks__ copy of the distractions mock.
+  modulePathIgnorePatterns: ["<rootDir>/dist/"],
 };

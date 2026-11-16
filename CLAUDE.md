@@ -4,32 +4,37 @@ Guidance for Claude Code when working in this repository.
 
 ## Quick Reference
 
-| Task               | Guide                                                                              |
-| ------------------ | ---------------------------------------------------------------------------------- |
-| Coding standards   | [docs/index.md](./docs/index.md)                                                   |
-| Effect-TS patterns | [docs/effect-ts-guide.md](./docs/effect-ts-guide.md)                               |
-| Error handling     | [docs/effect-ts-guide.md#error-handling](./docs/effect-ts-guide.md#error-handling) |
-| Type design        | [docs/type-design.md](./docs/type-design.md)                                       |
-| Testing            | [docs/testing-guide.md](./docs/testing-guide.md)                                   |
-| React/Tamagui      | [docs/react-guide.md](./docs/react-guide.md)                                       |
-| OpenAI integration | [docs/openai-guide.md](./docs/openai-guide.md)                                     |
+| Task               | Guide                                                                         |
+| ------------------ | ----------------------------------------------------------------------------- |
+| Coding standards   | [docs/index.md][docsindexmd]                                                  |
+| Effect-TS patterns | [docs/effect-ts-guide.md][docseffect-ts-guidemd]                              |
+| Error handling     | [docs/effect-ts-guide.md#error-handling][docseffect-ts-guidemderror-handling] |
+| Type design        | [docs/type-design.md][docstype-designmd]                                      |
+| Testing            | [docs/testing-guide.md][docstesting-guidemd]                                  |
+| React/Tamagui      | [docs/react-guide.md][docsreact-guidemd]                                      |
+| OpenAI integration | [docs/openai-guide.md][docsopenai-guidemd]                                    |
 
 External references are available in the path in the `$REFERENCES` environment variable.
 
 ## Project Overview
 
-Monorepo for parsing and processing U.S. Citizenship and Immigration Services (USCIS) Civics Test data.
+Monorepo for parsing and processing U.S. Citizenship and Immigration Services (USCIS) Civics Test data, plus the practice-test apps built on it (Next.js website and an Expo mobile app that share one UI package).
 
 **Workspaces:**
 
-- **civics2json**: Core tool - downloads and converts USCIS Civics Test data to JSON
-- **distractions**: Secondary workspace (in development)
+- **civics2json** (`packages/civics2json`): Core tool - downloads and converts USCIS Civics Test data to JSON
+- **distractions** (`packages/distractions`): Generates incorrect answer choices
+- **questionnaire** (`packages/questionnaire`): Quiz game engine (sessions, pairing, scoring)
+- **app** (`packages/app`): Shared cross-platform UI - Tamagui config, components, hooks, Effect services, types. Source-shipped (no build step); exports subpaths `app`, `app/components`, `app/components/tamagui`, `app/hooks`, `app/screens`, `app/services`, `app/types`, `app/tamagui.config`
+- **website** (`website`): Next.js 16 App Router site; route pages + thin shims over `app`
+- **mobile** (`apps/mobile`): Expo 56 / expo-router app mounting the same `app` package (in progress)
 
 **Tech Stack:**
 
 - Effect-TS for functional programming and composability
 - @effect/cli for command-line interface
 - Effect Schema for runtime type validation
+- React 19.2 + Tamagui 1.144 on both platforms (Next.js web, Expo/React Native mobile)
 
 ## Key Files
 
@@ -39,6 +44,12 @@ Monorepo for parsing and processing U.S. Citizenship and Immigration Services (U
 | `packages/civics2json/src/QuestionsManager.ts` | Main orchestration        |
 | `packages/civics2json/src/types.ts`            | State/question types      |
 | `packages/civics2json/src/schema.ts`           | Effect Schema definitions |
+| `packages/app/src/components/index.ts`         | Shared component barrel   |
+| `packages/app/src/tamagui.config.ts`           | Tamagui tokens + themes   |
+| `packages/app/src/services/index.ts`           | Shared Effect services    |
+| `website/src/app/*/page.tsx`                   | Web routes                |
+| `apps/mobile/app/`                             | expo-router routes        |
+| `plans/react-native-mobile-app.md`             | Native port plan + STATUS |
 
 ## Data Flow
 
@@ -52,7 +63,44 @@ Monorepo for parsing and processing U.S. Citizenship and Immigration Services (U
 ### Root Level
 
 ```bash
+npm run build:packages      # Build civics2json, distractions, questionnaire dist/ (gitignored; every consumer resolves them) — first on a fresh checkout
 npm test                    # Run tests across all workspaces
+npm run lint                # ESLint across all workspaces (packages/app enforces react-hooks incl. set-state-in-effect)
+```
+
+### website
+
+```bash
+npm run dev -w website      # Next dev server (localhost:3000); LAN access needs the host in `allowedDevOrigins` (next.config.ts)
+npm run build -w website    # lint + jest + production build (its TS pass is the website typecheck)
+npm run test:e2e -w website -- --project=chromium   # Functional e2e (chromium only in the sandbox)
+npm run test:visual -w website                      # 20 visual baselines (sandbox container only)
+```
+
+### apps/mobile
+
+```bash
+npm test -w mobile                                  # tsc --noEmit + jest-expo (route hrefs are checked strictly only once expo start/run has written .expo/types)
+npm run bundlecheck -w mobile                       # expo export ios + android with source maps, then scripts/check-sourcemaps.mjs (native halves in, web halves out, no lucide-react/@effect/platform-node/@effect/cli, 4 WAVs)
+npm run clean -w mobile                             # Drop ios/ android/ .expo/ dist/ .tamagui/ node_modules/ (then npm i + npm run prebuild:mobile)
+npm run ios -- --device "iPhone 17 Pro"             # Host: build + boot (Xcode 27 opens DeviceHub, not Simulator.app)
+#   If Expo files the simulator as a physical device ("No code signing certificates"): `xcrun simctl boot <udid>`, then `npm run ios -- --no-bundler`
+MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device <udid> test apps/mobile/.maestro/   # Simulator flows (host, ~5 min)
+#   The build is a dev client: it cold-starts on its launcher, and .maestro/subflows/open-app.yaml opens Metro through the
+#   exp+civics100://expo-development-client/ link (default -e METRO_URL=http://localhost:8081; a release/EAS build: -e METRO_URL=none)
+# Android (host): AGP 8.12 needs Android Studio's JBR 21, the SDK's adb must beat Homebrew's, Maestro lives in ~/.maestro/bin
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$HOME/.maestro/bin:$PATH"
+emulator -avd Medium_Phone_API_35 -memory 8192 -cores 6 &   # The AVD's own 1 core / 2 GB makes debug launches outrun Maestro; the dev client needs the extra headroom
+npm run android                                     # Host: Gradle build + install on emulator-5554, starts Metro
+MAESTRO_DRIVER_STARTUP_TIMEOUT=180000 maestro --device emulator-5554 test apps/mobile/.maestro/   # Emulator flows (host, ~10 min)
+# EAS (host, after `eas login`; profiles in apps/mobile/eas.json — preview = Android APK + iOS simulator build, no Apple Developer account)
+eas build -p android --profile preview               # Run in apps/mobile; first Android build interactively to generate the keystore
+eas build -p ios --profile preview                   # Simulator build, no credentials
+eas build:run -p android --profile preview --latest  # Install the latest preview APK on the emulator (adb uninstall com.civics100.app first: debug vs release signatures)
+eas build:run -p ios --profile preview --latest      # Install the latest simulator .app on the booted simulator
+gh workflow run eas-build.yml -f platform=android -f profile=preview   # Queue a build from CI (GitHub dispatches it only once eas-build.yml is on main)
 ```
 
 ### civics2json
@@ -79,29 +127,41 @@ npx tsx src/index.ts governors fetch [--force]
 
 ## Essential Rules
 
-- **Temporary files**: Prefix with `temp_`, delete after use
+- **Temporary files**: Prefix with `temp_` (git-ignored via `**/temp_*`), delete after use — tools like Playwright and expo-router still pick them up
 - **Plans**: Save to `plans/` directory in markdown
 - **Never overwrite**: `.envrc` file
 - **Linting**: Do not auto-fix; let maintainer address
-- **Coding standards**: See [docs/index.md](./docs/index.md)
+- **Coding standards**: See [docs/index.md][docsindexmd]
 
-## Website Styling (Tamagui)
+## Shared UI (`packages/app`) and Website Styling
 
-### Theme Context
+All reusable components, hooks, and services live in `packages/app` and are consumed by both the website and the mobile app. The native port is tracked in `plans/react-native-mobile-app.md` (see its "Phase 5 — STATUS" block for what has moved and the per-stage gate suite). Current state: every website component except the web-only `Layout`, `TamaguiProvider`, `InstallPrompt`, `OfflineIndicator`, `ServiceWorkerRegistration` is a one-line shim over `app/components`; the home, results, statistics and settings routes are thin `<Layout><XScreen/></Layout>` wrappers over `app/screens` (the game route passes `Layout` as the screen's `Frame` so the header title tracks game state).
 
-```typescript
-const { theme } = useThemeContext();  // 'light' | 'dark'
-const colors = themeColors[theme];
-```
+### Rules for shared code
 
-### Available CSS Classes
+- **New components/hooks go in `packages/app`**, not `website/src`. Website files at the old `@/components/X` paths are shims (`export { X as default } from 'app/components'`); keep them so route pages don't churn.
+- **No web-only globals in shared code** (`window`, `document`, `next/*`, `localStorage`, CSS units like `vh`). Either platform-split the file (`X.tsx` web / `X.native.tsx` native / `X.shared.ts` for the shared props and pure helpers) or guard with `isWeb` from `tamagui`. Never expose a split through the package.json `exports` map - Metro only resolves `.native` inside relative imports.
+- **Icons** come from `app/components` (the `icons.ts` / `icons.native.ts` pair). Never import `lucide-react` in shared code; add new icons to BOTH halves.
+- **Navigation is a callback prop** (`onNavigateHome`, `onBack`, ...). No router imports in `packages/app`.
+- **`react-hooks` lint is fully on in `packages/app`** (including `set-state-in-effect`): derive state with `useMemo`, reset with `key=`, read latest props in effects with `useEffectEvent`.
+- Colors come from Tamagui theme keys (`packages/app/src/tamagui.config.ts`), not CSS variables. Use `styled()` components with `$editorial*` /`$theme*` keys, or `useTheme().<key>?.get()` for raw DOM elements, SVGs, and props. See [docs/react-guide.md][docsreact-guidemd] for patterns and the key list.
 
-- Cards: `card`, `card-elevated`, `card-interactive`
-- Buttons: `btn-primary`, `btn-secondary`, `btn-success`, `btn-error`
-- Utilities: `focus-ring`, `animate-fade-in`, `text-gradient`
+### Remaining CSS Classes (web-only, route pages only)
+
+- Utilities: `text-gradient`
 - Responsive: `hidden`, `md:flex`, `md:hidden`
 
 ### Notes
 
 - Tailwind CSS removed - do not add Tailwind classes
+- Do not add new `var(--...)` references in components. The only sanctioned sites are the web-only InstallPrompt/OfflineIndicator (shared code uses `fontFamily: '$serif'` / `'$mono'` via the platform-split `fonts.ts`)
 - Test both light and dark themes when modifying styles
+- Visual regression: `npm run test:visual -w website` (20 committed baselines; never `--update-snapshots` outside the sandbox container). UI that no baseline covers (e.g. the ErrorBoundary fallback) gets a throwaway `temp_` page + old-vs-new pixel diff instead - see the plan STATUS block
+
+[docsindexmd]: ./docs/index.md
+[docseffect-ts-guidemd]: ./docs/effect-ts-guide.md
+[docseffect-ts-guidemderror-handling]: ./docs/effect-ts-guide.md#error-handling
+[docstype-designmd]: ./docs/type-design.md
+[docstesting-guidemd]: ./docs/testing-guide.md
+[docsreact-guidemd]: ./docs/react-guide.md
+[docsopenai-guidemd]: ./docs/openai-guide.md

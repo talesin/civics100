@@ -4,7 +4,7 @@ import { Text as TamaguiText } from 'tamagui'
 export const Text = styled(TamaguiText, {
   name: 'Text',
   color: '$color',
-  fontSize: '$3',
+  fontSize: '$3'
 })
 
 export const Heading = styled(TamaguiText, {
@@ -13,7 +13,7 @@ export const Heading = styled(TamaguiText, {
   color: '$color',
   fontSize: '$8',
   fontWeight: '700',
-  marginBottom: '$4',
+  marginBottom: '$4'
 })
 
 export const Paragraph = styled(TamaguiText, {
@@ -22,7 +22,7 @@ export const Paragraph = styled(TamaguiText, {
   color: '$color',
   fontSize: '$3',
   lineHeight: 1.6,
-  marginBottom: '$3',
+  marginBottom: '$3'
 })
 
 export type TextProps = GetProps<typeof Text>

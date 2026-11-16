@@ -1,0 +1,118 @@
+import { GameSession } from '../types'
+import { isSessionCompleted } from 'questionnaire'
+import { Card, XStack, YStack, Text, Button } from './tamagui'
+import { styled } from 'tamagui'
+import { Trophy } from './icons'
+
+interface GameControlsProps {
+  readonly session: GameSession
+  readonly onNext?: (() => void) | undefined
+  readonly onRestart?: (() => void) | undefined
+  readonly showNext: boolean
+  readonly showRestart: boolean
+}
+
+const PrimaryButton = styled(Button, {
+  flex: 1,
+  backgroundColor: '$primary',
+  paddingVertical: '$2',
+  paddingHorizontal: '$4',
+  borderRadius: '$3',
+
+  hoverStyle: {
+    backgroundColor: '$primaryHover'
+  },
+
+  pressStyle: {
+    opacity: 0.9
+  }
+})
+
+const SecondaryButton = styled(Button, {
+  backgroundColor: '$backgroundPress',
+  paddingVertical: '$2',
+  paddingHorizontal: '$4',
+  borderRadius: '$3',
+
+  hoverStyle: {
+    backgroundColor: '$backgroundHover'
+  },
+
+  pressStyle: {
+    opacity: 0.9
+  }
+})
+
+const PrimaryButtonText = styled(Text, {
+  color: 'white',
+  fontWeight: '500'
+})
+
+const SecondaryButtonText = styled(Text, {
+  color: '$color',
+  fontWeight: '500'
+})
+
+const SuccessMessage = styled(YStack, {
+  marginTop: '$4',
+  padding: '$3',
+  backgroundColor: '$green1',
+  borderWidth: 1,
+  borderColor: '$green2',
+  borderRadius: '$3'
+})
+
+const SuccessText = styled(Text, {
+  color: '$green7',
+  fontSize: '$3',
+  fontWeight: '500'
+})
+
+export default function GameControls({
+  session,
+  onNext,
+  onRestart,
+  showNext = false,
+  showRestart = false
+}: GameControlsProps) {
+  return (
+    <Card elevated padding="$6">
+      <XStack justifyContent="space-between" alignItems="center" marginBottom="$4">
+        <Text fontSize="$3" color="$color" opacity={0.8}>
+          <Text fontWeight="500">Progress:</Text> {session.totalAnswered} answered
+        </Text>
+        <Text fontSize="$3" color="$color" opacity={0.8}>
+          <Text fontWeight="500">Correct:</Text> {session.correctAnswers}
+        </Text>
+      </XStack>
+
+      <XStack gap="$3">
+        {showNext && onNext !== undefined ? (
+          <PrimaryButton onPress={onNext}>
+            <PrimaryButtonText>
+              {session.currentQuestionIndex >= session.questions.length - 1
+                ? 'Finish'
+                : 'Next Question'}
+            </PrimaryButtonText>
+          </PrimaryButton>
+        ) : null}
+
+        {showRestart && onRestart !== undefined ? (
+          <SecondaryButton onPress={onRestart}>
+            <SecondaryButtonText>Restart Game</SecondaryButtonText>
+          </SecondaryButton>
+        ) : null}
+      </XStack>
+
+      {session.correctAnswers >= session.settings.winThreshold && !isSessionCompleted(session) ? (
+        <SuccessMessage>
+          <SuccessText style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <Trophy size={14} strokeWidth={1.5} />
+            You&apos;ve reached {session.settings.winThreshold} correct answers! You can continue or
+            finish now.
+          </SuccessText>
+        </SuccessMessage>
+      ) : null}
+    </Card>
+  )
+}

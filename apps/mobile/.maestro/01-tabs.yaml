@@ -1,0 +1,24 @@
+# Each tab draws its ScreenFrame title in the tab navigator's header. Tabs
+# are targeted by their `tabBarButtonTestID` (the label-based "X, tab, N of M"
+# accessibility phrase is iOS-only in expo-router's tab bar). Every launch in
+# these flows is followed by `runFlow: subflows/open-app.yaml`, which opens
+# the dev-client build's launcher on Metro through its deep link and waits up
+# to 60 s for the home `Start` button (the header there explains why; a
+# release build skips the link with `-e METRO_URL=none`).
+appId: com.civics100.app
+name: Tabs show their ScreenFrame titles
+---
+- launchApp
+- runFlow: subflows/open-app.yaml
+- tapOn:
+    id: tab-results
+- assertVisible: 'Test Results'
+- tapOn:
+    id: tab-statistics
+- assertVisible: 'Question Statistics'
+- tapOn:
+    id: tab-settings
+- assertVisible: 'Game Settings'
+- tapOn:
+    id: tab-home
+- assertVisible: 'US Civics Test'
