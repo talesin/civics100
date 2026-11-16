@@ -231,7 +231,7 @@ export const padDistractors = (
   correctAnswers: string[],
   fallbackService: FallbackDistractorService
 ): Effect.Effect<string[], never> =>
-  Effect.gen(function* () {
+  Effect.sync(() => {
     if (distractors.length >= targetCount) {
       return distractors.slice(0, targetCount)
     }
@@ -591,9 +591,11 @@ export const generateEnhancedDistractors =
           // Log with error-specific context
           const errorMsg = (() => {
             if (error instanceof OpenAIAuthError) return `Auth error: ${error.message}`
-            if (error instanceof OpenAIRateLimitError) return `Rate limit: retry after ${error.retryAfter ?? 'unknown'}s`
+            if (error instanceof OpenAIRateLimitError)
+              return `Rate limit: retry after ${error.retryAfter ?? 'unknown'}s`
             if (error instanceof OpenAITimeoutError) return `Timeout: ${error.timeoutMs}ms`
-            if (error instanceof OpenAIError) return `OpenAI error: ${error.cause instanceof Error ? error.cause.message : String(error.cause)}`
+            if (error instanceof OpenAIError)
+              return `OpenAI error: ${error.cause instanceof Error ? error.cause.message : String(error.cause)}`
             return error instanceof Error ? error.message : String(error)
           })()
           yield* Effect.logWarning(`Error for Q${question.questionNumber}: ${errorMsg}`)

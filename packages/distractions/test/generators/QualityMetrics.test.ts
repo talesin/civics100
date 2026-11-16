@@ -187,7 +187,7 @@ describe('Pool Filtering Tests', () => {
       const sorted = withScores.sort((a, b) => a.lengthDiff - b.lengthDiff)
 
       // Similar length should come first
-      expect(sorted[0]!.entry).toBe('the Bill of Rights')
+      expect(sorted[0]?.entry).toBe('the Bill of Rights')
     })
 
     it('should consider word count in difficulty matching', () => {
@@ -207,7 +207,7 @@ describe('Pool Filtering Tests', () => {
 
       const sorted = withScores.sort((a, b) => a.wordCountDiff - b.wordCountDiff)
 
-      expect(sorted[0]!.entry).toBe('the government')
+      expect(sorted[0]?.entry).toBe('the government')
     })
   })
 
@@ -230,8 +230,8 @@ describe('Pool Filtering Tests', () => {
         .sort((a, b) => a.usageCount - b.usageCount)
 
       // Least used should come first
-      expect(sorted[0]!.entry).toBe('distractor3')
-      expect(sorted[2]!.entry).toBe('distractor1')
+      expect(sorted[0]?.entry).toBe('distractor3')
+      expect(sorted[2]?.entry).toBe('distractor1')
     })
   })
 })

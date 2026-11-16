@@ -1180,7 +1180,7 @@ the host (package installs, font/audio assets, device boot).
 - Root scripts `dev:mobile`/`ios`/`android` (`dev`→website unchanged) — **landed early in Phase 6** (see its STATUS: `ios`/`android`/`dev:mobile`/`prebuild:mobile`/`splash:mobile`). Extend root `clean` to cover mobile artifacts. CI: `tsc --build`, `npm run test --workspaces`, EAS preview smoke build ([Ch 16 § CI](/references/expo/16-eas-build.md#ci); EAS Workflows is the native option — [Ch 19 § EAS Workflows](/references/expo/19-eas-workflows-hosting-insights.md#eas-workflows)).
 - **Exit:** green CI; EAS preview build installs on a device.
 
-#### Phase 7 — STATUS (updated 2026-11-16): ✅ DONE on `native` — Stages 7.1–7.6 landed (scripts + sourcemap check, GitHub Actions gate, expo-dev-client, EAS config + dispatch-only build workflow, CI green apart from the reserved lint job, both EAS preview builds installed with Maestro 4/4 on each); left: the first CI-dispatched EAS build, which GitHub only allows once `eas-build.yml` is on `main`
+#### Phase 7 — STATUS (updated 2026-11-16): ✅ DONE on `native` — Stages 7.1–7.7 landed (scripts + sourcemap check, GitHub Actions gate, expo-dev-client, EAS config + dispatch-only build workflow, both EAS preview builds installed with Maestro 4/4 on each, all three CI jobs green); left: the first CI-dispatched EAS build, which GitHub only allows once `eas-build.yml` is on `main`
 
 Same staged-commit discipline as Phases 5–6 (one commit per stage, gate suite green
 first, this block updated in the same commit). Decisions fixed before the first stage:
@@ -1422,6 +1422,24 @@ through a new `apps/mobile` `clean` script. Node is pinned to the host's `24.4.0
      workflow, the hook being proven by the two builds above.
 
   Three builds were budgeted against the free tier; two were spent.
+
+- **Stage 7.7 — all three CI jobs green:** two fixes. (1) `ubuntu-latest` moved to
+  Ubuntu 26.04, where Playwright 1.59.1 cannot install chromium's system deps
+  ("does not support chromium on ubuntu26.04-x64"), so the e2e job is pinned to
+  `ubuntu-24.04`; a Playwright upgrade can unpin it, in a session that can also
+  re-check the visual baselines against the new bundled Chromium. (2) The 31
+  ESLint errors from Stage 7.1 are fixed with the maintainer's go-ahead, so the
+  lint job gates like the others: indexed test results use `?.` rather than `!`;
+  `cli-integration.test.ts` imports `validateGenerationOptions` and
+  `createValidatedConfiguration` statically, which types the programs and removes
+  every `any`; `padDistractors` yields nothing and is an `Effect.sync`;
+  `scripts/test-openai-integration.ts` is linted through
+  `projectService.allowDefaultProject` (adding `scripts` to the tsconfig `include`
+  would emit it into `dist/`) and formatted with prettier.
+
+  **Gates:** root `npm run lint` exits 0; root `npm test` (civics2json 73,
+  distractions 122 with `OPENAI_API_KEY` unset, questionnaire 44, mobile 16,
+  website 52); distractions and civics2json `tsc --noEmit` clean.
 
   **EAS Update retrofit (fast-follow, [Ch 18 § Setup](/references/expo/18-eas-update.md)):**
   `npx expo install expo-updates` inside `apps/mobile` (native → new builds), then
