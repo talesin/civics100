@@ -51,7 +51,8 @@ jobs:
         run: NODE_ENV=production npx next build
   e2e:
     name: Website e2e (chromium)
-    runs-on: ubuntu-latest
+    # Playwright 1.59 has no chromium system deps for Ubuntu 26.04 (ubuntu-latest).
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
